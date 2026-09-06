@@ -22,6 +22,8 @@ import type {
   UserId,
 } from '../domain/types';
 import { DEFAULT_SETTINGS } from '../domain/types';
+import type { Streak } from '../engine/streak';
+import { EMPTY_STREAK } from '../engine/streak';
 
 /** Un seul utilisateur pour l'instant. Le jour venu, cette valeur viendra du compte. */
 export const LOCAL_USER: UserId = 'local';
@@ -38,6 +40,9 @@ const k = {
   // Un compteur par paquet : le quota étant réglable paquet par paquet,
   // un compteur unique ne pourrait pas le refléter.
   counters: (u: UserId) => `u:${u}:counters`,
+  // La série, elle, est une seule et même chose pour la personne : réviser
+  // dans n'importe quel paquet fait la journée.
+  streak: (u: UserId) => `u:${u}:streak`,
   // Les paquets que la personne a ajoutés à sa collection. Distinct de la
   // liste des paquets connus : le catalogue en télécharge davantage qu'elle
   // n'en révise, et une bibliothèque qui s'invite dans « Mes paquets »
@@ -65,6 +70,8 @@ export interface Repository {
   saveOverrides(o: Record<DeckId, DeckOverride>): Promise<void>;
   getCounters(): Promise<Record<DeckId, DailyCounter>>;
   saveCounters(c: Record<DeckId, DailyCounter>): Promise<void>;
+  getStreak(): Promise<Streak>;
+  saveStreak(s: Streak): Promise<void>;
   /** `null` = la notion n'existe pas encore sur cet appareil (voir migration). */
   getInstalled(): Promise<DeckId[] | null>;
   saveInstalled(ids: DeckId[]): Promise<void>;
@@ -137,6 +144,15 @@ export class IdbRepository implements Repository {
   }
   async saveCounters(c: Record<DeckId, DailyCounter>) {
     await set(k.counters(this.user), c);
+  }
+  async getStreak() {
+    // Fusion avec la valeur vide : une série enregistrée par une version
+    // antérieure du format n'a pas tous les champs.
+    const s = await get<Partial<Streak>>(k.streak(this.user));
+    return { ...EMPTY_STREAK, ...(s ?? {}) };
+  }
+  async saveStreak(s: Streak) {
+    await set(k.streak(this.user), s);
   }
   async getInstalled() {
     return (await get<DeckId[]>(k.installed(this.user))) ?? null;
