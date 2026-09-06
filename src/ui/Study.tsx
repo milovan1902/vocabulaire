@@ -1,4 +1,14 @@
-/** Écran de révision : une carte à la fois. */
+/**
+ * Écran de révision : une carte à la fois.
+ *
+ * Le visuel du paquet n'est plus une vignette au milieu de l'écran : il
+ * occupe tout le fond, assombri, et le mot passe devant, en grand. Ce
+ * qu'on vient lire, c'est le mot ; l'image n'est plus qu'un décor qui
+ * situe le paquet. Conséquence : les réglages de marge du panneau de
+ * texte (panelInsetX / panelInsetY) ne servent plus ici — ils restent
+ * dans les réglages, sans effet sur cet écran, et pourront être retirés
+ * lors du chantier « réglages ».
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Grade, Settings } from '../domain/types';
 import type { SessionItem } from '../engine/session';
@@ -80,42 +90,67 @@ export function Study({
 
   if (!current) return null;
 
-  const panelStyle = {
-    top: `${settings.panelInsetY}%`,
-    bottom: `${settings.panelInsetY}%`,
-    left: `${settings.panelInsetX}%`,
-    right: `${settings.panelInsetX}%`,
-  };
-  const plainPanel = { top: '8%', bottom: '8%', left: '7%', right: '7%' };
-
   return (
     <>
-      <div className="progressbar">
-        <i style={{ width: `${(100 * index) / Math.max(total, 1)}%` }} />
+      {/*
+       * Fond plein cadre. En position fixe : il couvre aussi la barre du
+       * haut et les marges de la coquille centrée, sans quoi la révision
+       * aurait l'air posée dans une fenêtre.
+       */}
+      <div
+        className="studybg"
+        aria-hidden="true"
+        style={image ? { backgroundImage: `url("${image}")` } : undefined}
+      />
+
+      <div className="studytop">
+        <div className="progressbar">
+          <i style={{ width: `${(100 * index) / Math.max(total, 1)}%` }} />
+        </div>
+        <span className="pos">
+          {String(index + 1).padStart(2, '0')}/{String(total).padStart(2, '0')}
+        </span>
+        <button className="stop" onClick={onQuit} aria-label="Arrêter la session">
+          ✕
+        </button>
       </div>
 
-      <div className="cardstage">
-        <div
-          className={`studycard ${image ? 'illustrated' : ''}`}
-          style={image ? { backgroundImage: `url("${image}")` } : undefined}
-        >
-          <div className="panel" style={image ? panelStyle : plainPanel}>
-            <span className="tag">{current.card.theme}</span>
-            <div className="prompt">{settings.reversed ? 'En français ?' : 'En anglais ?'}</div>
-            <div className="front">{front}</div>
-            {revealed && <div className="backtext">{back}</div>}
-            {revealed && current.card.example && (
-              <div className="example">{current.card.example}</div>
-            )}
-            {revealed && (
-              <button className="speak" onClick={pronounce}>Écouter</button>
-            )}
-          </div>
-        </div>
+      {/*
+       * Toute la zone du mot révèle la réponse : sur téléphone, la cible
+       * est bien plus large que le bouton, et le geste devient naturel.
+       */}
+      <div
+        className="studystage"
+        onClick={() => { if (!revealed) reveal(); }}
+      >
+        <span className="tag">{current.card.theme}</span>
+
+        {!revealed ? (
+          <>
+            <p className="ask">{settings.reversed ? 'En français ?' : 'En anglais ?'}</p>
+            <p className="word">{front}</p>
+          </>
+        ) : (
+          <>
+            <p className="wordsmall">{front}</p>
+            <span className="ruleline" aria-hidden="true" />
+            <p className="answer">{back}</p>
+            {current.card.example && <p className="example">{current.card.example}</p>}
+            <button
+              className="speak"
+              onClick={(e) => { e.stopPropagation(); pronounce(); }}
+            >
+              Écouter
+            </button>
+          </>
+        )}
       </div>
 
       {!revealed ? (
-        <button className="reveal" onClick={reveal}>Afficher la réponse</button>
+        <>
+          <button className="reveal" onClick={reveal}>Afficher la réponse</button>
+          <p className="tap-hint">Appuyez sur le mot, ou espace au clavier.</p>
+        </>
       ) : (
         <div className="grades">
           {GRADES.map((g) => (
@@ -126,10 +161,6 @@ export function Study({
           ))}
         </div>
       )}
-
-      <div className="center">
-        <button className="quit" onClick={onQuit}>Arrêter la session</button>
-      </div>
     </>
   );
 }
