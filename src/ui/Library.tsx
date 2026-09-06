@@ -14,7 +14,7 @@ export const ALLOW_LOCAL_DECKS = false;
 
 export function Library({
   decks, installed, categories, settings, auth,
-  onOpen, onCreate, onAdd, onRemove,
+  onOpen, onCreate, onAdd, onRemove, onSearch,
 }: {
   decks: Deck[];
   installed: string[];
@@ -30,6 +30,7 @@ export function Library({
   onCreate: () => void;
   onAdd: (id: string) => void;
   onRemove: (id: string) => void;
+  onSearch: () => void;
 }) {
   const [rows, setRows] = useState<DeckSummary[]>([]);
   const [tab, setTab] = useState<'mine' | 'catalog'>('mine');
@@ -175,6 +176,14 @@ export function Library({
       <h2 className="screen-title">
         {tab === 'mine' ? 'Mes paquets' : 'Catalogue'}
       </h2>
+
+      {/* Faux champ : la recherche a son écran, avec le clavier et la liste. */}
+      {tab === 'mine' && mine.length > 0 && (
+        <button className="searchcue" onClick={onSearch}>
+          <span className="loupe" aria-hidden="true" />
+          Chercher un mot, un thème…
+        </button>
+      )}
 
       <div className="tabs" role="tablist">
         <button
