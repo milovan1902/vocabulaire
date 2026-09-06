@@ -16,6 +16,8 @@ import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Progress, Settings,
 } from '../domain/types';
 import { todayKey } from '../engine/session';
+import type { Streak } from '../engine/streak';
+import { mergeStreak } from '../engine/streak';
 
 export interface SyncReport {
   decksPulled: number;
@@ -260,16 +262,20 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
 }
 
 /**
- * Réglages et compteur du jour.
+ * Réglages, compteur du jour et série.
  *
  * Le compteur est partagé entre appareils : sans cela, réviser sur le PC
  * puis prendre le téléphone remettrait l'objectif du jour à zéro. On additionne
  * donc ce qui a été fait de part et d'autre, en repartant de zéro si la date
  * enregistrée n'est plus celle d'aujourd'hui.
+ *
+ * La série voyage dans le même paquet JSON que les réglages : aucune table,
+ * aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
  */
 export async function syncSettings(userId: string): Promise<void> {
   const localGeneral = await repository.getSettings();
   const localCounters = await repository.getCounters();
+  const localStreak = await repository.getStreak();
 
   const localOverrides = await repository.getOverrides();
 
@@ -283,9 +289,11 @@ export async function syncSettings(userId: string): Promise<void> {
   const bundle = (data?.settings ?? null) as {
     general?: Settings;
     decks?: Record<string, DeckOverride>;
+    streak?: Streak;
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
+  const remoteStreak = bundle?.streak ?? null;
   const remoteCounters = (data?.counter ?? null) as DailyCounters | null;
 
   const general = mergeSettings(localGeneral, remoteGeneral);
@@ -297,6 +305,8 @@ export async function syncSettings(userId: string): Promise<void> {
     overrides[id] =
       !remote || (local.updatedAt ?? 0) >= (remote.updatedAt ?? 0) ? local : remote;
   }
+
+  const streak = mergeStreak(localStreak, remoteStreak);
 
   const today = todayKey();
   const counters: DailyCounters = {};
@@ -315,11 +325,12 @@ export async function syncSettings(userId: string): Promise<void> {
   await repository.saveSettings(general);
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
+  await repository.saveStreak(streak);
 
   const { error: upErr } = await supabase.from('user_settings').upsert(
     {
       user_id: userId,
-      settings: { general, decks: overrides },
+      settings: { general, decks: overrides, streak },
       counter: counters,
       updated_at: new Date().toISOString(),
     },
