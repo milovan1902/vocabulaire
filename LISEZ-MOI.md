@@ -110,3 +110,4 @@ Trois choix pensés pour un passage ultérieur à un usage commercial :
   à un test ; jamais laisser entendre un partenariat.
 - **Contenu** : les listes de mots livrées ici sont originales. N'y ajoutez pas
   de listes recopiées d'un manuel.
+  
