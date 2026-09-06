@@ -98,6 +98,12 @@ export interface Settings {
   /** Marge du panneau de texte sur le visuel, en pourcentage. */
   panelInsetY: number;
   panelInsetX: number;
+  /**
+   * Heure du rappel quotidien, « HH:MM », ou null si désactivé.
+   * Un seul champ plutôt qu'un booléen doublé d'une heure : deux champs
+   * finissent toujours par se contredire.
+   */
+  reminderAt: string | null;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -110,6 +116,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reversed: false,
   panelInsetY: 15,
   panelInsetX: 13,
+  reminderAt: null,
 };
 
 /**
@@ -133,7 +140,11 @@ export function effectiveSettings(
 /** Les compteurs sont tenus paquet par paquet, comme les objectifs. */
 export type DailyCounters = Record<string, DailyCounter>;
 
-/** Les réglages qu'un paquet peut redéfinir, avec leur libellé. */
+/**
+ * Les réglages qu'un paquet peut redéfinir, avec leur libellé.
+ * Le rappel quotidien n'y figure pas : il vaut pour la personne, pas pour
+ * un paquet, et cinq paquets ne doivent pas donner cinq notifications.
+ */
 export const OVERRIDABLE: Array<keyof Omit<Settings, 'updatedAt'>> = [
   'newPerDay',
   'reviewsPerDay',
