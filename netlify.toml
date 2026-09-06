@@ -1,0 +1,16 @@
+# Construction automatique depuis GitHub.
+# Netlify lit ce fichier et n'a plus besoin d'être configuré à la main.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# L'application est une page unique : toute adresse doit renvoyer index.html,
+# sinon un rechargement sur une sous-page donnerait une erreur 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
