@@ -1,12 +1,25 @@
 :root {
-  --ink: #16233f;
-  --ink-soft: #38486b;
-  --paper: #fbfaf6;
-  --rule: #d9d5c8;
-  --chalk: #f2b705;
-  --good: #2c7a5b;
-  --bad: #b23a32;
-  --grey: #6c7488;
+  /* Encres, sur fond sombre */
+  --ink: #fbfaf6;
+  --ink-soft: #c2cadb;
+  --grey: #8d97ad;
+
+  /* Fonds */
+  --paper: #0f1a2f;   /* le tapis */
+  --panel: #16233f;   /* les surfaces posées dessus */
+  --panel-hi: #1d2c48;
+
+  --rule: rgba(234, 230, 219, 0.14);
+  --rule-strong: rgba(234, 230, 219, 0.24);
+
+  --chalk: #f2b705;   /* l'or de l'icône */
+  --on-chalk: #16233f;
+  --good: #4fbf95;
+  --bad: #e0776d;
+
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
   --shell: 520px;
 }
 
@@ -22,6 +35,7 @@ body {
 
 .app { display: flex; flex-direction: column; min-height: 100dvh; }
 
+/* ---------- barre du haut ---------- */
 .topbar {
   display: flex; align-items: center; gap: 10px;
   width: 100%; max-width: var(--shell); margin: 0 auto;
@@ -29,10 +43,15 @@ body {
   border-bottom: 1px solid var(--rule);
 }
 .topbar h1 {
-  font-size: 17px; margin: 0; font-weight: 650; flex: 1;
+  font-family: var(--serif);
+  font-size: 22px; margin: 0; font-weight: 400; flex: 1;
+  letter-spacing: -0.2px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.topbar .count { font-size: 13px; color: var(--grey); font-variant-numeric: tabular-nums; }
+.topbar .count {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--grey);
+}
 .iconbtn {
   background: none; border: none; font-size: 22px; color: var(--ink);
   padding: 0 4px 0 0; line-height: 1; font-family: inherit; cursor: pointer;
@@ -44,21 +63,23 @@ body {
   display: flex; flex-direction: column;
 }
 
-.lead { font-size: 15px; line-height: 1.55; color: var(--ink-soft); margin: 20px 0; }
-.hint { font-size: 12.5px; color: var(--grey); line-height: 1.45; margin: 0 0 8px; }
+.lead { font-size: 15px; line-height: 1.55; color: var(--ink-soft); margin: 18px 0; }
+.hint { font-size: 12.5px; color: var(--grey); line-height: 1.5; margin: 0 0 8px; }
 
 /* ---------- boutons ---------- */
 .btn {
-  display: block; width: 100%; padding: 15px; border: none; border-radius: 10px;
-  background: var(--ink); color: #fff; font-size: 16px; font-weight: 600;
+  display: block; width: 100%; min-height: 52px; padding: 15px;
+  border: none; border-radius: 14px;
+  background: var(--chalk); color: var(--on-chalk);
+  font-size: 16px; font-weight: 650;
   font-family: inherit; cursor: pointer; margin-bottom: 10px;
 }
 .btn:disabled { background: var(--rule); color: var(--grey); cursor: default; }
 .btn.ghost {
-  background: none; color: var(--ink-soft); border: 1px solid var(--rule);
-  font-weight: 500; font-size: 14px; padding: 11px;
+  background: none; color: var(--ink); border: 1px solid var(--rule-strong);
+  font-weight: 500; font-size: 14.5px; min-height: 48px; padding: 12px;
 }
-.btn.danger { color: var(--bad); border-color: #e8c9c6; }
+.btn.danger { color: var(--bad); border-color: rgba(224, 119, 109, 0.4); }
 
 /* ---------- bibliothèque ---------- */
 .deckgrid {
@@ -70,22 +91,27 @@ body {
   padding: 0 7px 7px 0; font-family: inherit; text-align: left;
   color: var(--ink); cursor: pointer;
 }
+/* La pile : deux cartes décalées derrière celle du dessus. */
 .deckcard .stack { position: relative; display: block; width: 100%; }
 .deckcard .stack::before, .deckcard .stack::after {
   content: ''; position: absolute; inset: 0; border-radius: 12px;
-  background: #fff; border: 1px solid var(--rule);
+  background: var(--panel); border: 1px solid var(--rule);
 }
 .deckcard .stack::before { transform: translate(7px, 7px); }
 .deckcard .stack::after { transform: translate(3.5px, 3.5px); }
 .deckcard .face {
-  position: relative; z-index: 1; background: #fff; border: 1px solid var(--rule);
+  position: relative; z-index: 1; background: var(--panel);
+  border: 1px solid var(--rule);
   border-radius: 12px; padding: 9px; display: flex; flex-direction: column; overflow: hidden;
 }
 .deckcard .top { display: flex; align-items: flex-start; justify-content: space-between; line-height: 1; }
-.deckcard .corner { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.deckcard .corner {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.06em; color: var(--grey);
+}
 .deckcard .suit {
-  width: 11px; height: 11px; border: 1.5px solid var(--accent);
-  transform: rotate(45deg); border-radius: 2px; opacity: 0.5;
+  width: 11px; height: 11px; border: 1.5px solid var(--chalk);
+  transform: rotate(45deg); border-radius: 2px; opacity: 0.75;
 }
 .deckcard .back {
   width: 100%; aspect-ratio: 620 / 874; margin: 7px 0 8px;
@@ -94,22 +120,26 @@ body {
 .deckcard .back svg { display: block; height: 100%; width: auto; max-width: 100%; }
 .deckcard .back img {
   display: block; height: 100%; width: 100%; object-fit: cover;
-  border-radius: 8px; border: 1px solid var(--rule);
+  border-radius: 8px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 .deckcard .name {
-  display: -webkit-box; font-size: 12.5px; font-weight: 600; line-height: 1.28;
+  display: -webkit-box; font-size: 13px; font-weight: 600; line-height: 1.28;
+  color: var(--ink);
   -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .deckcard .foot {
   margin-top: 6px; padding-top: 6px; display: flex; align-items: center; gap: 6px;
-  border-top: 1px solid var(--rule); font-size: 11px; color: var(--grey);
-  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
 }
 .deckcard .due {
-  margin-left: auto; background: var(--chalk); color: #4a3703;
-  border-radius: 999px; padding: 1px 7px; font-weight: 700; font-size: 11px;
+  margin-left: auto; background: var(--chalk); color: var(--on-chalk);
+  border-radius: 999px; padding: 2px 8px; font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px; letter-spacing: 0;
 }
-.deckcard .rest { margin-left: auto; font-size: 11px; color: var(--good); }
+.deckcard .rest { margin-left: auto; color: var(--good); }
 .deckcard.add .stack::before, .deckcard.add .stack::after { display: none; }
 .deckcard.add .face {
   border-style: dashed; background: none; align-items: center; justify-content: center;
@@ -120,124 +150,163 @@ body {
 /* ---------- listes et réglages ---------- */
 .rows {
   display: flex; flex-direction: column; gap: 1px; background: var(--rule);
-  border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; margin-bottom: 18px;
+  border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; margin-bottom: 18px;
 }
 .row {
-  background: #fff; border: none; width: 100%; text-align: left; padding: 13px 15px;
+  background: var(--panel); border: none; width: 100%; text-align: left;
+  min-height: 50px; padding: 13px 15px;
   display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--ink);
   font-family: inherit; cursor: pointer;
 }
 .row.off { color: var(--grey); }
 .row .tick {
-  width: 19px; height: 19px; border: 1.5px solid var(--ink); border-radius: 5px;
-  flex: none; display: grid; place-items: center; font-size: 12px; color: #fff;
+  width: 19px; height: 19px; border: 1.5px solid var(--rule-strong); border-radius: 5px;
+  flex: none; display: grid; place-items: center; font-size: 12px; color: var(--on-chalk);
 }
-.row.on .tick { background: var(--ink); }
-.row .n { margin-left: auto; font-size: 12.5px; color: var(--grey); font-variant-numeric: tabular-nums; }
+.row.on .tick { background: var(--chalk); border-color: var(--chalk); }
+.row .n { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--grey); }
 
 .stats {
-  display: flex; border: 1px solid var(--rule); border-radius: 10px;
-  overflow: hidden; margin: 18px 0 22px; background: #fff;
+  display: flex; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  margin: 18px 0 22px;
 }
-.stat { flex: 1; padding: 14px 10px; text-align: center; border-right: 1px solid var(--rule); }
+.stat { flex: 1; padding: 16px 10px; text-align: center; border-right: 1px solid var(--rule); }
 .stat:last-child { border-right: none; }
-.stat b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.stat span { font-size: 11.5px; color: var(--grey); }
+.stat b {
+  display: block; font-family: var(--serif); font-size: 30px; font-weight: 400;
+  line-height: 1.05; color: var(--chalk);
+}
+.stat:last-child b { color: var(--ink); }
+.stat span {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--grey);
+}
 
-.panelbox { border: 1px solid var(--rule); border-radius: 10px; background: #fff; margin-bottom: 18px; overflow: hidden; }
+.panelbox {
+  border: 1px solid var(--rule); border-radius: 12px; background: var(--panel);
+  margin-bottom: 18px; overflow: hidden;
+}
 .panelbox > summary {
-  padding: 13px 15px; font-size: 15px; font-weight: 600; cursor: pointer;
+  padding: 15px; font-size: 15px; font-weight: 600; cursor: pointer;
   list-style: none; display: flex; align-items: center;
 }
 .panelbox > summary::-webkit-details-marker { display: none; }
-.panelbox > summary::after { content: '+'; margin-left: auto; font-size: 19px; color: var(--grey); font-weight: 400; }
+.panelbox > summary::after { content: '+'; margin-left: auto; font-size: 19px; color: var(--chalk); font-weight: 400; }
 .panelbox[open] > summary::after { content: '\2013'; }
-.setting { padding: 13px 15px; border-top: 1px solid var(--rule); }
-.setting > label { display: block; font-size: 14px; margin-bottom: 3px; }
-.setting .fl { display: flex; align-items: center; gap: 12px; }
-.setting input[type='range'] { flex: 1; accent-color: var(--ink); }
-.setting .val { font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; min-width: 3em; text-align: right; }
-.switch { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.switch input { width: 19px; height: 19px; accent-color: var(--ink); }
+.setting { padding: 15px; border-top: 1px solid var(--rule); }
+.setting > label { display: block; font-size: 14.5px; margin-bottom: 3px; }
+.setting .fl { display: flex; align-items: center; gap: 14px; }
+.setting input[type='range'] { flex: 1; accent-color: var(--chalk); }
+.setting .val {
+  font-family: var(--serif); font-size: 22px; font-weight: 400;
+  color: var(--chalk); min-width: 3em; text-align: right;
+}
+.switch { display: flex; align-items: center; gap: 10px; font-size: 14.5px; min-height: 28px; }
+.switch input { width: 19px; height: 19px; accent-color: var(--chalk); }
 
 input[type='text'], textarea {
   width: 100%; font-family: inherit; font-size: 15px; color: var(--ink);
-  border: 1px solid var(--rule); border-radius: 9px; padding: 11px 12px; background: #fff;
+  border: 1px solid var(--rule-strong); border-radius: 12px; padding: 12px;
+  background: rgba(234, 230, 219, 0.05);
 }
+input[type='text']::placeholder, textarea::placeholder { color: var(--grey); }
 textarea {
   min-height: 210px; line-height: 1.5;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px;
+  font-family: var(--mono); font-size: 13.5px;
 }
 .field { margin-bottom: 14px; }
 .field > label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
 .error { color: var(--bad); font-size: 13.5px; margin: 10px 0; line-height: 1.45; }
 
-/* ---------- révision ---------- */
-.progressbar { height: 3px; background: var(--rule); border-radius: 2px; margin: 14px 0 0; overflow: hidden; }
-.progressbar i { display: block; height: 100%; background: var(--chalk); transition: width 0.25s ease; }
-.cardstage {
-  flex: 1; min-height: 0;   /* sans ceci, l'enfant refuse de se réduire */
-  display: flex; align-items: center; justify-content: center; padding: 18px 0;
-}
-.studycard {
-  position: relative;
-  /*
-   * La carte est pilotée par sa hauteur, pas par sa largeur : au format A6
-   * elle est nettement plus haute qu'en 4:5, et sur un petit téléphone elle
-   * repoussait les boutons de réponse hors de l'écran. 465px correspond à
-   * une largeur de 330px, la taille maximale voulue sur grand écran.
-   */
-  /*
-   * Le format A6 est nettement plus haut que le 4:5 : sur un petit
-   * téléphone, une carte pilotée par sa largeur repoussait les boutons de
-   * réponse hors de l'écran. On plafonne donc la largeur d'après la hauteur
-   * disponible. 310px = tout ce qui entoure la carte une fois la réponse
-   * révélée : barre du haut, barre de progression, les quatre boutons de
-   * notation, le lien d'arrêt et les marges. Valeur mesurée (298px) plus
-   * une petite réserve, car c'est l'état le plus chargé de l'écran.
-   * 0.7095 = 620 / 874.
-   */
-  width: min(330px, 100%, calc((100dvh - 310px) * 0.7095));
-  aspect-ratio: 620 / 874;
-  border-radius: 14px; overflow: hidden; background: #fff;
+/* ---------- révision plein cadre ----------
+   Le visuel du paquet n'est plus enfermé dans une vignette : il occupe
+   tout l'écran, assombri, et le mot passe devant. C'est le mot qu'on
+   vient lire, pas l'image. */
+.studybg {
+  position: fixed; inset: 0; z-index: -1;
+  background-color: var(--paper);
   background-size: cover; background-position: center;
-  border: 1px solid var(--rule); box-shadow: 0 2px 10px rgba(22, 35, 63, 0.09);
+  pointer-events: none;
 }
-.studycard .panel {
-  position: absolute; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 13px;
-  text-align: center; padding: 14px 12px; border-radius: 9px;
+.studybg::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    rgba(9, 16, 30, 0.80) 0%,
+    rgba(9, 16, 30, 0.64) 45%,
+    rgba(9, 16, 30, 0.94) 100%);
 }
-.studycard.illustrated .panel {
-  background: rgba(255, 255, 255, 0.965);
-  box-shadow: 0 0 0 1px rgba(22, 35, 63, 0.13), 0 1px 6px rgba(22, 35, 63, 0.1);
+
+.studytop { display: flex; align-items: center; gap: 12px; padding: 14px 0 0; }
+.progressbar {
+  flex: 1; height: 3px; background: rgba(234, 230, 219, 0.2);
+  border-radius: 2px; overflow: hidden;
 }
-.tag { font-size: 12px; color: var(--grey); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; }
-.prompt { font-size: 14px; color: var(--grey); }
-.front { font-size: 24px; line-height: 1.25; font-weight: 600; max-width: 14ch; }
-.backtext { font-size: 28px; line-height: 1.2; font-weight: 700; max-width: 14ch; }
-.example { font-size: 12.5px; color: var(--grey); font-style: italic; max-width: 22ch; line-height: 1.4; }
+.progressbar i { display: block; height: 100%; background: var(--chalk); transition: width 0.25s ease; }
+.studytop .pos {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-soft);
+}
+.studytop .stop {
+  width: 32px; height: 32px; flex: none; border: none; border-radius: 50%;
+  background: rgba(234, 230, 219, 0.12); color: var(--ink);
+  font-size: 15px; line-height: 1; font-family: inherit; cursor: pointer;
+}
+
+.studystage {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0; text-align: center; padding: 18px 6px;
+}
+.tag {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 999px; padding: 6px 13px;
+}
+.ask {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--chalk); margin: 34px 0 0;
+}
+.word {
+  font-family: var(--serif); font-weight: 400; color: var(--ink);
+  font-size: clamp(34px, 13vw, 52px); line-height: 1.06;
+  margin: 20px 0 0; max-width: 18ch; text-wrap: balance;
+}
+.wordsmall { font-size: 16px; color: var(--ink-soft); margin: 30px 0 0; }
+.ruleline { width: 26px; height: 1px; background: var(--rule-strong); margin: 20px 0; }
+.answer {
+  font-family: var(--serif); font-weight: 400; color: var(--chalk);
+  font-size: clamp(38px, 15vw, 60px); line-height: 1.02;
+  margin: 0; max-width: 16ch; text-wrap: balance;
+}
+.example {
+  font-family: var(--serif); font-style: italic; font-size: 16px; line-height: 1.5;
+  color: var(--ink-soft); margin: 24px 0 0; max-width: 26ch;
+}
 .speak {
-  border: 1px solid var(--rule); background: #fff; border-radius: 999px;
-  padding: 7px 15px; font-size: 14px; color: var(--ink-soft); font-family: inherit; cursor: pointer;
+  margin: 26px 0 0; min-height: 44px; padding: 0 20px;
+  border: 1px solid var(--rule-strong); background: rgba(234, 230, 219, 0.06);
+  border-radius: 999px; font-size: 14px; color: var(--ink);
+  font-family: inherit; cursor: pointer;
 }
-.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.tap-hint { font-size: 12px; color: var(--grey); text-align: center; margin: 14px 0 0; }
+
+.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .grade {
-  padding: 14px 8px; border-radius: 10px; border: 1px solid var(--rule); background: #fff;
+  min-height: 56px; padding: 12px 8px; border-radius: 14px;
+  border: 1px solid var(--rule-strong); background: rgba(234, 230, 219, 0.05);
   font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer;
 }
-.grade small { display: block; font-weight: 400; font-size: 11px; color: var(--grey); margin-top: 3px; }
-.grade.again { color: var(--bad); border-color: #e8c9c6; }
-.grade.easy { color: var(--good); border-color: #c4dcd2; }
+.grade small { display: block; font-weight: 400; font-size: 11px; color: var(--grey); margin-top: 4px; }
+.grade.again { color: var(--bad); border-color: rgba(224, 119, 109, 0.5); background: rgba(224, 119, 109, 0.1); }
+.grade.easy { color: var(--good); border-color: rgba(79, 191, 149, 0.45); background: rgba(79, 191, 149, 0.1); }
 .reveal {
-  padding: 16px; border-radius: 10px; background: var(--ink); color: #fff; border: none;
-  font-size: 16px; font-weight: 600; font-family: inherit; width: 100%; cursor: pointer;
+  min-height: 56px; padding: 16px; border-radius: 16px;
+  background: var(--chalk); color: var(--on-chalk); border: none;
+  font-size: 16.5px; font-weight: 650; font-family: inherit; width: 100%; cursor: pointer;
 }
-.quit { background: none; border: none; color: var(--grey); font-size: 13px; text-decoration: underline; font-family: inherit; padding: 10px; cursor: pointer; }
 .center { text-align: center; }
-.done { text-align: center; padding: 50px 0; }
-.done h2 { font-size: 22px; margin: 0 0 8px; }
-.done p { color: var(--ink-soft); font-size: 15px; margin: 0 0 26px; line-height: 1.5; }
+.done { text-align: center; padding: 60px 0; }
+.done h2 { font-family: var(--serif); font-size: 30px; font-weight: 400; margin: 0 0 10px; }
+.done p { color: var(--ink-soft); font-size: 15px; margin: 0 0 26px; line-height: 1.55; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
@@ -252,21 +321,21 @@ textarea {
 .goal {
   border: 1px solid var(--rule);
   border-left: 3px solid var(--chalk);
-  border-radius: 10px;
-  background: #fff;
-  padding: 13px 15px;
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 15px;
   margin-bottom: 12px;
 }
 .goal b { font-size: 15px; }
 .goal p {
   margin: 6px 0 0;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--ink-soft);
 }
 
 .setting.scope {
-  background: #FCFBF7;
+  background: var(--panel-hi);
   border-top: none;
   border-bottom: 1px solid var(--rule);
 }
@@ -274,25 +343,25 @@ textarea {
 /* ---------- rayons du catalogue ---------- */
 .rayon { margin-bottom: 8px; }
 .rayon h2 {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--grey);
   margin: 4px 0 2px;
 }
 .rayon > .hint { margin: 0 0 12px; }
-/* ---------- page d'accueil ----------
-   À coller à la fin de src/styles.css. */
 
+/* ---------- page d'accueil ---------- */
 .welcome {
   position: relative;
   flex: 1;
-  padding-top: 26px;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Le fond déborde du conteneur centré pour couvrir toute la largeur
-   de l'écran, sans casser la grille du reste de l'application. */
 .backdrop {
   position: fixed;
   inset: 0 0 auto 0;
@@ -303,27 +372,29 @@ textarea {
   pointer-events: none;
 }
 
-.welcome-head { text-align: center; margin-bottom: 22px; }
-.welcome-mark { width: 54px; height: 76px; display: block; margin: 0 auto 14px; }
+.welcome-head { margin-bottom: 18px; }
+.welcome-mark { width: 54px; height: 76px; display: block; margin: 0 0 18px; }
 .welcome-head h1 {
-  font-size: 27px; font-weight: 680; margin: 0; letter-spacing: -0.4px;
+  font-family: var(--serif);
+  font-size: 44px; font-weight: 400; margin: 0; letter-spacing: -0.5px; line-height: 1;
 }
 .welcome-sub {
-  font-size: 14.5px; color: var(--ink-soft); margin: 6px 0 0;
+  font-family: var(--mono);
+  font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--chalk); margin: 14px 0 0;
 }
 
 .welcome-lead {
-  font-size: 15.5px; line-height: 1.6; color: var(--ink-soft);
-  margin: 0 0 26px; text-align: center; text-wrap: pretty;
+  font-size: 16px; line-height: 1.6; color: var(--ink-soft);
+  margin: 18px 0 26px; text-wrap: pretty;
 }
 
-.welcome-actions { margin-bottom: 26px; }
+.welcome-actions { margin-top: auto; margin-bottom: 20px; }
 
 .btn.google {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  background: #fff; color: var(--ink);
-  border: 1px solid var(--rule);
-  box-shadow: 0 1px 2px rgba(22, 35, 63, 0.06);
+  background: #fbfaf6; color: #16233f;
+  border: none;
   margin-bottom: 8px;
 }
 .btn.ghost.wide {
@@ -331,109 +402,102 @@ textarea {
 }
 
 .welcome-note {
-  font-size: 12.5px; line-height: 1.45; color: var(--grey);
-  margin: 0 0 20px; padding: 0 2px;
+  font-size: 12.5px; line-height: 1.5; color: var(--grey);
+  margin: 0 0 18px; padding: 0 2px;
 }
 .welcome-note:last-child { margin-bottom: 0; }
 
 /* ---------- la méthode ---------- */
 .method {
-  border: 1px solid var(--rule); border-radius: 12px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(2px);
+  border-top: 1px solid var(--rule);
   overflow: hidden;
 }
 .method-toggle {
   display: flex; align-items: center; justify-content: space-between;
-  width: 100%; padding: 15px 16px; background: none; border: none;
-  font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink);
+  width: 100%; min-height: 54px; padding: 15px 0; background: none; border: none;
+  font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ink-soft);
   cursor: pointer; text-align: left;
 }
 .method-toggle .chev {
-  font-size: 19px; color: var(--grey); line-height: 1;
+  font-size: 19px; color: var(--chalk); line-height: 1;
 }
 .method-body {
-  padding: 0 16px 16px;
-  font-size: 14px; line-height: 1.6; color: var(--ink-soft);
+  padding: 0 0 16px;
+  font-size: 14px; line-height: 1.65; color: var(--ink-soft);
 }
 .method-body p { margin: 0 0 13px; text-wrap: pretty; }
-.method-body strong { color: var(--ink); font-weight: 620; }
+.method-body strong { color: var(--ink); font-weight: 600; }
 .method-foot {
   border-top: 1px solid var(--rule); padding-top: 12px;
   margin-bottom: 0 !important; color: var(--ink);
 }
 .boxes { width: 100%; height: auto; margin: 2px 0 16px; }
-
-.welcome-legal {
-  font-size: 11.5px; color: var(--grey); text-align: center;
-  margin: 22px 0 0;
+.boxes-caption {
+  font-size: 12px; color: var(--grey); margin: -8px 0 16px !important;
+  text-align: center;
 }
 
-/* Écran large : on aère sans jamais dépasser la largeur de coquille. */
+.welcome-legal {
+  font-size: 11.5px; line-height: 1.5; color: var(--grey);
+  margin: 16px 0 0;
+}
+
 @media (min-width: 560px) {
-  .welcome { padding-top: 46px; }
-  .welcome-head h1 { font-size: 31px; }
+  .welcome { padding-top: 40px; }
+  .welcome-head h1 { font-size: 52px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .method-body { animation: none; }
 }
 
-.boxes-caption {
-  font-size: 12px; color: var(--grey); margin: -8px 0 16px !important;
-  text-align: center;
-}
-
 /* ---------- onglets collection / bibliothèque ---------- */
 .tabs {
-  display: flex; gap: 4px; margin: 16px 0 4px;
-  border-bottom: 1px solid var(--rule);
+  display: flex; gap: 8px; margin: 16px 0 4px;
 }
 .tabs button {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
-  background: none; border: none; border-bottom: 2px solid transparent;
-  padding: 10px 6px 11px; margin-bottom: -1px;
-  font-family: inherit; font-size: 14.5px; font-weight: 550;
-  color: var(--grey); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: none; border: 1px solid var(--rule-strong); border-radius: 999px;
+  min-height: 40px; padding: 0 15px;
+  font-family: inherit; font-size: 13px; font-weight: 550;
+  color: var(--ink-soft); cursor: pointer;
 }
-.tabs button.on { color: var(--ink); border-bottom-color: var(--chalk); font-weight: 640; }
+.tabs button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
 .tabcount {
-  font-size: 11.5px; font-variant-numeric: tabular-nums;
-  background: var(--rule); color: var(--ink-soft);
-  border-radius: 9px; padding: 1px 6px; line-height: 1.5;
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--grey);
 }
-.tabs button.on .tabcount { background: var(--chalk); color: var(--ink); }
+.tabs button.on .tabcount { color: var(--on-chalk); opacity: 0.7; }
 
 /* ---------- catalogue ---------- */
 .catitem { display: flex; flex-direction: column; height: 100%; }
-/* Le nom d'un paquet tient parfois sur deux lignes : sans cela, les boutons
-   d'une même rangée ne s'alignent plus. */
 .catitem .deckcard { width: 100%; flex: 1; }
 .catitem .minibtn { margin-top: auto; }
 .minibtn {
   margin-top: 6px; width: calc(100% - 7px);
-  padding: 7px 8px; border-radius: 8px;
-  border: 1px solid var(--rule); background: var(--ink); color: #fff;
-  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  min-height: 40px; padding: 8px;
+  border-radius: 11px;
+  border: none; background: var(--chalk); color: var(--on-chalk);
+  font-family: inherit; font-size: 13px; font-weight: 650; cursor: pointer;
 }
-.minibtn.done { background: none; color: var(--grey); font-weight: 500; }
+.minibtn.done {
+  background: none; border: 1px solid rgba(79, 191, 149, 0.4);
+  color: var(--good); font-weight: 600;
+}
 
 .empty {
-  border: 1px dashed var(--rule); border-radius: 12px;
+  border: 1px dashed var(--rule-strong); border-radius: 12px;
   padding: 22px 18px; text-align: center; margin: 6px 0 20px;
 }
 .empty p { margin: 0 0 12px; color: var(--ink-soft); font-size: 14.5px; }
 .empty .btn { max-width: 260px; margin: 0 auto; }
 
-.iconbtn.home { font-size: 20px; padding: 0 0 0 4px; color: var(--grey); }
+.iconbtn.home { font-size: 20px; padding: 0 0 0 4px; color: var(--chalk); }
 
 /* ---------- retournement de carte à l'ouverture d'un paquet ---------- */
-
-/*
- * Le geste se joue en deux moitiés qui partagent axe, durée et courbe :
- * la vignette part jusqu'au quart de tour, la carte recto arrive depuis
- * le quart de tour opposé. L'oeil recolle les deux en un seul objet.
- */
 @keyframes carte-sortie {
   from { transform: perspective(900px) rotateY(0deg); }
   to   { transform: perspective(900px) rotateY(-88deg); opacity: 0.55; }
@@ -460,27 +524,29 @@ textarea {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 7px; padding: 14px 12px;
   border: 1px solid var(--rule); border-radius: 12px;
-  background: #fff; box-shadow: 0 2px 10px rgba(22, 35, 63, 0.09);
+  background: var(--panel); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
   text-align: center;
 }
 .deckface b {
-  font-size: 15px; font-weight: 640; line-height: 1.25; color: var(--ink);
+  font-family: var(--serif);
+  font-size: 19px; font-weight: 400; line-height: 1.2; color: var(--ink);
   text-wrap: balance;
 }
-.deckface .sub { font-size: 12px; color: var(--grey); line-height: 1.35; }
+.deckface .sub {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey); line-height: 1.4;
+}
 .deckface .corner {
-  position: absolute; top: 9px; left: 11px;
-  font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
-  color: var(--accent);
+  position: absolute; top: 10px; left: 12px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+  color: var(--grey);
 }
 .deckface .suit {
   position: absolute; bottom: 11px; right: 11px;
-  width: 11px; height: 11px; border: 1.5px solid var(--accent);
-  transform: rotate(45deg); border-radius: 2px; opacity: 0.5;
+  width: 11px; height: 11px; border: 1.5px solid var(--chalk);
+  transform: rotate(45deg); border-radius: 2px; opacity: 0.75;
 }
 
-/* Le retournement est un ornement : il ne doit rien coûter à qui a demandé
-   moins d'animations. La navigation, elle, reste identique. */
 @media (prefers-reduced-motion: reduce) {
   .deckcard.flipping, .deckface { animation: none; }
 }
@@ -496,43 +562,43 @@ textarea {
   position: relative; width: 100%; height: 100%;
   transform-style: preserve-3d; will-change: transform;
 }
-/* Les deux faces occupent le même espace ; seule celle tournée vers
-   l'écran est visible, d'où le masquage de la face arrière. */
 .zface {
   position: absolute; inset: 0;
   backface-visibility: hidden; -webkit-backface-visibility: hidden;
   border-radius: 14px; overflow: hidden;
-  background: #fff; border: 1px solid var(--rule);
-  box-shadow: 0 10px 40px rgba(22, 35, 63, 0.22);
+  background: var(--panel); border: 1px solid var(--rule);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   display: flex; align-items: center; justify-content: center;
 }
 .zface img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .zface svg { height: 100%; width: auto; }
 .zrecto {
   transform: rotateY(180deg);
-  flex-direction: column; gap: 8px; padding: 6% 8%; text-align: center;
+  flex-direction: column; gap: 10px; padding: 6% 8%; text-align: center;
 }
-.zrecto b { font-size: clamp(15px, 4.4vw, 26px); font-weight: 640; line-height: 1.25; color: var(--ink); }
+.zrecto b {
+  font-family: var(--serif);
+  font-size: clamp(18px, 5.4vw, 32px); font-weight: 400; line-height: 1.2; color: var(--ink);
+}
+.zrecto .zsub {
+  font-family: var(--mono); font-size: clamp(9px, 2.4vw, 11px);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); line-height: 1.4;
+}
 .zrecto .corner {
   position: absolute; top: 4%; left: 6%;
-  font-size: clamp(12px, 3vw, 18px); font-weight: 700;
-  font-variant-numeric: tabular-nums; color: var(--accent);
+  font-family: var(--mono); font-size: clamp(10px, 2.6vw, 13px);
+  letter-spacing: 0.06em; color: var(--grey);
 }
 .zrecto .suit {
   position: absolute; bottom: 5%; right: 6%;
-  width: 14px; height: 14px; border: 1.5px solid var(--accent);
-  transform: rotate(45deg); border-radius: 2px; opacity: 0.5;
+  width: 14px; height: 14px; border: 1.5px solid var(--chalk);
+  transform: rotate(45deg); border-radius: 2px; opacity: 0.75;
 }
 
-/* Pendant le vol, la vraie carte recto reste en place mais invisible :
-   elle sert de cible de mesure, et prend le relais à l'atterrissage. */
 [data-zoom] .deckface { visibility: hidden; }
 [data-zoom] .deckface, [data-zoom] .deckcard.flipping { animation: none !important; }
-/* La vignette d'origine s'efface : la carte flottante part de sa place
-   exacte, et on ne doit pas voir la doublure apparaître dessous. */
 [data-zoom] .deckcard.flipping .back { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .zoomlayer { display: none; }
 }
-.zrecto .zsub { font-size: clamp(12px, 3.2vw, 17px); color: var(--grey); line-height: 1.4; }
