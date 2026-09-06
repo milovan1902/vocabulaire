@@ -1,11 +1,8 @@
-/** Écran d'accueil : la collection de paquets. */
-import { useEffect, useRef, useState } from 'react';
-import type { Category, Deck, Progress, Settings } from '../domain/types';
-import { repository } from '../data/repository';
-import { CardBack, paletteFor, Slider, Toggle } from './components';
-import { imageFor } from './deckImages';
-import { isDue, isNew } from '../engine/scheduler';
-import { AccountPanel } from './AccountPanel';
+/** Onglet « Paquets » : la collection, puis le catalogue. */
+import { useEffect, useState } from 'react';
+import type { Category, Deck, Settings } from '../domain/types';
+import { CardBack, paletteFor } from './components';
+import { loadSummaries, type DeckSummary } from './deckSummary';
 import type { Auth } from './useAuth';
 
 /**
@@ -15,16 +12,9 @@ import type { Auth } from './useAuth';
  */
 export const ALLOW_LOCAL_DECKS = false;
 
-interface DeckSummary {
-  deck: Deck;
-  total: number;
-  due: number;
-  image: string | null;
-}
-
 export function Library({
   decks, installed, categories, settings, auth,
-  onOpen, onCreate, onSettings, onAdd, onRemove, onHome,
+  onOpen, onCreate, onAdd, onRemove,
 }: {
   decks: Deck[];
   installed: string[];
@@ -38,88 +28,22 @@ export function Library({
   ) => void;
   /** Création locale : masquée par défaut, voir ALLOW_LOCAL_DECKS. */
   onCreate: () => void;
-  onSettings: (s: Settings) => void;
   onAdd: (id: string) => void;
   onRemove: (id: string) => void;
-  onHome: () => void;
 }) {
   const [rows, setRows] = useState<DeckSummary[]>([]);
   const [tab, setTab] = useState<'mine' | 'catalog'>('mine');
   /** Paquet en cours de retournement : l'ouverture attend la fin du geste. */
   const [flipping, setFlipping] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let alive = true;
     (async () => {
-      const now = Date.now();
-      const cap = settings.newPerDay + settings.reviewsPerDay;
-      const out: DeckSummary[] = [];
-      for (const deck of decks) {
-        const [cards, progress, image] = await Promise.all([
-          repository.getCards(deck.id),
-          repository.getProgress(deck.id),
-          repository.getImage(deck.id),
-        ]);
-        // Un visuel fourni prend le relais quand la personne n'en a choisi aucun.
-        const visuel = imageFor(deck.id, image);
-        let due = 0;
-        for (const c of cards) {
-          const p: Progress | undefined = progress[c.id];
-          if (!p || isNew(p) || isDue(p, now)) due++;
-        }
-        out.push({ deck, total: cards.length, due: Math.min(due, cap), image: visuel });
-      }
-      if (alive) setRows(out);
+      const charge = await loadSummaries(decks, settings);
+      if (alive) setRows(charge.summaries);
     })();
     return () => { alive = false; };
-  }, [decks, settings.newPerDay, settings.reviewsPerDay]);
-
-  async function exportBackup() {
-    try {
-      const data = await repository.exportAll();
-      const payload = {
-        format: 'vocab-backup',
-        version: 3,
-        date: new Date().toISOString(),
-        data,
-      };
-      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `vocabulaire-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 400);
-    } catch (e) {
-      alert('Sauvegarde impossible : ' + (e as Error).message);
-    }
-  }
-
-  async function importBackup(file: File) {
-    let payload: { format?: string; data?: Record<string, unknown>; date?: string };
-    try {
-      payload = JSON.parse(await file.text());
-    } catch {
-      alert("Fichier illisible : ce n'est pas une sauvegarde valide.");
-      return;
-    }
-    if (payload.format !== 'vocab-backup' || !payload.data) {
-      alert("Ce fichier n'est pas une sauvegarde de cette application.");
-      return;
-    }
-    const when = (payload.date ?? '').slice(0, 10);
-    if (!confirm(
-      `Restaurer la sauvegarde du ${when} ?\n\n` +
-      'Tous les paquets et la progression de cet appareil seront remplacés.',
-    )) return;
-    await repository.importAll(payload.data);
-    alert('Sauvegarde restaurée.');
-    // Rechargement complet : les réglages et le compteur du jour sont
-    // relus depuis la sauvegarde, pas seulement la liste des paquets.
-    location.reload();
-  }
+  }, [decks, settings]);
 
   /** Une carte de paquet, telle qu'elle apparaît dans « Mes paquets ». */
   function card({ deck, total, due, image }: DeckSummary) {
@@ -248,13 +172,17 @@ export function Library({
 
   return (
     <>
+      <h2 className="screen-title">
+        {tab === 'mine' ? 'Mes paquets' : 'Catalogue'}
+      </h2>
+
       <div className="tabs" role="tablist">
         <button
           role="tab" aria-selected={tab === 'mine'}
           className={tab === 'mine' ? 'on' : ''}
           onClick={() => setTab('mine')}
         >
-          Mes paquets
+          Ma collection
           {mine.length > 0 && <span className="tabcount">{mine.length}</span>}
         </button>
         <button
@@ -262,24 +190,18 @@ export function Library({
           className={tab === 'catalog' ? 'on' : ''}
           onClick={() => setTab('catalog')}
         >
-          Bibliothèque
+          Catalogue
           {rows.length > 0 && <span className="tabcount">{rows.length}</span>}
         </button>
       </div>
 
       {tab === 'mine' && (
         <>
-          <p className="lead">
-            {ALLOW_LOCAL_DECKS
-              ? 'Chaque paquet garde sa propre progression. Ouvrez-en un pour réviser, ou créez-en un nouveau à partir de votre liste de mots.'
-              : 'Chaque paquet garde sa propre progression. Ouvrez-en un pour commencer à réviser.'}
-          </p>
-
           {mine.length === 0 && (
             <div className="empty">
               <p>Votre collection est vide.</p>
               <button className="btn ghost" onClick={() => setTab('catalog')}>
-                Parcourir la bibliothèque
+                Parcourir le catalogue
               </button>
             </div>
           )}
@@ -305,8 +227,8 @@ export function Library({
       {tab === 'catalog' && (
         <>
           <p className="lead">
-            Tous les paquets disponibles. Ajoutez ceux qui vous intéressent :
-            ils rejoignent « Mes paquets » et leur progression démarre.
+            Ajoutez les paquets qui vous intéressent : ils rejoignent votre
+            collection et leur progression démarre.
           </p>
 
           {!auth.session && (
@@ -330,73 +252,6 @@ export function Library({
           ))}
         </>
       )}
-
-      <details className="panelbox">
-        <summary>Réglages généraux</summary>
-        <div className="setting scope">
-          <p className="hint" style={{ margin: 0 }}>
-            Ces réglages s’appliquent à tous les paquets, sauf à ceux qui ont
-            les leurs. Un paquet se particularise depuis son propre écran.
-          </p>
-        </div>
-        <Slider
-          label="Nouveaux mots par jour"
-          hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
-          min={0} max={60} step={5} value={settings.newPerDay}
-          onChange={(v) => onSettings({ ...settings, newPerDay: v })}
-        />
-        <Slider
-          label="Révisions maximum par jour"
-          min={20} max={200} step={10} value={settings.reviewsPerDay}
-          onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
-        />
-        <Slider
-          label="Cartes par session"
-          min={10} max={60} step={5} value={settings.cardsPerSession}
-          onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
-        />
-        <Slider
-          label="Vitesse de la voix"
-          min={0.6} max={1.1} step={0.05} value={settings.speechRate}
-          format={(v) => v.toFixed(2).replace('.', ',')}
-          onChange={(v) => onSettings({ ...settings, speechRate: v })}
-        />
-        <div className="setting" style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-          <Toggle
-            label="Prononcer automatiquement à la réponse"
-            checked={settings.autoSpeak}
-            onChange={(v) => onSettings({ ...settings, autoSpeak: v })}
-          />
-          <Toggle
-            label="Sens inverse : anglais → français"
-            checked={settings.reversed}
-            onChange={(v) => onSettings({ ...settings, reversed: v })}
-          />
-        </div>
-      </details>
-
-      <AccountPanel auth={auth} />
-
-      <button className="btn ghost" onClick={exportBackup}>Enregistrer une sauvegarde</button>
-      <button className="btn ghost" onClick={() => fileRef.current?.click()}>
-        Restaurer une sauvegarde
-      </button>
-      <input
-        ref={fileRef} type="file" accept="application/json,.json" hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          e.target.value = '';
-          if (f) void importBackup(f);
-        }}
-      />
-      <p className="hint" style={{ marginTop: 12 }}>
-        La progression est enregistrée sur cet appareil. Pour la retrouver ailleurs,
-        exportez une sauvegarde ici et restaurez-la là-bas.
-      </p>
-
-      <button className="btn ghost" style={{ marginTop: 18 }} onClick={onHome}>
-        Revoir la page d’accueil
-      </button>
     </>
   );
 }
