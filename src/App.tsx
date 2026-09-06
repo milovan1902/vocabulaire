@@ -6,6 +6,7 @@ import { buildSession, type SessionItem } from './engine/session';
 import { Today } from './ui/Today';
 import { Library } from './ui/Library';
 import { Account } from './ui/Account';
+import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
 import { Study } from './ui/Study';
@@ -13,6 +14,8 @@ import { Editor } from './ui/Editor';
 import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
+import { loadSummaries } from './ui/deckSummary';
+import { scheduleReminder } from './ui/reminder';
 
 /**
  * Drapeau « accueil déjà vu ». Volontairement dans localStorage et non
@@ -31,6 +34,7 @@ type Tab = 'today' | 'library' | 'account';
 type View =
   | { name: 'welcome' }
   | { name: Tab }
+  | { name: 'search' }
   | { name: 'deck' }
   | { name: 'study' }
   | { name: 'done'; reviewed: number }
@@ -132,6 +136,20 @@ export default function App() {
     [loaded, store],
   );
 
+  /** Charge du jour, toutes collections confondues. Relue à la demande. */
+  const dueToday = useCallback(async () => {
+    const mine = store.decks.filter((d) => store.installed.includes(d.id));
+    const { summaries } = await loadSummaries(mine, store.common);
+    return summaries.reduce((n, s) => n + s.due, 0);
+  }, [store.decks, store.installed, store.common]);
+
+  // Le rappel est réarmé à chaque changement d'heure ou de collection.
+  // L'heure visée étant absolue, réarmer souvent est sans conséquence.
+  useEffect(() => {
+    if (!store.ready) return;
+    scheduleReminder(store.common.reminderAt, dueToday);
+  }, [store.ready, store.common.reminderAt, dueToday]);
+
   useEffect(() => {
     document.title = title(view, loaded);
   }, [view, loaded]);
@@ -209,7 +227,8 @@ export default function App() {
             aria-label="Retour"
             onClick={() => {
               if (view.name === 'study' && !confirm('Quitter la session en cours ?')) return;
-              if (view.name === 'deck') void backToLibrary();
+              if (view.name === 'search') setView({ name: 'library' });
+              else if (view.name === 'deck') void backToLibrary();
               else if (loaded) { void reload(); setView({ name: 'deck' }); }
               else void backToLibrary();
             }}
@@ -229,6 +248,7 @@ export default function App() {
             decks={store.decks}
             installed={store.installed}
             settings={store.common}
+            streak={store.streak}
             onReview={(id) => void reviewDeck(id)}
             onOpen={(id) => void openDeck(id)}
           />
@@ -241,6 +261,7 @@ export default function App() {
             categories={store.categories}
             settings={store.common}
             auth={auth}
+            onSearch={() => setView({ name: 'search' })}
             onOpen={(id, vol) => {
               /*
                * Avec « animations réduites », on n'entame pas le vol : la
@@ -267,10 +288,19 @@ export default function App() {
           />
         )}
 
+        {view.name === 'search' && (
+          <Search
+            decks={store.decks}
+            installed={store.installed}
+            onOpen={(id) => void openDeck(id)}
+          />
+        )}
+
         {view.name === 'account' && (
           <Account
             settings={store.common}
             auth={auth}
+            streak={store.streak}
             onSettings={(s) => void store.setCommon(s)}
             onHome={() => setView({ name: 'welcome' })}
           />
@@ -359,6 +389,7 @@ function title(view: View, loaded: LoadedDeck | null): string {
   if (view.name === 'today') return 'Aujourd’hui';
   if (view.name === 'library') return 'Paquets';
   if (view.name === 'account') return 'Compte';
+  if (view.name === 'search') return 'Rechercher';
   if (view.name === 'editor') return view.mode === 'create' ? 'Nouveau paquet' : 'Ajouter des mots';
   return loaded?.deck.name ?? 'Vocabulaire';
 }
