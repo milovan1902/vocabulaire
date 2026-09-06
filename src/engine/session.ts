@@ -32,8 +32,19 @@ export interface DeckStats {
   goalReached: boolean;
 }
 
+/**
+ * Le jour courant, en heure locale.
+ *
+ * `toISOString` donnait le jour UTC : en France, la date basculait à une ou
+ * deux heures du matin. Une révision faite à minuit et demi comptait donc
+ * pour la veille — sans conséquence visible sur le compteur du jour, mais
+ * fatal à la série de jours, qui se cassait précisément chez ceux qui
+ * révisent le soir.
+ */
 export function todayKey(now = new Date()): string {
-  return now.toISOString().slice(0, 10);
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${m}-${d}`;
 }
 
 export function freshCounter(now = new Date()): DailyCounter {
