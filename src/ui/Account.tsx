@@ -1,26 +1,48 @@
 /**
- * Onglet « Compte » : réglages généraux, compte en ligne, sauvegardes.
+ * Onglet « Compte » : série, réglages généraux, compte en ligne, sauvegardes.
  *
- * Ces trois blocs vivaient en bas de la bibliothèque, où ils allongeaient
- * une page dont l'objet était de choisir un paquet. Ils forment ici un
- * écran à part, atteint par les onglets.
+ * Ces blocs vivaient en bas de la bibliothèque, où ils allongeaient une page
+ * dont l'objet était de choisir un paquet. Ils forment ici un écran à part,
+ * atteint par les onglets.
  */
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Settings } from '../domain/types';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
 import { AccountPanel } from './AccountPanel';
 import type { Auth } from './useAuth';
+import type { Streak } from '../engine/streak';
+import { liveStreak } from '../engine/streak';
+import { HEURES, askPermission, permission } from './reminder';
 
 export function Account({
-  settings, auth, onSettings, onHome,
+  settings, auth, streak, onSettings, onHome,
 }: {
   settings: Settings;
   auth: Auth;
+  streak: Streak;
   onSettings: (s: Settings) => void;
   onHome: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [autorisation, setAutorisation] = useState(permission());
+
+  // L'autorisation peut avoir été changée dans les réglages du navigateur
+  // pendant que l'application était ouverte.
+  useEffect(() => { setAutorisation(permission()); }, []);
+
+  const serie = liveStreak(streak);
+
+  async function activerRappel(actif: boolean) {
+    if (!actif) {
+      onSettings({ ...settings, reminderAt: null });
+      return;
+    }
+    const ok = await askPermission();
+    setAutorisation(permission());
+    if (!ok) return;
+    onSettings({ ...settings, reminderAt: settings.reminderAt ?? '19:00' });
+  }
 
   async function exportBackup() {
     try {
@@ -63,8 +85,8 @@ export function Account({
     )) return;
     await repository.importAll(payload.data);
     alert('Sauvegarde restaurée.');
-    // Rechargement complet : les réglages et le compteur du jour sont
-    // relus depuis la sauvegarde, pas seulement la liste des paquets.
+    // Rechargement complet : les réglages, la série et le compteur du jour
+    // sont relus depuis la sauvegarde, pas seulement la liste des paquets.
     location.reload();
   }
 
@@ -73,6 +95,48 @@ export function Account({
       <h2 className="screen-title">Compte</h2>
 
       <AccountPanel auth={auth} />
+
+      <p className="rayon-label">Série</p>
+      <div className="serie-bloc">
+        <b>{serie}</b>
+        <div>
+          <p>jour{serie > 1 ? 's' : ''} d’affilée</p>
+          <p className="hint">
+            {streak.best > 0 ? `Record : ${streak.best} jours` : 'Une révision par jour suffit à la tenir.'}
+          </p>
+        </div>
+      </div>
+
+      <p className="rayon-label">Rappel quotidien</p>
+      <div className="panelbox open">
+        <div className="setting">
+          <Toggle
+            label="Me rappeler de réviser"
+            checked={settings.reminderAt !== null}
+            onChange={(v) => void activerRappel(v)}
+          />
+          {settings.reminderAt !== null && (
+            <div className="heures">
+              {HEURES.map((h) => (
+                <button
+                  key={h}
+                  className={settings.reminderAt === h ? 'on' : ''}
+                  onClick={() => onSettings({ ...settings, reminderAt: h })}
+                >
+                  {h.replace(':', ' h ')}
+                </button>
+              ))}
+            </div>
+          )}
+          <p className="hint">
+            {autorisation === 'unsupported'
+              ? 'Ce navigateur ne sait pas afficher de notification.'
+              : autorisation === 'denied'
+                ? 'Les notifications sont bloquées pour ce site : à réautoriser dans les réglages du navigateur.'
+                : 'Le rappel n’arrive que si l’application est encore ouverte, même en arrière-plan. Sur téléphone rangé, comptez plutôt sur l’écran d’accueil, qui prévient quand la série est en jeu.'}
+          </p>
+        </div>
+      </div>
 
       <p className="rayon-label">Charge de travail</p>
       <div className="panelbox open">
