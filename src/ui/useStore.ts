@@ -7,7 +7,8 @@
  * Les réglages existent à deux niveaux : des réglages communs, et une
  * surcharge facultative par paquet qui prend le dessus. Le compteur du
  * jour est lui aussi tenu paquet par paquet, puisque le quota peut
- * différer d'un paquet à l'autre.
+ * différer d'un paquet à l'autre. La série, elle, est unique : réviser
+ * dans n'importe quel paquet fait la journée.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
@@ -26,6 +27,8 @@ import { repository } from '../data/repository';
 import { SEED_DECKS, materialize } from '../data/seed';
 import { emptyProgress, review } from '../engine/scheduler';
 import { freshCounter, rollDay } from '../engine/session';
+import type { Streak } from '../engine/streak';
+import { EMPTY_STREAK, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
 
 export interface Store {
@@ -43,6 +46,8 @@ export interface Store {
   common: Settings;
   /** Surcharges par paquet. Absent = le paquet suit les réglages communs. */
   overrides: Record<DeckId, DeckOverride>;
+  /** Jours travaillés, série en cours et record. */
+  streak: Streak;
   setCommon(s: Settings): Promise<void>;
   /** `null` supprime la surcharge : le paquet repasse en réglages communs. */
   setOverride(deckId: DeckId, o: Partial<Settings> | null): Promise<void>;
@@ -74,6 +79,7 @@ export function useStore(): Store {
   const [common, setCommonState] = useState<Settings>(DEFAULT_SETTINGS);
   const [overrides, setOverridesState] = useState<Record<DeckId, DeckOverride>>({});
   const [counters, setCounters] = useState<Record<DeckId, DailyCounter>>({});
+  const [streak, setStreak] = useState<Streak>(EMPTY_STREAK);
   const [installed, setInstalled] = useState<DeckId[]>([]);
 
   useEffect(() => {
@@ -92,11 +98,12 @@ export function useStore(): Store {
         list = created;
       }
 
-      const [cats, s, o, c] = await Promise.all([
+      const [cats, s, o, c, st] = await Promise.all([
         repository.listCategories(),
         repository.getSettings(),
         repository.getOverrides(),
         repository.getCounters(),
+        repository.getStreak(),
       ]);
 
       /*
@@ -116,6 +123,7 @@ export function useStore(): Store {
       setCommonState(s);
       setOverridesState(o);
       setCounters(rollAll(c));
+      setStreak(st);
       setReady(true);
     })();
   }, []);
@@ -159,20 +167,22 @@ export function useStore(): Store {
   );
 
   const refreshAll = useCallback(async () => {
-    // Après une synchronisation, réglages, surcharges et compteurs ont pu
-    // changer sur le serveur : on relit tout avec les paquets.
-    const [list, cats, s, o, c] = await Promise.all([
+    // Après une synchronisation, réglages, surcharges, compteurs et série
+    // ont pu changer sur le serveur : on relit tout avec les paquets.
+    const [list, cats, s, o, c, st] = await Promise.all([
       repository.listDecks(),
       repository.listCategories(),
       repository.getSettings(),
       repository.getOverrides(),
       repository.getCounters(),
+      repository.getStreak(),
     ]);
     setDecks(list);
     setCategories(cats);
     setCommonState(s);
     setOverridesState(o);
     setCounters(rollAll(c));
+    setStreak(st);
     setInstalled((await repository.getInstalled()) ?? []);
   }, []);
 
@@ -222,6 +232,18 @@ export function useStore(): Store {
       stored[next.cardId] = next;
       await repository.saveProgress(deckId, stored);
 
+      /*
+       * La journée est marquée dès la première carte notée. `record` est sans
+       * effet si elle l'est déjà, donc appelable à chaque carte sans compter
+       * plusieurs fois — et on ne relit la série que pour l'écrire une seule
+       * fois par jour.
+       */
+      setStreak((prev) => {
+        const suivant = recordDay(prev);
+        if (suivant !== prev) void repository.saveStreak(suivant);
+        return suivant;
+      });
+
       setCounters((prev) => {
         const rolled = rollDay(prev[deckId] ?? freshCounter());
         const updated: Record<DeckId, DailyCounter> = {
@@ -243,13 +265,13 @@ export function useStore(): Store {
 
   return useMemo(
     () => ({
-      ready, decks, installed, categories, common, overrides,
+      ready, decks, installed, categories, common, overrides, streak,
       addDeck, removeDeck,
       setCommon, setOverride, settingsFor, counterFor,
       refreshAll, loadDeck, gradeCard,
     }),
     [
-      ready, decks, installed, categories, common, overrides,
+      ready, decks, installed, categories, common, overrides, streak,
       addDeck, removeDeck,
       setCommon, setOverride, settingsFor, counterFor,
       refreshAll, loadDeck, gradeCard,
