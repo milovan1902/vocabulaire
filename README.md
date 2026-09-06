@@ -2,7 +2,7 @@
 
 Application web de révision de vocabulaire anglais par répétition espacée.
 Fonctionne hors ligne, s'installe comme une application, et synchronise la
-progression entre appareils pour qui se connecte avec un compte Google.
+progression entre appareils pour qui se connecte avec un compte Google...
 
 En ligne : <https://anglais-progres.netlify.app>
 
