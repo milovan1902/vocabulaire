@@ -9,15 +9,18 @@ import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
 import { CardBack } from './components';
+import type { Streak } from '../engine/streak';
+import { doneToday, lastSeven, liveStreak } from '../engine/streak';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
 export function Today({
-  decks, installed, settings, onReview, onOpen,
+  decks, installed, settings, streak, onReview, onOpen,
 }: {
   decks: Deck[];
   installed: string[];
   settings: Settings;
+  streak: Streak;
   /** Ouvre le paquet et démarre aussitôt une session. */
   onReview: (id: string) => void;
   /** Ouvre l'écran du paquet, sans démarrer de session. */
@@ -47,13 +50,38 @@ export function Today({
   const tete = aFaire[0];
   const suite = aFaire.slice(1);
 
+  const serie = liveStreak(streak);
+  const faitAujourdhui = doneToday(streak);
+  const semaine = lastSeven(streak);
+  /* Série en jeu : elle existe, elle n'est pas encore assurée, et il reste
+     du travail pour la sauver. Sans ces trois conditions, se taire. */
+  const enJeu = serie > 0 && !faitAujourdhui && total > 0;
+
   const date = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
   });
 
   return (
     <div className="today">
-      <p className="today-date">{date}</p>
+      <div className="today-head">
+        <p className="today-date">{date}</p>
+        {serie > 0 && (
+          <span className="serie-count">
+            {serie} jour{serie > 1 ? 's' : ''} d’affilée
+          </span>
+        )}
+      </div>
+
+      <div className="serie" aria-label={`Série : ${serie} jours`}>
+        {semaine.map((j, i) => (
+          <i
+            key={j.key}
+            className={j.done ? 'on' : ''}
+            title={`${JOURS[new Date(j.key + 'T12:00:00').getDay()]} ${j.key.slice(8)}`}
+            aria-current={i === 6 ? 'date' : undefined}
+          />
+        ))}
+      </div>
 
       {total === 0 ? (
         <>
@@ -62,8 +90,9 @@ export function Today({
             <span>carte à voir<br />aujourd’hui</span>
           </div>
           <p className="hint">
-            Tout est à jour. Les mots déjà appris reviendront d’eux-mêmes,
-            au moment où ils commencent à s’effacer.
+            {faitAujourdhui
+              ? 'Journée faite. Les mots revus reviendront à leur date, pas avant.'
+              : 'Tout est à jour. Les mots déjà appris reviendront d’eux-mêmes, au moment où ils commencent à s’effacer.'}
           </p>
         </>
       ) : (
@@ -78,6 +107,13 @@ export function Today({
               : ''}
             Environ {Math.max(1, Math.round(total * 0.4))} minutes.
           </p>
+
+          {enJeu && (
+            <p className="serie-alerte">
+              Votre série de {serie} jour{serie > 1 ? 's' : ''} tient à une
+              révision aujourd’hui.
+            </p>
+          )}
 
           {tete && (
             <>
