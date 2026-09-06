@@ -1,3 +1,23 @@
+/*
+ * Feuille de style unique — direction « La pioche ».
+ *
+ * Parti pris : le fond de l'application est un tapis bleu nuit, les
+ * visuels de dos sont les seuls objets lumineux, l'or de l'icône est
+ * réservé à l'action principale et aux compteurs. Un serif éditorial
+ * (Newsreader) porte les mots, les étiquettes passent en petites
+ * capitales monospace.
+ *
+ * Les noms de classes n'ont pas changé : cette feuille remplace la
+ * précédente sans toucher aux autres fichiers, sauf Study.tsx qui gagne
+ * l'écran de révision plein cadre.
+ *
+ * Police : @import fonctionne en ligne, mais pas hors connexion. Le
+ * repli Georgia est volontaire et propre. Pour un rendu identique hors
+ * ligne, déposer les .woff2 de Newsreader dans src/assets/fonts et
+ * remplacer cet @import par des règles @font-face.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&display=swap');
+
 :root {
   /* Encres, sur fond sombre */
   --ink: #fbfaf6;
