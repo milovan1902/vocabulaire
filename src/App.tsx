@@ -21,18 +21,22 @@ import { Welcome } from './ui/Welcome';
  */
 const SEEN = 'vocab:accueil-vu';
 
+/**
+ * Les trois écrans atteints par les onglets du bas. Réunis en un seul
+ * cas : aucun ne porte de donnée propre, et les onglets ont besoin de
+ * les désigner indifféremment.
+ */
+type Tab = 'today' | 'library' | 'account';
+
 type View =
   | { name: 'welcome' }
-  | { name: 'today' }
-  | { name: 'library' }
-  | { name: 'account' }
+  | { name: Tab }
   | { name: 'deck' }
   | { name: 'study' }
   | { name: 'done'; reviewed: number }
   | { name: 'editor'; mode: 'create' | 'append' };
 
-/** Les trois écrans atteints par les onglets du bas. */
-const ONGLETS: Array<{ name: 'today' | 'library' | 'account'; label: string }> = [
+const ONGLETS: Array<{ name: Tab; label: string }> = [
   { name: 'today', label: 'Aujourd’hui' },
   { name: 'library', label: 'Paquets' },
   { name: 'account', label: 'Compte' },
