@@ -6,8 +6,7 @@
  *
  * Chaque clé est préfixée par un identifiant d'utilisateur, même s'il n'y en a
  * qu'un aujourd'hui. C'est ce qui permettra de brancher une synchronisation
- * serveur plus tard sans migration douloureuse : il suffira d'implémenter
- * la même interface `Repository` avec des appels réseau.
+ * serveur plus tard sans migration douloureuse.
  */
 import { get, set, del, keys } from 'idb-keyval';
 import type {
@@ -40,14 +39,20 @@ const k = {
   // Un compteur par paquet : le quota étant réglable paquet par paquet,
   // un compteur unique ne pourrait pas le refléter.
   counters: (u: UserId) => `u:${u}:counters`,
-  // La série, elle, est une seule et même chose pour la personne : réviser
-  // dans n'importe quel paquet fait la journée.
+  // La série est une seule et même chose pour la personne : réviser dans
+  // n'importe quel paquet fait la journée.
   streak: (u: UserId) => `u:${u}:streak`,
-  // Les paquets que la personne a ajoutés à sa collection. Distinct de la
-  // liste des paquets connus : le catalogue en télécharge davantage qu'elle
-  // n'en révise, et une bibliothèque qui s'invite dans « Mes paquets »
-  // noierait le travail en cours.
+  // Les paquets possédés. Distinct de la liste des paquets connus : le
+  // catalogue en télécharge davantage qu'on n'en révise.
   installed: (u: UserId) => `u:${u}:installed`,
+  /*
+   * Les paquets *en jeu*, sous-ensemble des possédés.
+   *
+   * Deux listes et non un drapeau sur le paquet : un paquet est une donnée
+   * du catalogue, partagée par tous, alors qu'être en jeu est une décision
+   * personnelle. Les mêmes octets ne peuvent pas porter les deux.
+   */
+  active: (u: UserId) => `u:${u}:active`,
 };
 
 export interface Repository {
@@ -75,6 +80,9 @@ export interface Repository {
   /** `null` = la notion n'existe pas encore sur cet appareil (voir migration). */
   getInstalled(): Promise<DeckId[] | null>;
   saveInstalled(ids: DeckId[]): Promise<void>;
+  /** `null` = jamais renseigné : tout ce qui est possédé est réputé en jeu. */
+  getActive(): Promise<DeckId[] | null>;
+  saveActive(ids: DeckId[]): Promise<void>;
   deleteDeck(deckId: DeckId): Promise<void>;
   exportAll(): Promise<Record<string, unknown>>;
   importAll(data: Record<string, unknown>): Promise<void>;
@@ -159,6 +167,12 @@ export class IdbRepository implements Repository {
   }
   async saveInstalled(ids: DeckId[]) {
     await set(k.installed(this.user), ids);
+  }
+  async getActive() {
+    return (await get<DeckId[]>(k.active(this.user))) ?? null;
+  }
+  async saveActive(ids: DeckId[]) {
+    await set(k.active(this.user), ids);
   }
   async deleteDeck(d: DeckId) {
     await Promise.all([
