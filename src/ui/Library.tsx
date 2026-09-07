@@ -1,7 +1,10 @@
 /** Onglet « Paquets » : mon travail, ma collection, mon catalogue. */
 import { useEffect, useMemo, useState } from 'react';
-import type { Category, Deck, Level, Settings } from '../domain/types';
-import { LEVEL_LABELS, priceLabel } from '../domain/types';
+import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
+import {
+  CLASSES, CLASSE_LABELS, LEVEL_LABELS,
+  classeConvient, classeDepuisLabel, priceLabel,
+} from '../domain/types';
 import { CardBack } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import type { Auth } from './useAuth';
@@ -24,7 +27,7 @@ const TRANCHES: Array<{ cents: number; label: string }> = [
 
 export function Library({
   decks, installed, active, categories, settings, auth,
-  onOpen, onReview, onAdd, onRemove, onSetActive, onSearch,
+  onOpen, onReview, onAdd, onRemove, onSetActive, onSearch, onSettings,
 }: {
   decks: Deck[];
   /** Paquets possédés. */
@@ -47,11 +50,29 @@ export function Library({
   onRemove: (id: string) => void;
   onSetActive: (id: string, on: boolean) => void;
   onSearch: () => void;
+  /** La classe déclarée est un réglage : elle s'écrit là où ils s'écrivent. */
+  onSettings: (s: Settings) => void;
 }) {
   const [charge, setCharge] = useState<Charge | null>(null);
   const [tab, setTab] = useState<Tab>('travail');
   const [tranche, setTranche] = useState<number | null>(null);
   const [rayon, setRayon] = useState<string | null>(null);
+
+  /*
+   * Deux façons de regarder le catalogue, à ne jamais confondre :
+   *
+   * - la classe déclarée (`settings.classe`) est une identité. Elle range le
+   *   catalogue en « pour ma classe » et « pour plus tard », et se mémorise.
+   * - la consultation (`consult`) est un coup d'œil ailleurs : planchers
+   *   exacts, plusieurs classes à la fois, jamais mémorisée.
+   *
+   * Le multi-choix n'existe que dans le second mode, et il s'annonce à
+   * l'écran. Raison : sur des planchers exacts, cocher 6ème et 4ème saute
+   * les paquets à plancher 5ème, qui conviennent pourtant à un élève de
+   * 4ème. Ce trou est inévitable — autant l'avouer plutôt que le cacher.
+   */
+  const [consult, setConsult] = useState<Classe[]>([]);
+  const [choixClasse, setChoixClasse] = useState(false);
 
   /*
    * La charge est calculée sur les seuls paquets en jeu : c'est la
@@ -288,35 +309,179 @@ export function Library({
 
   /* ---------------- Mon catalogue ---------------- */
 
+  /** Une ligne du catalogue. `plusTard` grise la ligne sans la rendre illisible. */
+  function ligneCatalogue(s: DeckSummary, plusTard = false) {
+    const aMoi = installed.includes(s.deck.id);
+    const gratuit = !s.deck.priceCents;
+    const n = niveau(s.deck.level);
+    const cl = classeDepuisLabel(s.deck.classeFrom);
+    return (
+      <div key={s.deck.id} className={`catrow${plusTard ? ' later' : ''}`}>
+        <button className="catrow-main" onClick={(e) => ouvrir(e, s)}>
+          {vignette(s, 54, 76)}
+          <span className="catrow-txt">
+            <b>{s.deck.name}</b>
+            <small>
+              {s.total} mots
+              {n ? ` · ${n}` : ''}
+              {cl ? ` · ${cl}` : ''}
+              {gratuit ? ' · gratuit' : ''}
+            </small>
+          </span>
+        </button>
+        {aMoi ? (
+          gratuit && !s.deck.builtin ? (
+            <button className="minibtn done" onClick={() => onRemove(s.deck.id)}>
+              Retirer
+            </button>
+          ) : (
+            <span className="ownedtag">À moi</span>
+          )
+        ) : (
+          <button
+            className={`minibtn${plusTard ? ' outline' : ''}`}
+            onClick={() => onAdd(s.deck.id)}
+          >
+            {gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
+          </button>
+        )}
+      </div>
+    );
+  }
+
   function vueCatalogue() {
     const tous = charge?.summaries ?? [];
+    const maClasse = settings.classe;
+    const enConsultation = consult.length > 0;
 
-    // Comptes par tranche, calculés sur le catalogue entier : un filtre qui
-    // annonce « 3 » puis n'affiche rien serait un mensonge.
+    /*
+     * Ce que chaque classe ouvre. Le compte est cumulatif, puisque le
+     * plancher d'un paquet vaut aussi pour les classes suivantes : c'est ce
+     * qui rend le choix lisible, passer de 5ème en 4ème fait gagner des
+     * paquets et on le voit avant de choisir.
+     */
+    const parClasse = new Map<Classe, number>();
+    for (const c of CLASSES) {
+      parClasse.set(c, tous.filter((s) => classeConvient(s.deck.classeFrom, c)).length);
+    }
+
+    // En consultation on prend les planchers EXACTEMENT cochés ; sinon tout
+    // le catalogue, qu'on répartira ensuite entre ma classe et plus tard.
+    const socle = enConsultation
+      ? tous.filter((s) => !!s.deck.classeFrom && consult.includes(s.deck.classeFrom))
+      : tous;
+
+    // Comptes par tranche, calculés sur le socle et non sur le catalogue
+    // entier : un filtre qui annonce « 3 » puis n'affiche rien mentirait.
     const comptes = new Map<number, number>();
-    for (const s of tous) {
+    for (const s of socle) {
       const c = s.deck.priceCents ?? 0;
       comptes.set(c, (comptes.get(c) ?? 0) + 1);
     }
 
-    const filtres = tous.filter((s) => {
+    const filtres = socle.filter((s) => {
       if (tranche !== null && (s.deck.priceCents ?? 0) !== tranche) return false;
       if (rayon !== null && s.deck.categoryId !== rayon) return false;
       return true;
     });
 
+    const pourMoi = enConsultation
+      ? filtres
+      : filtres.filter((s) => classeConvient(s.deck.classeFrom, maClasse));
+    const plusTard = enConsultation
+      ? []
+      : filtres.filter((s) => !classeConvient(s.deck.classeFrom, maClasse));
+
     const groupes: Array<{ category: Category | null; items: DeckSummary[] }> = [];
     for (const category of [...categories].sort((a, b) => a.position - b.position)) {
-      const items = filtres.filter((s) => s.deck.categoryId === category.id);
+      const items = pourMoi.filter((s) => s.deck.categoryId === category.id);
       if (items.length) groupes.push({ category, items });
     }
-    const orphelins = filtres.filter(
+    const orphelins = pourMoi.filter(
       (s) => !s.deck.categoryId || !categories.some((c) => c.id === s.deck.categoryId),
     );
     if (orphelins.length) groupes.push({ category: null, items: orphelins });
 
+    function basculerConsultation(c: Classe) {
+      setConsult((prev) =>
+        prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+      );
+    }
+
     return (
       <>
+        <button
+          className="classbar"
+          onClick={() => setChoixClasse((v) => !v)}
+          aria-expanded={choixClasse}
+        >
+          <span className="label">Ma classe</span>
+          <b>{maClasse ? CLASSE_LABELS[maClasse] : 'non déclarée'}</b>
+          <span className="chg">{choixClasse ? 'Fermer' : 'Changer'}</span>
+        </button>
+
+        {choixClasse && (
+          <div className="classpanel">
+            <p className="hint">
+              Le catalogue s’y règle. Rien ne se ferme : les paquets des
+              classes suivantes restent visibles, plus bas.
+            </p>
+            {CLASSES.map((c) => (
+              <button
+                key={c}
+                className={`classrow${maClasse === c ? ' on' : ''}`}
+                onClick={() => {
+                  onSettings({ ...settings, classe: c });
+                  setConsult([]);
+                  setChoixClasse(false);
+                }}
+              >
+                <i />
+                <span>{CLASSE_LABELS[c]}</span>
+                <small>{parClasse.get(c) ?? 0} paquets</small>
+              </button>
+            ))}
+            <button
+              className="classrow plain"
+              onClick={() => {
+                onSettings({ ...settings, classe: null });
+                setConsult([]);
+                setChoixClasse(false);
+              }}
+            >
+              <span>Voir tout le catalogue</span>
+            </button>
+          </div>
+        )}
+
+        {enConsultation && (
+          <div className="consultbox">
+            <p className="ttl">
+              Vous consultez {consult.map((c) => CLASSE_LABELS[c]).join(', ')}
+            </p>
+            <p className="hint">
+              Ce ne sont pas les paquets de votre classe, mais ceux dont c’est
+              exactement le plancher. Un paquet plus ancien n’y figure pas,
+              même s’il vous conviendrait.
+            </p>
+            <button className="btn ghost" onClick={() => setConsult([])}>
+              {maClasse ? `Revenir à ma classe — ${CLASSE_LABELS[maClasse]}` : 'Revenir au catalogue'}
+            </button>
+          </div>
+        )}
+
+        <div className="classechips">
+          {CLASSES.map((c) => (
+            <button
+              key={c}
+              className={consult.includes(c) ? 'on' : ''}
+              onClick={() => basculerConsultation(c)}
+            >
+              {CLASSE_LABELS[c]}
+            </button>
+          ))}
+        </div>
+
         <div className="pricefilters">
           {TRANCHES.map((t) => {
             const n = comptes.get(t.cents) ?? 0;
@@ -355,50 +520,27 @@ export function Library({
           </p>
         )}
 
-        {filtres.length === 0 && (
+        {pourMoi.length === 0 && plusTard.length === 0 && (
           <p className="hint">Aucun paquet ne correspond à ce filtre.</p>
         )}
 
         {groupes.map(({ category, items }) => (
           <section key={category?.id ?? '_autres'} className="rayon">
             <h2>{category ? category.name : 'Autres'}</h2>
-            <div className="catlist">
-              {items.map((s) => {
-                const aMoi = installed.includes(s.deck.id);
-                const gratuit = !s.deck.priceCents;
-                const n = niveau(s.deck.level);
-                return (
-                  <div key={s.deck.id} className="catrow">
-                    <button className="catrow-main" onClick={(e) => ouvrir(e, s)}>
-                      {vignette(s, 54, 76)}
-                      <span className="catrow-txt">
-                        <b>{s.deck.name}</b>
-                        <small>
-                          {s.total} mots
-                          {n ? ` · ${n}` : ''}
-                          {gratuit ? ' · gratuit' : ''}
-                        </small>
-                      </span>
-                    </button>
-                    {aMoi ? (
-                      gratuit && !s.deck.builtin ? (
-                        <button className="minibtn done" onClick={() => onRemove(s.deck.id)}>
-                          Retirer
-                        </button>
-                      ) : (
-                        <span className="ownedtag">À moi</span>
-                      )
-                    ) : (
-                      <button className="minibtn" onClick={() => onAdd(s.deck.id)}>
-                        {gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <div className="catlist">{items.map((s) => ligneCatalogue(s))}</div>
           </section>
         ))}
+
+        {plusTard.length > 0 && (
+          <section className="rayon">
+            <h2 className="later-h">Pour plus tard</h2>
+            <p className="hint">
+              Après {maClasse ? CLASSE_LABELS[maClasse] : 'votre classe'}. Rien
+              n’empêche de les prendre maintenant.
+            </p>
+            <div className="catlist">{plusTard.map((s) => ligneCatalogue(s, true))}</div>
+          </section>
+        )}
 
         <p className="hint">
           Un paquet obtenu arrive en pause : c’est vous qui le mettez en jeu.
