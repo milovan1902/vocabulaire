@@ -988,3 +988,89 @@ textarea {
 /* Les grilles de cartes ne servent plus dans « Paquets » : les listes
    laissent la place aux interrupteurs et aux prix. Les règles restent
    pour la carte volante et l'écran d'un paquet. */
+
+
+/* ---------- La classe : de la CM2 à la Terminale ---------- */
+
+/* La classe déclarée est une identité, pas un filtre de plus : d'où une
+   barre pleine largeur en haut du catalogue, et non une puce noyée parmi
+   les tranches de prix. */
+.classbar {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; min-height: 48px; margin: 14px 0 0; padding: 0 14px;
+  border-radius: 13px; border: 1px solid rgba(242, 183, 5, 0.45);
+  background: rgba(242, 183, 5, 0.07);
+  font-family: inherit; color: var(--ink); text-align: left; cursor: pointer;
+}
+.classbar .label {
+  flex: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--grey);
+}
+.classbar b {
+  flex: 1; font-family: 'Newsreader', Georgia, serif;
+  font-size: 19px; font-weight: 400;
+}
+.classbar .chg { flex: none; font-size: 12.5px; font-weight: 600; color: var(--chalk); }
+
+.classpanel {
+  margin: 8px 0 0; padding: 12px 13px;
+  border: 1px solid var(--rule-strong); border-radius: 14px;
+}
+.classpanel .hint { margin: 0 0 10px; }
+.classrow {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 48px; padding: 0 12px; margin-bottom: 5px;
+  border-radius: 12px; border: 1px solid var(--rule-strong);
+  background: none; font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.classrow i {
+  flex: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--rule-strong);
+}
+.classrow span { flex: 1; font-size: 15px; }
+.classrow small { flex: none; font-size: 12px; color: var(--grey); }
+.classrow.on { border-color: var(--chalk); background: rgba(242, 183, 5, 0.1); }
+.classrow.on i { border: 5px solid var(--chalk); }
+.classrow.on span { font-weight: 650; }
+.classrow.on small { color: var(--chalk); font-weight: 600; }
+.classrow.plain { justify-content: center; border-style: dashed; margin-bottom: 0; }
+.classrow.plain span { flex: none; font-size: 13px; color: var(--grey); }
+
+/* Les puces de consultation. Elles cochent des planchers EXACTS : c'est le
+   seul endroit de l'application où plusieurs classes coexistent, et le
+   bandeau vert au-dessus est là pour que personne ne croie voir tout ce qui
+   lui conviendrait. */
+.classechips { display: flex; flex-wrap: wrap; gap: 6px; margin: 11px 0 0; }
+.classechips button {
+  min-height: 34px; padding: 0 11px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--grey);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+}
+.classechips button.on {
+  background: rgba(79, 191, 149, 0.16);
+  border-color: var(--good); color: var(--ink); font-weight: 600;
+}
+
+/* Le vert est celui du « bon » de l'application, jamais celui d'une erreur :
+   ici il dit « vous n'êtes plus chez vous », pas « attention ». */
+.consultbox {
+  margin: 12px 0 0; padding: 13px 14px;
+  border: 1px solid rgba(79, 191, 149, 0.45); border-radius: 14px;
+  background: rgba(79, 191, 149, 0.08);
+}
+.consultbox .ttl { margin: 0; font-size: 13px; color: var(--ink); }
+.consultbox .hint { margin: 8px 0 0; }
+.consultbox .btn { margin-top: 11px; }
+
+/* « Pour plus tard » : grisé, jamais illisible. L'opacité s'arrête à .78 et
+   le sous-titre passe en clair — l'étiquette de classe est justement
+   l'information que cette section existe pour porter. */
+.catrow.later { opacity: 0.78; }
+.catrow.later .catrow-txt small { color: #c2cadb; }
+.minibtn.outline {
+  background: none; border: 1px solid var(--rule-strong); color: var(--ink);
+}
+.rayon h2.later-h { color: var(--grey); }
