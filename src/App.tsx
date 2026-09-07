@@ -48,7 +48,7 @@ const ONGLETS: Array<{ name: Tab; label: string }> = [
 
 export default function App() {
   const store = useStore();
-  /** Carte en vol entre la bibliothèque et l'écran d'un paquet. */
+  /** Carte en vol entre la liste et l'écran d'un paquet. */
   const [zoom, setZoom] = useState<ZoomSource | null>(null);
 
   const [view, setView] = useState<View>(() =>
@@ -92,10 +92,10 @@ export default function App() {
   /**
    * Construction d'une session à partir d'un paquet déjà chargé.
    *
-   * On passe le paquet en argument plutôt que de lire l'état : l'écran
-   * « Aujourd'hui » démarre une révision juste après avoir chargé son
-   * paquet, et l'état React n'est pas encore à jour à cet instant.
-   * Renvoie false s'il n'y avait rien à faire.
+   * On passe le paquet en argument plutôt que de lire l'état : « Aujourd'hui »
+   * démarre une révision juste après avoir chargé son paquet, et l'état React
+   * n'est pas encore à jour à cet instant. Renvoie false s'il n'y avait rien
+   * à faire.
    */
   const startSession = useCallback(
     (source: LoadedDeck, ignoreGoal = false) => {
@@ -116,7 +116,7 @@ export default function App() {
     [store],
   );
 
-  /** Depuis « Aujourd'hui » : ouvrir le paquet et enchaîner sans détour. */
+  /** Ouvrir le paquet et enchaîner sans détour. */
   const reviewDeck = useCallback(
     async (id: string) => {
       const deck = await store.loadDeck(id);
@@ -136,12 +136,12 @@ export default function App() {
     [loaded, store],
   );
 
-  /** Charge du jour, toutes collections confondues. Relue à la demande. */
+  /** Charge du jour, sur les seuls paquets en jeu. Relue à la demande. */
   const dueToday = useCallback(async () => {
-    const mine = store.decks.filter((d) => store.installed.includes(d.id));
-    const { summaries } = await loadSummaries(mine, store.common);
+    const enJeu = store.decks.filter((d) => store.active.includes(d.id));
+    const { summaries } = await loadSummaries(enJeu, store.common);
     return summaries.reduce((n, s) => n + s.due, 0);
-  }, [store.decks, store.installed, store.common]);
+  }, [store.decks, store.active, store.common]);
 
   // Le rappel est réarmé à chaque changement d'heure ou de collection.
   // L'heure visée étant absolue, réarmer souvent est sans conséquence.
@@ -246,11 +246,12 @@ export default function App() {
         {view.name === 'today' && (
           <Today
             decks={store.decks}
-            installed={store.installed}
+            active={store.active}
             settings={store.common}
             streak={store.streak}
             onReview={(id) => void reviewDeck(id)}
             onOpen={(id) => void openDeck(id)}
+            onManage={() => setView({ name: 'library' })}
           />
         )}
 
@@ -258,6 +259,7 @@ export default function App() {
           <Library
             decks={store.decks}
             installed={store.installed}
+            active={store.active}
             categories={store.categories}
             settings={store.common}
             auth={auth}
@@ -282,9 +284,10 @@ export default function App() {
               }
               void openDeck(id);
             }}
-            onCreate={() => setView({ name: 'editor', mode: 'create' })}
+            onReview={(id) => void reviewDeck(id)}
             onAdd={(id) => void store.addDeck(id)}
             onRemove={(id) => void store.removeDeck(id)}
+            onSetActive={(id, on) => void store.setActive(id, on)}
           />
         )}
 
