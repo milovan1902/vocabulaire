@@ -3,17 +3,16 @@
  *
  * Principe : l'appareil reste la source de vérité pour l'usage courant.
  * L'application fonctionne entièrement hors ligne ; la synchronisation
- * rattrape au retour du réseau. Rien n'est jamais bloqué par une panne
- * de serveur.
+ * rattrape au retour du réseau.
  *
  * Règle de fusion : pour une même carte, on garde la révision la plus
- * récente. C'est simple, prévisible, et suffisant tant qu'une personne
- * ne révise pas sur deux appareils à la même minute.
+ * récente. Simple, prévisible, et suffisant tant qu'une personne ne révise
+ * pas sur deux appareils à la même minute.
  */
 import { supabase } from './supabase';
 import { repository } from './repository';
 import type {
-  Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Progress, Settings,
+  Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
@@ -49,6 +48,11 @@ async function fetchAllRows<T>(
   return out;
 }
 
+/** Niveau lu du serveur, filtré : une valeur inconnue vaut mieux qu'un plantage. */
+function readLevel(v: unknown): Level | null {
+  return v === 'A2' || v === 'B1' || v === 'B2' ? v : null;
+}
+
 /** Paquets accessibles au visiteur : gratuits, plus ceux qu'il a achetés. */
 export async function pullCatalog(): Promise<number> {
   // Les rayons d'abord : la bibliothèque s'en sert pour regrouper.
@@ -70,7 +74,7 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select('id, name, description, price_cents, card_count, position, category_id')
+    .select('id, name, description, price_cents, card_count, position, category_id, level')
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -110,6 +114,7 @@ export async function pullCatalog(): Promise<number> {
       name: row.name,
       description: row.description ?? undefined,
       categoryId: row.category_id ?? null,
+      level: readLevel((row as Record<string, unknown>).level),
       builtin: true,
       priceCents: row.price_cents ?? 0,
       hasImage: existing?.hasImage ?? false,
@@ -245,12 +250,7 @@ export async function syncProgress(
  * Efface la progression d'un paquet côté serveur.
  *
  * Sans cela, « effacer la progression » ne vaudrait que pour l'appareil :
- * la synchronisation suivante rapatrierait ce que le serveur a gardé, et
- * le travail effacé réapparaîtrait.
- *
- * Le filtre s'appuie sur le préfixe des identifiants de cartes
- * (« irregular-verbs:go-… »), ce qui évite d'envoyer plusieurs centaines
- * d'identifiants dans l'URL de la requête.
+ * la synchronisation suivante rapatrierait ce que le serveur a gardé.
  */
 export async function clearRemoteProgress(userId: string, deckId: string): Promise<void> {
   const { error } = await supabase
@@ -262,22 +262,21 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
 }
 
 /**
- * Réglages, compteur du jour et série.
+ * Réglages, compteur du jour, série, collection et paquets en jeu.
  *
- * Le compteur est partagé entre appareils : sans cela, réviser sur le PC
- * puis prendre le téléphone remettrait l'objectif du jour à zéro. On additionne
- * donc ce qui a été fait de part et d'autre, en repartant de zéro si la date
- * enregistrée n'est plus celle d'aujourd'hui.
+ * Tout voyage dans le même paquet JSON de la colonne `settings` : aucune
+ * table, aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
  *
- * La série voyage dans le même paquet JSON que les réglages : aucune table,
- * aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
+ * Les deux listes de paquets sont synchronisées, car mettre un paquet en jeu
+ * sur l'ordinateur doit se voir sur le téléphone — c'est la même décision.
  */
 export async function syncSettings(userId: string): Promise<void> {
   const localGeneral = await repository.getSettings();
   const localCounters = await repository.getCounters();
   const localStreak = await repository.getStreak();
-
   const localOverrides = await repository.getOverrides();
+  const localInstalled = (await repository.getInstalled()) ?? [];
+  const localActive = (await repository.getActive()) ?? localInstalled;
 
   const { data, error } = await supabase
     .from('user_settings')
@@ -290,6 +289,8 @@ export async function syncSettings(userId: string): Promise<void> {
     general?: Settings;
     decks?: Record<string, DeckOverride>;
     streak?: Streak;
+    installed?: string[];
+    active?: string[];
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -307,6 +308,23 @@ export async function syncSettings(userId: string): Promise<void> {
   }
 
   const streak = mergeStreak(localStreak, remoteStreak);
+
+  /*
+   * Collection : on réunit. Un paquet obtenu sur un appareil doit apparaître
+   * sur l'autre, et personne ne « désobtient » un paquet par erreur.
+   */
+  const installed = [...new Set([...localInstalled, ...(bundle?.installed ?? [])])];
+
+  /*
+   * Paquets en jeu : on réunit aussi, mais borné à la collection.
+   *
+   * L'union plutôt que le dernier qui parle, car mettre en pause est une
+   * action réversible d'un geste, alors qu'une remise en jeu perdue laisse
+   * quelqu'un devant un écran vide sans comprendre. En cas de doute on
+   * privilégie donc le travail.
+   */
+  const active = [...new Set([...localActive, ...(bundle?.active ?? [])])]
+    .filter((id) => installed.includes(id));
 
   const today = todayKey();
   const counters: DailyCounters = {};
@@ -326,11 +344,13 @@ export async function syncSettings(userId: string): Promise<void> {
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
   await repository.saveStreak(streak);
+  await repository.saveInstalled(installed);
+  await repository.saveActive(active);
 
   const { error: upErr } = await supabase.from('user_settings').upsert(
     {
       user_id: userId,
-      settings: { general, decks: overrides, streak },
+      settings: { general, decks: overrides, streak, installed, active },
       counter: counters,
       updated_at: new Date().toISOString(),
     },
@@ -343,8 +363,7 @@ export async function syncSettings(userId: string): Promise<void> {
  * Réglages : le plus récemment modifié gagne.
  *
  * Auparavant le serveur l'emportait toujours, si bien qu'un curseur déplacé
- * sur le téléphone était écrasé à la synchronisation suivante : les réglages
- * ne faisaient que descendre, jamais remonter.
+ * sur le téléphone était écrasé à la synchronisation suivante.
  */
 export function mergeSettings(local: Settings, remote: Settings | null): Settings {
   if (!remote) return local;
@@ -359,8 +378,7 @@ export function mergeSettings(local: Settings, remote: Settings | null): Setting
  *
  * Prendre le maximum sous-estimait le total — dix cartes sur l'ordinateur
  * et cinq sur le téléphone donnaient dix, et l'objectif du jour semblait
- * moins avancé qu'il ne l'était. On additionne donc ce que chacun a fait
- * depuis la dernière synchronisation.
+ * moins avancé qu'il ne l'était.
  */
 export function mergeCounters(
   local: DailyCounter,
