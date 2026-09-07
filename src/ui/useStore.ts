@@ -4,11 +4,10 @@
  * Un seul hook centralise le chargement et l'écriture, pour que les
  * composants restent purement visuels.
  *
- * Les réglages existent à deux niveaux : des réglages communs, et une
- * surcharge facultative par paquet qui prend le dessus. Le compteur du
- * jour est lui aussi tenu paquet par paquet, puisque le quota peut
- * différer d'un paquet à l'autre. La série, elle, est unique : réviser
- * dans n'importe quel paquet fait la journée.
+ * Trois listes de paquets, à ne pas confondre :
+ *  - `decks`     : tout ce que l'appareil connaît, catalogue compris ;
+ *  - `installed` : ce qui appartient à la personne ;
+ *  - `active`    : ce sur quoi elle travaille, et qui seul pèse sur la journée.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
@@ -33,23 +32,18 @@ import { imageFor } from './deckImages';
 
 export interface Store {
   ready: boolean;
-  /** Tous les paquets connus de l'appareil : collection et catalogue. */
   decks: Deck[];
-  /** Ceux que la personne a ajoutés à sa collection. */
   installed: DeckId[];
+  active: DeckId[];
   addDeck(id: DeckId): Promise<void>;
-  /** Retire de la collection sans effacer la progression : le retour est indolore. */
   removeDeck(id: DeckId): Promise<void>;
-  /** Rayons du catalogue, dans l'ordre d'affichage. */
+  /** Met un paquet en jeu, ou le met en pause. */
+  setActive(id: DeckId, on: boolean): Promise<void>;
   categories: Category[];
-  /** Réglages communs à tous les paquets. */
   common: Settings;
-  /** Surcharges par paquet. Absent = le paquet suit les réglages communs. */
   overrides: Record<DeckId, DeckOverride>;
-  /** Jours travaillés, série en cours et record. */
   streak: Streak;
   setCommon(s: Settings): Promise<void>;
-  /** `null` supprime la surcharge : le paquet repasse en réglages communs. */
   setOverride(deckId: DeckId, o: Partial<Settings> | null): Promise<void>;
   settingsFor(deckId: DeckId): Settings;
   counterFor(deckId: DeckId): DailyCounter;
@@ -81,6 +75,7 @@ export function useStore(): Store {
   const [counters, setCounters] = useState<Record<DeckId, DailyCounter>>({});
   const [streak, setStreak] = useState<Streak>(EMPTY_STREAK);
   const [installed, setInstalled] = useState<DeckId[]>([]);
+  const [active, setActiveState] = useState<DeckId[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -107,9 +102,9 @@ export function useStore(): Store {
       ]);
 
       /*
-       * Migration : avant cette version, tout paquet présent était dans la
-       * collection. On reprend donc la liste telle quelle plutôt que de vider
-       * l'écran de quelqu'un qui révise depuis des semaines.
+       * Migration : avant cette version, tout paquet présent était possédé.
+       * On reprend la liste telle quelle plutôt que de vider l'écran de
+       * quelqu'un qui révise depuis des semaines.
        */
       let inst = await repository.getInstalled();
       if (inst === null) {
@@ -117,8 +112,23 @@ export function useStore(): Store {
         await repository.saveInstalled(inst);
       }
 
+      /*
+       * Migration de la notion « en jeu ».
+       *
+       * Point de vigilance : jusqu'ici tout paquet possédé pesait sur la
+       * journée. Si l'on démarrait avec une liste vide, la charge de travail
+       * de tous les utilisateurs tomberait à zéro du jour au lendemain, sans
+       * qu'ils comprennent pourquoi. On reprend donc l'existant à l'identique.
+       */
+      let act = await repository.getActive();
+      if (act === null) {
+        act = [...inst];
+        await repository.saveActive(act);
+      }
+
       setDecks(list);
       setInstalled(inst);
+      setActiveState(act);
       setCategories(cats);
       setCommonState(s);
       setOverridesState(o);
@@ -167,8 +177,6 @@ export function useStore(): Store {
   );
 
   const refreshAll = useCallback(async () => {
-    // Après une synchronisation, réglages, surcharges, compteurs et série
-    // ont pu changer sur le serveur : on relit tout avec les paquets.
     const [list, cats, s, o, c, st] = await Promise.all([
       repository.listDecks(),
       repository.listCategories(),
@@ -183,9 +191,12 @@ export function useStore(): Store {
     setOverridesState(o);
     setCounters(rollAll(c));
     setStreak(st);
-    setInstalled((await repository.getInstalled()) ?? []);
+    const inst = (await repository.getInstalled()) ?? [];
+    setInstalled(inst);
+    setActiveState((await repository.getActive()) ?? inst);
   }, []);
 
+  /** Obtenir un paquet : il rejoint la collection, en pause. */
   const addDeck = useCallback(async (id: DeckId) => {
     // On relit avant d'écrire : deux ajouts rapprochés se perdraient sinon.
     const current = (await repository.getInstalled()) ?? [];
@@ -193,13 +204,33 @@ export function useStore(): Store {
     const next = [...current, id];
     await repository.saveInstalled(next);
     setInstalled(next);
+    /*
+     * Volontairement pas mis en jeu : sinon chaque achat alourdirait le
+     * lendemain à la place de la personne. C'est elle qui décide quand
+     * commencer.
+     */
   }, []);
 
   const removeDeck = useCallback(async (id: DeckId) => {
-    const current = (await repository.getInstalled()) ?? [];
-    const next = current.filter((x) => x !== id);
-    await repository.saveInstalled(next);
-    setInstalled(next);
+    const inst = ((await repository.getInstalled()) ?? []).filter((x) => x !== id);
+    await repository.saveInstalled(inst);
+    setInstalled(inst);
+    // Un paquet qu'on ne possède plus ne peut pas rester en jeu.
+    const act = ((await repository.getActive()) ?? []).filter((x) => x !== id);
+    await repository.saveActive(act);
+    setActiveState(act);
+  }, []);
+
+  const setActive = useCallback(async (id: DeckId, on: boolean) => {
+    const inst = (await repository.getInstalled()) ?? [];
+    // On ne met en jeu que ce qui appartient à la personne.
+    if (on && !inst.includes(id)) return;
+    const current = (await repository.getActive()) ?? inst;
+    const next = on
+      ? current.includes(id) ? current : [...current, id]
+      : current.filter((x) => x !== id);
+    await repository.saveActive(next);
+    setActiveState(next);
   }, []);
 
   const loadDeck = useCallback(async (id: DeckId): Promise<LoadedDeck> => {
@@ -235,8 +266,7 @@ export function useStore(): Store {
       /*
        * La journée est marquée dès la première carte notée. `record` est sans
        * effet si elle l'est déjà, donc appelable à chaque carte sans compter
-       * plusieurs fois — et on ne relit la série que pour l'écrire une seule
-       * fois par jour.
+       * plusieurs fois.
        */
       setStreak((prev) => {
         const suivant = recordDay(prev);
@@ -265,14 +295,14 @@ export function useStore(): Store {
 
   return useMemo(
     () => ({
-      ready, decks, installed, categories, common, overrides, streak,
-      addDeck, removeDeck,
+      ready, decks, installed, active, categories, common, overrides, streak,
+      addDeck, removeDeck, setActive,
       setCommon, setOverride, settingsFor, counterFor,
       refreshAll, loadDeck, gradeCard,
     }),
     [
-      ready, decks, installed, categories, common, overrides, streak,
-      addDeck, removeDeck,
+      ready, decks, installed, active, categories, common, overrides, streak,
+      addDeck, removeDeck, setActive,
       setCommon, setOverride, settingsFor, counterFor,
       refreshAll, loadDeck, gradeCard,
     ],
