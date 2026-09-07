@@ -34,12 +34,28 @@ export interface Category {
   position: number;
 }
 
+/**
+ * Niveau indicatif d'un paquet.
+ *
+ * Le code européen est doublé d'un repère scolaire à l'affichage : « A2 »
+ * ne dit rien à un parent, « collège » si.
+ */
+export type Level = 'A2' | 'B1' | 'B2';
+
+export const LEVEL_LABELS: Record<Level, string> = {
+  A2: 'collège',
+  B1: 'lycée',
+  B2: 'avancé',
+};
+
 export interface Deck {
   id: DeckId;
   name: string;
   description?: string;
   /** Rayon d'appartenance. Absent = paquet non classé. */
   categoryId?: string | null;
+  /** Niveau indicatif. Absent = pas d'étiquette au catalogue. */
+  level?: Level | null;
   /** Un paquet fourni avec l'application ne peut pas être supprimé. */
   builtin: boolean;
   /**
@@ -51,6 +67,14 @@ export interface Deck {
   hasImage: boolean;
   createdAt: number;
   updatedAt: number;
+}
+
+/** Tranches de prix proposées au catalogue, en centimes. */
+export const PRICE_TIERS = [0, 200, 300, 500] as const;
+
+export function priceLabel(cents: number | undefined): string {
+  if (!cents) return 'Gratuit';
+  return `${(cents / 100).toFixed(2).replace('.', ',').replace(',00', '')} €`;
 }
 
 /** Notes possibles, alignées sur FSRS. */
@@ -77,7 +101,7 @@ export interface Progress {
 
 /**
  * Réglages généraux, valables par défaut pour tous les paquets.
- * Chaque paquet peut les redéfinir : voir `DeckOverrides`.
+ * Chaque paquet peut les redéfinir : voir `DeckOverride`.
  */
 export interface Settings {
   /**
@@ -174,5 +198,6 @@ export interface SeedDeck {
   id: string;
   name: string;
   description?: string;
+  level?: Level;
   cards: Array<{ en: string; fr: string; theme: string; example?: string }>;
 }
