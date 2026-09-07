@@ -14,6 +14,7 @@ import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
+import { readClasse } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
@@ -74,7 +75,9 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select('id, name, description, price_cents, card_count, position, category_id, level')
+    .select(
+      'id, name, description, price_cents, card_count, position, category_id, level, grade_from',
+    )
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -115,6 +118,14 @@ export async function pullCatalog(): Promise<number> {
       description: row.description ?? undefined,
       categoryId: row.category_id ?? null,
       level: readLevel((row as Record<string, unknown>).level),
+      /*
+       * Classe plancher. La colonne s'appelle `grade_from` côté Supabase et
+       * le champ `classeFrom` côté domaine : `Grade` y désigne déjà la note
+       * FSRS, et deux sens pour un mot finit toujours par coûter une soirée.
+       * `readClasse` filtre comme `readLevel` — une valeur inconnue vaut
+       * null, jamais un plantage ni un paquet disparu.
+       */
+      classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       builtin: true,
       priceCents: row.price_cents ?? 0,
       hasImage: existing?.hasImage ?? false,
@@ -266,6 +277,8 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
  *
  * Tout voyage dans le même paquet JSON de la colonne `settings` : aucune
  * table, aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
+ * La classe scolaire déclarée par l'utilisateur suit ce chemin comme le
+ * reste — elle décrit la personne, pas le catalogue.
  *
  * Les deux listes de paquets sont synchronisées, car mettre un paquet en jeu
  * sur l'ordinateur doit se voir sur le téléphone — c'est la même décision.
