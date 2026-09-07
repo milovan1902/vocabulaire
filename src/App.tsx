@@ -263,6 +263,14 @@ export default function App() {
             categories={store.categories}
             settings={store.common}
             auth={auth}
+            /*
+             * La classe déclarée est un réglage comme un autre : elle passe
+             * par le même chemin d'écriture que ceux de l'écran Compte.
+             * `setCommon` date lui-même la modification, c'est ce qui la
+             * fera gagner face à une version plus ancienne venue d'un autre
+             * appareil — Library n'a donc pas à toucher `updatedAt`.
+             */
+            onSettings={(s) => void store.setCommon(s)}
             onSearch={() => setView({ name: 'search' })}
             onOpen={(id, vol) => {
               /*
