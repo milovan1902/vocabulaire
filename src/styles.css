@@ -834,3 +834,157 @@ textarea {
   font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--grey); margin-top: 2px;
 }
+
+
+/* ================================================================
+   Chantier 5 — trois onglets : travail, collection, catalogue
+   ================================================================ */
+
+/* Trois pastilles au lieu de deux : les libellés sont plus longs, la
+   police descend d'un cran et le rembourrage se resserre pour tenir sur
+   390 px sans jamais tronquer. */
+.tabs button { padding: 0 11px; font-size: 12px; white-space: nowrap; min-height: 38px; gap: 6px; }
+
+/* ---------- vignettes de paquet ---------- */
+.vign {
+  flex: none; display: block; object-fit: cover;
+  border-radius: 8px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.vign-draw {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-hi); border: 1px solid var(--rule);
+  box-shadow: none; overflow: hidden;
+}
+.vign-draw svg { height: 100%; width: auto; }
+.vign-wrap { position: relative; flex: none; display: block; }
+.vign-due {
+  position: absolute; z-index: 2; top: -7px; right: -7px;
+  min-width: 26px; height: 26px; padding: 0 5px;
+  border-radius: 999px; background: var(--chalk); color: var(--on-chalk);
+  font-size: 12px; font-weight: 700; line-height: 26px; text-align: center;
+}
+
+/* ---------- Mon travail ---------- */
+
+/* Le prix de l'engagement, annoncé avant qu'on s'engage. */
+.engage {
+  margin: 18px 0 0; padding: 14px 18px;
+  border: 1px solid rgba(242, 183, 5, 0.3); border-radius: 16px;
+  background: rgba(242, 183, 5, 0.06);
+}
+.engage .label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--chalk); margin: 0;
+}
+.engage-n { display: flex; align-items: flex-end; gap: 12px; margin: 12px 0 0; }
+.engage-n b {
+  font-family: var(--serif); font-size: 52px; font-weight: 400;
+  line-height: 0.85; color: var(--ink);
+}
+.engage-n span { font-size: 14px; line-height: 1.4; color: var(--ink-soft); padding-bottom: 4px; }
+.engage .hint { margin: 11px 0 0; }
+
+.worklist { display: flex; flex-direction: column; gap: 10px; }
+.workrow { display: flex; align-items: center; gap: 12px; }
+.workrow-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+  text-align: left; color: var(--ink); cursor: pointer;
+}
+.workrow-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.workrow-txt b { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.workrow-txt small {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+.pausebtn {
+  flex: none; min-height: 44px; padding: 0 13px;
+  border-radius: 11px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: inherit; font-size: 12.5px; cursor: pointer;
+}
+
+/* Ligne cliquable de fin de section, façon réglages. */
+.rowlink {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; min-height: 48px; margin-top: 10px; padding: 0;
+  background: none; border: none; border-top: 1px solid var(--rule);
+  font-family: inherit; font-size: 14px; color: var(--ink-soft);
+  text-align: left; cursor: pointer;
+}
+.rowlink .chev { font-size: 17px; color: var(--chalk); line-height: 1; }
+
+/* ---------- Ma collection : les interrupteurs ---------- */
+.switchlist {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule);
+  border-radius: 14px; overflow: hidden;
+}
+.switchrow {
+  display: flex; align-items: center; gap: 13px;
+  background: var(--panel); padding: 11px 14px;
+}
+/* En pause : grisé et dépigmenté, mais jamais illisible — la progression
+   reste une information qu'on doit pouvoir lire. */
+.switchrow.off { opacity: 0.62; }
+.switchrow.off .vign { filter: grayscale(1); }
+.switchrow-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+  text-align: left; color: var(--ink); cursor: pointer;
+}
+.switchrow-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.switchrow-txt b { font-size: 14px; font-weight: 600; color: var(--ink); }
+.switchrow-txt small { font-size: 11.5px; color: var(--grey); }
+
+.switch {
+  flex: none; width: 46px; height: 28px; padding: 3px;
+  border: none; border-radius: 999px; background: rgba(234, 230, 219, 0.18);
+  display: flex; align-items: center; cursor: pointer;
+}
+.switch i {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--grey);
+  transition: margin-left 140ms ease, background 140ms ease;
+}
+.switch.on { background: var(--chalk); }
+.switch.on i { margin-left: 18px; background: var(--panel); }
+
+.rayon-label.on { color: var(--chalk); }
+
+/* ---------- Mon catalogue ---------- */
+.pricefilters, .rayonfilters { display: flex; flex-wrap: wrap; gap: 6px; }
+.pricefilters { margin: 16px 0 0; }
+.rayonfilters { margin: 7px 0 0; }
+.pricefilters button, .rayonfilters button {
+  min-height: 34px; padding: 0 11px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+}
+.pricefilters button span { color: var(--grey); }
+.pricefilters button.on, .rayonfilters button.on {
+  background: rgba(242, 183, 5, 0.14); border-color: var(--chalk); color: var(--ink);
+}
+.pricefilters button.on span { color: var(--grey); }
+
+.catlist { display: flex; flex-direction: column; gap: 11px; margin-bottom: 4px; }
+.catrow { display: flex; align-items: center; gap: 12px; }
+.catrow-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+  text-align: left; color: var(--ink); cursor: pointer;
+}
+.catrow-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.catrow-txt b { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.catrow-txt small { font-size: 12px; color: var(--grey); }
+.catrow .minibtn { margin: 0; width: auto; flex: none; min-height: 44px; padding: 0 14px; }
+.ownedtag {
+  flex: none; min-height: 44px; padding: 0 12px;
+  border-radius: 11px; border: 1px solid rgba(79, 191, 149, 0.4);
+  color: var(--good); font-size: 12.5px; font-weight: 600;
+  display: flex; align-items: center;
+}
+
+/* Les grilles de cartes ne servent plus dans « Paquets » : les listes
+   laissent la place aux interrupteurs et aux prix. Les règles restent
+   pour la carte volante et l'écran d'un paquet. */
