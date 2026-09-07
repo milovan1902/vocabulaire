@@ -1,9 +1,8 @@
 /**
  * Écran d'entrée : ce qu'il y a à faire aujourd'hui.
  *
- * Une seule question posée à l'ouverture — combien, et dans quel paquet.
- * D'où une seule action pleine largeur : réviser le paquet le plus en
- * retard. Le reste est informatif.
+ * Ne regarde que les paquets *en jeu*. Un paquet possédé mais en pause n'a
+ * rien à faire ici : c'est tout l'intérêt de la pause.
  */
 import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
@@ -15,16 +14,17 @@ import { doneToday, lastSeven, liveStreak } from '../engine/streak';
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
 export function Today({
-  decks, installed, settings, streak, onReview, onOpen,
+  decks, active, settings, streak, onReview, onOpen, onManage,
 }: {
   decks: Deck[];
-  installed: string[];
+  /** Paquets en jeu. */
+  active: string[];
   settings: Settings;
   streak: Streak;
-  /** Ouvre le paquet et démarre aussitôt une session. */
   onReview: (id: string) => void;
-  /** Ouvre l'écran du paquet, sans démarrer de session. */
   onOpen: (id: string) => void;
+  /** Vers « Mon travail », quand rien n'est en jeu. */
+  onManage: () => void;
 }) {
   const [rows, setRows] = useState<DeckSummary[] | null>(null);
   const [dueByDay, setDueByDay] = useState<number[]>([]);
@@ -33,15 +33,15 @@ export function Today({
   useEffect(() => {
     let alive = true;
     (async () => {
-      const mine = decks.filter((d) => installed.includes(d.id));
-      const charge = await loadSummaries(mine, settings);
+      const enJeu = decks.filter((d) => active.includes(d.id));
+      const charge = await loadSummaries(enJeu, settings);
       if (!alive) return;
       setRows(charge.summaries);
       setDueByDay(charge.dueByDay);
       setResting(charge.resting);
     })();
     return () => { alive = false; };
-  }, [decks, installed, settings]);
+  }, [decks, active, settings]);
 
   if (!rows) return <p className="lead">Chargement…</p>;
 
@@ -83,7 +83,19 @@ export function Today({
         ))}
       </div>
 
-      {total === 0 ? (
+      {rows.length === 0 ? (
+        <>
+          <div className="today-count">
+            <b>0</b>
+            <span>carte à voir<br />aujourd’hui</span>
+          </div>
+          <p className="hint">
+            Aucun paquet en jeu. Choisissez ceux sur lesquels vous voulez
+            travailler ; leur charge apparaîtra ici.
+          </p>
+          <button className="btn" onClick={onManage}>Mettre un paquet en jeu</button>
+        </>
+      ) : total === 0 ? (
         <>
           <div className="today-count">
             <b>0</b>
@@ -102,10 +114,10 @@ export function Today({
             <span>carte{total > 1 ? 's' : ''} à voir<br />aujourd’hui</span>
           </div>
           <p className="today-est">
-            {rows.length > 1
-              ? `Répartis sur ${aFaire.length} paquet${aFaire.length > 1 ? 's' : ''}. `
+            {aFaire.length > 1
+              ? `Répartis sur ${aFaire.length} paquets. `
               : ''}
-            Environ {Math.max(1, Math.round(total * 0.4))} minutes.
+            Environ {Math.max(1, Math.round(total / 3))} minutes.
           </p>
 
           {enJeu && (
