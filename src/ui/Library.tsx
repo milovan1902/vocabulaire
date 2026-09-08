@@ -315,6 +315,13 @@ export function Library({
     const gratuit = !s.deck.priceCents;
     const n = niveau(s.deck.level);
     const cl = classeDepuisLabel(s.deck.classeFrom);
+    /*
+     * Un paquet payant non acheté n'a aucune carte sur l'appareil — la base
+     * les filtre — donc `s.total` vaut zéro. On retombe sur le compte
+     * annoncé par le serveur, sans quoi le catalogue afficherait « 0 mots »
+     * sur chaque paquet qu'il propose.
+     */
+    const mots = s.total || s.deck.cardCount || 0;
     return (
       <div key={s.deck.id} className={`catrow${plusTard ? ' later' : ''}`}>
         <button className="catrow-main" onClick={(e) => ouvrir(e, s)}>
@@ -322,7 +329,7 @@ export function Library({
           <span className="catrow-txt">
             <b>{s.deck.name}</b>
             <small>
-              {s.total} mots
+              {mots} mots
               {n ? ` · ${n}` : ''}
               {cl ? ` · ${cl}` : ''}
               {gratuit ? ' · gratuit' : ''}
