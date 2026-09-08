@@ -25,6 +25,22 @@ const TRANCHES: Array<{ cents: number; label: string }> = [
   { cents: 500, label: '5 €' },
 ];
 
+/**
+ * Les cycles scolaires.
+ *
+ * Une puce de consultation = un cycle entier, jamais une classe isolée.
+ * Sur des planchers exacts, « 6ème » et « 5ème » forment deux ensembles
+ * disjoints : un élève de 4ème ne trouvait rien, et « Collège » ne montrait
+ * que les quatre paquets d'un rayon qui portait le même nom par hasard.
+ * Le cycle rassemble ses quatre planchers, ce qui est le sens réel de
+ * « dès la 6ème ».
+ */
+const CYCLES: Array<{ id: string; label: string; classes: Classe[] }> = [
+  { id: 'primaire', label: 'Primaire', classes: ['CM2'] },
+  { id: 'college', label: 'Collège', classes: ['6e', '5e', '4e', '3e'] },
+  { id: 'lycee', label: 'Lycée', classes: ['2de', '1re', 'Tle'] },
+];
+
 export function Library({
   decks, installed, active, categories, settings, auth,
   onOpen, onReview, onAdd, onRemove, onSetActive, onSearch, onSettings,
@@ -67,9 +83,13 @@ export function Library({
    *   exacts, plusieurs classes à la fois, jamais mémorisée.
    *
    * Le multi-choix n'existe que dans le second mode, et il s'annonce à
-   * l'écran. Raison : sur des planchers exacts, cocher 6ème et 4ème saute
-   * les paquets à plancher 5ème, qui conviennent pourtant à un élève de
-   * 4ème. Ce trou est inévitable — autant l'avouer plutôt que le cacher.
+   * l'écran. Il se coche par CYCLE : cocher « Collège » prend les quatre
+   * planchers 6e, 5e, 4e et 3e d'un coup. La seconde rangée de puces sert
+   * à redescendre au plancher près quand on veut vraiment ce détail.
+   *
+   * Il reste un trou entre cycles — consulter « Lycée » ne montre pas un
+   * paquet à plancher 3ème, qui conviendrait pourtant à un élève de 2nde.
+   * Autant l'avouer à l'écran plutôt que le cacher.
    */
   const [consult, setConsult] = useState<Classe[]>([]);
   const [choixClasse, setChoixClasse] = useState(false);
@@ -315,13 +335,6 @@ export function Library({
     const gratuit = !s.deck.priceCents;
     const n = niveau(s.deck.level);
     const cl = classeDepuisLabel(s.deck.classeFrom);
-    /*
-     * Un paquet payant non acheté n'a aucune carte sur l'appareil — la base
-     * les filtre — donc `s.total` vaut zéro. On retombe sur le compte
-     * annoncé par le serveur, sans quoi le catalogue afficherait « 0 mots »
-     * sur chaque paquet qu'il propose.
-     */
-    const mots = s.total || s.deck.cardCount || 0;
     return (
       <div key={s.deck.id} className={`catrow${plusTard ? ' later' : ''}`}>
         <button className="catrow-main" onClick={(e) => ouvrir(e, s)}>
@@ -329,7 +342,7 @@ export function Library({
           <span className="catrow-txt">
             <b>{s.deck.name}</b>
             <small>
-              {mots} mots
+              {s.total} mots
               {n ? ` · ${n}` : ''}
               {cl ? ` · ${cl}` : ''}
               {gratuit ? ' · gratuit' : ''}
@@ -431,6 +444,25 @@ export function Library({
       );
     }
 
+    /*
+     * Un cycle se coche entier et se décoche entier. On n'y met que les
+     * planchers qui ont au moins un paquet : ajouter une classe vide
+     * gonflerait le compte annoncé sans rien afficher.
+     */
+    function basculerCycle(cy: { classes: Classe[] }) {
+      const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
+      const toutCoche = dispo.length > 0 && dispo.every((c) => consult.includes(c));
+      setConsult((prev) => {
+        const hors = prev.filter((c) => !cy.classes.includes(c));
+        return toutCoche ? hors : [...hors, ...dispo];
+      });
+    }
+
+    /** Les cycles dont une classe au moins est cochée : eux seuls s'affinent. */
+    const cyclesOuverts = CYCLES.filter((cy) =>
+      cy.classes.some((c) => consult.includes(c)),
+    );
+
     return (
       <>
         <button
@@ -483,9 +515,9 @@ export function Library({
               Vous consultez {consult.map((c) => CLASSE_LABELS[c]).join(', ')}
             </p>
             <p className="hint">
-              Ce ne sont pas les paquets de votre classe, mais ceux dont c’est
-              exactement le plancher. Un paquet plus ancien n’y figure pas,
-              même s’il vous conviendrait.
+              Ce sont les paquets dont le plancher tombe dans ce que vous avez
+              coché, et non ceux de votre classe. Un paquet d’un cycle plus bas
+              n’y figure pas, même s’il vous conviendrait.
             </p>
             <button className="btn ghost" onClick={() => setConsult([])}>
               {maClasse ? `Revenir à ma classe — ${CLASSE_LABELS[maClasse]}` : 'Revenir au catalogue'}
@@ -494,23 +526,43 @@ export function Library({
         )}
 
         <div className="classechips">
-          {CLASSES.map((c) => {
-            const n = parClasseExact.get(c) ?? 0;
-            // Une puce vide ne peut rien afficher : on ne la propose pas.
-            // Sauf si elle est déjà cochée — la retirer sous le doigt
-            // enlèverait à l'utilisateur le moyen de la décocher.
-            if (n === 0 && !consult.includes(c)) return null;
+          {CYCLES.map((cy) => {
+            const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
+            const n = dispo.reduce((t, c) => t + (parClasseExact.get(c) ?? 0), 0);
+            const coches = cy.classes.filter((c) => consult.includes(c));
+            // Un cycle sans aucun paquet ne peut rien afficher : on ne le
+            // propose pas. Sauf s'il est déjà coché — le retirer sous le
+            // doigt enlèverait le moyen de le décocher.
+            if (n === 0 && coches.length === 0) return null;
             return (
               <button
-                key={c}
-                className={consult.includes(c) ? 'on' : ''}
-                onClick={() => basculerConsultation(c)}
+                key={cy.id}
+                className={coches.length > 0 ? 'on' : ''}
+                onClick={() => basculerCycle(cy)}
               >
-                {CLASSE_LABELS[c]} · {n}
+                {cy.label} · {n}
               </button>
             );
           })}
         </div>
+
+        {cyclesOuverts.length > 0 && (
+          <div className="classechips fine" style={{ opacity: 0.85 }}>
+            {cyclesOuverts.flatMap((cy) => cy.classes).map((c) => {
+              const n = parClasseExact.get(c) ?? 0;
+              if (n === 0 && !consult.includes(c)) return null;
+              return (
+                <button
+                  key={c}
+                  className={consult.includes(c) ? 'on' : ''}
+                  onClick={() => basculerConsultation(c)}
+                >
+                  {CLASSE_LABELS[c]} · {n}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <div className="pricefilters">
           {TRANCHES.map((t) => {
