@@ -15,6 +15,7 @@ import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
 import { readClasse } from '../domain/types';
+import { SEED_DECKS } from './seed';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
@@ -136,7 +137,60 @@ export async function pullCatalog(): Promise<number> {
     pulled++;
   }
 
+  /*
+   * Ménage : un paquet retiré du catalogue doit disparaître de l'appareil.
+   *
+   * Sans ceci, un paquet supprimé côté serveur restait en local pour
+   * toujours. Et comme tout paquet venu du serveur est `builtin`, l'écran
+   * refusait aussi de le supprimer à la main : plus aucun moyen de s'en
+   * débarrasser.
+   *
+   * Une suppression emporte la progression, donc trois garde-fous :
+   *
+   * - on juge sur la liste des PAQUETS, jamais sur celle des cartes. Un
+   *   paquet payant non acheté renvoie zéro carte — la base les filtre —
+   *   mais sa ligne existe toujours. Le confondre avec un paquet retiré
+   *   effacerait la progression d'un paquet acheté le jour où l'accès
+   *   hoquette.
+   * - les paquets embarqués (SEED_DECKS) ne sont sur aucun serveur. Ils
+   *   sont exclus par principe, sans quoi le premier ménage les emporterait.
+   * - les paquets créés par l'utilisateur (builtin: false) ne regardent pas
+   *   le serveur.
+   *
+   * Le `return 0` plus haut sert de quatrième garde-fou : si le serveur ne
+   * renvoie aucun paquet, on ne supprime rien plutôt que tout.
+   */
+  const surLeServeur = new Set(rows.map((r) => r.id));
+  const embarques = new Set(SEED_DECKS.map((s) => s.id));
+  const retires: string[] = [];
+
+  for (const d of local) {
+    if (!d.builtin) continue;
+    if (embarques.has(d.id)) continue;
+    if (surLeServeur.has(d.id)) continue;
+    await repository.deleteDeck(d.id);
+    byId.delete(d.id);
+    retires.push(d.id);
+  }
+
   await repository.saveDecks([...byId.values()]);
+
+  /*
+   * `deleteDeck` nettoie les cartes, la progression, les thèmes, l'image,
+   * les réglages particuliers et les compteurs — mais pas les listes
+   * `installed` et `active`, qui vivent à part et voyagent vers le serveur.
+   * Un identifiant mort qui y resterait reviendrait à chaque synchro.
+   */
+  if (retires.length) {
+    const morts = new Set(retires);
+    const installed = (await repository.getInstalled()) ?? [];
+    const active = (await repository.getActive()) ?? [];
+    const gardes = installed.filter((id) => !morts.has(id));
+    const gardesActifs = active.filter((id) => !morts.has(id));
+    if (gardes.length !== installed.length) await repository.saveInstalled(gardes);
+    if (gardesActifs.length !== active.length) await repository.saveActive(gardesActifs);
+  }
+
   return pulled;
 }
 
