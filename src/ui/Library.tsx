@@ -365,6 +365,22 @@ export function Library({
       parClasse.set(c, tous.filter((s) => classeConvient(s.deck.classeFrom, c)).length);
     }
 
+    /*
+     * Le compte EXACT par plancher — celui de la consultation, qui ne cumule
+     * pas. Il sert à ne proposer que des puces qui donneront quelque chose,
+     * comme les tranches de prix plus bas le font déjà.
+     *
+     * Un paquet sans plancher n'entre dans aucun compte, et c'est le point :
+     * il est invisible en consultation. Tant que la puce restait cliquable,
+     * un paquet oublié en base donnait une liste vide sans qu'on sache
+     * pourquoi. Maintenant la puce disparaît, et son absence se remarque.
+     */
+    const parClasseExact = new Map<Classe, number>();
+    for (const s of tous) {
+      const p = s.deck.classeFrom;
+      if (p) parClasseExact.set(p, (parClasseExact.get(p) ?? 0) + 1);
+    }
+
     // En consultation on prend les planchers EXACTEMENT cochés ; sinon tout
     // le catalogue, qu'on répartira ensuite entre ma classe et plus tard.
     const socle = enConsultation
@@ -471,15 +487,22 @@ export function Library({
         )}
 
         <div className="classechips">
-          {CLASSES.map((c) => (
-            <button
-              key={c}
-              className={consult.includes(c) ? 'on' : ''}
-              onClick={() => basculerConsultation(c)}
-            >
-              {CLASSE_LABELS[c]}
-            </button>
-          ))}
+          {CLASSES.map((c) => {
+            const n = parClasseExact.get(c) ?? 0;
+            // Une puce vide ne peut rien afficher : on ne la propose pas.
+            // Sauf si elle est déjà cochée — la retirer sous le doigt
+            // enlèverait à l'utilisateur le moyen de la décocher.
+            if (n === 0 && !consult.includes(c)) return null;
+            return (
+              <button
+                key={c}
+                className={consult.includes(c) ? 'on' : ''}
+                onClick={() => basculerConsultation(c)}
+              >
+                {CLASSE_LABELS[c]} · {n}
+              </button>
+            );
+          })}
         </div>
 
         <div className="pricefilters">
