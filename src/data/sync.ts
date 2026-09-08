@@ -100,16 +100,33 @@ export async function pullCatalog(): Promise<number> {
         .order('position')
         .range(from, to),
     );
-    if (!cards.length) continue;
-
-    const mapped: Card[] = cards.map((c) => ({
-      id: c.id,
-      en: c.en,
-      fr: c.fr,
-      theme: c.theme,
-      example: c.example ?? undefined,
-    }));
-    await repository.saveCards(row.id, mapped);
+    /*
+     * Un paquet payant non acheté renvoie zéro carte : la base les filtre.
+     *
+     * Ce n'est PAS une raison de l'écarter — c'est précisément le paquet
+     * qu'il faut montrer, avec son prix. Un catalogue ne peut pas vendre ce
+     * qu'il refuse de télécharger. La ligne du paquet suffit à l'afficher :
+     * nom, niveau, classe plancher, prix. Seules les cartes manquent, et
+     * elles arriveront à l'achat.
+     *
+     * Ne rien écrire quand la liste est vide protège aussi le cas inverse :
+     * un paquet acheté dont l'accès hoquette garde ses cartes en local au
+     * lieu d'être vidé de sa substance.
+     *
+     * Un paquet sans carte n'apparaît que dans le catalogue : « Ma
+     * collection » se remplit depuis `installed`, « Mon travail » depuis
+     * `active`. Un paquet non acheté n'est dans ni l'un ni l'autre.
+     */
+    if (cards.length) {
+      const mapped: Card[] = cards.map((c) => ({
+        id: c.id,
+        en: c.en,
+        fr: c.fr,
+        theme: c.theme,
+        example: c.example ?? undefined,
+      }));
+      await repository.saveCards(row.id, mapped);
+    }
 
     const existing = byId.get(row.id);
     const now = Date.now();
@@ -129,6 +146,9 @@ export async function pullCatalog(): Promise<number> {
       classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       builtin: true,
       priceCents: row.price_cents ?? 0,
+      // Le compte annoncé par le serveur, seul chiffre disponible tant que
+      // les cartes d'un paquet payant restent filtrées.
+      cardCount: row.card_count ?? undefined,
       hasImage: existing?.hasImage ?? false,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
