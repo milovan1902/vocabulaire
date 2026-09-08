@@ -145,6 +145,17 @@ export interface Deck {
    * Absent pour les paquets qui n'ont jamais transité par le serveur.
    */
   priceCents?: number;
+  /**
+   * Nombre de cartes annoncé par le serveur.
+   *
+   * Distinct du nombre de cartes réellement présentes sur l'appareil : un
+   * paquet payant non acheté n'en a aucune, la base les filtre. C'est ce
+   * chiffre-là que le catalogue affiche, sinon il annoncerait « 0 mots »
+   * sur tout ce qu'il vend.
+   *
+   * Absent pour les paquets qui n'ont jamais transité par le serveur.
+   */
+  cardCount?: number;
   /** Image de dos, stockée séparément (voir `imageKey`). */
   hasImage: boolean;
   createdAt: number;
