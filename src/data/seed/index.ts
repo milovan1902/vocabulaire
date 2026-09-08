@@ -1,12 +1,21 @@
 /**
  * Installation des paquets fournis, au premier lancement seulement.
  * Ils sont marqués `builtin` : non supprimables, mais enrichissables.
+ *
+ * Retirer un paquet de SEED_DECKS suffit à le faire disparaître des
+ * appareils : le ménage de `pullDecks` (voir data/sync.ts) supprime tout
+ * paquet `builtin` qui n'est ni embarqué ici, ni présent sur le serveur.
+ * C'est ce qui a emporté « Verbes irréguliers » — il n'était plus dans
+ * cette liste, et sa ligne Supabase avait été effacée par le ménage SQL.
+ *
+ * Le fichier `irregularVerbs.ts` reste dans le dépôt sans être importé :
+ * il n'est plus embarqué dans l'application, et sert d'archive si vous
+ * voulez un jour en refaire un paquet Supabase.
  */
 import type { Card, Deck, SeedDeck } from '../../domain/types';
 import { collegeUs } from './collegeUs';
-import { irregularVerbs } from './irregularVerbs';
 
-export const SEED_DECKS: SeedDeck[] = [collegeUs, irregularVerbs];
+export const SEED_DECKS: SeedDeck[] = [collegeUs];
 
 /**
  * Identifiant stable d'une carte.
