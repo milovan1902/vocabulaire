@@ -14,6 +14,7 @@ import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
+import { readClasse } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
@@ -74,7 +75,9 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select('id, name, description, price_cents, card_count, position, category_id, level')
+    .select(
+      'id, name, description, price_cents, card_count, position, category_id, level, grade_from',
+    )
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -90,9 +93,9 @@ export async function pullCatalog(): Promise<number> {
      * l'écartais — d'où trois paquets absents de la bibliothèque alors que
      * leurs 357 cartes étaient bien en base.
      *
-     * Le paquet est désormais toujours créé. Sa vitrine — nom, prix, nombre
-     * de mots annoncé — vit sur la table decks, que rien ne filtre. Seul son
-     * contenu reste verrouillé, ce qui est exactement le contrat.
+     * Le paquet est désormais toujours créé. Sa vitrine — nom, prix, classe
+     * plancher, nombre de mots annoncé — vit sur la table decks, que rien ne
+     * filtre. Seul son contenu reste verrouillé, ce qui est le contrat.
      */
     const cards = await fetchAllRows<{
       id: string; en: string; fr: string; theme: string; example: string | null;
@@ -105,10 +108,10 @@ export async function pullCatalog(): Promise<number> {
         .range(from, to),
     );
     /*
-     * Le garde-fou déplacé : on n'écrit QUE si le serveur a renvoyé quelque
-     * chose. Enregistrer un tableau vide effacerait les cartes locales d'un
-     * paquet acheté le jour où la règle RLS le filtrerait à tort — une perte
-     * silencieuse, la pire espèce.
+     * Le garde-fou n'est pas supprimé, il est déplacé : on n'écrit QUE si le
+     * serveur a renvoyé quelque chose. Enregistrer un tableau vide effacerait
+     * les cartes locales d'un paquet acheté le jour où la règle RLS le
+     * filtrerait à tort — une perte silencieuse, la pire espèce.
      */
     if (cards.length) {
       const mapped: Card[] = cards.map((c) => ({
@@ -129,6 +132,14 @@ export async function pullCatalog(): Promise<number> {
       description: row.description ?? undefined,
       categoryId: row.category_id ?? null,
       level: readLevel((row as Record<string, unknown>).level),
+      /*
+       * Classe plancher. La colonne s'appelle `grade_from` côté Supabase et
+       * le champ `classeFrom` côté domaine : `Grade` y désigne déjà la note
+       * FSRS, et deux sens pour un mot finit toujours par coûter une soirée.
+       * `readClasse` filtre comme `readLevel` — une valeur inconnue vaut
+       * null, jamais un plantage ni un paquet disparu.
+       */
+      classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       builtin: true,
       priceCents: row.price_cents ?? 0,
       // Sélectionné depuis toujours, jamais utilisé : le voici.
@@ -282,6 +293,8 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
  *
  * Tout voyage dans le même paquet JSON de la colonne `settings` : aucune
  * table, aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
+ * La classe scolaire déclarée par l'utilisateur suit ce chemin comme le
+ * reste — elle décrit la personne, pas le catalogue.
  *
  * Les deux listes de paquets sont synchronisées, car mettre un paquet en jeu
  * sur l'ordinateur doit se voir sur le téléphone — c'est la même décision.
