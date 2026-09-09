@@ -14,8 +14,6 @@ import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
-import { readClasse } from '../domain/types';
-import { SEED_DECKS } from './seed';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
@@ -76,9 +74,7 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select(
-      'id, name, description, price_cents, card_count, position, category_id, level, grade_from',
-    )
+    .select('id, name, description, price_cents, card_count, position, category_id, level')
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -88,8 +84,16 @@ export async function pullCatalog(): Promise<number> {
   let pulled = 0;
 
   for (const row of rows) {
-    // Les cartes d'un paquet payant non acheté sont invisibles : la base les
-    // filtre. On ne crée donc le paquet en local que s'il a du contenu.
+    /*
+     * Les cartes d'un paquet payant non acheté sont invisibles : la base les
+     * filtre. J'en concluais qu'un paquet sans carte n'existait pas, et je
+     * l'écartais — d'où trois paquets absents de la bibliothèque alors que
+     * leurs 357 cartes étaient bien en base.
+     *
+     * Le paquet est désormais toujours créé. Sa vitrine — nom, prix, nombre
+     * de mots annoncé — vit sur la table decks, que rien ne filtre. Seul son
+     * contenu reste verrouillé, ce qui est exactement le contrat.
+     */
     const cards = await fetchAllRows<{
       id: string; en: string; fr: string; theme: string; example: string | null;
     }>((from, to) =>
@@ -101,21 +105,10 @@ export async function pullCatalog(): Promise<number> {
         .range(from, to),
     );
     /*
-     * Un paquet payant non acheté renvoie zéro carte : la base les filtre.
-     *
-     * Ce n'est PAS une raison de l'écarter — c'est précisément le paquet
-     * qu'il faut montrer, avec son prix. Un catalogue ne peut pas vendre ce
-     * qu'il refuse de télécharger. La ligne du paquet suffit à l'afficher :
-     * nom, niveau, classe plancher, prix. Seules les cartes manquent, et
-     * elles arriveront à l'achat.
-     *
-     * Ne rien écrire quand la liste est vide protège aussi le cas inverse :
-     * un paquet acheté dont l'accès hoquette garde ses cartes en local au
-     * lieu d'être vidé de sa substance.
-     *
-     * Un paquet sans carte n'apparaît que dans le catalogue : « Ma
-     * collection » se remplit depuis `installed`, « Mon travail » depuis
-     * `active`. Un paquet non acheté n'est dans ni l'un ni l'autre.
+     * Le garde-fou déplacé : on n'écrit QUE si le serveur a renvoyé quelque
+     * chose. Enregistrer un tableau vide effacerait les cartes locales d'un
+     * paquet acheté le jour où la règle RLS le filtrerait à tort — une perte
+     * silencieuse, la pire espèce.
      */
     if (cards.length) {
       const mapped: Card[] = cards.map((c) => ({
@@ -136,18 +129,9 @@ export async function pullCatalog(): Promise<number> {
       description: row.description ?? undefined,
       categoryId: row.category_id ?? null,
       level: readLevel((row as Record<string, unknown>).level),
-      /*
-       * Classe plancher. La colonne s'appelle `grade_from` côté Supabase et
-       * le champ `classeFrom` côté domaine : `Grade` y désigne déjà la note
-       * FSRS, et deux sens pour un mot finit toujours par coûter une soirée.
-       * `readClasse` filtre comme `readLevel` — une valeur inconnue vaut
-       * null, jamais un plantage ni un paquet disparu.
-       */
-      classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       builtin: true,
       priceCents: row.price_cents ?? 0,
-      // Le compte annoncé par le serveur, seul chiffre disponible tant que
-      // les cartes d'un paquet payant restent filtrées.
+      // Sélectionné depuis toujours, jamais utilisé : le voici.
       cardCount: row.card_count ?? undefined,
       hasImage: existing?.hasImage ?? false,
       createdAt: existing?.createdAt ?? now,
@@ -157,60 +141,7 @@ export async function pullCatalog(): Promise<number> {
     pulled++;
   }
 
-  /*
-   * Ménage : un paquet retiré du catalogue doit disparaître de l'appareil.
-   *
-   * Sans ceci, un paquet supprimé côté serveur restait en local pour
-   * toujours. Et comme tout paquet venu du serveur est `builtin`, l'écran
-   * refusait aussi de le supprimer à la main : plus aucun moyen de s'en
-   * débarrasser.
-   *
-   * Une suppression emporte la progression, donc trois garde-fous :
-   *
-   * - on juge sur la liste des PAQUETS, jamais sur celle des cartes. Un
-   *   paquet payant non acheté renvoie zéro carte — la base les filtre —
-   *   mais sa ligne existe toujours. Le confondre avec un paquet retiré
-   *   effacerait la progression d'un paquet acheté le jour où l'accès
-   *   hoquette.
-   * - les paquets embarqués (SEED_DECKS) ne sont sur aucun serveur. Ils
-   *   sont exclus par principe, sans quoi le premier ménage les emporterait.
-   * - les paquets créés par l'utilisateur (builtin: false) ne regardent pas
-   *   le serveur.
-   *
-   * Le `return 0` plus haut sert de quatrième garde-fou : si le serveur ne
-   * renvoie aucun paquet, on ne supprime rien plutôt que tout.
-   */
-  const surLeServeur = new Set(rows.map((r) => r.id));
-  const embarques = new Set(SEED_DECKS.map((s) => s.id));
-  const retires: string[] = [];
-
-  for (const d of local) {
-    if (!d.builtin) continue;
-    if (embarques.has(d.id)) continue;
-    if (surLeServeur.has(d.id)) continue;
-    await repository.deleteDeck(d.id);
-    byId.delete(d.id);
-    retires.push(d.id);
-  }
-
   await repository.saveDecks([...byId.values()]);
-
-  /*
-   * `deleteDeck` nettoie les cartes, la progression, les thèmes, l'image,
-   * les réglages particuliers et les compteurs — mais pas les listes
-   * `installed` et `active`, qui vivent à part et voyagent vers le serveur.
-   * Un identifiant mort qui y resterait reviendrait à chaque synchro.
-   */
-  if (retires.length) {
-    const morts = new Set(retires);
-    const installed = (await repository.getInstalled()) ?? [];
-    const active = (await repository.getActive()) ?? [];
-    const gardes = installed.filter((id) => !morts.has(id));
-    const gardesActifs = active.filter((id) => !morts.has(id));
-    if (gardes.length !== installed.length) await repository.saveInstalled(gardes);
-    if (gardesActifs.length !== active.length) await repository.saveActive(gardesActifs);
-  }
-
   return pulled;
 }
 
@@ -351,8 +282,6 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
  *
  * Tout voyage dans le même paquet JSON de la colonne `settings` : aucune
  * table, aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
- * La classe scolaire déclarée par l'utilisateur suit ce chemin comme le
- * reste — elle décrit la personne, pas le catalogue.
  *
  * Les deux listes de paquets sont synchronisées, car mettre un paquet en jeu
  * sur l'ordinateur doit se voir sur le téléphone — c'est la même décision.
