@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
 import {
   CLASSES, CLASSE_LABELS, LEVEL_LABELS,
-  classeConvient, classeDepuisLabel, priceLabel,
+  classeConvient, priceLabel,
 } from '../domain/types';
 import { CardBack } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
@@ -344,7 +344,6 @@ export function Library({
     const aMoi = installed.includes(s.deck.id);
     const gratuit = !s.deck.priceCents;
     const n = niveau(s.deck.level);
-    const cl = classeDepuisLabel(s.deck.classeFrom);
     /*
      * Les cartes d'un paquet payant non acheté ne sont pas lisibles :
      * s.total vaut 0. Le nombre annoncé par la vitrine prend le relais —
@@ -354,14 +353,24 @@ export function Library({
     return (
       <div key={s.deck.id} className={`catrow${plusTard ? ' later' : ''}`}>
         <button className="catrow-main" onClick={(e) => ouvrir(e, s)}>
-          {vignette(s, 54, 76)}
+          {/*
+            * La classe descend sur le dos de carte, où elle se lit comme une
+            * étiquette. Ce qui restait sous le nom disait la classe trois
+            * fois — « collège », « dès la 6ème » — et le sujet du paquet se
+            * perdait dedans. Ne reste que ce qui ne se déduit de nulle part :
+            * le volume et le niveau.
+            */}
+          <span className="vign-wrap">
+            {vignette(s, 54, 76)}
+            {s.deck.classeFrom && (
+              <span className="classdot">{s.deck.classeFrom}</span>
+            )}
+          </span>
           <span className="catrow-txt">
             <b>{s.deck.name}</b>
             <small>
               {mots} mots
               {n ? ` · ${n}` : ''}
-              {cl ? ` · ${cl}` : ''}
-              {gratuit ? ' · gratuit' : ''}
             </small>
           </span>
         </button>
@@ -660,6 +669,17 @@ export function Library({
             )}
           </div>
         </div>
+
+        {/*
+          * La pastille dit « 6e » quand la ligne disait « dès la 6ème ». Le
+          * mot « dès » portait l'idée de plancher — qu'un paquet 6ème
+          * convient aussi en 4ème. Plutôt qu'une notation à apprendre
+          * (« 6e+ »), une phrase, une fois, en haut de la liste.
+          */}
+        <p className="hint dotnote">
+          La pastille sur chaque carte est la classe <b>plancher</b> : le
+          paquet convient à partir de là, pas seulement à cette classe.
+        </p>
 
         {!auth.session && (
           <p className="hint">
