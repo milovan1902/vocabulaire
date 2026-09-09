@@ -14,6 +14,7 @@ import {
   type Card as FsrsCard,
 } from 'ts-fsrs';
 import type { Grade, Progress, CardId } from '../domain/types';
+import { applyGrade } from './mastery';
 
 const params = generatorParameters({
   /** Un peu d'aléa sur les intervalles évite que tout retombe le même jour. */
@@ -39,7 +40,7 @@ export function emptyProgress(cardId: CardId, now = new Date()): Progress {
   return toProgress(cardId, createEmptyCard(now));
 }
 
-function toProgress(cardId: CardId, c: FsrsCard): Progress {
+function toProgress(cardId: CardId, c: FsrsCard, mastery = 0): Progress {
   return {
     cardId,
     due: c.due.getTime(),
@@ -52,6 +53,7 @@ function toProgress(cardId: CardId, c: FsrsCard): Progress {
     lapses: c.lapses,
     state: c.state as 0 | 1 | 2 | 3,
     lastReview: c.last_review ? c.last_review.getTime() : undefined,
+    mastery,
   };
 }
 
@@ -70,11 +72,18 @@ function toFsrsCard(p: Progress): FsrsCard {
   } as FsrsCard;
 }
 
-/** Applique une note et renvoie la progression mise à jour. */
+/**
+ * Applique une note et renvoie la progression mise à jour.
+ *
+ * Deux choses s'y jouent, indépendantes : FSRS replanifie la carte, et
+ * l'avancement affiché se déplace d'un palier. La seconde n'a aucun effet
+ * sur la première — c'est ce qui permet de changer le barème d'affichage
+ * sans toucher à la mémoire de l'élève.
+ */
 export function review(progress: Progress, grade: Grade, now = new Date()): Progress {
   const scheduled = engine.repeat(toFsrsCard(progress), now);
   const next = scheduled[GRADE_TO_RATING[grade]].card;
-  return toProgress(progress.cardId, next);
+  return toProgress(progress.cardId, next, applyGrade(progress, grade));
 }
 
 /**
