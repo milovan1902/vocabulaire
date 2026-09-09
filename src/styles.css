@@ -1138,3 +1138,32 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .filterfold, .filterbtn i { transition: none; }
 }
+
+
+/* ---------- La classe en pastille ---------- */
+/* Elle quitte la ligne de texte pour le dos de carte : une étiquette se lit
+   d'un coup d'œil là où une énumération se lit mot à mot. Ce qui restait
+   sous le nom — « 127 mots · A2 · collège · dès la 6ème · gratuit » — disait
+   la classe trois fois et le prix deux ; le sujet du paquet s'y noyait. */
+.catrow .vign-wrap { display: block; }
+.classdot {
+  position: absolute; z-index: 2; left: 50%; bottom: -6px;
+  transform: translateX(-50%);
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--rule-strong);
+  font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.02em; color: var(--ink-soft); white-space: nowrap;
+}
+/* Dans « pour plus tard », la classe est justement ce qu'on vient lire :
+   elle passe en pleine encre au lieu de suivre le gris de la section. */
+.catrow.later .classdot { color: var(--ink); }
+
+/* Le titre monte d'un cran. Il doit gagner contre le bouton doré à sa
+   droite, qui a la couleur pour lui. */
+.catrow-txt b {
+  font-size: 16px; font-weight: 650; letter-spacing: -0.005em;
+}
+
+/* La note qui rend son « dès » à la pastille : dite une fois, en petit. */
+.hint.dotnote { margin: 14px 0 0; font-size: 11.5px; }
+.hint.dotnote b { font-weight: 600; color: var(--ink-soft); }
