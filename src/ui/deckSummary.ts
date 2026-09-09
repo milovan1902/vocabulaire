@@ -14,6 +14,7 @@ import type { Deck, Progress, Settings } from '../domain/types';
 import { repository } from '../data/repository';
 import { imageFor } from './deckImages';
 import { isDue, isNew } from '../engine/scheduler';
+import { deckMastery, type DeckMastery } from '../engine/mastery';
 
 export interface DeckSummary {
   deck: Deck;
@@ -26,6 +27,8 @@ export interface DeckSummary {
   themesSelected: number;
   themesTotal: number;
   image: string | null;
+  /** Avancement affiché, calculé sur les seuls thèmes retenus. */
+  mastery: DeckMastery;
 }
 
 export interface Charge {
@@ -97,6 +100,18 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
     }
     resting += dorment;
 
+    /*
+     * L'avancement se calcule sur les thèmes RETENUS, pas sur le paquet
+     * entier : sans quoi écarter des thèmes plafonnerait le pourcentage
+     * sous cent pour toujours. Quand aucun thème n'est enregistré, tout
+     * compte — c'est le cas par défaut.
+     */
+    const avancement = deckMastery(
+      cards,
+      progress,
+      savedThemes?.length ? retenus : null,
+    );
+
     summaries.push({
       deck,
       total: cards.length,
@@ -106,6 +121,7 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
       resting: dorment,
       themesSelected: retenus.length ? retenus.length : themes.length,
       themesTotal: themes.length,
+      mastery: avancement,
     });
   }
 
