@@ -1074,3 +1074,67 @@ textarea {
   background: none; border: 1px solid var(--rule-strong); color: var(--ink);
 }
 .rayon h2.later-h { color: var(--grey); }
+
+
+/* ---------- Filtres repliés ---------- */
+/* Trois rangées de puces au-dessus de la liste annonçaient surtout « il y a
+   beaucoup à régler ici », alors que la plupart des visites ne règlent rien.
+   Le bouton porte l'état ; le panneau se déplie vers le bas et pousse la
+   liste, il ne la recouvre pas — on garde le contexte sous les yeux. */
+.filterbar { display: flex; align-items: center; gap: 9px; margin: 16px 0 0; }
+.filterbtn {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 38px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: inherit; font-size: 13px; cursor: pointer;
+}
+/* La pastille compte les critères actifs. Un filtre caché doit s'annoncer :
+   sans ce chiffre, on cherche dix minutes pourquoi un paquet manque. */
+.filterbtn b {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: grid; place-items: center; border-radius: 999px;
+  background: var(--chalk); color: var(--on-chalk);
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+}
+/* Le chevron est un trait plié, pas une icône à charger. */
+.filterbtn i {
+  flex: none; width: 7px; height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.22s ease;
+}
+.filterbtn.open { border-color: var(--chalk); color: var(--ink); }
+.filterbtn.open i { transform: translateY(1px) rotate(225deg); }
+.filterclear {
+  padding: 4px 2px; border: 0; background: none;
+  font-family: inherit; font-size: 12.5px; color: var(--grey);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+
+/* Le dépliage. `grid-template-rows` de 0fr à 1fr anime la hauteur réelle
+   sans avoir à la connaître : aucun max-height à deviner, donc rien qui
+   saute le jour où un rayon de plus s'ajoute. */
+.filterfold {
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  transition: grid-template-rows 0.26s ease, opacity 0.18s ease;
+}
+.filterfold > * { min-height: 0; overflow: hidden; }
+.filterfold.open { grid-template-rows: 1fr; opacity: 1; }
+
+.filterpanel .flabel {
+  margin: 13px 0 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--grey);
+}
+.filterpanel .flabel:first-child { margin-top: 12px; }
+.filterpanel .classechips,
+.filterpanel .pricefilters,
+.filterpanel .rayonfilters { margin: 0; }
+.filterpanel .classechips.fine { margin-top: 6px; opacity: 0.85; }
+
+/* Le mouvement est une commodité, pas le message. */
+@media (prefers-reduced-motion: reduce) {
+  .filterfold, .filterbtn i { transition: none; }
+}
