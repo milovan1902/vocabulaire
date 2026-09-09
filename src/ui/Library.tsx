@@ -7,6 +7,7 @@ import {
 } from '../domain/types';
 import { CardBack } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
+import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
 
 type Tab = 'travail' | 'collection' | 'catalogue';
@@ -105,6 +106,13 @@ export function Library({
   const [filtresOuverts, setFiltresOuverts] = useState(false);
 
   /*
+   * Quel anneau a sa bulle ouverte. Un seul à la fois : deux explications
+   * côte à côte ne se lisent pas, et l'anneau est assez petit pour qu'on
+   * clique à côté sans le vouloir.
+   */
+  const [bulle, setBulle] = useState<string | null>(null);
+
+  /*
    * La charge est calculée sur les seuls paquets en jeu : c'est la
    * définition même de « Mon travail ». Les autres n'ont pas à peser sur un
    * chiffre qui sert à s'engager.
@@ -146,6 +154,77 @@ export function Library({
       : <span className="vign vign-draw" style={{ width: w, height: h }}>
           <CardBack id={s.deck.id} name={s.deck.name} />
         </span>;
+  }
+
+  /**
+   * L'anneau d'avancement.
+   *
+   * Ce qu'il mesure : ce que l'élève a validé. « Facile » remplit une carte
+   * de moitié, « Bien » d'un quart, une carte ratée recule d'autant.
+   *
+   * Ce qu'il ne mesure PAS : la fin du travail. Une carte pleine revient
+   * quand même, indéfiniment, à intervalles longs — c'est le principe de la
+   * répétition espacée. Un anneau à cent pour cent qui laisserait croire le
+   * contraire serait un mensonge ; la bulle le dit donc explicitement, et
+   * c'est la raison d'être de ce bouton cliquable.
+   */
+  function avancement(s: DeckSummary) {
+    const m = s.mastery;
+    if (m.counted === 0) return null;
+
+    const ouvert = bulle === s.deck.id;
+    const plein = m.percent >= 100;
+    // Périmètre du cercle de rayon 15 dans le repère 36×36 du SVG.
+    const C = 2 * Math.PI * 15;
+
+    return (
+      <span className="avanc-wrap">
+        <button
+          className={`avanc${plein ? ' plein' : ''}`}
+          aria-expanded={ouvert}
+          aria-label={`Avancement ${masteryLabel(m.percent)} — en savoir plus`}
+          onClick={() => setBulle(ouvert ? null : s.deck.id)}
+        >
+          <svg className="ring" viewBox="0 0 36 36" aria-hidden="true">
+            <circle className="ring-bg" cx="18" cy="18" r="15" />
+            <circle
+              className="ring-fg"
+              cx="18"
+              cy="18"
+              r="15"
+              strokeDasharray={`${(C * Math.min(m.percent, 100)) / 100} ${C}`}
+            />
+          </svg>
+          <b className="avanc-n">{masteryLabel(m.percent)}</b>
+        </button>
+
+        {ouvert && (
+          <span className="avanc-bulle" role="note">
+            {plein ? (
+              <>
+                <b>Le 100 % est indicatif.</b> Tant que le paquet reste ouvert
+                dans votre espace de travail, il vous fera réviser son contenu
+                à intervalles importants pour ne rien oublier. Seule la mise en
+                pause de ce paquet arrêtera le travail sur ce dernier.
+              </>
+            ) : (
+              <>
+                {m.partial
+                  ? `Sur les ${m.counted} mots des thèmes que vous avez retenus, et non sur le paquet entier.`
+                  : `Sur les ${m.counted} mots du paquet.`}{' '}
+                Un mot noté « Facile » avance de moitié, « Bien » d’un quart.
+                Un mot raté recule.
+                {m.full > 0 && (
+                  <em>
+                    {m.full} mot{m.full > 1 ? 's' : ''} au complet.
+                  </em>
+                )}
+              </>
+            )}
+          </span>
+        )}
+      </span>
+    );
   }
 
   function niveau(l: Level | null | undefined) {
@@ -226,6 +305,7 @@ export function Library({
                   </small>
                 </span>
               </button>
+              {avancement(s)}
               <button className="pausebtn" onClick={() => onSetActive(s.deck.id, false)}>
                 Pause
               </button>
@@ -267,6 +347,9 @@ export function Library({
                 ? `${s.resting} mots en mémoire`
                 : 'jamais commencé'}
               {on && s.due > 0 ? ` · ${s.due} dues` : ''}
+              {s.mastery.percent > 0 && (
+                <b className="small-pct">{masteryLabel(s.mastery.percent)}</b>
+              )}
             </small>
           </span>
         </button>
