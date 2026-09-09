@@ -700,9 +700,20 @@ export function Library({
           </section>
         ))}
 
+        {/*
+          * « Pour plus tard » se ratait : un titre de la même taille que les
+          * rayons, sous une liste qui semblait finie. Elle s'annonce
+          * maintenant par un filet net et un compteur — on doit savoir qu'il
+          * reste quelque chose en dessous avant d'arrêter de faire défiler.
+          */}
         {plusTard.length > 0 && (
-          <section className="rayon">
-            <h2 className="later-h">Pour plus tard</h2>
+          <section className="rayon later-sec">
+            <div className="later-head">
+              <h2 className="later-h">Pour plus tard</h2>
+              <span className="later-n">
+                {plusTard.length} paquet{plusTard.length > 1 ? 's' : ''}
+              </span>
+            </div>
             <p className="hint">
               Après {maClasse ? CLASSE_LABELS[maClasse] : 'votre classe'}. Rien
               n’empêche de les prendre maintenant.
