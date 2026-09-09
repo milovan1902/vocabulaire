@@ -95,6 +95,16 @@ export function Library({
   const [choixClasse, setChoixClasse] = useState(false);
 
   /*
+   * Les filtres sont repliés par défaut.
+   *
+   * Trois rangées de puces au-dessus de la liste annonçaient surtout « il y a
+   * beaucoup à régler ici » — alors que la plupart des visites ne règlent
+   * rien et veulent juste voir les paquets. Le bouton porte l'état (combien
+   * de critères sont en vigueur) ; le détail ne s'ouvre que si on le demande.
+   */
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
+
+  /*
    * La charge est calculée sur les seuls paquets en jeu : c'est la
    * définition même de « Mon travail ». Les autres n'ont pas à peser sur un
    * chiffre qui sert à s'engager.
@@ -469,6 +479,26 @@ export function Library({
       cy.classes.some((c) => consult.includes(c)),
     );
 
+    /*
+     * Ce que le bouton annonce. On compte les CRITÈRES, pas les puces : « 2 »
+     * veut dire « deux réglages en vigueur », ce qui se retient. Trois classes
+     * cochées dans un même cycle restent un seul critère — sinon le chiffre
+     * grimperait sans rien dire de plus.
+     *
+     * C'est la contrepartie du repli : un filtre caché doit être annoncé,
+     * faute de quoi on cherche pendant dix minutes pourquoi un paquet manque.
+     */
+    const nbFiltres =
+      (consult.length > 0 ? 1 : 0) +
+      (tranche !== null ? 1 : 0) +
+      (rayon !== null ? 1 : 0);
+
+    function effacerFiltres() {
+      setConsult([]);
+      setTranche(null);
+      setRayon(null);
+    }
+
     return (
       <>
         <button
@@ -531,74 +561,105 @@ export function Library({
           </div>
         )}
 
-        <div className="classechips">
-          {CYCLES.map((cy) => {
-            const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
-            const n = dispo.reduce((t, c) => t + (parClasseExact.get(c) ?? 0), 0);
-            const coches = cy.classes.filter((c) => consult.includes(c));
-            // Un cycle sans aucun paquet ne peut rien afficher : on ne le
-            // propose pas. Sauf s'il est déjà coché — le retirer sous le
-            // doigt enlèverait le moyen de le décocher.
-            if (n === 0 && coches.length === 0) return null;
-            return (
-              <button
-                key={cy.id}
-                className={coches.length > 0 ? 'on' : ''}
-                onClick={() => basculerCycle(cy)}
-              >
-                {cy.label} · {n}
-              </button>
-            );
-          })}
+        <div className="filterbar">
+          <button
+            className={`filterbtn${filtresOuverts ? ' open' : ''}`}
+            onClick={() => setFiltresOuverts((v) => !v)}
+            aria-expanded={filtresOuverts}
+          >
+            <span>Filtres</span>
+            {nbFiltres > 0 && <b>{nbFiltres}</b>}
+            <i />
+          </button>
+          {nbFiltres > 0 && (
+            <button className="filterclear" onClick={effacerFiltres}>
+              Tout effacer
+            </button>
+          )}
         </div>
 
-        {cyclesOuverts.length > 0 && (
-          <div className="classechips fine" style={{ opacity: 0.85 }}>
-            {cyclesOuverts.flatMap((cy) => cy.classes).map((c) => {
-              const n = parClasseExact.get(c) ?? 0;
-              if (n === 0 && !consult.includes(c)) return null;
-              return (
-                <button
-                  key={c}
-                  className={consult.includes(c) ? 'on' : ''}
-                  onClick={() => basculerConsultation(c)}
-                >
-                  {CLASSE_LABELS[c]} · {n}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {/*
+          * Le panneau reste MONTÉ quand il est replié : c'est ce qui permet de
+          * l'animer, et ce qui garde l'état des puces d'une ouverture à
+          * l'autre. Le dépliage est en CSS (.filterfold), pas en JavaScript.
+          */}
+        <div className={`filterfold${filtresOuverts ? ' open' : ''}`}>
+          <div className="filterpanel">
+            <p className="flabel">Niveau scolaire</p>
+            <div className="classechips">
+              {CYCLES.map((cy) => {
+                const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
+                const n = dispo.reduce((t, c) => t + (parClasseExact.get(c) ?? 0), 0);
+                const coches = cy.classes.filter((c) => consult.includes(c));
+                // Un cycle sans aucun paquet ne peut rien afficher : on ne le
+                // propose pas. Sauf s'il est déjà coché — le retirer sous le
+                // doigt enlèverait le moyen de le décocher.
+                if (n === 0 && coches.length === 0) return null;
+                return (
+                  <button
+                    key={cy.id}
+                    className={coches.length > 0 ? 'on' : ''}
+                    onClick={() => basculerCycle(cy)}
+                  >
+                    {cy.label} · {n}
+                  </button>
+                );
+              })}
+            </div>
 
-        <div className="pricefilters">
-          {TRANCHES.map((t) => {
-            const n = comptes.get(t.cents) ?? 0;
-            if (n === 0) return null;
-            return (
-              <button
-                key={t.cents}
-                className={tranche === t.cents ? 'on' : ''}
-                onClick={() => setTranche(tranche === t.cents ? null : t.cents)}
-              >
-                {t.label} <span>{n}</span>
-              </button>
-            );
-          })}
+            {cyclesOuverts.length > 0 && (
+              <div className="classechips fine">
+                {cyclesOuverts.flatMap((cy) => cy.classes).map((c) => {
+                  const n = parClasseExact.get(c) ?? 0;
+                  if (n === 0 && !consult.includes(c)) return null;
+                  return (
+                    <button
+                      key={c}
+                      className={consult.includes(c) ? 'on' : ''}
+                      onClick={() => basculerConsultation(c)}
+                    >
+                      {CLASSE_LABELS[c]} · {n}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <p className="flabel">Prix</p>
+            <div className="pricefilters">
+              {TRANCHES.map((t) => {
+                const n = comptes.get(t.cents) ?? 0;
+                if (n === 0) return null;
+                return (
+                  <button
+                    key={t.cents}
+                    className={tranche === t.cents ? 'on' : ''}
+                    onClick={() => setTranche(tranche === t.cents ? null : t.cents)}
+                  >
+                    {t.label} <span>{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {categories.length > 1 && (
+              <>
+                <p className="flabel">Rayon</p>
+                <div className="rayonfilters">
+                  {[...categories].sort((a, b) => a.position - b.position).map((c) => (
+                    <button
+                      key={c.id}
+                      className={rayon === c.id ? 'on' : ''}
+                      onClick={() => setRayon(rayon === c.id ? null : c.id)}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-
-        {categories.length > 1 && (
-          <div className="rayonfilters">
-            {[...categories].sort((a, b) => a.position - b.position).map((c) => (
-              <button
-                key={c.id}
-                className={rayon === c.id ? 'on' : ''}
-                onClick={() => setRayon(rayon === c.id ? null : c.id)}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-        )}
 
         {!auth.session && (
           <p className="hint">
