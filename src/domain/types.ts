@@ -188,6 +188,19 @@ export interface Progress {
   lapses: number;
   state: 0 | 1 | 2 | 3; // New / Learning / Review / Relearning
   lastReview?: number;
+  /**
+   * Avancement AFFICHÉ, de 0 à 100. Absent sur les progressions d'avant le
+   * chantier 18 : traiter comme 0.
+   *
+   * Il ne sert à rien dans l'ordonnancement — FSRS l'ignore complètement.
+   * Il n'existe que pour l'anneau du catalogue, parce que la stabilité FSRS
+   * met plus d'un an à saturer et ne fait donc pas un encouragement lisible.
+   * Rien ne se reconstitue : aucun journal de notes n'est conservé, ce champ
+   * démarre à zéro pour tout le monde.
+   *
+   * Colonne Supabase correspondante : `mastery`.
+   */
+  mastery?: number;
 }
 
 /**
