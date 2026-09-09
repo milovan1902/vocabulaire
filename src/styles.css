@@ -1191,3 +1191,100 @@ textarea {
   color: var(--ink-soft);
 }
 .later-sec .hint { margin-top: 7px; }
+/* ==================================================================
+   Chantier 18 — l'anneau d'avancement
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* La bulle sort de la ligne : il faut que la ligne la laisse sortir. */
+.workrow { position: relative; overflow: visible; }
+
+.avanc-wrap { position: relative; flex: none; display: flex; }
+
+.avanc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #0f7c8a;
+  cursor: pointer;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+.avanc:focus-visible { outline: 2px solid #0f7c8a; outline-offset: 2px; }
+.avanc:active { transform: scale(.94); }
+/* Un paquet au complet change de teinte, jamais de forme : la comparaison
+   d'un paquet à l'autre doit rester possible d'un coup d'œil. */
+.avanc.plein { color: #17864f; }
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 46px;
+  height: 46px;
+  /* Le remplissage part du haut, comme une horloge. */
+  transform: rotate(-90deg);
+}
+.ring circle { fill: none; stroke-width: 3; }
+.ring-bg { stroke: currentColor; opacity: .15; }
+.ring-fg {
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition: stroke-dasharray .6s cubic-bezier(.3, .8, .3, 1);
+}
+
+.avanc-n {
+  position: relative;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.2px;
+}
+
+.avanc-bulle {
+  position: absolute;
+  right: -6px;
+  top: calc(100% + 8px);
+  z-index: 20;
+  width: min(274px, 74vw);
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff;
+  color: #3a3a3a;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .17), 0 0 0 1px rgba(0, 0, 0, .05);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  animation: avancIn .16s ease-out;
+}
+.avanc-bulle b { font-weight: 700; }
+.avanc-bulle em {
+  display: block;
+  margin-top: 5px;
+  font-style: normal;
+  opacity: .6;
+}
+
+@keyframes avancIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Ma collection : le chiffre sans l'anneau. La ligne porte déjà une
+   vignette, deux compteurs et un interrupteur — un anneau de plus la
+   ferait déborder sur les petits écrans. */
+.small-pct {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(15, 124, 138, .1);
+  color: #0f7c8a;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
