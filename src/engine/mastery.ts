@@ -52,6 +52,32 @@ export function applyGrade(p: Progress, grade: Grade): number {
   return borne(masteryOf(p) + PAS[grade]);
 }
 
+/**
+ * Les cinq tas d'un paquet.
+ *
+ * Vous demandiez le nombre de mots « par statut : facile, difficile… ».
+ * Ces mots-là ne sont pas conservés, et c'est volontaire : une note n'est
+ * vraie qu'à l'instant où elle est donnée, et la même carte est difficile
+ * un lundi, facile le jeudi. Stocker la dernière note reviendrait à
+ * afficher une humeur.
+ *
+ * Ce que l'application garde, c'est le PALIER : la position du mot après
+ * toutes ses notes. Les cinq tas ci-dessous s'en déduisent sans rien
+ * ajouter en base, et disent la seule chose utile — où en est ce mot.
+ */
+export interface MasteryBreakdown {
+  /** Jamais présentées : ni note, ni passage. */
+  decouvrir: number;
+  /** Déjà vues et retombées à zéro. Ce sont elles qui résistent. */
+  reprendre: number;
+  /** Palier 25 ou 50. */
+  cours: number;
+  /** Palier 75 : une bonne réponse et c'est acquis. */
+  presque: number;
+  /** Palier 100. Elles reviendront quand même, à intervalles longs. */
+  acquis: number;
+}
+
 export interface DeckMastery {
   /**
    * De 0 à 100, NON arrondi.
@@ -67,7 +93,13 @@ export interface DeckMastery {
   full: number;
   /** true quand des thèmes sont écartés : le pourcentage doit s'en expliquer. */
   partial: boolean;
+  /** Les cinq tas, sur les mêmes cartes que `counted`. */
+  breakdown: MasteryBreakdown;
 }
+
+const AUCUN: MasteryBreakdown = {
+  decouvrir: 0, reprendre: 0, cours: 0, presque: 0, acquis: 0,
+};
 
 /**
  * Avancement d'un paquet.
@@ -86,15 +118,35 @@ export function deckMastery(
   const jouees = retenus ? cards.filter((c) => retenus.has(c.theme)) : cards;
 
   if (jouees.length === 0) {
-    return { percent: 0, counted: 0, full: 0, partial: cards.length > 0 };
+    return {
+      percent: 0, counted: 0, full: 0,
+      partial: cards.length > 0,
+      breakdown: { ...AUCUN },
+    };
   }
 
   let somme = 0;
   let full = 0;
+  const tas: MasteryBreakdown = { ...AUCUN };
+
   for (const c of jouees) {
-    const m = masteryOf(progress[c.id]);
+    const p = progress[c.id];
+    const m = masteryOf(p);
     somme += m;
     if (m >= PLEIN) full++;
+
+    /*
+     * « Jamais vue » se lit sur les passages, pas sur le palier : une carte
+     * ratée deux fois est aussi à zéro, et les confondre effacerait
+     * précisément les mots qui résistent — les seuls sur lesquels il y a
+     * quelque chose à décider.
+     */
+    const vue = !!p && (p.reps ?? 0) > 0;
+    if (!vue) tas.decouvrir++;
+    else if (m <= 0) tas.reprendre++;
+    else if (m >= PLEIN) tas.acquis++;
+    else if (m >= 75) tas.presque++;
+    else tas.cours++;
   }
 
   return {
@@ -102,6 +154,7 @@ export function deckMastery(
     counted: jouees.length,
     full,
     partial: jouees.length < cards.length,
+    breakdown: tas,
   };
 }
 
