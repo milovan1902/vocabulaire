@@ -1434,7 +1434,7 @@ textarea {
 .todaylist .workrow,
 .todaylist .workrow-main { overflow: visible; }
 /* ==================================================================
-   Chantier 25 — le paquet mis en avant
+   Chantier 26 — le paquet mis en avant (remplace le bloc du 25)
    À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
 
    Les anciennes règles .pioche* peuvent rester : plus rien ne les
@@ -1468,9 +1468,11 @@ textarea {
   cursor: pointer;
 }
 
+.avant-vign-wrap { position: relative; flex: none; display: block; }
+
 .avant-vign {
   position: relative;
-  flex: none;
+  display: block;
   width: 96px;
   aspect-ratio: 620 / 874;
   display: flex;
@@ -1481,16 +1483,37 @@ textarea {
   border: 1px solid var(--rule);
   overflow: hidden;
 }
-.avant-vign > img,
-.avant-vign > svg {
+/*
+ * L'image PLEIN CADRE seulement — d'où le :not().
+ *
+ * `.avant-vign > img` attraperait aussi le sujet détouré des paquets
+ * illustrés et l'étirerait bord à bord, filet compris. C'est le même piège
+ * que `.zface img` et `.pioche-dos img` au chantier 22 ; il se referme
+ * sur toute nouvelle boîte qui croit n'avoir qu'une image.
+ */
+.avant-vign > img:not(.dos-illus-img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-.avant-vign > svg { width: auto; }
-/* La pastille du nombre de cartes dues doit sortir du cadre. */
-.avant-vign > .pioche-due { top: -9px; right: -9px; min-width: 30px; height: 30px; }
+.avant-vign > svg { width: 100%; height: 100%; display: block; }
+.avant-vign .dos-illus-img {
+  position: absolute;
+  z-index: 2;
+  left: 16.1%;
+  top: 26%;
+  width: 67.7%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+/* La pastille du nombre de cartes dues, posée sur le coin du cadre. */
+.avant-vign-wrap > .pioche-due { top: -9px; right: -9px; min-width: 30px; height: 30px; }
 
 .avant-txt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 7px; }
 .avant-txt b {
