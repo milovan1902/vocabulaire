@@ -12,7 +12,7 @@
  * l'animation au processeur graphique et de rester fluide sur téléphone.
  */
 import { useEffect, useRef } from 'react';
-import { CardBack, paletteFor } from './components';
+import { DeckFace, paletteFor } from './components';
 
 /** Ratio A6 de la carte, identique au reste de l'application. */
 const RATIO = 620 / 874;
@@ -104,9 +104,7 @@ export function CardZoom({ source, onDone }: { source: ZoomSource; onDone: () =>
       >
         <div ref={inner} className="zoomcard">
           <div className="zface zdos">
-            {source.image
-              ? <img src={source.image} alt="" />
-              : <CardBack id={source.deckId} name={source.name} />}
+            <DeckFace id={source.deckId} name={source.name} image={source.image} />
           </div>
           <div className="zface zrecto" style={{ ['--accent' as string]: palette.ink }}>
             <span className="corner">{source.total}</span>
