@@ -1401,3 +1401,35 @@ textarea {
   box-shadow: none;
   pointer-events: none;
 }
+/* ==================================================================
+   Chantier 24 — la liste d'« Aujourd'hui » prend la ligne de « Mon travail »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * La pastille du nombre de cartes à voir. Elle existait sous `.row .due` ;
+ * la ligne n'est plus une `.row`, il lui faut donc sa propre règle. Les
+ * valeurs sont celles de l'originale, au pixel près : c'est la même
+ * pastille, pas une nouvelle.
+ */
+.workrow > .due {
+  flex: none;
+  margin-left: auto;
+  background: var(--chalk);
+  color: var(--on-chalk);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/*
+ * La liste respire un peu plus qu'à « Mon travail » : ses lignes n'ont ni
+ * anneau ni bouton Pause à droite, donc rien pour tenir leur hauteur.
+ */
+.todaylist { gap: 12px; margin-bottom: 18px; }
+
+/* La pastille de classe doit passer devant la vignette, comme ailleurs. */
+.todaylist .classdot { z-index: 3; }
+.todaylist .workrow,
+.todaylist .workrow-main { overflow: visible; }
