@@ -1359,3 +1359,45 @@ textarea {
   background: var(--panel);
   border-color: var(--rule-strong);
 }
+/* ==================================================================
+   Chantier 22 — l'illustration suit la carte partout
+   À COLLER TEL QUEL À LA FIN DE src/styles.css.
+
+   ⚠ Retirez d'abord le bloc « Chantier 19 » : ses deux règles
+   (.vign-illus et .vign-illus-img) sont remplacées par celles-ci.
+   Les laisser ne casse rien, mais elles ne servent plus à rien.
+   ================================================================== */
+
+/*
+ * Les trois boîtes qui peuvent contenir un dos illustré. Le sujet est
+ * placé en pourcentages : il lui faut un parent positionné, sinon il se
+ * repère sur l'écran entier et s'en va n'importe où.
+ */
+.vign-draw, .zdos, .pioche-dos { position: relative; }
+
+/*
+ * Le cadrage reprend celui du dessin : dans le repère 620 x 874, le sujet
+ * occupe 420 unités de large, centré. Soit 67,7 % de la largeur, à 16,1 %
+ * du bord gauche et 26 % du haut — donc À L'INTÉRIEUR du cadre intérieur
+ * que trace CardBack, à toutes les tailles d'affichage.
+ *
+ * Les deux sélecteurs composés ne sont pas une redondance : `.zface img`
+ * et `.pioche-dos img` imposent déjà `width: 100%` et `object-fit: cover`
+ * à toute image de ces boîtes. Il faut une classe de plus qu'eux pour
+ * l'emporter, sinon le sujet est étiré bord à bord.
+ */
+.dos-illus-img,
+.zface .dos-illus-img,
+.pioche-dos .dos-illus-img {
+  position: absolute;
+  z-index: 2;
+  left: 16.1%;
+  top: 26%;
+  width: 67.7%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
