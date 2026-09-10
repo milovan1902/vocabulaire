@@ -1575,3 +1575,85 @@ textarea {
 /* Le bouton doré et son repli, dans la carte. */
 .avant .btn { margin: 18px 0 0; }
 .avant .btn.ghost { margin: 8px 0 0; min-height: 44px; font-size: 13.5px; }
+/* ==================================================================
+   Chantier 28 — les titres de rayon
+   À COLLER TEL QUEL À LA FIN DE src/styles.css.
+
+   Deux sélecteurs seulement. Ils remplacent, par cascade, les règles
+   existantes de `.rayon h2` et `.rayon-label` : pas besoin de retirer
+   les anciennes, mais si vous préférez le faire, ce sont les deux
+   blocs à supprimer et rien d'autre.
+   ================================================================== */
+
+/*
+ * Le nom du rayon en Newsreader, pas en petites capitales mono.
+ *
+ * À 9,5 pixels, gris, espacé et en capitales, le titre de rayon avait la
+ * taille d'une note de bas de page pour un rôle de panneau indicateur :
+ * c'est lui qui dit où l'on est dans une liste de trente paquets. Dans une
+ * page où les noms de paquets font 14,5 pixels en gras, un titre de section
+ * plus petit et plus pâle que ce qu'il titre ne hiérarchise rien — il
+ * s'excuse.
+ *
+ * Il passe donc au caractère des titres, à 18 pixels, en ivoire, sur un
+ * filet qui ouvre la section. La graisse ne bouge pas : dans ce système
+ * c'est la taille qui hiérarchise, jamais le gras.
+ */
+.rayon h2,
+.rayon-label {
+  margin: 0 0 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--rule);
+
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.2;
+
+  /* Les trois annulations sont nécessaires : les anciennes règles les
+     posaient, et la cascade ne les défait pas toute seule. */
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+
+/* Un rayon qui suit une liste a besoin d'air au-dessus ; le premier de la
+   page n'en a pas besoin, son titre d'écran le lui donne déjà. */
+.rayon + .rayon h2,
+.rayon-label + .switchlist ~ .rayon-label {
+  margin-top: 24px;
+}
+
+/*
+ * « En pause » se dit en encre douce.
+ *
+ * C'est le seul écart entre les deux libellés de la collection : même
+ * caractère, même taille, une encre d'un cran en retrait. Un titre de
+ * section grisé reste un titre ; le mettre en petit ou en capitales, non.
+ */
+.rayon-label:not(.on) {
+  color: var(--ink-soft);
+}
+
+/*
+ * Le compte, s'il est présent dans le libellé.
+ *
+ * Il reste en mono : c'est un chiffre, il se lit en colonne d'un rayon à
+ * l'autre et ne doit pas peser autant que le nom. Enveloppez-le d'un
+ * `<b class="rayon-n">` — « En jeu <b class="rayon-n">4</b> » — plutôt que
+ * de le coller au texte avec un tiret.
+ */
+.rayon h2,
+.rayon-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.rayon-n {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--grey);
+}
