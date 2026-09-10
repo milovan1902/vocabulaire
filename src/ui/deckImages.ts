@@ -3,12 +3,14 @@
  *
  * Ces images sont empaquetées dans le code plutôt que stockées en base :
  * elles suivent donc l'installation sur tous les appareils, sans compte et
- * sans réseau. Le compromis est le poids — environ 115 Ko au total — et le
- * fait qu'ajouter un visuel demande un redéploiement. C'est tenable pour
- * une poignée de paquets fournis d'office ; au-delà, il faudra passer par
- * une colonne image_url et un bucket Supabase.
+ * sans réseau. Le compromis est le poids et le fait qu'ajouter un visuel
+ * demande un redéploiement. C'est tenable pour une poignée de paquets
+ * fournis d'office ; au-delà, il faudra passer par une colonne image_url
+ * et un bucket Supabase.
  *
- * Les fichiers sont en 620 x 874, le format de carte de l'application.
+ * Les fichiers de FOURNIS sont en 620 x 874, le format de carte de
+ * l'application. Ceux d'ILLUSTRATIONS sont carrés, 1024 x 1024, sujet
+ * détouré sur fond transparent.
  */
 import collegeUs from '../assets/decks/college-us.webp';
 import irregularVerbs from '../assets/decks/irregular-verbs.webp';
@@ -16,6 +18,9 @@ import schoolWork from '../assets/decks/school-work.webp';
 
 import vetements from '../assets/packs/vetements.png';
 import loisirsSport from '../assets/packs/loisirs-sport.png';
+import premieresStructures from '../assets/packs/premieres-structures.png';
+import premiersMots from '../assets/packs/premiers-mots.png';
+import nombresMesures from '../assets/packs/nombres-mesures.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -44,15 +49,31 @@ export function imageFor(deckId: string, stored: string | null | undefined): str
  * qui vient se poser À L'INTÉRIEUR du dos dessiné, dans le cadre que
  * `CardBack` trace déjà. Le paquet garde donc sa carrure et son filet.
  *
- * La clé accepte l'identifiant du paquet ou son nom : les paquets fournis
- * ont un identifiant lisible ('college-us'), ceux que vous créez dans
- * l'application non. Les deux graphies mènent au même fichier.
+ * La clé accepte l'identifiant du paquet ou son nom, en clair ou normalisé :
+ * les paquets fournis ont un identifiant lisible ('nombres-mesures'), ceux
+ * venus de Supabase portent parfois un identifiant de classe ('6e-grammaire')
+ * et ceux que vous créez dans l'application n'en ont aucun de lisible. Toutes
+ * les graphies mènent au même fichier — c'est volontairement redondant :
+ * renommer un paquet dans l'application ne doit pas lui faire perdre son
+ * illustration.
  */
 const ILLUSTRATIONS: Record<string, string> = {
   'vetements': vetements,
   'les-vetements': vetements,
+
   'loisirs-sport': loisirsSport,
   'loisirs-et-sport': loisirsSport,
+
+  '6e-grammaire': premieresStructures,
+  'premieres-structures': premieresStructures,
+  'premieres-structures-6e': premieresStructures,
+
+  '6e-vocabulaire': premiersMots,
+  'premiers-mots': premiersMots,
+  'premiers-mots-6e': premiersMots,
+
+  'nombres-mesures': nombresMesures,
+  'nombres-quantites-et-mesures': nombresMesures,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
