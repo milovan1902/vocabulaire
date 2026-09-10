@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
-import { CardBack } from './components';
+import { DeckFace } from './components';
 import type { Streak } from '../engine/streak';
 import { doneToday, lastSeven, liveStreak } from '../engine/streak';
 
@@ -131,9 +131,7 @@ export function Today({
             <>
               <div className="pioche" onClick={() => onOpen(tete.deck.id)}>
                 <span className="pioche-dos">
-                  {tete.image
-                    ? <img src={tete.image} alt="" />
-                    : <CardBack id={tete.deck.id} name={tete.deck.name} />}
+                  <DeckFace id={tete.deck.id} name={tete.deck.name} image={tete.image} />
                   <span className="pioche-due">{tete.due}</span>
                 </span>
                 <span className="pioche-txt">
