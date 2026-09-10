@@ -21,6 +21,8 @@ import loisirsSport from '../assets/packs/loisirs-sport.png';
 import premieresStructures from '../assets/packs/premieres-structures.png';
 import premiersMots from '../assets/packs/premiers-mots.png';
 import nombresMesures from '../assets/packs/nombres-mesures.png';
+import phrasesQuotidien from '../assets/packs/phrases-quotidien.png';
+import preterit from '../assets/packs/preterit.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -74,6 +76,14 @@ const ILLUSTRATIONS: Record<string, string> = {
 
   'nombres-mesures': nombresMesures,
   'nombres-quantites-et-mesures': nombresMesures,
+
+  '6e-phrases': phrasesQuotidien,
+  'phrases': phrasesQuotidien,
+  'phrases-de-tous-les-jours': phrasesQuotidien,
+  'phrases-de-tous-les-jours-6e': phrasesQuotidien,
+
+  'preterit': preterit,
+  'le-preterit': preterit,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
