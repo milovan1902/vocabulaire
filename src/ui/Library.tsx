@@ -5,7 +5,7 @@ import {
   CLASSES, CLASSE_LABELS, LEVEL_LABELS,
   classeConvient, priceLabel,
 } from '../domain/types';
-import { DeckFace } from './components';
+import { DeckVign } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
@@ -161,11 +161,7 @@ export function Library({
     if (s.image) {
       return <img src={s.image} alt="" style={{ width: w, height: h }} className="vign" />;
     }
-    return (
-      <span className="vign vign-draw" style={{ width: w, height: h }}>
-        <DeckFace id={s.deck.id} name={s.deck.name} image={null} />
-      </span>
-    );
+    return <DeckVign id={s.deck.id} name={s.deck.name} image={null} w={w} h={h} />;
   }
 
   /**
