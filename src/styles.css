@@ -1657,3 +1657,27 @@ textarea {
   font-variant-numeric: tabular-nums;
   color: var(--grey);
 }
+/* ==================================================================
+   Chantier 29 — le compte sur les puces de rayon
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Une seule règle. Les puces de rayon portent maintenant un compte,
+   comme les tranches de prix le faisaient déjà ; elles ont donc besoin
+   du même petit chiffre en retrait.
+
+   Si `.pricefilters button span` existe chez vous avec d'autres
+   valeurs, ce sont CELLES-LÀ qu'il faut reprendre ici — deux comptes
+   dessinés différemment dans le même panneau se remarquent tout de
+   suite. Le plus simple est alors d'ajouter `.rayonfilters button span`
+   au sélecteur existant plutôt que de coller ce bloc.
+   ================================================================== */
+
+.rayonfilters button span,
+.pricefilters button span {
+  margin-left: 5px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
