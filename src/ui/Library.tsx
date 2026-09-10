@@ -311,6 +311,9 @@ export function Library({
               <button className="workrow-main" onClick={(e) => ouvrir(e, s)}>
                 <span className="vign-wrap">
                   {vignette(s, 54, 76)}
+                  {s.deck.classeFrom && (
+                    <span className="classdot">{s.deck.classeFrom}</span>
+                  )}
                   {s.due > 0 && <span className="vign-due">{s.due}</span>}
                 </span>
                 <span className="workrow-txt">
@@ -357,7 +360,17 @@ export function Library({
     return (
       <div key={s.deck.id} className={`switchrow${on ? '' : ' off'}`}>
         <button className="switchrow-main" onClick={(e) => ouvrir(e, s)}>
-          {vignette(s, 44, 62)}
+          {/*
+            * La vignette gagne une enveloppe positionnée : sans elle, la
+            * pastille se placerait par rapport à la ligne entière et
+            * atterrirait n'importe où.
+            */}
+          <span className="vign-wrap">
+            {vignette(s, 44, 62)}
+            {s.deck.classeFrom && (
+              <span className="classdot">{s.deck.classeFrom}</span>
+            )}
+          </span>
           <span className="switchrow-txt">
             <b>{s.deck.name}</b>
             <small>
