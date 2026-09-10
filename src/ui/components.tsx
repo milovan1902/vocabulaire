@@ -1,5 +1,6 @@
 /** Petits composants partagés, sans logique métier. */
 import type { ReactNode } from 'react';
+import { artFor } from './deckImages';
 
 /** Palette déterministe : un paquet garde toujours la même couleur. */
 const PALETTES = [
@@ -72,6 +73,37 @@ export function CardBack({
       </text>
       </>}
     </svg>
+  );
+}
+
+/**
+ * Le dos d'un paquet, en trois états, SANS enveloppe.
+ *
+ * Ce composant ne rend que le contenu du dos ; c'est l'appelant qui fournit
+ * la boîte, avec ses dimensions et ses classes — une vignette de 54 px, la
+ * pioche de 132 px et la carte flottante plein écran n'ont ni la même
+ * carrure, ni le même arrondi, ni la même ombre.
+ *
+ * Il existe parce que la règle « image entière > illustration > monogramme »
+ * était jusqu'ici recopiée à chaque écran. La bibliothèque avait sa version
+ * illustrée ; la carte flottante et la pioche gardaient l'ancienne, et la
+ * carte perdait donc son illustration au moment précis où elle occupe tout
+ * l'écran. Une règle écrite trois fois n'est pas une règle.
+ *
+ * La seule contrainte pour l'appelant : sa boîte doit être positionnée
+ * (position: relative ou absolute) et respecter le ratio 620 / 874, sans
+ * quoi le sujet détouré, placé en pourcentages, tomberait à côté du cadre.
+ */
+export function DeckFace({
+  id, name, image,
+}: { id: string; name: string; image?: string | null }) {
+  if (image) return <img src={image} alt="" />;
+  const art = artFor(id, name);
+  return (
+    <>
+      <CardBack id={id} name={name} bare={!!art} />
+      {art && <img src={art} alt="" className="dos-illus-img" />}
+    </>
   );
 }
 
