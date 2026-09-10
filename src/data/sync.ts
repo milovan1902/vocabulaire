@@ -14,10 +14,13 @@ import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
-import { readClasse } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
+import {
+  fusionner, journalDepuisListes, listes,
+  type DeckJournal,
+} from '../domain/deckState';
 
 export interface SyncReport {
   decksPulled: number;
@@ -75,9 +78,7 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select(
-      'id, name, description, price_cents, card_count, position, category_id, level, grade_from',
-    )
+    .select('id, name, description, price_cents, card_count, position, category_id, level')
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -87,16 +88,8 @@ export async function pullCatalog(): Promise<number> {
   let pulled = 0;
 
   for (const row of rows) {
-    /*
-     * Les cartes d'un paquet payant non acheté sont invisibles : la base les
-     * filtre. J'en concluais qu'un paquet sans carte n'existait pas, et je
-     * l'écartais — d'où trois paquets absents de la bibliothèque alors que
-     * leurs 357 cartes étaient bien en base.
-     *
-     * Le paquet est désormais toujours créé. Sa vitrine — nom, prix, classe
-     * plancher, nombre de mots annoncé — vit sur la table decks, que rien ne
-     * filtre. Seul son contenu reste verrouillé, ce qui est le contrat.
-     */
+    // Les cartes d'un paquet payant non acheté sont invisibles : la base les
+    // filtre. On ne crée donc le paquet en local que s'il a du contenu.
     const cards = await fetchAllRows<{
       id: string; en: string; fr: string; theme: string; example: string | null;
     }>((from, to) =>
@@ -107,22 +100,16 @@ export async function pullCatalog(): Promise<number> {
         .order('position')
         .range(from, to),
     );
-    /*
-     * Le garde-fou n'est pas supprimé, il est déplacé : on n'écrit QUE si le
-     * serveur a renvoyé quelque chose. Enregistrer un tableau vide effacerait
-     * les cartes locales d'un paquet acheté le jour où la règle RLS le
-     * filtrerait à tort — une perte silencieuse, la pire espèce.
-     */
-    if (cards.length) {
-      const mapped: Card[] = cards.map((c) => ({
-        id: c.id,
-        en: c.en,
-        fr: c.fr,
-        theme: c.theme,
-        example: c.example ?? undefined,
-      }));
-      await repository.saveCards(row.id, mapped);
-    }
+    if (!cards.length) continue;
+
+    const mapped: Card[] = cards.map((c) => ({
+      id: c.id,
+      en: c.en,
+      fr: c.fr,
+      theme: c.theme,
+      example: c.example ?? undefined,
+    }));
+    await repository.saveCards(row.id, mapped);
 
     const existing = byId.get(row.id);
     const now = Date.now();
@@ -132,18 +119,8 @@ export async function pullCatalog(): Promise<number> {
       description: row.description ?? undefined,
       categoryId: row.category_id ?? null,
       level: readLevel((row as Record<string, unknown>).level),
-      /*
-       * Classe plancher. La colonne s'appelle `grade_from` côté Supabase et
-       * le champ `classeFrom` côté domaine : `Grade` y désigne déjà la note
-       * FSRS, et deux sens pour un mot finit toujours par coûter une soirée.
-       * `readClasse` filtre comme `readLevel` — une valeur inconnue vaut
-       * null, jamais un plantage ni un paquet disparu.
-       */
-      classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       builtin: true,
       priceCents: row.price_cents ?? 0,
-      // Sélectionné depuis toujours, jamais utilisé : le voici.
-      cardCount: row.card_count ?? undefined,
       hasImage: existing?.hasImage ?? false,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
@@ -293,19 +270,39 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
  *
  * Tout voyage dans le même paquet JSON de la colonne `settings` : aucune
  * table, aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
- * La classe scolaire déclarée par l'utilisateur suit ce chemin comme le
- * reste — elle décrit la personne, pas le catalogue.
  *
  * Les deux listes de paquets sont synchronisées, car mettre un paquet en jeu
  * sur l'ordinateur doit se voir sur le téléphone — c'est la même décision.
+ *
+ * ── Ce qui change au chantier 30 ───────────────────────────────────────
+ *
+ * Les deux listes étaient fusionnées par UNION. Une union ne peut pas
+ * exprimer un retrait : « je ne possède plus ce paquet » et « je n'ai jamais
+ * eu ce paquet » y donnent le même ensemble vide, donc la synchronisation
+ * suivante rapatriait ce que le serveur avait gardé. D'où des paquets qui se
+ * rajoutent, une mise en pause qui ne tient pas, et une liste « en jeu »
+ * qu'on croit perdue.
+ *
+ * L'arbitrage se fait maintenant sur un journal daté, paquet par paquet —
+ * le même principe que les `overrides` juste en dessous, qui, eux, étaient
+ * justes depuis le début.
  */
 export async function syncSettings(userId: string): Promise<void> {
   const localGeneral = await repository.getSettings();
   const localCounters = await repository.getCounters();
   const localStreak = await repository.getStreak();
   const localOverrides = await repository.getOverrides();
+  /*
+   * Le journal local, ou sa reconstitution depuis les deux anciennes listes
+   * si cet appareil n'en a pas encore. Reconstitué, il est daté à zéro : il
+   * perdra donc contre toute décision réelle venue d'ailleurs, ce qui est
+   * exactement ce qu'on veut d'un état hérité.
+   */
   const localInstalled = (await repository.getInstalled()) ?? [];
   const localActive = (await repository.getActive()) ?? localInstalled;
+  const localJournal =
+    (await repository.getDeckJournal()) ??
+    journalDepuisListes(localInstalled, localActive);
 
   const { data, error } = await supabase
     .from('user_settings')
@@ -320,6 +317,7 @@ export async function syncSettings(userId: string): Promise<void> {
     streak?: Streak;
     installed?: string[];
     active?: string[];
+    deckJournal?: DeckJournal;
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -339,21 +337,27 @@ export async function syncSettings(userId: string): Promise<void> {
   const streak = mergeStreak(localStreak, remoteStreak);
 
   /*
-   * Collection : on réunit. Un paquet obtenu sur un appareil doit apparaître
-   * sur l'autre, et personne ne « désobtient » un paquet par erreur.
-   */
-  const installed = [...new Set([...localInstalled, ...(bundle?.installed ?? [])])];
-
-  /*
-   * Paquets en jeu : on réunit aussi, mais borné à la collection.
+   * Collection et paquets en jeu : la décision la plus récente gagne, pour
+   * chaque paquet séparément.
    *
-   * L'union plutôt que le dernier qui parle, car mettre en pause est une
-   * action réversible d'un geste, alors qu'une remise en jeu perdue laisse
-   * quelqu'un devant un écran vide sans comprendre. En cas de doute on
-   * privilégie donc le travail.
+   * L'union précédente privilégiait le travail — « en cas de doute, on garde
+   * le paquet » — mais elle ne laissait aucun moyen d'exprimer un retrait, et
+   * ressuscitait donc à chaque passage ce que la personne venait d'écarter.
+   * Le doute se tranche maintenant par la date : le dernier geste gagne, quel
+   * que soit l'appareil où il a été posé.
+   *
+   * Un serveur qui n'a pas encore de journal voit le sien reconstitué depuis
+   * ses deux listes, daté à zéro. Conséquence voulue : la première
+   * synchronisation après cette mise à jour se comporte comme avant — elle
+   * réunit — et personne ne perd un paquet en installant la correction. Dès
+   * le geste suivant, ce geste tranche.
    */
-  const active = [...new Set([...localActive, ...(bundle?.active ?? [])])]
-    .filter((id) => installed.includes(id));
+  const remoteJournal =
+    bundle?.deckJournal ??
+    journalDepuisListes(bundle?.installed ?? [], bundle?.active ?? []);
+
+  const deckJournal = fusionner(localJournal, remoteJournal);
+  const { installed, active } = listes(deckJournal);
 
   const today = todayKey();
   const counters: DailyCounters = {};
@@ -373,13 +377,22 @@ export async function syncSettings(userId: string): Promise<void> {
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
   await repository.saveStreak(streak);
+  await repository.saveDeckJournal(deckJournal);
   await repository.saveInstalled(installed);
   await repository.saveActive(active);
 
+  /*
+   * `installed` et `active` continuent d'être poussés à côté du journal.
+   *
+   * Ce n'est pas une redondance oubliée : un appareil resté sur la version
+   * précédente lit encore ces deux listes et ne saurait rien faire du
+   * journal. Il faut donc qu'il y trouve un état cohérent le temps d'être
+   * mis à jour. Elles sont désormais dérivées, jamais décidées.
+   */
   const { error: upErr } = await supabase.from('user_settings').upsert(
     {
       user_id: userId,
-      settings: { general, decks: overrides, streak, installed, active },
+      settings: { general, decks: overrides, streak, installed, active, deckJournal },
       counter: counters,
       updated_at: new Date().toISOString(),
     },
