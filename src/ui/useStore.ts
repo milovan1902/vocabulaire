@@ -8,6 +8,11 @@
  *  - `decks`     : tout ce que l'appareil connaît, catalogue compris ;
  *  - `installed` : ce qui appartient à la personne ;
  *  - `active`    : ce sur quoi elle travaille, et qui seul pèse sur la journée.
+ *
+ * Depuis le chantier 30, les deux dernières sont DÉRIVÉES d'un journal daté
+ * (`domain/deckState`). Toute écriture passe par `noter` : une décision non
+ * datée ne gagnerait aucun arbitrage à la synchronisation, et c'est ainsi
+ * que des paquets se rajoutaient tout seuls.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
@@ -22,6 +27,10 @@ import type {
   Settings,
 } from '../domain/types';
 import { DEFAULT_SETTINGS, effectiveSettings } from '../domain/types';
+import {
+  journalDepuisListes, listes, noter,
+  type DeckJournal,
+} from '../domain/deckState';
 import { repository } from '../data/repository';
 import { SEED_DECKS, materialize } from '../data/seed';
 import { emptyProgress, review } from '../engine/scheduler';
@@ -66,6 +75,21 @@ export interface LoadedDeck {
   image: string | null;
 }
 
+/**
+ * Le journal réellement enregistré, reconstitué si besoin.
+ *
+ * On relit le stockage à chaque écriture plutôt que de faire confiance à
+ * l'état React : deux décisions rapprochées se perdraient sinon l'une
+ * l'autre, c'était déjà la règle pour `overrides` et pour les deux listes.
+ */
+async function journalCourant(): Promise<DeckJournal> {
+  const stocke = await repository.getDeckJournal();
+  if (stocke) return stocke;
+  const inst = (await repository.getInstalled()) ?? [];
+  const act = (await repository.getActive()) ?? inst;
+  return journalDepuisListes(inst, act);
+}
+
 export function useStore(): Store {
   const [ready, setReady] = useState(false);
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -76,6 +100,23 @@ export function useStore(): Store {
   const [streak, setStreak] = useState<Streak>(EMPTY_STREAK);
   const [installed, setInstalled] = useState<DeckId[]>([]);
   const [active, setActiveState] = useState<DeckId[]>([]);
+
+  /**
+   * Enregistre un journal et en dérive les deux listes.
+   *
+   * Un seul chemin d'écriture pour les trois valeurs : c'est ce qui garantit
+   * qu'elles ne peuvent pas se contredire. Les listes restent écrites parce
+   * que tout le reste de l'application les lit — et parce qu'un appareil
+   * encore sur l'ancienne version doit trouver un état cohérent.
+   */
+  const appliquerJournal = useCallback(async (j: DeckJournal) => {
+    const { installed: inst, active: act } = listes(j);
+    await repository.saveDeckJournal(j);
+    await repository.saveInstalled(inst);
+    await repository.saveActive(act);
+    setInstalled(inst);
+    setActiveState(act);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -123,6 +164,29 @@ export function useStore(): Store {
       let act = await repository.getActive();
       if (act === null) {
         act = [...inst];
+        await repository.saveActive(act);
+      }
+
+      /*
+       * Migration du journal (chantier 30).
+       *
+       * Reconstitué depuis les deux listes et daté à zéro : c'est une
+       * photographie, pas une décision. Elle perdra donc contre n'importe
+       * quel geste réel venu d'un autre appareil, et ne fera rien
+       * disparaître chez quelqu'un qui n'a rien demandé.
+       */
+      let journal = await repository.getDeckJournal();
+      if (journal === null) {
+        journal = journalDepuisListes(inst, act);
+        await repository.saveDeckJournal(journal);
+      } else {
+        // Le journal fait foi : si les listes en ont dérivé (par exemple
+        // après une synchronisation par une version antérieure), on les
+        // remet d'aplomb au démarrage plutôt que de laisser deux vérités.
+        const derive = listes(journal);
+        inst = derive.installed;
+        act = derive.active;
+        await repository.saveInstalled(inst);
         await repository.saveActive(act);
       }
 
@@ -191,47 +255,42 @@ export function useStore(): Store {
     setOverridesState(o);
     setCounters(rollAll(c));
     setStreak(st);
-    const inst = (await repository.getInstalled()) ?? [];
-    setInstalled(inst);
-    setActiveState((await repository.getActive()) ?? inst);
+    /*
+     * Après une synchronisation, c'est le journal fusionné qui dit l'état.
+     * Relire `installed` / `active` directement rouvrirait la porte à deux
+     * vérités divergentes.
+     */
+    const journal = await journalCourant();
+    const derive = listes(journal);
+    setInstalled(derive.installed);
+    setActiveState(derive.active);
   }, []);
 
   /** Obtenir un paquet : il rejoint la collection, en pause. */
   const addDeck = useCallback(async (id: DeckId) => {
-    // On relit avant d'écrire : deux ajouts rapprochés se perdraient sinon.
-    const current = (await repository.getInstalled()) ?? [];
-    if (current.includes(id)) return;
-    const next = [...current, id];
-    await repository.saveInstalled(next);
-    setInstalled(next);
+    const journal = await journalCourant();
+    if (journal[id]?.owned) return;
     /*
      * Volontairement pas mis en jeu : sinon chaque achat alourdirait le
      * lendemain à la place de la personne. C'est elle qui décide quand
      * commencer.
      */
-  }, []);
+    await appliquerJournal(noter(journal, id, { owned: true, active: false }));
+  }, [appliquerJournal]);
 
   const removeDeck = useCallback(async (id: DeckId) => {
-    const inst = ((await repository.getInstalled()) ?? []).filter((x) => x !== id);
-    await repository.saveInstalled(inst);
-    setInstalled(inst);
-    // Un paquet qu'on ne possède plus ne peut pas rester en jeu.
-    const act = ((await repository.getActive()) ?? []).filter((x) => x !== id);
-    await repository.saveActive(act);
-    setActiveState(act);
-  }, []);
+    const journal = await journalCourant();
+    // `noter` retire aussi du jeu : un paquet qu'on ne possède plus ne peut
+    // pas rester en jeu.
+    await appliquerJournal(noter(journal, id, { owned: false }));
+  }, [appliquerJournal]);
 
   const setActive = useCallback(async (id: DeckId, on: boolean) => {
-    const inst = (await repository.getInstalled()) ?? [];
+    const journal = await journalCourant();
     // On ne met en jeu que ce qui appartient à la personne.
-    if (on && !inst.includes(id)) return;
-    const current = (await repository.getActive()) ?? inst;
-    const next = on
-      ? current.includes(id) ? current : [...current, id]
-      : current.filter((x) => x !== id);
-    await repository.saveActive(next);
-    setActiveState(next);
-  }, []);
+    if (on && !journal[id]?.owned) return;
+    await appliquerJournal(noter(journal, id, { active: on }));
+  }, [appliquerJournal]);
 
   const loadDeck = useCallback(async (id: DeckId): Promise<LoadedDeck> => {
     const all = await repository.listDecks();
