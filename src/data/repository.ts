@@ -21,6 +21,7 @@ import type {
   UserId,
 } from '../domain/types';
 import { DEFAULT_SETTINGS } from '../domain/types';
+import type { DeckJournal } from '../domain/deckState';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK } from '../engine/streak';
 
@@ -53,6 +54,17 @@ const k = {
    * personnelle. Les mêmes octets ne peuvent pas porter les deux.
    */
   active: (u: UserId) => `u:${u}:active`,
+  /*
+   * Le journal daté des décisions d'appartenance (chantier 30).
+   *
+   * Les deux listes ci-dessus restent écrites — tout le reste de
+   * l'application les lit — mais elles en sont désormais DÉRIVÉES. C'est
+   * le journal qui est la source de vérité, parce que lui seul sait
+   * distinguer « retiré » de « jamais eu », ce qu'un ensemble ne peut pas
+   * faire et ce qui faisait ressusciter les paquets à chaque
+   * synchronisation.
+   */
+  deckJournal: (u: UserId) => `u:${u}:deckjournal`,
 };
 
 export interface Repository {
@@ -83,6 +95,9 @@ export interface Repository {
   /** `null` = jamais renseigné : tout ce qui est possédé est réputé en jeu. */
   getActive(): Promise<DeckId[] | null>;
   saveActive(ids: DeckId[]): Promise<void>;
+  /** `null` = cet appareil n'a pas encore de journal : à reconstituer. */
+  getDeckJournal(): Promise<DeckJournal | null>;
+  saveDeckJournal(j: DeckJournal): Promise<void>;
   deleteDeck(deckId: DeckId): Promise<void>;
   exportAll(): Promise<Record<string, unknown>>;
   importAll(data: Record<string, unknown>): Promise<void>;
@@ -174,6 +189,12 @@ export class IdbRepository implements Repository {
   async saveActive(ids: DeckId[]) {
     await set(k.active(this.user), ids);
   }
+  async getDeckJournal() {
+    return (await get<DeckJournal>(k.deckJournal(this.user))) ?? null;
+  }
+  async saveDeckJournal(j: DeckJournal) {
+    await set(k.deckJournal(this.user), j);
+  }
   async deleteDeck(d: DeckId) {
     await Promise.all([
       del(k.cards(this.user, d)),
@@ -187,6 +208,16 @@ export class IdbRepository implements Repository {
     const counters = await this.getCounters();
     delete counters[d];
     await this.saveCounters(counters);
+    /*
+     * L'entrée du journal part avec le paquet. La laisser derrière ferait
+     * réapparaître un paquet supprimé à la prochaine synchronisation, ce
+     * qui est précisément le symptôme qu'on corrige.
+     */
+    const journal = (await this.getDeckJournal()) ?? {};
+    if (journal[d]) {
+      delete journal[d];
+      await this.saveDeckJournal(journal);
+    }
     const decks = (await this.listDecks()).filter((x) => x.id !== d);
     await this.saveDecks(decks);
   }
