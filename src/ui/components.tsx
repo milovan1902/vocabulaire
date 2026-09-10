@@ -1,6 +1,7 @@
 /** Petits composants partagés, sans logique métier. */
 import type { ReactNode } from 'react';
 import { artFor } from './deckImages';
+import { papierFor, IVOIRE, type Papier } from './deckPaper';
 
 /** Palette déterministe : un paquet garde toujours la même couleur. */
 const PALETTES = [
@@ -13,13 +14,17 @@ const PALETTES = [
 ];
 
 /**
- * La teinte des paquets illustrés.
+ * @deprecated Le crème n'est plus le fond de tous les dos illustrés.
  *
- * Un dos illustré ne prend pas la couleur de son paquet : le dessin porte
- * déjà la sienne, et deux systèmes de couleur sur quarante-cinq pixels se
- * neutralisent. Le fond s'efface donc au profit du sujet.
+ * Il l'a été tant qu'il y avait deux ou trois paquets : le dessin portait la
+ * couleur, le fond s'effaçait. À sept paquets la liste devient une pile de
+ * cartes identiques où seul un dessin de 36 pixels sépare une ligne de sa
+ * voisine — le papier reprend donc une teinte, voir `deckPaper.ts`.
+ *
+ * Ce crème ne sert plus qu'aux cartes à image pleine, sous son vrai nom :
+ * `IVOIRE`. L'alias reste pour les appels existants.
  */
-export const NEUTRE = { ink: '#5b5347', mid: '#cfc7b5', pale: '#f4f1ea' };
+export const NEUTRE = IVOIRE;
 
 export function paletteFor(id: string) {
   // Mélange FNV-1a : le multiplicateur 31 donnait la même couleur à des
@@ -49,15 +54,28 @@ export function initialsOf(name: string): string {
  * pose par-dessus. Le cadre intérieur, lui, ne bouge jamais — c'est lui qui
  * garantit que dos illustré et dos dessiné ont la même carrure dans la
  * liste, et c'est lui qui ménage la marge autour du sujet.
+ *
+ * Deux papiers, donc, et non plus un :
+ *
+ *  - `bare` — il y a une illustration à poser. Le papier prend la teinte du
+ *    paquet (`papierFor`), très pâle, et le filet la reprend deux crans plus
+ *    foncé. C'est ce qui distingue sept paquets dans une liste.
+ *  - sinon — pas d'illustration, donc monogramme sur disque plein. La
+ *    palette franche de `paletteFor` s'applique comme avant : ici la couleur
+ *    EST le dos, il n'y a pas de dessin avec qui la partager.
+ *
+ * Le doublage intérieur est à 0,88 et non 0,7 : c'est le seul trait qui
+ * survive à la vignette de 54 pixels, et sur un papier désormais teinté un
+ * liseré à 0,7 se referme en bouillie grise.
  */
 export function CardBack({
   id, name, bare = false,
 }: { id: string; name: string; bare?: boolean }) {
-  const p = bare ? NEUTRE : paletteFor(id);
+  const p: Papier = bare ? papierFor(id, name) : paletteFor(id);
   return (
     <svg viewBox="0 0 620 874" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <rect x="10" y="10" width="600" height="854" rx="70" fill={p.pale} stroke={p.mid} strokeWidth="10" />
-      <rect x="50" y="50" width="520" height="774" rx="50" fill="none" stroke={p.mid} strokeWidth="6" opacity="0.7" />
+      <rect x="50" y="50" width="520" height="774" rx="50" fill="none" stroke={p.mid} strokeWidth="7" opacity="0.88" />
       {bare ? null : <>
       <g stroke={p.mid} strokeWidth="7" fill="none" opacity="0.85">
         <path d="M310 107 L520 437 L310 767 L100 437 Z" />
@@ -93,6 +111,10 @@ export function CardBack({
  * La seule contrainte pour l'appelant : sa boîte doit être positionnée
  * (position: relative ou absolute) et respecter le ratio 620 / 874, sans
  * quoi le sujet détouré, placé en pourcentages, tomberait à côté du cadre.
+ *
+ * Une carte à image pleine n'a ni papier ni filet à teindre — son visuel la
+ * distingue déjà. C'est le seul des sept paquets que le chantier 27 laisse
+ * exactement tel qu'il était.
  */
 export function DeckFace({
   id, name, image,
