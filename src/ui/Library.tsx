@@ -42,6 +42,244 @@ const CYCLES: Array<{ id: string; label: string; classes: Classe[] }> = [
   { id: 'lycee', label: 'Lycée', classes: ['2de', '1re', 'Tle'] },
 ];
 
+/**
+ * L'état d'un jeu de filtres.
+ *
+ * `ouvert` est dedans et non à côté : le dépliage appartient au panneau, et
+ * deux panneaux qui partagent leur ouverture s'ouvriraient l'un par l'autre
+ * en changeant d'onglet.
+ */
+type Filtres = {
+  consult: Classe[];
+  rayon: string | null;
+  /** Catalogue seulement : dans la collection tout est déjà payé. */
+  tranche: number | null;
+  ouvert: boolean;
+};
+
+const FILTRES_VIDES: Filtres = { consult: [], rayon: null, tranche: null, ouvert: false };
+
+/**
+ * Le nombre de CRITÈRES en vigueur, pas de puces.
+ *
+ * « 2 » veut dire « deux réglages en vigueur », ce qui se retient. Trois
+ * classes cochées dans un même cycle restent un seul critère — sinon le
+ * chiffre grimperait sans rien dire de plus.
+ *
+ * C'est la contrepartie du repli : un filtre caché doit être annoncé, faute
+ * de quoi on cherche pendant dix minutes pourquoi un paquet manque.
+ */
+function nbCriteres(f: Filtres): number {
+  return (f.consult.length > 0 ? 1 : 0)
+    + (f.tranche !== null ? 1 : 0)
+    + (f.rayon !== null ? 1 : 0);
+}
+
+/** Le plancher exact de chaque paquet d'un lot. Ne cumule pas. */
+function comptesParClasse(lot: DeckSummary[]): Map<Classe, number> {
+  const m = new Map<Classe, number>();
+  for (const s of lot) {
+    const p = s.deck.classeFrom;
+    if (p) m.set(p, (m.get(p) ?? 0) + 1);
+  }
+  return m;
+}
+
+/** Le lot réduit aux planchers cochés. Rien de coché = tout le lot. */
+function socleDe(lot: DeckSummary[], f: Filtres): DeckSummary[] {
+  if (f.consult.length === 0) return lot;
+  return lot.filter((s) => !!s.deck.classeFrom && f.consult.includes(s.deck.classeFrom));
+}
+
+/** Le socle réduit par les critères restants. */
+function appliquer(socle: DeckSummary[], f: Filtres): DeckSummary[] {
+  return socle.filter((s) => {
+    if (f.tranche !== null && (s.deck.priceCents ?? 0) !== f.tranche) return false;
+    if (f.rayon !== null && s.deck.categoryId !== f.rayon) return false;
+    return true;
+  });
+}
+
+/**
+ * Le panneau de filtres, partagé par le catalogue et la collection.
+ *
+ * Il existe parce que les deux écrans doivent filtrer de la même façon : même
+ * barre repliée, même compteur, même « Tout effacer », mêmes puces de cycle
+ * qui ouvrent une seconde rangée de planchers, mêmes rayons. Deux panneaux
+ * écrits séparément dérivent en une semaine — c'était déjà la leçon de
+ * `DeckFace` au chantier 22.
+ *
+ * Ce qui reste propre à chaque écran :
+ *
+ *  - `avecPrix` — le catalogue seul. Dans la collection tout est déjà payé :
+ *    le filtre ne trierait plus que par ce que chaque paquet a coûté.
+ *  - `lot` — le catalogue compte sur le catalogue, la collection sur la
+ *    collection. Un filtre qui annonce « 12 » dans un rayon où l'on ne
+ *    possède que deux paquets serait un mensonge de plus.
+ *  - l'état, tenu par l'appelant. Filtrer sa collection sur « Grammaire » ne
+ *    doit pas filtrer le catalogue au passage.
+ *
+ * Une puce qui ne donnerait rien n'est pas proposée : sauf si elle est déjà
+ * cochée — la retirer sous le doigt enlèverait le moyen de la décocher.
+ */
+function PanneauFiltres({
+  lot, categories, filtres, avecPrix, onChange,
+}: {
+  lot: DeckSummary[];
+  categories: Category[];
+  filtres: Filtres;
+  avecPrix: boolean;
+  onChange: (f: Filtres) => void;
+}) {
+  const f = filtres;
+  const parClasseExact = comptesParClasse(lot);
+  const socle = socleDe(lot, f);
+
+  const comptesPrix = new Map<number, number>();
+  for (const s of socle) {
+    const c = s.deck.priceCents ?? 0;
+    comptesPrix.set(c, (comptesPrix.get(c) ?? 0) + 1);
+  }
+
+  const n = nbCriteres(f);
+
+  function basculerConsultation(c: Classe) {
+    onChange({
+      ...f,
+      consult: f.consult.includes(c) ? f.consult.filter((x) => x !== c) : [...f.consult, c],
+    });
+  }
+
+  /*
+   * Un cycle se coche entier et se décoche entier. On n'y met que les
+   * planchers qui ont au moins un paquet : ajouter une classe vide
+   * gonflerait le compte annoncé sans rien afficher.
+   */
+  function basculerCycle(cy: { classes: Classe[] }) {
+    const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
+    const tout = dispo.length > 0 && dispo.every((c) => f.consult.includes(c));
+    const hors = f.consult.filter((c) => !cy.classes.includes(c));
+    onChange({ ...f, consult: tout ? hors : [...hors, ...dispo] });
+  }
+
+  /** Les cycles dont une classe au moins est cochée : eux seuls s'affinent. */
+  const cyclesOuverts = CYCLES.filter((cy) => cy.classes.some((c) => f.consult.includes(c)));
+
+  return (
+    <>
+      <div className="filterbar">
+        <button
+          className={`filterbtn${f.ouvert ? ' open' : ''}`}
+          onClick={() => onChange({ ...f, ouvert: !f.ouvert })}
+          aria-expanded={f.ouvert}
+        >
+          <span>Filtres</span>
+          {n > 0 && <b>{n}</b>}
+          <i />
+        </button>
+        {n > 0 && (
+          <button
+            className="filterclear"
+            onClick={() => onChange({ ...FILTRES_VIDES, ouvert: f.ouvert })}
+          >
+            Tout effacer
+          </button>
+        )}
+      </div>
+
+      {/*
+        * Le panneau reste MONTÉ quand il est replié : c'est ce qui permet de
+        * l'animer, et ce qui garde l'état des puces d'une ouverture à
+        * l'autre. Le dépliage est en CSS (.filterfold), pas en JavaScript.
+        */}
+      <div className={`filterfold${f.ouvert ? ' open' : ''}`}>
+        <div className="filterpanel">
+          <p className="flabel">Niveau scolaire</p>
+          <div className="classechips">
+            {CYCLES.map((cy) => {
+              const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
+              const total = dispo.reduce((t, c) => t + (parClasseExact.get(c) ?? 0), 0);
+              const coches = cy.classes.filter((c) => f.consult.includes(c));
+              if (total === 0 && coches.length === 0) return null;
+              return (
+                <button
+                  key={cy.id}
+                  className={coches.length > 0 ? 'on' : ''}
+                  onClick={() => basculerCycle(cy)}
+                >
+                  {cy.label} · {total}
+                </button>
+              );
+            })}
+          </div>
+
+          {cyclesOuverts.length > 0 && (
+            <div className="classechips fine">
+              {cyclesOuverts.flatMap((cy) => cy.classes).map((c) => {
+                const k = parClasseExact.get(c) ?? 0;
+                if (k === 0 && !f.consult.includes(c)) return null;
+                return (
+                  <button
+                    key={c}
+                    className={f.consult.includes(c) ? 'on' : ''}
+                    onClick={() => basculerConsultation(c)}
+                  >
+                    {CLASSE_LABELS[c]} · {k}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {avecPrix && (
+            <>
+              <p className="flabel">Prix</p>
+              <div className="pricefilters">
+                {TRANCHES.map((t) => {
+                  const k = comptesPrix.get(t.cents) ?? 0;
+                  if (k === 0) return null;
+                  return (
+                    <button
+                      key={t.cents}
+                      className={f.tranche === t.cents ? 'on' : ''}
+                      onClick={() => onChange({ ...f, tranche: f.tranche === t.cents ? null : t.cents })}
+                    >
+                      {t.label} <span>{k}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {categories.length > 1 && (
+            <>
+              <p className="flabel">Rayon</p>
+              <div className="rayonfilters">
+                {[...categories]
+                  .sort((a, b) => a.position - b.position)
+                  .map((c) => {
+                    const k = socle.filter((s) => s.deck.categoryId === c.id).length;
+                    if (k === 0 && f.rayon !== c.id) return null;
+                    return (
+                      <button
+                        key={c.id}
+                        className={f.rayon === c.id ? 'on' : ''}
+                        onClick={() => onChange({ ...f, rayon: f.rayon === c.id ? null : c.id })}
+                      >
+                        {c.name} <span>{k}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function Library({
   decks, installed, active, categories, settings, auth,
   onOpen, onReview, onAdd, onRemove, onSetActive, onSearch, onSettings,
@@ -72,16 +310,24 @@ export function Library({
 }) {
   const [charge, setCharge] = useState<Charge | null>(null);
   const [tab, setTab] = useState<Tab>('travail');
-  const [tranche, setTranche] = useState<number | null>(null);
-  const [rayon, setRayon] = useState<string | null>(null);
+
+  /*
+   * Deux jeux de filtres, un par onglet.
+   *
+   * Même panneau, deux états séparés : filtrer sa collection sur
+   * « Grammaire » ne doit pas filtrer le catalogue au passage, sinon on
+   * change d'onglet et on se croit dépossédé de la moitié de ses paquets.
+   */
+  const [fCatalogue, setFCatalogue] = useState<Filtres>(FILTRES_VIDES);
+  const [fCollection, setFCollection] = useState<Filtres>(FILTRES_VIDES);
 
   /*
    * Deux façons de regarder le catalogue, à ne jamais confondre :
    *
    * - la classe déclarée (`settings.classe`) est une identité. Elle range le
    *   catalogue en « pour ma classe » et « pour plus tard », et se mémorise.
-   * - la consultation (`consult`) est un coup d'œil ailleurs : planchers
-   *   exacts, plusieurs classes à la fois, jamais mémorisée.
+   * - la consultation (`fCatalogue.consult`) est un coup d'œil ailleurs :
+   *   planchers exacts, plusieurs classes à la fois, jamais mémorisée.
    *
    * Le multi-choix n'existe que dans le second mode, et il s'annonce à
    * l'écran. Il se coche par CYCLE : cocher « Collège » prend les quatre
@@ -91,19 +337,12 @@ export function Library({
    * Il reste un trou entre cycles — consulter « Lycée » ne montre pas un
    * paquet à plancher 3ème, qui conviendrait pourtant à un élève de 2nde.
    * Autant l'avouer à l'écran plutôt que le cacher.
-   */
-  const [consult, setConsult] = useState<Classe[]>([]);
-  const [choixClasse, setChoixClasse] = useState(false);
-
-  /*
-   * Les filtres sont repliés par défaut.
    *
-   * Trois rangées de puces au-dessus de la liste annonçaient surtout « il y a
-   * beaucoup à régler ici » — alors que la plupart des visites ne règlent
-   * rien et veulent juste voir les paquets. Le bouton porte l'état (combien
-   * de critères sont en vigueur) ; le détail ne s'ouvre que si on le demande.
+   * La barre « Ma classe » ne descend PAS dans la collection : ce n'est pas
+   * un filtre mais un réglage d'identité, et une collection qu'on a
+   * constituée soi-même n'a pas à être rangée en « pas encore pour vous ».
    */
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [choixClasse, setChoixClasse] = useState(false);
 
   /*
    * Quel anneau a sa bulle ouverte. Un seul à la fois : deux explications
@@ -294,7 +533,9 @@ export function Library({
           </p>
         </div>
 
-        <p className="rayon-label">En jeu</p>
+        <p className="rayon-label on">
+          En jeu <b className="rayon-n">{rows.length}</b>
+        </p>
         <div className="worklist">
           {rows.map((s) => (
             <div key={s.deck.id} className="workrow">
@@ -391,8 +632,6 @@ export function Library({
     const mine = installed
       .map((id) => parId.get(id))
       .filter((s): s is DeckSummary => !!s);
-    const jeu = mine.filter((s) => active.includes(s.deck.id));
-    const pause = mine.filter((s) => !active.includes(s.deck.id));
 
     if (mine.length === 0) {
       return (
@@ -404,6 +643,19 @@ export function Library({
         </div>
       );
     }
+
+    /*
+     * Le même panneau que le catalogue, moins le prix.
+     *
+     * Ici tout est déjà payé : le filtre ne trierait plus que par ce que
+     * chaque paquet a coûté, ce qui n'aide personne à travailler. Et l'état
+     * en jeu / en pause ne prend pas cette place — il est déjà la structure
+     * de la liste, deux sections qu'on lit d'un coup d'œil. Un filtre qui
+     * redit ce que la page montre encombre le panneau sans rien trancher.
+     */
+    const retenus = appliquer(socleDe(mine, fCollection), fCollection);
+    const jeu = retenus.filter((s) => active.includes(s.deck.id));
+    const pause = retenus.filter((s) => !active.includes(s.deck.id));
 
     return (
       <>
@@ -419,16 +671,40 @@ export function Library({
           </button>
         )}
 
+        <PanneauFiltres
+          lot={mine}
+          categories={categories}
+          filtres={fCollection}
+          avecPrix={false}
+          onChange={setFCollection}
+        />
+
+        {retenus.length === 0 && (
+          <p className="hint">
+            Aucun paquet de votre collection ne correspond à ce filtre.
+          </p>
+        )}
+
+        {/*
+          * « En jeu » et « En pause » restent les deux sections de la liste,
+          * filtre ou pas. C'est la structure de l'écran, pas un tri : la
+          * faire disparaître dès qu'un filtre s'applique ferait perdre le
+          * seul repère de la page.
+          */}
         {jeu.length > 0 && (
           <>
-            <p className="rayon-label on">En jeu — {jeu.length}</p>
+            <p className="rayon-label on">
+              En jeu <b className="rayon-n">{jeu.length}</b>
+            </p>
             <div className="switchlist">{jeu.map(ligneInterrupteur)}</div>
           </>
         )}
 
         {pause.length > 0 && (
           <>
-            <p className="rayon-label">En pause — {pause.length}</p>
+            <p className="rayon-label">
+              En pause <b className="rayon-n">{pause.length}</b>
+            </p>
             <div className="switchlist">{pause.map(ligneInterrupteur)}</div>
           </>
         )}
@@ -501,7 +777,7 @@ export function Library({
   function vueCatalogue() {
     const tous = charge?.summaries ?? [];
     const maClasse = settings.classe;
-    const enConsultation = consult.length > 0;
+    const enConsultation = fCatalogue.consult.length > 0;
 
     /*
      * Ce que chaque classe ouvre. Le compte est cumulatif, puisque le
@@ -514,41 +790,7 @@ export function Library({
       parClasse.set(c, tous.filter((s) => classeConvient(s.deck.classeFrom, c)).length);
     }
 
-    /*
-     * Le compte EXACT par plancher — celui de la consultation, qui ne cumule
-     * pas. Il sert à ne proposer que des puces qui donneront quelque chose,
-     * comme les tranches de prix plus bas le font déjà.
-     *
-     * Un paquet sans plancher n'entre dans aucun compte, et c'est le point :
-     * il est invisible en consultation. Tant que la puce restait cliquable,
-     * un paquet oublié en base donnait une liste vide sans qu'on sache
-     * pourquoi. Maintenant la puce disparaît, et son absence se remarque.
-     */
-    const parClasseExact = new Map<Classe, number>();
-    for (const s of tous) {
-      const p = s.deck.classeFrom;
-      if (p) parClasseExact.set(p, (parClasseExact.get(p) ?? 0) + 1);
-    }
-
-    // En consultation on prend les planchers EXACTEMENT cochés ; sinon tout
-    // le catalogue, qu'on répartira ensuite entre ma classe et plus tard.
-    const socle = enConsultation
-      ? tous.filter((s) => !!s.deck.classeFrom && consult.includes(s.deck.classeFrom))
-      : tous;
-
-    // Comptes par tranche, calculés sur le socle et non sur le catalogue
-    // entier : un filtre qui annonce « 3 » puis n'affiche rien mentirait.
-    const comptes = new Map<number, number>();
-    for (const s of socle) {
-      const c = s.deck.priceCents ?? 0;
-      comptes.set(c, (comptes.get(c) ?? 0) + 1);
-    }
-
-    const filtres = socle.filter((s) => {
-      if (tranche !== null && (s.deck.priceCents ?? 0) !== tranche) return false;
-      if (rayon !== null && s.deck.categoryId !== rayon) return false;
-      return true;
-    });
+    const filtres = appliquer(socleDe(tous, fCatalogue), fCatalogue);
 
     const pourMoi = enConsultation
       ? filtres
@@ -566,51 +808,6 @@ export function Library({
       (s) => !s.deck.categoryId || !categories.some((c) => c.id === s.deck.categoryId),
     );
     if (orphelins.length) groupes.push({ category: null, items: orphelins });
-
-    function basculerConsultation(c: Classe) {
-      setConsult((prev) =>
-        prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
-      );
-    }
-
-    /*
-     * Un cycle se coche entier et se décoche entier. On n'y met que les
-     * planchers qui ont au moins un paquet : ajouter une classe vide
-     * gonflerait le compte annoncé sans rien afficher.
-     */
-    function basculerCycle(cy: { classes: Classe[] }) {
-      const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
-      const toutCoche = dispo.length > 0 && dispo.every((c) => consult.includes(c));
-      setConsult((prev) => {
-        const hors = prev.filter((c) => !cy.classes.includes(c));
-        return toutCoche ? hors : [...hors, ...dispo];
-      });
-    }
-
-    /** Les cycles dont une classe au moins est cochée : eux seuls s'affinent. */
-    const cyclesOuverts = CYCLES.filter((cy) =>
-      cy.classes.some((c) => consult.includes(c)),
-    );
-
-    /*
-     * Ce que le bouton annonce. On compte les CRITÈRES, pas les puces : « 2 »
-     * veut dire « deux réglages en vigueur », ce qui se retient. Trois classes
-     * cochées dans un même cycle restent un seul critère — sinon le chiffre
-     * grimperait sans rien dire de plus.
-     *
-     * C'est la contrepartie du repli : un filtre caché doit être annoncé,
-     * faute de quoi on cherche pendant dix minutes pourquoi un paquet manque.
-     */
-    const nbFiltres =
-      (consult.length > 0 ? 1 : 0) +
-      (tranche !== null ? 1 : 0) +
-      (rayon !== null ? 1 : 0);
-
-    function effacerFiltres() {
-      setConsult([]);
-      setTranche(null);
-      setRayon(null);
-    }
 
     return (
       <>
@@ -636,7 +833,7 @@ export function Library({
                 className={`classrow${maClasse === c ? ' on' : ''}`}
                 onClick={() => {
                   onSettings({ ...settings, classe: c });
-                  setConsult([]);
+                  setFCatalogue((f) => ({ ...f, consult: [] }));
                   setChoixClasse(false);
                 }}
               >
@@ -649,7 +846,7 @@ export function Library({
               className="classrow plain"
               onClick={() => {
                 onSettings({ ...settings, classe: null });
-                setConsult([]);
+                setFCatalogue((f) => ({ ...f, consult: [] }));
                 setChoixClasse(false);
               }}
             >
@@ -661,118 +858,29 @@ export function Library({
         {enConsultation && (
           <div className="consultbox">
             <p className="ttl">
-              Vous consultez {consult.map((c) => CLASSE_LABELS[c]).join(', ')}
+              Vous consultez {fCatalogue.consult.map((c) => CLASSE_LABELS[c]).join(', ')}
             </p>
             <p className="hint">
               Ce sont les paquets dont le plancher tombe dans ce que vous avez
               coché, et non ceux de votre classe. Un paquet d’un cycle plus bas
               n’y figure pas, même s’il vous conviendrait.
             </p>
-            <button className="btn ghost" onClick={() => setConsult([])}>
+            <button
+              className="btn ghost"
+              onClick={() => setFCatalogue((f) => ({ ...f, consult: [] }))}
+            >
               {maClasse ? `Revenir à ma classe — ${CLASSE_LABELS[maClasse]}` : 'Revenir au catalogue'}
             </button>
           </div>
         )}
 
-        <div className="filterbar">
-          <button
-            className={`filterbtn${filtresOuverts ? ' open' : ''}`}
-            onClick={() => setFiltresOuverts((v) => !v)}
-            aria-expanded={filtresOuverts}
-          >
-            <span>Filtres</span>
-            {nbFiltres > 0 && <b>{nbFiltres}</b>}
-            <i />
-          </button>
-          {nbFiltres > 0 && (
-            <button className="filterclear" onClick={effacerFiltres}>
-              Tout effacer
-            </button>
-          )}
-        </div>
-
-        {/*
-          * Le panneau reste MONTÉ quand il est replié : c'est ce qui permet de
-          * l'animer, et ce qui garde l'état des puces d'une ouverture à
-          * l'autre. Le dépliage est en CSS (.filterfold), pas en JavaScript.
-          */}
-        <div className={`filterfold${filtresOuverts ? ' open' : ''}`}>
-          <div className="filterpanel">
-            <p className="flabel">Niveau scolaire</p>
-            <div className="classechips">
-              {CYCLES.map((cy) => {
-                const dispo = cy.classes.filter((c) => (parClasseExact.get(c) ?? 0) > 0);
-                const n = dispo.reduce((t, c) => t + (parClasseExact.get(c) ?? 0), 0);
-                const coches = cy.classes.filter((c) => consult.includes(c));
-                // Un cycle sans aucun paquet ne peut rien afficher : on ne le
-                // propose pas. Sauf s'il est déjà coché — le retirer sous le
-                // doigt enlèverait le moyen de le décocher.
-                if (n === 0 && coches.length === 0) return null;
-                return (
-                  <button
-                    key={cy.id}
-                    className={coches.length > 0 ? 'on' : ''}
-                    onClick={() => basculerCycle(cy)}
-                  >
-                    {cy.label} · {n}
-                  </button>
-                );
-              })}
-            </div>
-
-            {cyclesOuverts.length > 0 && (
-              <div className="classechips fine">
-                {cyclesOuverts.flatMap((cy) => cy.classes).map((c) => {
-                  const n = parClasseExact.get(c) ?? 0;
-                  if (n === 0 && !consult.includes(c)) return null;
-                  return (
-                    <button
-                      key={c}
-                      className={consult.includes(c) ? 'on' : ''}
-                      onClick={() => basculerConsultation(c)}
-                    >
-                      {CLASSE_LABELS[c]} · {n}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <p className="flabel">Prix</p>
-            <div className="pricefilters">
-              {TRANCHES.map((t) => {
-                const n = comptes.get(t.cents) ?? 0;
-                if (n === 0) return null;
-                return (
-                  <button
-                    key={t.cents}
-                    className={tranche === t.cents ? 'on' : ''}
-                    onClick={() => setTranche(tranche === t.cents ? null : t.cents)}
-                  >
-                    {t.label} <span>{n}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {categories.length > 1 && (
-              <>
-                <p className="flabel">Rayon</p>
-                <div className="rayonfilters">
-                  {[...categories].sort((a, b) => a.position - b.position).map((c) => (
-                    <button
-                      key={c.id}
-                      className={rayon === c.id ? 'on' : ''}
-                      onClick={() => setRayon(rayon === c.id ? null : c.id)}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <PanneauFiltres
+          lot={tous}
+          categories={categories}
+          filtres={fCatalogue}
+          avecPrix
+          onChange={setFCatalogue}
+        />
 
         {/*
           * La pastille dit « 6e » quand la ligne disait « dès la 6ème ». Le
@@ -799,7 +907,10 @@ export function Library({
 
         {groupes.map(({ category, items }) => (
           <section key={category?.id ?? '_autres'} className="rayon">
-            <h2>{category ? category.name : 'Autres'}</h2>
+            <h2>
+              {category ? category.name : 'Autres'}
+              <b className="rayon-n">{items.length}</b>
+            </h2>
             <div className="catlist">{items.map((s) => ligneCatalogue(s))}</div>
           </section>
         ))}
