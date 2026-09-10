@@ -107,6 +107,31 @@ export function DeckFace({
   );
 }
 
+/**
+ * La vignette d'un paquet : le dos, dans sa boîte, à la taille demandée.
+ *
+ * Même raison d'être que `DeckFace`, un cran au-dessus. La bibliothèque
+ * avait sa vignette illustrée en propre ; l'écran « Aujourd'hui » listait
+ * les paquets en texte seul. Deux écrans qui montrent la même chose ne
+ * doivent pas la montrer de deux façons.
+ *
+ * La classe `vign` n'est pas décorative : la bibliothèque la cherche au
+ * clic pour mesurer d'où la carte doit décoller. La retirer casserait
+ * l'animation d'ouverture, en silence.
+ */
+export function DeckVign({
+  id, name, image, w, h,
+}: { id: string; name: string; image?: string | null; w: number; h: number }) {
+  if (image) {
+    return <img src={image} alt="" style={{ width: w, height: h }} className="vign" />;
+  }
+  return (
+    <span className="vign vign-draw" style={{ width: w, height: h }}>
+      <DeckFace id={id} name={name} image={null} />
+    </span>
+  );
+}
+
 export function Slider({
   label, hint, min, max, step, value, format, onChange,
 }: {
