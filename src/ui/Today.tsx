@@ -171,8 +171,16 @@ export function Today({
     return (
       <div className="avant">
         <button className="avant-haut" onClick={() => onOpen(r.deck.id)}>
-          <span className="avant-vign">
-            <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} />
+          {/*
+            * La pastille est SŒUR du cadre, pas fille : le cadre masque ce
+            * qui dépasse de lui — c'est ce qui tient l'illustration dans le
+            * filet — et une pastille posée à cheval sur son bord y serait
+            * rognée.
+            */}
+          <span className="avant-vign-wrap">
+            <span className="avant-vign">
+              <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} />
+            </span>
             <span className="pioche-due">{r.due}</span>
           </span>
           <span className="avant-txt">
