@@ -29,9 +29,33 @@ export type ZoomSource = {
   from: DOMRect;
 };
 
-const CROISSANCE = 300;
-const RETOURNEMENT = 380;
-const REDUCTION = 300;
+/*
+ * Les trois temps, en millisecondes.
+ *
+ * La croissance était à 300 : la carte ne grandissait pas, elle apparaissait
+ * déjà grande. Un mouvement se lit à partir d'environ 400 ms ; en deçà, l'œil
+ * enregistre le résultat sans voir le trajet. Elle est donc à 460, avec une
+ * décélération plus longue — c'est la fin du mouvement qui donne l'impression
+ * de douceur, pas son début.
+ *
+ * Le total fait 1,2 s. C'est une animation que vous verrez des dizaines de
+ * fois par jour : si elle finit par lasser, c'est ici que ça se règle, et
+ * nulle part ailleurs.
+ */
+const CROISSANCE = 460;
+const RETOURNEMENT = 420;
+const REDUCTION = 320;
+
+/**
+ * La courbe du retournement, et pourquoi elle est symétrique.
+ *
+ * Le basculement des deux faces se fait à la moitié du temps. Il faut donc
+ * que la carte soit exactement de profil à cet instant — ce qui n'est vrai
+ * que si la courbe est symétrique. L'ancienne, cubic-bezier(0.4, 0, 0.2, 1),
+ * atteignait 90° vers 43 % du temps : pendant les 30 ms suivantes on voyait
+ * encore le dos, en miroir. C'était le défaut constaté.
+ */
+const COURBE_RETOURNEMENT = 'ease-in-out';
 
 export function CardZoom({ source, onDone }: { source: ZoomSource; onDone: () => void }) {
   const holder = useRef<HTMLDivElement>(null);
@@ -59,15 +83,39 @@ export function CardZoom({ source, onDone }: { source: ZoomSource; onDone: () =>
       // 1. La vignette grandit jusqu'à occuper l'écran.
       await boite.animate(
         [{ transform: depart }, { transform: 'translate(0px, 0px) scale(1)' }],
-        { duration: CROISSANCE, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'forwards' },
+        { duration: CROISSANCE, easing: 'cubic-bezier(0.16, 0.84, 0.32, 1)', fill: 'forwards' },
       ).finished;
       if (annule) return;
 
-      // 2. Elle se retourne, à sa plus grande taille.
-      await carte.animate(
-        [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }],
-        { duration: RETOURNEMENT, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' },
-      ).finished;
+      /*
+       * 2. Elle se retourne, à sa plus grande taille.
+       *
+       * `backface-visibility: hidden` devrait suffire à cacher le dos une
+       * fois passé le profil. En pratique elle est appliquée par le
+       * compositeur, qui n'est pas tenu de la réévaluer à la frame près :
+       * sur mobile la face arrière survit quelques images de trop, et on la
+       * voit en miroir avant le mot. On ne s'y fie donc plus — les deux
+       * faces sont commutées explicitement, d'un coup, à la moitié du
+       * temps. La propriété CSS reste en place comme seconde barrière.
+       */
+      const dos = carte.querySelector('.zdos');
+      const recto = carte.querySelector('.zrecto');
+      const bascule = (visibleAvant: boolean) => [
+        { opacity: visibleAvant ? 1 : 0, offset: 0 },
+        { opacity: visibleAvant ? 1 : 0, offset: 0.4999 },
+        { opacity: visibleAvant ? 0 : 1, offset: 0.5 },
+        { opacity: visibleAvant ? 0 : 1, offset: 1 },
+      ];
+      const enMemeTemps = { duration: RETOURNEMENT, fill: 'forwards' as const };
+
+      await Promise.all([
+        carte.animate(
+          [{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }],
+          { duration: RETOURNEMENT, easing: COURBE_RETOURNEMENT, fill: 'forwards' },
+        ).finished,
+        dos?.animate(bascule(true), enMemeTemps).finished,
+        recto?.animate(bascule(false), enMemeTemps).finished,
+      ]);
       if (annule) return;
 
       /*
