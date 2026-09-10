@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
-import { DeckFace } from './components';
+import { DeckFace, DeckVign } from './components';
 import type { Streak } from '../engine/streak';
 import { doneToday, lastSeven, liveStreak } from '../engine/streak';
 
@@ -147,13 +147,42 @@ export function Today({
             </>
           )}
 
+          {/*
+            * Les autres paquets du jour, dans la ligne de « Mon travail ».
+            *
+            * C'était une liste de noms en texte seul : le même paquet n'avait
+            * pas le même visage selon l'onglet où on le rencontrait. Un dos
+            * de carte est un repère — il ne sert que s'il est partout.
+            *
+            * Ce qui distingue les deux écrans n'est donc plus la forme de la
+            * ligne mais ce qu'elle porte : ici le nombre de cartes à voir
+            * aujourd'hui, là-bas l'avancement et la mise en pause. La pioche,
+            * elle, garde sa carte en grand — c'est elle qui doit trancher sur
+            * cette page, pas la liste qui la suit.
+            */}
           {suite.length > 0 && (
-            <div className="rows">
+            <div className="worklist todaylist">
               {suite.map((r) => (
-                <button key={r.deck.id} className="row" onClick={() => onReview(r.deck.id)}>
-                  <span style={{ flex: 1 }}>{r.deck.name}</span>
+                <div key={r.deck.id} className="workrow">
+                  <button className="workrow-main" onClick={() => onReview(r.deck.id)}>
+                    <span className="vign-wrap">
+                      <DeckVign id={r.deck.id} name={r.deck.name} image={r.image} w={54} h={76} />
+                      {r.deck.classeFrom && (
+                        <span className="classdot">{r.deck.classeFrom}</span>
+                      )}
+                    </span>
+                    <span className="workrow-txt">
+                      <b>{r.deck.name}</b>
+                      <small>
+                        {r.themesSelected < r.themesTotal
+                          ? `${r.themesSelected} thèmes sur ${r.themesTotal}`
+                          : `${r.themesTotal} thèmes`}
+                        {' · '}{r.total} mots
+                      </small>
+                    </span>
+                  </button>
                   <span className="due">{r.due}</span>
-                </button>
+                </div>
               ))}
             </div>
           )}
