@@ -5,8 +5,7 @@ import {
   CLASSES, CLASSE_LABELS, LEVEL_LABELS,
   classeConvient, priceLabel,
 } from '../domain/types';
-import { CardBack } from './components';
-import { artFor } from './deckImages';
+import { DeckFace } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
@@ -162,14 +161,9 @@ export function Library({
     if (s.image) {
       return <img src={s.image} alt="" style={{ width: w, height: h }} className="vign" />;
     }
-    const art = artFor(s.deck.id, s.deck.name);
     return (
-      <span
-        className={`vign vign-draw${art ? ' vign-illus' : ''}`}
-        style={{ width: w, height: h }}
-      >
-        <CardBack id={s.deck.id} name={s.deck.name} bare={!!art} />
-        {art && <img src={art} alt="" className="vign-illus-img" />}
+      <span className="vign vign-draw" style={{ width: w, height: h }}>
+        <DeckFace id={s.deck.id} name={s.deck.name} image={null} />
       </span>
     );
   }
