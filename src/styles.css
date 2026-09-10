@@ -1315,3 +1315,47 @@ textarea {
   object-fit: contain;
   pointer-events: none;
 }
+/* ==================================================================
+   Chantier 20 — la classe plancher partout
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * « Mon travail » : la pastille dépasse de six pixels sous la vignette, comme
+ * au catalogue. La ligne doit donc laisser sortir son contenu — sans quoi la
+ * pastille est coupée net et l'on croit la modification ratée.
+ *
+ * Les lignes de travail n'ont pas de fond propre : rien ne vient repeindre
+ * par-dessus ce qui dépasse. Le débordement est donc sans risque ici.
+ */
+.workrow,
+.workrow-main { overflow: visible; }
+
+/*
+ * La pastille passe devant le compteur de cartes dues. Ils ne se rencontrent
+ * jamais — l'un en haut à droite, l'autre en bas au centre — mais si l'écran
+ * devenait assez étroit pour les faire se toucher, mieux vaut perdre le
+ * chiffre des cartes dues, qui se relit ailleurs, que la classe.
+ */
+.workrow .classdot { z-index: 3; }
+
+/*
+ * « Ma collection » : la pastille reste À L'INTÉRIEUR du dos de carte au lieu
+ * de chevaucher son bord.
+ *
+ * Deux raisons, et la seconde est décisive. La vignette n'y fait que
+ * quarante-quatre pixels de large contre cinquante-quatre ailleurs : une
+ * pastille à cheval déborderait des deux côtés du dos et cesserait de se lire
+ * comme une étiquette posée dessus. Surtout, chaque ligne de collection porte
+ * son propre fond opaque : ce qui dépasse d'une ligne passe DERRIÈRE la
+ * suivante, qui est peinte après elle. Aucun `overflow` ni `z-index` n'y
+ * change quoi que ce soit — il faut ne pas dépasser.
+ */
+.switchrow .classdot {
+  bottom: 3px;
+  padding: 1px 5px;
+  font-size: 8.5px;
+  /* Le dos de carte est clair, la pastille aussi : il lui faut son filet. */
+  background: var(--panel);
+  border-color: var(--rule-strong);
+}
