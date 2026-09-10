@@ -11,6 +11,15 @@ const PALETTES = [
   { ink: '#854F0B', mid: '#EF9F27', pale: '#FAEEDA' },
 ];
 
+/**
+ * La teinte des paquets illustrés.
+ *
+ * Un dos illustré ne prend pas la couleur de son paquet : le dessin porte
+ * déjà la sienne, et deux systèmes de couleur sur quarante-cinq pixels se
+ * neutralisent. Le fond s'efface donc au profit du sujet.
+ */
+export const NEUTRE = { ink: '#5b5347', mid: '#cfc7b5', pale: '#f4f1ea' };
+
 export function paletteFor(id: string) {
   // Mélange FNV-1a : le multiplicateur 31 donnait la même couleur à des
   // identifiants proches, ce qui rendait deux paquets indistinguables.
@@ -33,13 +42,22 @@ export function initialsOf(name: string): string {
  * Repère en 620 x 874, le même ratio A6 que les visuels importés : sans
  * cela, le dos dessiné et le dos photographique n'auraient pas la même
  * forme dans la grille.
+ *
+ * En mode `bare`, seuls les deux cadres subsistent : les losanges, le
+ * disque et les initiales laissent la place à l'illustration que l'appelant
+ * pose par-dessus. Le cadre intérieur, lui, ne bouge jamais — c'est lui qui
+ * garantit que dos illustré et dos dessiné ont la même carrure dans la
+ * liste, et c'est lui qui ménage la marge autour du sujet.
  */
-export function CardBack({ id, name }: { id: string; name: string }) {
-  const p = paletteFor(id);
+export function CardBack({
+  id, name, bare = false,
+}: { id: string; name: string; bare?: boolean }) {
+  const p = bare ? NEUTRE : paletteFor(id);
   return (
     <svg viewBox="0 0 620 874" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <rect x="10" y="10" width="600" height="854" rx="70" fill={p.pale} stroke={p.mid} strokeWidth="10" />
       <rect x="50" y="50" width="520" height="774" rx="50" fill="none" stroke={p.mid} strokeWidth="6" opacity="0.7" />
+      {bare ? null : <>
       <g stroke={p.mid} strokeWidth="7" fill="none" opacity="0.85">
         <path d="M310 107 L520 437 L310 767 L100 437 Z" />
         <path d="M310 197 L450 437 L310 677 L170 437 Z" />
@@ -52,6 +70,7 @@ export function CardBack({ id, name }: { id: string; name: string }) {
       >
         {initialsOf(name)}
       </text>
+      </>}
     </svg>
   );
 }
