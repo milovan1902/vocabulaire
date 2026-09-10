@@ -1288,3 +1288,30 @@ textarea {
   font-variant-numeric: tabular-nums;
 }
 
+/* ==================================================================
+   Chantier 19 — dos de carte illustrés
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Le dos illustré est un dos dessiné avec une image posée dessus. */
+.vign-illus { position: relative; }
+
+/*
+ * Le cadrage reprend celui du dessin : dans le repère 620 x 874, le sujet
+ * occupe 420 unités de large, centré. Soit 67,7 % de la largeur, à 16,1 %
+ * du bord gauche et 26 % du haut. Le sujet reste ainsi À L'INTÉRIEUR du
+ * cadre intérieur tracé par CardBack, quelle que soit la taille d'affichage.
+ *
+ * C'est une <img> HTML posée sur le SVG, et non un <image> dans le SVG :
+ * un href externe dans un SVG ne survit ni à la capture d'écran ni à
+ * l'export PDF — la carte y sortirait vide.
+ */
+.vign-illus-img {
+  position: absolute;
+  left: 16.1%;
+  top: 26%;
+  width: 67.7%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+}
