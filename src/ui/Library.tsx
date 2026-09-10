@@ -6,6 +6,7 @@ import {
   classeConvient, priceLabel,
 } from '../domain/types';
 import { CardBack } from './components';
+import { artFor } from './deckImages';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
@@ -148,12 +149,29 @@ export function Library({
     return () => { alive = false; };
   }, [enJeu, settings]);
 
+  /**
+   * La vignette d'un paquet, en trois états.
+   *
+   * Une image de carte entière l'emporte sur tout : elle a été fournie avec
+   * l'application ou choisie par la personne, et on ne la recouvre pas.
+   * À défaut, une illustration se pose dans le dos dessiné, dont les
+   * losanges et le monogramme s'effacent. À défaut encore, le dos dessiné
+   * reste tel qu'il est.
+   */
   function vignette(s: DeckSummary, w: number, h: number) {
-    return s.image
-      ? <img src={s.image} alt="" style={{ width: w, height: h }} className="vign" />
-      : <span className="vign vign-draw" style={{ width: w, height: h }}>
-          <CardBack id={s.deck.id} name={s.deck.name} />
-        </span>;
+    if (s.image) {
+      return <img src={s.image} alt="" style={{ width: w, height: h }} className="vign" />;
+    }
+    const art = artFor(s.deck.id, s.deck.name);
+    return (
+      <span
+        className={`vign vign-draw${art ? ' vign-illus' : ''}`}
+        style={{ width: w, height: h }}
+      >
+        <CardBack id={s.deck.id} name={s.deck.name} bare={!!art} />
+        {art && <img src={art} alt="" className="vign-illus-img" />}
+      </span>
+    );
   }
 
   /**
