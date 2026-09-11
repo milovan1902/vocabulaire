@@ -1,11 +1,16 @@
 /**
  * Série de jours.
  *
- * Une seule donnée nouvelle dans tout le chantier, et elle est volontairement
- * réduite à l'essentiel : la liste des jours travaillés. Tout le reste — la
- * série en cours, le record — s'en recalcule. C'est ce qui rend la fusion
- * entre deux appareils sûre : additionner des compteurs dépend de l'ordre
- * des synchronisations, réunir des dates non.
+ * Une seule donnée : la liste des jours travaillés. Tout le reste — la série
+ * en cours, le record, le total, le calendrier de « Mes progrès » — s'en
+ * recalcule. C'est ce qui rend la fusion entre deux appareils sûre :
+ * additionner des compteurs dépend de l'ordre des synchronisations, réunir
+ * des dates non.
+ *
+ * CHANTIER 34 — ce qui change ici, et c'est la seule chose : les jours ne
+ * sont plus oubliés au bout de trente. « Mes progrès » montre un vrai
+ * calendrier et un total depuis le début ; l'un et l'autre sont impossibles
+ * sur une fenêtre glissante d'un mois.
  */
 import { todayKey } from './session';
 
@@ -15,7 +20,7 @@ export interface Streak {
   /** Jours consécutifs jusqu'à `lastDay` inclus. */
   current: number;
   best: number;
-  /** Jours travaillés, triés, les 30 derniers seulement. */
+  /** Jours travaillés, triés, du plus ancien au plus récent. */
   days: string[];
   updatedAt: number;
 }
@@ -29,11 +34,18 @@ export const EMPTY_STREAK: Streak = {
 };
 
 /**
- * Trente jours d'historique : de quoi afficher la semaine et recalculer une
- * série, sans faire grossir indéfiniment la charge de synchronisation. Le
- * record, lui, est conservé à part et survit à l'oubli des vieux jours.
+ * Le plafond d'historique — dix ans.
+ *
+ * Il était de trente jours : assez pour la réglette de la semaine, pas pour
+ * un calendrier. Une date fait dix caractères ; dix ans d'assiduité totale
+ * pèsent moins de quarante kilo-octets, et une année normale bien moins.
+ * C'est un prix négligeable pour la seule donnée que l'application ne peut
+ * pas reconstituer après coup.
+ *
+ * Le plafond n'est pas retiré pour autant : une liste sans borne est une
+ * fuite qui attend son heure.
  */
-const GARDE = 30;
+const GARDE = 3660;
 
 /** Décale une date AAAA-MM-JJ de `delta` jours. */
 export function shiftDay(key: string, delta: number): string {
@@ -89,14 +101,41 @@ export function lastSeven(
   return out;
 }
 
+/* ------------------------------------------------------------------ *
+ *  Ce que « Mes progrès » lit. Rien de stocké en plus : trois lectures
+ *  de la même liste de dates.
+ * ------------------------------------------------------------------ */
+
+/** Les jours travaillés, en ensemble, pour une recherche en temps constant. */
+export function workedSet(s: Streak): Set<string> {
+  return new Set(s.days);
+}
+
+/** Le premier jour travaillé connu. C'est l'origine de tous les écrans. */
+export function firstDay(s: Streak): string | null {
+  return s.days.length ? s.days[0] : null;
+}
+
+/**
+ * Le total des jours travaillés.
+ *
+ * Sur un appareil qui tournait avant ce chantier, l'application n'avait
+ * gardé que les trente derniers jours : ce total commence donc à cette
+ * fenêtre-là, puis devient exact. Mieux vaut un total honnête qui démarre
+ * bas qu'un total inventé.
+ */
+export function totalWorked(s: Streak): number {
+  return s.days.length;
+}
+
 /**
  * Fusion entre appareils.
  *
  * On réunit les jours, puis on recalcule la série : deux appareils qui ont
  * chacun travaillé des jours différents obtiennent ainsi la bonne série,
  * quel que soit l'ordre dans lequel ils se synchronisent. Le record est le
- * plus grand des trois, pour ne pas perdre un exploit tombé hors des trente
- * jours conservés.
+ * plus grand des trois, pour ne pas perdre un exploit tombé hors de
+ * l'historique conservé.
  */
 export function mergeStreak(local: Streak, remote: Streak | null): Streak {
   if (!remote) return local;
