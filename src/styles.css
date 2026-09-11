@@ -2022,3 +2022,23 @@ textarea {
    ------------------------------------------------------------------ */
 .classpanel.plain { margin-top: 0; }
 .classpanel.plain .hint { margin: 0 0 8px; }
+/* ==================================================================
+   Chantier 35 — l'icône « Aujourd'hui » en image
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Seule icône en couleur de la barre : elle ne peut pas prendre la
+   couleur de l'onglet actif comme les traits des trois autres. C'est donc
+   l'opacité qui porte l'état — éteinte au repos, pleine quand on y est.
+   Rien d'autre ne la distingue : même gabarit de 24, même place. */
+.tabbar button .tabicon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.tabbar button.on .tabicon {
+  opacity: 1;
+}
