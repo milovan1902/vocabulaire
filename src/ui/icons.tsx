@@ -20,26 +20,21 @@ const commun = {
   'aria-hidden': true,
 };
 
-/**
- * Le calendrier fourni, en image.
- *
- * Seule icône en couleur de la barre : elle ne suit donc pas `currentColor`,
- * et c'est l'opacité qui dit l'onglet actif (voir `.tabbar button img` dans
- * la feuille de style). Le fichier vit dans `public/`, servi tel quel.
+/*
+ * Deux icônes fournies en image. Elles ne suivent pas `currentColor` — une
+ * image en couleur ne peut pas prendre celle de l'onglet actif : c'est
+ * l'opacité qui dit l'état (voir `.tabicon` dans la feuille de style). Les
+ * fichiers vivent dans `public/`, servis tels quels.
  */
+
+/** Le calendrier fourni. */
 export function IconAujourdhui() {
   return <img src="/tab-aujourdhui.png" alt="" width={24} height={24} className="tabicon" />;
 }
 
-/** Trois cartes empilées : la collection. */
+/** Les trois cartes fournies : la collection. */
 export function IconPaquets() {
-  return (
-    <svg {...commun}>
-      <rect x="3.5" y="6.5" width="12" height="14" rx="2.2" />
-      <path d="M6.8 4.2h8.4a2.2 2.2 0 0 1 2.2 2.2v10.4" />
-      <path d="M10 2h7.5A3 3 0 0 1 20.5 5v9.6" />
-    </svg>
-  );
+  return <img src="/tab-paquets.png" alt="" width={24} height={24} className="tabicon" />;
 }
 
 /** Deux curseurs : les réglages. */
