@@ -1722,3 +1722,303 @@ textarea {
  * accroché au coin supérieur droit, la classe au bord inférieur, centrée.
  * Rien à arbitrer entre elles, donc rien à masquer.
  */
+/* ==================================================================
+   Chantier 34 — quatre onglets, et l'écran « Mes progrès »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   La barre du bas passe à quatre entrées, icône + étiquette.
+
+   L'étiquette reste : quatre pictogrammes muets se devinent au premier
+   usage et s'oublient au dixième, et c'est le vocabulaire de
+   l'application qui se perdrait avec eux. L'icône porte le repérage,
+   le mot porte le nom.
+   ------------------------------------------------------------------ */
+.tabbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 56px;
+  padding: 9px 2px 10px;
+  line-height: 1.1;
+}
+
+.tabbar button svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Quatre étiquettes sur une largeur de téléphone : un cran plus petit,
+   jamais tronqué. « Mes progrès » est la plus longue et elle passe. */
+.tabbar button span {
+  font-size: 10.5px;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------
+   Mes progrès — la tête
+   ------------------------------------------------------------------ */
+.prog-tete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* Le mot AU-DESSUS du chiffre : on lit ce qu'on compte avant de lire
+   combien. Sur le côté, il se perdait à hauteur de pied de chiffre. */
+.prog-grand { display: flex; flex-direction: column; gap: 2px; }
+.prog-grand .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.prog-grand b {
+  font-family: var(--serif);
+  font-size: 62px;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.prog-anneau {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 58px;
+  height: 58px;
+  color: var(--good, #4fbf95);
+}
+.prog-anneau .ring { width: 58px; height: 58px; }
+.prog-anneau b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------
+   Les trois compteurs
+   ------------------------------------------------------------------ */
+.prog-compteurs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 20px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.prog-compteurs span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 13px 10px;
+  background: var(--panel);
+}
+.prog-compteurs b {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.prog-compteurs small { font-size: 10.5px; line-height: 1.3; color: var(--ink-dim, #8d97ad); }
+
+/* ------------------------------------------------------------------
+   Le calendrier
+
+   Un vrai mois daté, lundi en tête. La grille de cases anonymes qu'on
+   voyait ailleurs ne dit pas QUAND : elle demande de compter à rebours
+   pour situer un trou, ce que personne ne fait.
+   ------------------------------------------------------------------ */
+.prog-moisbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 12px;
+}
+.prog-moisbar b {
+  flex: 1;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.btn-rond {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: none;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.btn-rond:disabled {
+  border-color: var(--rule);
+  color: var(--ink-dim, #8d97ad);
+  opacity: 0.45;
+  cursor: default;
+}
+.btn-rond:not(:disabled):hover { border-color: var(--chalk); color: var(--chalk); }
+
+.prog-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.prog-cal-head {
+  text-align: center;
+  padding-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim, #8d97ad);
+}
+.prog-jour {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 9px;
+  background: rgba(234, 230, 219, 0.06);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim, #8d97ad);
+}
+/* Jour travaillé : c'est la seule chose que le calendrier affirme. */
+.prog-jour.on {
+  background: var(--chalk);
+  color: var(--panel);
+  font-weight: 700;
+}
+/* Hors période — avant le début, ou pas encore arrivé. Présent, discret. */
+.prog-jour.hors { background: none; color: rgba(141, 151, 173, 0.45); }
+.prog-jour.vide { background: none; }
+.prog-jour.now { box-shadow: 0 0 0 1.5px var(--ink); }
+
+/* ------------------------------------------------------------------
+   La courbe des mots acquis
+
+   Chaque point porte son chiffre : une courbe sans nombres se lit comme
+   une humeur, et on ne peut pas la citer.
+   ------------------------------------------------------------------ */
+.prog-courbe {
+  position: relative;
+  height: 132px;
+  border-bottom: 1px solid var(--rule);
+}
+.prog-courbe svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100px;
+  display: block;
+}
+.prog-courbe .aire { fill: var(--good, #4fbf95); opacity: 0.14; }
+.prog-courbe .trait {
+  fill: none;
+  stroke: var(--good, #4fbf95);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.prog-courbe-n {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.prog-courbe-axe {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.prog-courbe-axe small {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim, #8d97ad);
+}
+
+/* ------------------------------------------------------------------
+   Le détail par paquet
+
+   Le vert fonce avec l'avancement : la teinte redit la longueur. Un
+   trait court en vert profond se lirait de loin comme une réussite ;
+   le dégradé interdit ce contresens. Il est calculé dans Progress.tsx,
+   la barre ne porte ici que sa forme.
+   ------------------------------------------------------------------ */
+.prog-liste { display: flex; flex-direction: column; gap: 13px; }
+.prog-ligne { display: flex; flex-direction: column; gap: 6px; }
+.prog-ligne-haut { display: flex; align-items: baseline; gap: 10px; }
+.prog-ligne-haut b {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prog-ligne-haut small {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.prog-barre {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(234, 230, 219, 0.08);
+  overflow: hidden;
+}
+.prog-barre i { display: block; height: 100%; border-radius: 999px; }
+
+.prog-pied {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+/* ------------------------------------------------------------------
+   « Ma classe » dans les Réglages
+
+   Le panneau existe déjà (chantier 16) ; il n'était qu'ouvert par un
+   bouton. Ici il est posé à plat, sans dépliage : un réglage qui se
+   cache derrière un clic se règle une fois puis s'oublie.
+   ------------------------------------------------------------------ */
+.classpanel.plain { margin-top: 0; }
+.classpanel.plain .hint { margin: 0 0 8px; }
