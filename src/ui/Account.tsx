@@ -1,12 +1,23 @@
 /**
- * Onglet « Compte » : série, réglages généraux, compte en ligne, sauvegardes.
+ * Onglet « Réglages » : classe, rappel, charge de travail, compte, sauvegardes.
+ *
+ * CHANTIER 34 — deux changements, rien d'autre n'a bougé : le titre, et
+ * « Ma classe » qui descend ici depuis la barre du catalogue. Ce n'est pas
+ * un filtre mais un réglage d'identité ; il se règle une fois et se range
+ * avec les autres. Le catalogue continue de s'y ordonner tout seul, en
+ * « pour ma classe » et « pour plus tard ».
+ *
+ * Le bloc « Série » reste : il dit si la journée est en jeu, ce qui est une
+ * information du présent. Le passé — total, record, calendrier — est parti
+ * dans « Mes progrès », son écran.
  *
  * Ces blocs vivaient en bas de la bibliothèque, où ils allongeaient une page
  * dont l'objet était de choisir un paquet. Ils forment ici un écran à part,
  * atteint par les onglets.
  */
 import { useEffect, useRef, useState } from 'react';
-import type { Settings } from '../domain/types';
+import type { Classe, Settings } from '../domain/types';
+import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
 import { AccountPanel } from './AccountPanel';
@@ -92,9 +103,35 @@ export function Account({
 
   return (
     <>
-      <h2 className="screen-title">Compte</h2>
+      <h2 className="screen-title">Réglages</h2>
 
       <AccountPanel auth={auth} />
+
+      <p className="rayon-label">Ma classe</p>
+      <div className="classpanel plain">
+        <p className="hint">
+          Elle range le catalogue en « pour ma classe » et « pour plus tard ».
+          Rien ne se ferme : les paquets des classes suivantes restent
+          visibles, plus bas.
+        </p>
+        {CLASSES.map((c: Classe) => (
+          <button
+            key={c}
+            className={`classrow${settings.classe === c ? ' on' : ''}`}
+            onClick={() => onSettings({ ...settings, classe: c })}
+          >
+            <i />
+            <span>{CLASSE_LABELS[c]}</span>
+          </button>
+        ))}
+        <button
+          className={`classrow${settings.classe === null ? ' on' : ''}`}
+          onClick={() => onSettings({ ...settings, classe: null })}
+        >
+          <i />
+          <span>Non déclarée — voir tout le catalogue</span>
+        </button>
+      </div>
 
       <p className="rayon-label">Série</p>
       <div className="serie-bloc">
