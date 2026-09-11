@@ -37,16 +37,15 @@ export function IconPaquets() {
   return <img src="/tab-paquets.png" alt="" width={24} height={24} className="tabicon" />;
 }
 
-/** Deux curseurs : les réglages. */
+/**
+ * Les trois curseurs fournis : les réglages.
+ *
+ * Dessin large et bas, là où les deux autres sont carrés : il garde ses
+ * proportions et se pose au centre du carré de 24 (`object-fit: contain`
+ * dans la feuille de style), plutôt que d'être étiré pour le remplir.
+ */
 export function IconReglages() {
-  return (
-    <svg {...commun}>
-      <line x1="3" y1="8.5" x2="21" y2="8.5" />
-      <circle cx="9" cy="8.5" r="2.6" fill="currentColor" stroke="none" />
-      <line x1="3" y1="15.5" x2="21" y2="15.5" />
-      <circle cx="15" cy="15.5" r="2.6" fill="currentColor" stroke="none" />
-    </svg>
-  );
+  return <img src="/tab-reglages.png" alt="" width={24} height={24} className="tabicon" />;
 }
 
 /** Un anneau ouvert aux trois quarts : ce qui progresse. */
