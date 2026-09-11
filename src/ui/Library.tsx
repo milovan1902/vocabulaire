@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
 import {
-  CLASSES, CLASSE_LABELS, LEVEL_LABELS,
+  CLASSE_LABELS, LEVEL_LABELS,
   classeConvient, priceLabel,
 } from '../domain/types';
 import { DeckVign } from './components';
@@ -282,7 +282,7 @@ function PanneauFiltres({
 
 export function Library({
   decks, installed, active, categories, settings, auth,
-  onOpen, onReview, onAdd, onRemove, onSetActive, onSearch, onSettings,
+  onOpen, onReview, onAdd, onRemove, onSetActive, onSearch,
 }: {
   decks: Deck[];
   /** Paquets possédés. */
@@ -305,8 +305,6 @@ export function Library({
   onRemove: (id: string) => void;
   onSetActive: (id: string, on: boolean) => void;
   onSearch: () => void;
-  /** La classe déclarée est un réglage : elle s'écrit là où ils s'écrivent. */
-  onSettings: (s: Settings) => void;
 }) {
   const [charge, setCharge] = useState<Charge | null>(null);
   const [tab, setTab] = useState<Tab>('travail');
@@ -338,11 +336,10 @@ export function Library({
    * paquet à plancher 3ème, qui conviendrait pourtant à un élève de 2nde.
    * Autant l'avouer à l'écran plutôt que le cacher.
    *
-   * La barre « Ma classe » ne descend PAS dans la collection : ce n'est pas
-   * un filtre mais un réglage d'identité, et une collection qu'on a
-   * constituée soi-même n'a pas à être rangée en « pas encore pour vous ».
+   * CHANTIER 34 — la classe déclarée se règle désormais dans les Réglages :
+   * ce n'est pas un filtre mais une identité. Le catalogue continue de la
+   * lire, il ne l'écrit plus.
    */
-  const [choixClasse, setChoixClasse] = useState(false);
 
   /*
    * Quel anneau a sa bulle ouverte. Un seul à la fois : deux explications
@@ -779,17 +776,6 @@ export function Library({
     const maClasse = settings.classe;
     const enConsultation = fCatalogue.consult.length > 0;
 
-    /*
-     * Ce que chaque classe ouvre. Le compte est cumulatif, puisque le
-     * plancher d'un paquet vaut aussi pour les classes suivantes : c'est ce
-     * qui rend le choix lisible, passer de 5ème en 4ème fait gagner des
-     * paquets et on le voit avant de choisir.
-     */
-    const parClasse = new Map<Classe, number>();
-    for (const c of CLASSES) {
-      parClasse.set(c, tous.filter((s) => classeConvient(s.deck.classeFrom, c)).length);
-    }
-
     const filtres = appliquer(socleDe(tous, fCatalogue), fCatalogue);
 
     const pourMoi = enConsultation
@@ -811,50 +797,6 @@ export function Library({
 
     return (
       <>
-        <button
-          className="classbar"
-          onClick={() => setChoixClasse((v) => !v)}
-          aria-expanded={choixClasse}
-        >
-          <span className="label">Ma classe</span>
-          <b>{maClasse ? CLASSE_LABELS[maClasse] : 'non déclarée'}</b>
-          <span className="chg">{choixClasse ? 'Fermer' : 'Changer'}</span>
-        </button>
-
-        {choixClasse && (
-          <div className="classpanel">
-            <p className="hint">
-              Le catalogue s’y règle. Rien ne se ferme : les paquets des
-              classes suivantes restent visibles, plus bas.
-            </p>
-            {CLASSES.map((c) => (
-              <button
-                key={c}
-                className={`classrow${maClasse === c ? ' on' : ''}`}
-                onClick={() => {
-                  onSettings({ ...settings, classe: c });
-                  setFCatalogue((f) => ({ ...f, consult: [] }));
-                  setChoixClasse(false);
-                }}
-              >
-                <i />
-                <span>{CLASSE_LABELS[c]}</span>
-                <small>{parClasse.get(c) ?? 0} paquets</small>
-              </button>
-            ))}
-            <button
-              className="classrow plain"
-              onClick={() => {
-                onSettings({ ...settings, classe: null });
-                setFCatalogue((f) => ({ ...f, consult: [] }));
-                setChoixClasse(false);
-              }}
-            >
-              <span>Voir tout le catalogue</span>
-            </button>
-          </div>
-        )}
-
         {enConsultation && (
           <div className="consultbox">
             <p className="ttl">
