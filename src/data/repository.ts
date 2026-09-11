@@ -22,6 +22,7 @@ import type {
 } from '../domain/types';
 import { DEFAULT_SETTINGS } from '../domain/types';
 import type { DeckJournal } from '../domain/deckState';
+import type { Jalon } from '../engine/jalons';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK } from '../engine/streak';
 
@@ -65,6 +66,15 @@ const k = {
    * synchronisation.
    */
   deckJournal: (u: UserId) => `u:${u}:deckjournal`,
+  /*
+   * Les relevés mensuels de « Mes progrès » (chantier 34).
+   *
+   * La seule donnée de cet écran qui ne se recalcule pas : le palier d'une
+   * carte dit où elle en est, jamais quand elle y est arrivée. Douze lignes
+   * par an ; la sauvegarde les emporte sans rien changer, puisqu'elle copie
+   * toutes les clés du préfixe.
+   */
+  jalons: (u: UserId) => `u:${u}:jalons`,
 };
 
 export interface Repository {
@@ -98,6 +108,9 @@ export interface Repository {
   /** `null` = cet appareil n'a pas encore de journal : à reconstituer. */
   getDeckJournal(): Promise<DeckJournal | null>;
   saveDeckJournal(j: DeckJournal): Promise<void>;
+  /** `null` = aucun relevé mensuel encore écrit. */
+  getJalons(): Promise<Jalon[] | null>;
+  saveJalons(j: Jalon[]): Promise<void>;
   deleteDeck(deckId: DeckId): Promise<void>;
   exportAll(): Promise<Record<string, unknown>>;
   importAll(data: Record<string, unknown>): Promise<void>;
@@ -194,6 +207,12 @@ export class IdbRepository implements Repository {
   }
   async saveDeckJournal(j: DeckJournal) {
     await set(k.deckJournal(this.user), j);
+  }
+  async getJalons() {
+    return (await get<Jalon[]>(k.jalons(this.user))) ?? null;
+  }
+  async saveJalons(j: Jalon[]) {
+    await set(k.jalons(this.user), j);
   }
   async deleteDeck(d: DeckId) {
     await Promise.all([
