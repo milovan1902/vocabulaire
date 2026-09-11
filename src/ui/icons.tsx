@@ -20,14 +20,15 @@ const commun = {
   'aria-hidden': true,
 };
 
-/** Une carte vue de face, pastille au coin : ce qu'il y a à faire. */
+/**
+ * Le calendrier fourni, en image.
+ *
+ * Seule icône en couleur de la barre : elle ne suit donc pas `currentColor`,
+ * et c'est l'opacité qui dit l'onglet actif (voir `.tabbar button img` dans
+ * la feuille de style). Le fichier vit dans `public/`, servi tel quel.
+ */
 export function IconAujourdhui() {
-  return (
-    <svg {...commun}>
-      <rect x="6" y="3.5" width="12" height="17" rx="2.2" />
-      <circle cx="18" cy="5" r="2.6" fill="currentColor" stroke="none" />
-    </svg>
-  );
+  return <img src="/tab-aujourdhui.png" alt="" width={24} height={24} className="tabicon" />;
 }
 
 /** Trois cartes empilées : la collection. */
