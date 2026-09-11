@@ -1681,3 +1681,44 @@ textarea {
   font-variant-numeric: tabular-nums;
   opacity: 0.75;
 }
+/* ==================================================================
+   Chantier 31 — la classe revient sur la carte mise en avant
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * La pastille de classe sur le grand cadre.
+ *
+ * `.classdot` était réglée pour la vignette de 54 px de la liste. Sur le
+ * cadre de 96 px de la carte mise en avant, la même pastille paraît
+ * minuscule et se perd contre le filet du dos ; d'où un cran de plus, et
+ * seulement là.
+ *
+ * Elle reste SŒUR du cadre et non fille : le cadre masque ce qui dépasse de
+ * lui — c'est ce qui tient l'illustration dans le filet — et une pastille
+ * posée à cheval sur son bord y serait rognée. C'était déjà la leçon du
+ * chantier 26 pour `.pioche-due`.
+ */
+.avant-vign-wrap > .classdot-lg {
+  position: absolute;
+  z-index: 3;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--rule-strong);
+
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/*
+ * Les deux pastilles ne se croisent jamais : le nombre de cartes dues est
+ * accroché au coin supérieur droit, la classe au bord inférieur, centrée.
+ * Rien à arbitrer entre elles, donc rien à masquer.
+ */
