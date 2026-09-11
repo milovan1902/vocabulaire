@@ -14,6 +14,7 @@ import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
+import { readClasse } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
@@ -78,7 +79,7 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select('id, name, description, price_cents, card_count, position, category_id, level')
+    .select('id, name, description, price_cents, card_count, position, category_id, level, grade_from')
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -119,6 +120,18 @@ export async function pullCatalog(): Promise<number> {
       description: row.description ?? undefined,
       categoryId: row.category_id ?? null,
       level: readLevel((row as Record<string, unknown>).level),
+      /*
+       * Classe plancher. La colonne s'appelle `grade_from` côté Supabase et
+       * le champ `classeFrom` côté domaine : `Grade` y désigne déjà la note
+       * FSRS, et deux sens pour un mot finit toujours par coûter une soirée.
+       *
+       * Cette ligne était tombée du chantier 30 en même temps que `grade_from`
+       * du `select`. Le paquet se reconstruit en entier à chaque synchro : un
+       * champ absent ici n'est pas « laissé tel quel », il est effacé. C'est
+       * pour cela que la classe a disparu de TOUS les écrans d'un coup, alors
+       * qu'aucun d'eux n'avait changé.
+       */
+      classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       builtin: true,
       priceCents: row.price_cents ?? 0,
       hasImage: existing?.hasImage ?? false,
