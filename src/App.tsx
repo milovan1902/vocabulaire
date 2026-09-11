@@ -1,5 +1,6 @@
 /** Composant racine : navigation entre les écrans. */
 import { useCallback, useEffect, useState } from 'react';
+import type { ReactElement } from 'react';
 import type { Grade } from './domain/types';
 import { useStore, progressFor, type LoadedDeck } from './ui/useStore';
 import { buildSession, type SessionItem } from './engine/session';
@@ -46,7 +47,7 @@ type View =
   | { name: 'done'; reviewed: number }
   | { name: 'editor'; mode: 'create' | 'append' };
 
-const ONGLETS: Array<{ name: Tab; label: string; Icone: () => JSX.Element }> = [
+const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = [
   { name: 'today', label: 'Aujourd’hui', Icone: IconAujourdhui },
   { name: 'library', label: 'Paquets', Icone: IconPaquets },
   { name: 'account', label: 'Réglages', Icone: IconReglages },
