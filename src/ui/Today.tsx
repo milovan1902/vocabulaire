@@ -181,6 +181,18 @@ export function Today({
             <span className="avant-vign">
               <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} />
             </span>
+            {/*
+              * La classe plancher, comme sur les lignes de la liste.
+              *
+              * Elle manquait ici : la pastille du nombre de cartes dues avait
+              * pris seule le chemin hors du cadre au chantier 26, et le paquet
+              * choisi perdait donc son niveau au moment précis où on le
+              * regarde le plus. Les deux pastilles tiennent ensemble — l'une
+              * au coin haut, l'autre au bord bas.
+              */}
+            {r.deck.classeFrom && (
+              <span className="classdot classdot-lg">{r.deck.classeFrom}</span>
+            )}
             <span className="pioche-due">{r.due}</span>
           </span>
           <span className="avant-txt">
