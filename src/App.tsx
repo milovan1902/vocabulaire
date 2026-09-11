@@ -6,6 +6,8 @@ import { buildSession, type SessionItem } from './engine/session';
 import { Today } from './ui/Today';
 import { Library } from './ui/Library';
 import { Account } from './ui/Account';
+import { Progress } from './ui/Progress';
+import { IconAujourdhui, IconPaquets, IconReglages, IconProgres } from './ui/icons';
 import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
@@ -25,11 +27,15 @@ import { scheduleReminder } from './ui/reminder';
 const SEEN = 'vocab:accueil-vu';
 
 /**
- * Les trois écrans atteints par les onglets du bas. Réunis en un seul
+ * Les quatre écrans atteints par les onglets du bas. Réunis en un seul
  * cas : aucun ne porte de donnée propre, et les onglets ont besoin de
  * les désigner indifféremment.
+ *
+ * Le nom interne 'account' ne change pas — seul son libellé devient
+ * « Réglages ». Renommer une vue oblige à toucher tous les endroits qui la
+ * désignent, pour un mot que personne ne lit.
  */
-type Tab = 'today' | 'library' | 'account';
+type Tab = 'today' | 'library' | 'account' | 'progress';
 
 type View =
   | { name: 'welcome' }
@@ -40,10 +46,11 @@ type View =
   | { name: 'done'; reviewed: number }
   | { name: 'editor'; mode: 'create' | 'append' };
 
-const ONGLETS: Array<{ name: Tab; label: string }> = [
-  { name: 'today', label: 'Aujourd’hui' },
-  { name: 'library', label: 'Paquets' },
-  { name: 'account', label: 'Compte' },
+const ONGLETS: Array<{ name: Tab; label: string; Icone: () => JSX.Element }> = [
+  { name: 'today', label: 'Aujourd’hui', Icone: IconAujourdhui },
+  { name: 'library', label: 'Paquets', Icone: IconPaquets },
+  { name: 'account', label: 'Réglages', Icone: IconReglages },
+  { name: 'progress', label: 'Mes progrès', Icone: IconProgres },
 ];
 
 export default function App() {
@@ -214,7 +221,8 @@ export default function App() {
    * Aucun écran ne porte les deux à la fois : la barre du bas sert de
    * repère fixe, la barre du haut ne sert qu'à revenir.
    */
-  const surOnglet = view.name === 'today' || view.name === 'library' || view.name === 'account';
+  const surOnglet = view.name === 'today' || view.name === 'library'
+    || view.name === 'account' || view.name === 'progress';
 
   return (
     <div className={`app${surOnglet ? ' tabbed' : ''}`}>
@@ -236,7 +244,19 @@ export default function App() {
             ‹
           </button>
           <h1>{title(view, loaded)}</h1>
-          {view.name === 'deck' && loaded && (
+          {view.name === 'progress' && (
+          /*
+           * Les paquets POSSÉDÉS, pas ceux en jeu : on rend compte de tout
+           * ce qu'on a travaillé, y compris d'un paquet mis en pause depuis.
+           */
+          <Progress
+            decks={store.decks.filter((d) => store.installed.includes(d.id))}
+            settings={store.common}
+            streak={store.streak}
+          />
+        )}
+
+        {view.name === 'deck' && loaded && (
             <span className="count">{loaded.cards.length} mots</span>
           )}
         </div>
@@ -263,14 +283,6 @@ export default function App() {
             categories={store.categories}
             settings={store.common}
             auth={auth}
-            /*
-             * La classe déclarée est un réglage comme un autre : elle passe
-             * par le même chemin d'écriture que ceux de l'écran Compte.
-             * `setCommon` date lui-même la modification, c'est ce qui la
-             * fera gagner face à une version plus ancienne venue d'un autre
-             * appareil — Library n'a donc pas à toucher `updatedAt`.
-             */
-            onSettings={(s) => void store.setCommon(s)}
             onSearch={() => setView({ name: 'search' })}
             onOpen={(id, vol) => {
               /*
@@ -314,6 +326,18 @@ export default function App() {
             streak={store.streak}
             onSettings={(s) => void store.setCommon(s)}
             onHome={() => setView({ name: 'welcome' })}
+          />
+        )}
+
+        {view.name === 'progress' && (
+          /*
+           * Les paquets POSSÉDÉS, pas ceux en jeu : on rend compte de tout
+           * ce qu'on a travaillé, y compris d'un paquet mis en pause depuis.
+           */
+          <Progress
+            decks={store.decks.filter((d) => store.installed.includes(d.id))}
+            settings={store.common}
+            streak={store.streak}
           />
         )}
 
@@ -378,15 +402,15 @@ export default function App() {
 
       {surOnglet && (
         <nav className="tabbar">
-          {ONGLETS.map((o) => (
+          {ONGLETS.map(({ name, label, Icone }) => (
             <button
-              key={o.name}
-              className={view.name === o.name ? 'on' : ''}
-              aria-current={view.name === o.name ? 'page' : undefined}
-              onClick={() => setView({ name: o.name })}
+              key={name}
+              className={view.name === name ? 'on' : ''}
+              aria-current={view.name === name ? 'page' : undefined}
+              onClick={() => setView({ name })}
             >
-              <i />
-              {o.label}
+              <Icone />
+              <span>{label}</span>
             </button>
           ))}
         </nav>
@@ -399,7 +423,8 @@ function title(view: View, loaded: LoadedDeck | null): string {
   if (view.name === 'welcome') return 'Vocabulaire';
   if (view.name === 'today') return 'Aujourd’hui';
   if (view.name === 'library') return 'Paquets';
-  if (view.name === 'account') return 'Compte';
+  if (view.name === 'account') return 'Réglages';
+  if (view.name === 'progress') return 'Mes progrès';
   if (view.name === 'search') return 'Rechercher';
   if (view.name === 'editor') return view.mode === 'create' ? 'Nouveau paquet' : 'Ajouter des mots';
   return loaded?.deck.name ?? 'Vocabulaire';
