@@ -2086,3 +2086,27 @@ textarea {
 .tabbar button.on .tabicon {
   opacity: 1;
 }
+/* ==================================================================
+   Chantier 35 — les icônes d'onglet en image
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Les quatre icônes sont des images en couleur : aucune ne peut prendre la
+   couleur de l'onglet actif. C'est donc l'opacité qui porte l'état —
+   éteinte au repos, pleine quand on y est. Rien d'autre ne les distingue :
+   même carré de 24, même place.
+
+   `contain` : « Réglages » est un dessin large et bas ; il se pose au
+   centre du carré au lieu d'être étiré pour le remplir. */
+.tabbar button .tabicon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.tabbar button.on .tabicon {
+  opacity: 1;
+}
