@@ -2299,3 +2299,231 @@ input[type='text'], textarea { background: var(--voile); }
 
 @keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   Chantier 37 — deux thèmes, et « Ma classe » derrière un bouton
+
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer : ce
+   bloc ne fait que redéfinir, et il passe en dernier.
+
+   Le bleu nuit reste le thème par défaut : tout ce qui suit est écrit
+   sous `[data-theme="clair"]`, et ne s'applique que si l'appareil a
+   choisi le clair. Un seul attribut sur <html> fait basculer toute
+   l'application, parce que la palette tient dans les variables du haut
+   de la feuille. `src/ui/theme.ts` pose cet attribut.
+
+   Le thème clair inverse le parti pris : le tapis devient un bleu de
+   ciel pâle, l'encre devient le bleu nuit, les surfaces posées dessus
+   deviennent blanches. L'or de l'icône garde sa place d'accent, avec
+   une nuance — un or clair sur du blanc ne se lit pas, alors là où l'or
+   servait de TEXTE il passe à un or profond (`--chalk-ink`). En aplat,
+   il reste l'or. En thème sombre, `--chalk-ink` vaut l'or : les mêmes
+   règles servent les deux thèmes sans se contredire.
+
+   Trois choses ne s'inversent pas, et c'est voulu :
+   — l'écran de révision, posé sur une photo assombrie : son encre reste
+     claire dans les deux thèmes, sinon le mot disparaîtrait dans
+     l'image ;
+   — les ombres, qui s'allègent : sur fond clair, une ombre à 40 % de
+     noir fait une tache ;
+   — les aplats translucides, qui étaient des voiles de blanc sur le
+     sombre et deviennent des voiles d'encre sur le clair.
+   ================================================================== */
+
+/* L'or en texte : en thème sombre, c'est l'or lui-même. Déclaré ici pour
+   que les règles communes aux deux thèmes puissent s'y référer. */
+:root {
+  --chalk-ink: var(--chalk);
+  --voile: rgba(234, 230, 219, 0.05);
+  --voile-2: rgba(234, 230, 219, 0.10);
+  --voile-3: rgba(234, 230, 219, 0.18);
+}
+
+[data-theme='clair'] {
+  /* Encres, sur fond clair */
+  --ink: #16233f;
+  --ink-soft: #3d4f73;
+  --grey: #6b7896;
+  /* Le calendrier de « Mes progrès » lisait cette variable avec un repli
+     clair, invisible ici. Elle existe maintenant. */
+  --ink-dim: #6b7896;
+
+  /* Fonds */
+  --paper: #eaf1fb;   /* le tapis */
+  --panel: #ffffff;   /* les surfaces posées dessus */
+  --panel-hi: #dbe6f6;
+
+  --rule: rgba(22, 35, 63, 0.12);
+  --rule-strong: rgba(22, 35, 63, 0.22);
+
+  /* L'or reste l'or en aplat ; en texte, il s'assombrit pour se lire. */
+  --chalk: #f2b705;
+  --chalk-ink: #8a6300;
+  --on-chalk: #16233f;
+
+  /* Le vert et le rouge étaient réglés pour le fond sombre. */
+  --good: #1f7a5c;
+  --bad: #b6453a;
+
+  /* Les voiles : de l'encre diluée, là où c'était du blanc dilué. */
+  --voile: rgba(22, 35, 63, 0.05);
+  --voile-2: rgba(22, 35, 63, 0.10);
+  --voile-3: rgba(22, 35, 63, 0.16);
+}
+
+/* ---------- l'or qui servait de texte ---------- */
+[data-theme='clair'] .stat b,
+[data-theme='clair'] .panelbox > summary::after,
+[data-theme='clair'] .setting .val,
+[data-theme='clair'] .method-toggle .chev,
+[data-theme='clair'] .iconbtn.home,
+[data-theme='clair'] .tabbar button.on,
+[data-theme='clair'] .serie-count,
+[data-theme='clair'] .serie-alerte,
+[data-theme='clair'] .serie-bloc b,
+[data-theme='clair'] .hit-en,
+[data-theme='clair'] .engage .label,
+[data-theme='clair'] .rowlink .chev,
+[data-theme='clair'] .rayon-label.on,
+[data-theme='clair'] .welcome-sub,
+[data-theme='clair'] .classrow.on small { color: var(--chalk-ink); }
+
+/* ---------- les voiles ---------- */
+[data-theme='clair'] input[type='text'],
+[data-theme='clair'] textarea { background: var(--voile); }
+[data-theme='clair'] .searchcue { background: var(--voile); }
+[data-theme='clair'] .serie i { background: var(--voile-2); }
+[data-theme='clair'] .switch { background: var(--voile-3); }
+[data-theme='clair'] .prog-jour { background: var(--voile); }
+[data-theme='clair'] .prog-barre { background: var(--voile-2); }
+[data-theme='clair'] .prog-compteurs b { color: var(--ink); }
+
+/* Jour travaillé : l'or en aplat, l'encre dessus — et non le blanc du
+   panneau, qui sur de l'or ne se lirait plus. */
+[data-theme='clair'] .prog-jour.on { color: var(--on-chalk); }
+[data-theme='clair'] .prog-jour.hors { color: var(--grey); opacity: 0.55; }
+
+/* ---------- la barre d'onglets ---------- */
+[data-theme='clair'] .tabbar { background: rgba(255, 255, 255, 0.92); }
+
+/* ---------- les ombres ---------- */
+[data-theme='clair'] .deckcard .back img { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .vign { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .pioche-img { box-shadow: 0 8px 20px rgba(22, 35, 63, 0.18); }
+[data-theme='clair'] .pioche-due { box-shadow: 0 3px 8px rgba(22, 35, 63, 0.22); }
+
+/* ---------- le bouton Google, blanc sur blanc ---------- */
+[data-theme='clair'] .btn.google { border: 1px solid var(--rule-strong); }
+
+/* ==================================================================
+   L'écran de révision garde son encre claire
+
+   Il est posé sur la photo du paquet, assombrie par un dégradé : c'est
+   le seul endroit de l'application qui reste sombre dans les deux
+   thèmes. Son encre ne suit donc pas le thème clair, et l'or y reste
+   l'or clair.
+   ================================================================== */
+[data-theme='clair'] .progressbar { background: rgba(234, 230, 219, 0.2); }
+[data-theme='clair'] .studytop .pos { color: #c2cadb; }
+[data-theme='clair'] .studytop .stop { background: rgba(234, 230, 219, 0.12); color: #fbfaf6; }
+[data-theme='clair'] .studystage .tag { color: #fbfaf6; border-color: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .ask { color: var(--chalk); }
+[data-theme='clair'] .word { color: #fbfaf6; }
+[data-theme='clair'] .wordsmall { color: #c2cadb; }
+[data-theme='clair'] .ruleline { background: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .answer { color: var(--chalk); }
+[data-theme='clair'] .example { color: #c2cadb; }
+[data-theme='clair'] .speak {
+  background: rgba(234, 230, 219, 0.06);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .tap-hint { color: #8d97ad; }
+[data-theme='clair'] .grade {
+  background: rgba(234, 230, 219, 0.05);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .grade small { color: #8d97ad; }
+
+/* ==================================================================
+   Le choix d'apparence
+
+   Trois pastilles sur une ligne, comme les heures du rappel : le
+   vocabulaire de l'écran existe déjà, rien à inventer.
+   ================================================================== */
+.themechoix { display: flex; gap: 7px; margin-bottom: 8px; }
+.themechoix button {
+  flex: 1; min-height: 40px; padding: 0 6px;
+  border: 1px solid var(--rule-strong); border-radius: 12px;
+  background: none; font-family: inherit; font-size: 13.5px;
+  color: var(--ink-soft); cursor: pointer;
+}
+.themechoix button:hover { background: var(--voile); }
+.themechoix button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.themechoix button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+
+/* ==================================================================
+   « Ma classe » : la ligne, et la feuille qu'elle ouvre
+
+   Sept rangées dépliées prenaient un demi-écran pour un réglage qu'on
+   fait une fois par année scolaire. La ligne dit la classe déclarée —
+   c'est ce qu'on vient vérifier neuf fois sur dix — et la liste ne
+   s'ouvre que si on la touche.
+   ================================================================== */
+.classbtn {
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; min-height: 64px; padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.classbtn:hover { background: var(--panel-hi); }
+.classbtn:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.classbtn img { display: block; flex: none; }
+.classbtn > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.classbtn b { font-size: 14.5px; font-weight: 600; }
+.classbtn small { font-size: 12px; color: var(--grey); line-height: 1.35; }
+/* La classe déclarée, en or profond : c'est la valeur du réglage, pas
+   son intitulé, et elle doit se lire d'un coup d'œil. */
+.classbtn em {
+  flex: none; font-style: normal; font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+}
+.classbtn i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* La feuille. Elle monte du bas et laisse voir le fond : le choix est
+   une parenthèse dans les réglages, pas un autre écran. */
+.sheet-fond {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(9, 16, 30, 0.44);
+  animation: sheet-fondu 0.18s ease;
+}
+.sheet {
+  width: 100%; max-width: var(--shell);
+  max-height: 88dvh; overflow-y: auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(9, 16, 30, 0.28);
+  animation: sheet-monte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet-poignee {
+  display: block; width: 40px; height: 4px; margin: 0 auto 12px;
+  border-radius: 999px; background: var(--rule-strong);
+}
+.sheet h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 400;
+  margin: 0 0 8px;
+}
+.sheet .hint { margin: 0 0 14px; }
+.sheet .classrow:last-child { margin-bottom: 0; }
+
+@keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
