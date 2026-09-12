@@ -2813,3 +2813,313 @@ label.switch input {
 
 @keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   Chantier 39 — les Réglages en six lignes, les deux thèmes, et
+   l'interrupteur de « Me rappeler de réviser » réparé
+
+   À COLLER TEL QUEL À LA FIN DE src/styles.css, À LA PLACE des blocs
+   des chantiers 36, 37 et 38. Si le bloc du chantier 36 est resté dans la
+   feuille, il impose sa palette claire au `:root` et le thème sombre
+   ne peut plus revenir : c'est la panne « l'apparence ne change pas ».
+
+   Ce bloc ne compte plus sur le `:root` d'origine pour le sombre : les
+   deux thèmes sont écrits, chacun sous son attribut. Il ne reste donc
+   plus rien d'implicite, et un vieux bloc oublié plus haut dans la
+   feuille ne peut plus l'emporter. `src/ui/theme.ts` pose l'attribut
+   sur <html> ; la palette tenant dans les variables, un seul attribut
+   fait basculer toute l'application.
+
+   Le thème clair inverse le parti pris : le tapis devient un bleu de
+   ciel pâle, l'encre devient le bleu nuit, les surfaces posées dessus
+   deviennent blanches. L'or de l'icône garde sa place d'accent, avec
+   une nuance — un or clair sur du blanc ne se lit pas, alors là où l'or
+   servait de TEXTE il passe à un or profond (`--chalk-ink`). En aplat,
+   il reste l'or. En thème sombre, `--chalk-ink` vaut l'or : les mêmes
+   règles servent les deux thèmes sans se contredire.
+
+   Trois choses ne s'inversent pas, et c'est voulu :
+   — l'écran de révision, posé sur une photo assombrie : son encre reste
+     claire dans les deux thèmes, sinon le mot disparaîtrait dans
+     l'image ;
+   — les ombres, qui s'allègent : sur fond clair, une ombre à 40 % de
+     noir fait une tache ;
+   — les aplats translucides, qui étaient des voiles de blanc sur le
+     sombre et deviennent des voiles d'encre sur le clair.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le thème sombre, écrit noir sur blanc
+
+   C'était jusqu'ici le `:root` du haut de la feuille, donc l'implicite.
+   Il est réaffirmé ici sous son attribut : c'est ce qui garantit qu'il
+   revienne, quoi qu'il y ait au-dessus.
+   ------------------------------------------------------------------ */
+:root,
+[data-theme='sombre'] {
+  --ink: #fbfaf6;
+  --ink-soft: #c2cadb;
+  --grey: #8d97ad;
+  --ink-dim: #8d97ad;
+
+  --paper: #0f1a2f;
+  --panel: #16233f;
+  --panel-hi: #1d2c48;
+
+  --rule: rgba(234, 230, 219, 0.14);
+  --rule-strong: rgba(234, 230, 219, 0.24);
+
+  --chalk: #f2b705;
+  /* L'or en texte : sur le sombre, c'est l'or lui-même. */
+  --chalk-ink: #f2b705;
+  --on-chalk: #16233f;
+  --good: #4fbf95;
+  --bad: #e0776d;
+
+  --voile: rgba(234, 230, 219, 0.05);
+  --voile-2: rgba(234, 230, 219, 0.10);
+  --voile-3: rgba(234, 230, 219, 0.18);
+}
+
+/* Et ce que le sombre doit reprendre au clair, pour le cas où un bloc
+   du chantier 36 traîne encore au-dessus. */
+[data-theme='sombre'] .tabbar { background: rgba(15, 26, 47, 0.92); }
+[data-theme='sombre'] .btn.google { border: none; }
+
+[data-theme='clair'] {
+  /* Encres, sur fond clair */
+  --ink: #16233f;
+  --ink-soft: #3d4f73;
+  --grey: #6b7896;
+  /* Le calendrier de « Mes progrès » lisait cette variable avec un repli
+     clair, invisible ici. Elle existe maintenant. */
+  --ink-dim: #6b7896;
+
+  /* Fonds */
+  --paper: #eaf1fb;   /* le tapis */
+  --panel: #ffffff;   /* les surfaces posées dessus */
+  --panel-hi: #dbe6f6;
+
+  --rule: rgba(22, 35, 63, 0.12);
+  --rule-strong: rgba(22, 35, 63, 0.22);
+
+  /* L'or reste l'or en aplat ; en texte, il s'assombrit pour se lire. */
+  --chalk: #f2b705;
+  --chalk-ink: #8a6300;
+  --on-chalk: #16233f;
+
+  /* Le vert et le rouge étaient réglés pour le fond sombre. */
+  --good: #1f7a5c;
+  --bad: #b6453a;
+
+  /* Les voiles : de l'encre diluée, là où c'était du blanc dilué. */
+  --voile: rgba(22, 35, 63, 0.05);
+  --voile-2: rgba(22, 35, 63, 0.10);
+  --voile-3: rgba(22, 35, 63, 0.16);
+}
+
+/* ---------- l'or qui servait de texte ---------- */
+[data-theme='clair'] .stat b,
+[data-theme='clair'] .panelbox > summary::after,
+[data-theme='clair'] .setting .val,
+[data-theme='clair'] .method-toggle .chev,
+[data-theme='clair'] .iconbtn.home,
+[data-theme='clair'] .tabbar button.on,
+[data-theme='clair'] .serie-count,
+[data-theme='clair'] .serie-alerte,
+[data-theme='clair'] .serie-bloc b,
+[data-theme='clair'] .hit-en,
+[data-theme='clair'] .engage .label,
+[data-theme='clair'] .rowlink .chev,
+[data-theme='clair'] .rayon-label.on,
+[data-theme='clair'] .welcome-sub,
+[data-theme='clair'] .classrow.on small { color: var(--chalk-ink); }
+
+/* ---------- les voiles ---------- */
+[data-theme='clair'] input[type='text'],
+[data-theme='clair'] textarea { background: var(--voile); }
+[data-theme='clair'] .searchcue { background: var(--voile); }
+[data-theme='clair'] .serie i { background: var(--voile-2); }
+[data-theme='clair'] button.switch { background: var(--voile-3); }
+[data-theme='clair'] .prog-jour { background: var(--voile); }
+[data-theme='clair'] .prog-barre { background: var(--voile-2); }
+[data-theme='clair'] .prog-compteurs b { color: var(--ink); }
+
+/* Jour travaillé : l'or en aplat, l'encre dessus — et non le blanc du
+   panneau, qui sur de l'or ne se lirait plus. */
+[data-theme='clair'] .prog-jour.on { color: var(--on-chalk); }
+[data-theme='clair'] .prog-jour.hors { color: var(--grey); opacity: 0.55; }
+
+/* ---------- la barre d'onglets ---------- */
+[data-theme='clair'] .tabbar { background: rgba(255, 255, 255, 0.92); }
+
+/* ---------- les ombres ---------- */
+[data-theme='clair'] .deckcard .back img { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .vign { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .pioche-img { box-shadow: 0 8px 20px rgba(22, 35, 63, 0.18); }
+[data-theme='clair'] .pioche-due { box-shadow: 0 3px 8px rgba(22, 35, 63, 0.22); }
+
+/* ---------- le bouton Google, blanc sur blanc ---------- */
+[data-theme='clair'] .btn.google { border: 1px solid var(--rule-strong); }
+
+/* ==================================================================
+   L'écran de révision garde son encre claire
+
+   Il est posé sur la photo du paquet, assombrie par un dégradé : c'est
+   le seul endroit de l'application qui reste sombre dans les deux
+   thèmes. Son encre ne suit donc pas le thème clair, et l'or y reste
+   l'or clair.
+   ================================================================== */
+[data-theme='clair'] .progressbar { background: rgba(234, 230, 219, 0.2); }
+[data-theme='clair'] .studytop .pos { color: #c2cadb; }
+[data-theme='clair'] .studytop .stop { background: rgba(234, 230, 219, 0.12); color: #fbfaf6; }
+[data-theme='clair'] .studystage .tag { color: #fbfaf6; border-color: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .ask { color: var(--chalk); }
+[data-theme='clair'] .word { color: #fbfaf6; }
+[data-theme='clair'] .wordsmall { color: #c2cadb; }
+[data-theme='clair'] .ruleline { background: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .answer { color: var(--chalk); }
+[data-theme='clair'] .example { color: #c2cadb; }
+[data-theme='clair'] .speak {
+  background: rgba(234, 230, 219, 0.06);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .tap-hint { color: #8d97ad; }
+[data-theme='clair'] .grade {
+  background: rgba(234, 230, 219, 0.05);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .grade small { color: #8d97ad; }
+
+/* ==================================================================
+   L'interrupteur de « Me rappeler de réviser »
+
+   `.switch` désignait deux choses dans la feuille : la pastille de 46
+   sur 28 des rangées de paquets (un <button>), et la ligne « case à
+   cocher + libellé » des réglages (un <label>). La pastille étant
+   déclarée en dernier, elle gagnait aussi sur le <label> : le libellé
+   se retrouvait écrasé dans 46 pixels de large, par-dessus le texte
+   d'explication. C'est le bug de la capture.
+
+   `label.switch` est plus précis que `.switch` : la ligne reprend sa
+   forme sans que la pastille perde la sienne, et sans toucher au
+   composant `Toggle`.
+   ================================================================== */
+label.switch {
+  display: flex; align-items: center; gap: 10px;
+  width: auto; height: auto; min-height: 28px; padding: 0;
+  background: none; border: none; border-radius: 0;
+  font-size: 14.5px; color: var(--ink); cursor: pointer;
+}
+label.switch input {
+  flex: none; width: 19px; height: 19px; margin: 0;
+  accent-color: var(--chalk);
+}
+
+/* ==================================================================
+   Le choix d'apparence
+
+   Trois pastilles sur une ligne, comme les heures du rappel : le
+   vocabulaire de l'écran existe déjà, rien à inventer.
+   ================================================================== */
+.themechoix { display: flex; gap: 7px; margin-bottom: 8px; }
+.themechoix button {
+  flex: 1; min-height: 40px; padding: 0 6px;
+  border: 1px solid var(--rule-strong); border-radius: 12px;
+  background: none; font-family: inherit; font-size: 13.5px;
+  color: var(--ink-soft); cursor: pointer;
+}
+.themechoix button:hover { background: var(--voile); }
+.themechoix button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.themechoix button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+
+/* ==================================================================
+   Les six lignes, et les tiroirs qu'elles ouvrent
+
+   Un réglage déplié coûte un demi-écran à quelque chose qu'on fait une
+   fois. La ligne dit son nom et SA VALEUR — c'est ce qu'on vient
+   vérifier neuf fois sur dix — et le détail ne s'ouvre que si on la
+   touche.
+   ================================================================== */
+.reglist { display: flex; flex-direction: column; gap: 10px; }
+
+.reglig {
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; min-height: 64px; padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.reglig:hover { background: var(--panel-hi); }
+.reglig:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.reglig img { display: block; flex: none; }
+/* Le carré d'attente, pour les lignes dont l'icône n'est pas encore
+   arrivée : il tient la place au pixel, et se voit assez pour dire
+   qu'il manque quelque chose. */
+.reglig-attente {
+  flex: none; width: 34px; height: 34px; border-radius: 8px;
+  border: 1px dashed var(--rule-strong);
+}
+.reglig > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.reglig b { font-size: 14.5px; font-weight: 600; }
+.reglig small { font-size: 12px; color: var(--grey); line-height: 1.35; }
+/* La valeur du réglage, en or profond : c'est ce qu'on vient lire, et
+   non l'intitulé. Elle ne se plie jamais sur deux lignes. */
+.reglig em {
+  flex: none; font-style: normal; font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+  white-space: nowrap;
+}
+.reglig i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* La feuille. Elle monte du bas et laisse voir le fond : le choix est
+   une parenthèse dans les réglages, pas un autre écran. */
+.sheet-fond {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(9, 16, 30, 0.44);
+  animation: sheet-fondu 0.18s ease;
+}
+.sheet {
+  width: 100%; max-width: var(--shell);
+  max-height: 88dvh; overflow-y: auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(9, 16, 30, 0.28);
+  animation: sheet-monte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* La poignée ferme le tiroir : c'est le geste qu'on tente d'instinct.
+   Sa cible fait 40 sur 22 — le trait n'en montre que 4. */
+.sheet-poignee {
+  display: block; width: 40px; height: 22px; padding: 9px 0; margin: 0 auto 8px;
+  border: none; background: none; cursor: pointer;
+}
+.sheet-poignee::before {
+  content: ''; display: block; height: 4px;
+  border-radius: 999px; background: var(--rule-strong);
+}
+.sheet-poignee:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.sheet h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 400;
+  margin: 0 0 8px;
+}
+.sheet .hint { margin: 0 0 14px; }
+.sheet .classrow:last-child { margin-bottom: 0; }
+
+/* Les contrôles déménagés dans les tiroirs. Ils gardent leur forme ; ce
+   sont leurs marges de bloc qui n'ont plus lieu d'être ici. */
+.sheet .setting { padding: 0; border-top: none; }
+.sheet .themechoix { margin-bottom: 12px; }
+.sheet .btn { margin-top: 8px; }
+.sheet .account { margin: 0; }
+
+@keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
