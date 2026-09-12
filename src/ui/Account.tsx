@@ -1,6 +1,11 @@
 /**
  * Onglet « Réglages » : classe, rappel, charge de travail, compte, sauvegardes.
  *
+ * CHANTIER 36 — « Ma classe » se replie derrière un bouton. Sept rangées
+ * dépliées coûtaient un demi-écran à un réglage qu'on fait une fois ; la
+ * ligne dit maintenant la classe déclarée, et la liste s'ouvre au doigt.
+ * Le reste de l'écran remonte d'autant.
+ *
  * CHANTIER 34 — deux changements, rien d'autre n'a bougé : le titre, et
  * « Ma classe » qui descend ici depuis la barre du catalogue. Ce n'est pas
  * un filtre mais un réglage d'identité ; il se règle une fois et se range
@@ -37,12 +42,28 @@ export function Account({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [autorisation, setAutorisation] = useState(permission());
+  const [choixClasse, setChoixClasse] = useState(false);
 
   // L'autorisation peut avoir été changée dans les réglages du navigateur
   // pendant que l'application était ouverte.
   useEffect(() => { setAutorisation(permission()); }, []);
 
   const serie = liveStreak(streak);
+
+  /*
+   * Ce que le bouton affiche à droite. « Non déclarée » est un état, pas
+   * un vide : il se dit, sinon la ligne a l'air de ne pas être réglée.
+   */
+  const classeDite = settings.classe === null
+    ? 'Non déclarée'
+    : CLASSE_LABELS[settings.classe];
+
+  /* La liste se ferme dès qu'on a choisi : un réglage à choix unique n'a
+     rien à confirmer. */
+  function choisir(c: Classe | null) {
+    onSettings({ ...settings, classe: c });
+    setChoixClasse(false);
+  }
 
   async function activerRappel(actif: boolean) {
     if (!actif) {
@@ -108,30 +129,57 @@ export function Account({
       <AccountPanel auth={auth} />
 
       <p className="rayon-label">Ma classe</p>
-      <div className="classpanel plain">
-        <p className="hint">
-          Elle range le catalogue en « pour ma classe » et « pour plus tard ».
-          Rien ne se ferme : les paquets des classes suivantes restent
-          visibles, plus bas.
-        </p>
-        {CLASSES.map((c: Classe) => (
-          <button
-            key={c}
-            className={`classrow${settings.classe === c ? ' on' : ''}`}
-            onClick={() => onSettings({ ...settings, classe: c })}
+      <button className="classbtn" onClick={() => setChoixClasse(true)}>
+        <img src="/btn-classe.png" alt="" width={34} height={34} />
+        <span>
+          <b>Ma classe</b>
+          <small>Elle range le catalogue, sans rien fermer.</small>
+        </span>
+        <em>{classeDite}</em>
+        <i aria-hidden="true">›</i>
+      </button>
+
+      {choixClasse && (
+        /*
+         * Une feuille, pas un écran : on revient au même endroit des
+         * réglages, et le fond reste visible derrière — le choix se lit
+         * comme une parenthèse.
+         */
+        <div className="sheet-fond" onClick={() => setChoixClasse(false)}>
+          <div
+            className="sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ma classe"
+            onClick={(e) => e.stopPropagation()}
           >
-            <i />
-            <span>{CLASSE_LABELS[c]}</span>
-          </button>
-        ))}
-        <button
-          className={`classrow${settings.classe === null ? ' on' : ''}`}
-          onClick={() => onSettings({ ...settings, classe: null })}
-        >
-          <i />
-          <span>Non déclarée — voir tout le catalogue</span>
-        </button>
-      </div>
+            <span className="sheet-poignee" />
+            <h3>Ma classe</h3>
+            <p className="hint">
+              Elle range le catalogue en « pour ma classe » et « pour plus tard ».
+              Rien ne se ferme : les paquets des classes suivantes restent
+              visibles, plus bas.
+            </p>
+            {CLASSES.map((c: Classe) => (
+              <button
+                key={c}
+                className={`classrow${settings.classe === c ? ' on' : ''}`}
+                onClick={() => choisir(c)}
+              >
+                <i />
+                <span>{CLASSE_LABELS[c]}</span>
+              </button>
+            ))}
+            <button
+              className={`classrow${settings.classe === null ? ' on' : ''}`}
+              onClick={() => choisir(null)}
+            >
+              <i />
+              <span>Non déclarée — voir tout le catalogue</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       <p className="rayon-label">Série</p>
       <div className="serie-bloc">
