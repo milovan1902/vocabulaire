@@ -1,6 +1,22 @@
 /**
- * Onglet « Réglages » : classe, apparence, rappel, charge de travail,
- * compte, sauvegardes.
+ * Onglet « Réglages » : six lignes, six tiroirs.
+ *
+ * CHANTIER 39 — l'écran devient une table des matières. Chaque réglage
+ * est une ligne qui porte son nom, son icône et SA VALEUR ACTUELLE à
+ * droite ; le détail s'ouvre au doigt. Deux raisons :
+ *
+ * — la petite capitale au-dessus de chaque bloc répétait le nom du
+ *   réglage écrit juste en dessous. Deux fois le même mot, dont un en
+ *   gris clair de 10 pixels ;
+ * — neuf fois sur dix on vient VÉRIFIER un réglage, pas le changer. La
+ *   valeur à droite répond sans rien ouvrir.
+ *
+ * « Données » devient « Connexion » et récupère le compte, qui flottait
+ * en haut de l'écran sans intitulé : le compte et les sauvegardes sont
+ * deux faces d'une même question — où vit ma progression.
+ *
+ * Les contrôles eux-mêmes n'ont pas changé d'un pixel ni d'un mot. Ils
+ * ont seulement déménagé dans les tiroirs.
  *
  * CHANTIER 37 — deux changements. L'apparence devient un réglage, clair
  * ou sombre ou d'après le système ; et le bloc « Série » s'en va dans
@@ -19,15 +35,12 @@
  * avec les autres. Le catalogue continue de s'y ordonner tout seul, en
  * « pour ma classe » et « pour plus tard ».
  *
- * Le bloc « Série » reste : il dit si la journée est en jeu, ce qui est une
- * information du présent. Le passé — total, record, calendrier — est parti
- * dans « Mes progrès », son écran.
- *
  * Ces blocs vivaient en bas de la bibliothèque, où ils allongeaient une page
  * dont l'objet était de choisir un paquet. Ils forment ici un écran à part,
  * atteint par les onglets.
  */
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { Classe, Settings } from '../domain/types';
 import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { repository } from '../data/repository';
@@ -38,6 +51,68 @@ import type { Streak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
 import type { Theme } from './theme';
 import { THEME_LABELS, setTheme, themeChoisi } from './theme';
+
+/**
+ * Une ligne de la table des matières.
+ *
+ * `icone` est un chemin de `public/` ; sans lui, la ligne montre un
+ * carré en attente plutôt qu'un trou — les icônes arrivent une à une.
+ */
+function Ligne({
+  icone, titre, sous, valeur, onClick,
+}: {
+  icone?: string;
+  titre: string;
+  sous: string;
+  valeur: string;
+  onClick: () => void;
+}) {
+  return (
+    <button className="reglig" onClick={onClick}>
+      {icone
+        ? <img src={icone} alt="" width={34} height={34} />
+        : <span className="reglig-attente" aria-hidden="true" />}
+      <span>
+        <b>{titre}</b>
+        <small>{sous}</small>
+      </span>
+      <em>{valeur}</em>
+      <i aria-hidden="true">›</i>
+    </button>
+  );
+}
+
+/**
+ * Le tiroir. Il monte du bas et laisse voir l'écran derrière : le
+ * réglage est une parenthèse, pas une destination. On en sort par le
+ * fond, par la poignée, ou en choisissant.
+ */
+function Tiroir({
+  titre, onFermer, children,
+}: {
+  titre: string;
+  onFermer: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="sheet-fond" onClick={onFermer}>
+      <div
+        className="sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={titre}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="sheet-poignee" aria-label="Fermer" onClick={onFermer} />
+        <h3>{titre}</h3>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
+type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision';
 
 export function Account({
   settings, auth, onSettings, onHome,
@@ -55,7 +130,7 @@ export function Account({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [autorisation, setAutorisation] = useState(permission());
-  const [choixClasse, setChoixClasse] = useState(false);
+  const [tiroir, setTiroir] = useState<Tiroirs>(null);
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
 
   // L'autorisation peut avoir été changée dans les réglages du navigateur
@@ -70,12 +145,26 @@ export function Account({
     ? 'Non déclarée'
     : CLASSE_LABELS[settings.classe];
 
-  /* La liste se ferme dès qu'on a choisi : un réglage à choix unique n'a
-     rien à confirmer. */
+  /* Le tiroir se ferme dès qu'on a choisi : un réglage à choix unique
+     n'a rien à confirmer. Les tiroirs à plusieurs réglages, eux, restent
+     ouverts — on y règle souvent deux choses de suite. */
   function choisir(c: Classe | null) {
     onSettings({ ...settings, classe: c });
-    setChoixClasse(false);
+    setTiroir(null);
   }
+
+  /*
+   * Ce que chaque ligne affiche à droite : l'état du réglage, dit en
+   * trois mots au plus. C'est la moitié de l'intérêt de l'écran.
+   */
+  const valeurs = {
+    connexion: auth.email ? 'Connecté' : 'Sans compte',
+    classe: classeDite,
+    apparence: THEME_LABELS[theme],
+    rappel: settings.reminderAt ? settings.reminderAt.replace(':', ' h ') : 'Désactivé',
+    charge: `${settings.newPerDay} mots/j`,
+    revision: settings.reversed ? 'EN → FR' : 'FR → EN',
+  };
 
   async function activerRappel(actif: boolean) {
     if (!actif) {
@@ -138,179 +227,202 @@ export function Account({
     <>
       <h2 className="screen-title">Réglages</h2>
 
-      <AccountPanel auth={auth} />
-
-      <p className="rayon-label">Ma classe</p>
-      <button className="classbtn" onClick={() => setChoixClasse(true)}>
-        <img src="/btn-classe.png" alt="" width={34} height={34} />
-        <span>
-          <b>Ma classe</b>
-          <small>Elle range le catalogue, sans rien fermer.</small>
-        </span>
-        <em>{classeDite}</em>
-        <i aria-hidden="true">›</i>
-      </button>
-
-      {choixClasse && (
-        /*
-         * Une feuille, pas un écran : on revient au même endroit des
-         * réglages, et le fond reste visible derrière — le choix se lit
-         * comme une parenthèse.
-         */
-        <div className="sheet-fond" onClick={() => setChoixClasse(false)}>
-          <div
-            className="sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Ma classe"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="sheet-poignee" />
-            <h3>Ma classe</h3>
-            <p className="hint">
-              Elle range le catalogue en « pour ma classe » et « pour plus tard ».
-              Rien ne se ferme : les paquets des classes suivantes restent
-              visibles, plus bas.
-            </p>
-            {CLASSES.map((c: Classe) => (
-              <button
-                key={c}
-                className={`classrow${settings.classe === c ? ' on' : ''}`}
-                onClick={() => choisir(c)}
-              >
-                <i />
-                <span>{CLASSE_LABELS[c]}</span>
-              </button>
-            ))}
-            <button
-              className={`classrow${settings.classe === null ? ' on' : ''}`}
-              onClick={() => choisir(null)}
-            >
-              <i />
-              <span>Non déclarée — voir tout le catalogue</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      <p className="rayon-label">Apparence</p>
-      <div className="themechoix">
-        {(['auto', 'clair', 'sombre'] as Theme[]).map((t) => (
-          <button
-            key={t}
-            className={theme === t ? 'on' : ''}
-            aria-pressed={theme === t}
-            onClick={() => { setTheme(t); setThemeLocal(t); }}
-          >
-            {THEME_LABELS[t]}
-          </button>
-        ))}
-      </div>
-      <p className="hint">
-        Le thème reste sur cet appareil : il ne suit pas le compte, et ne
-        part pas dans les sauvegardes. « Automatique » suit le système et
-        continue de le suivre.
-      </p>
-
-      <p className="rayon-label">Rappel quotidien</p>
-      <div className="panelbox open">
-        <div className="setting">
-          <Toggle
-            label="Me rappeler de réviser"
-            checked={settings.reminderAt !== null}
-            onChange={(v) => void activerRappel(v)}
-          />
-          {settings.reminderAt !== null && (
-            <div className="heures">
-              {HEURES.map((h) => (
-                <button
-                  key={h}
-                  className={settings.reminderAt === h ? 'on' : ''}
-                  onClick={() => onSettings({ ...settings, reminderAt: h })}
-                >
-                  {h.replace(':', ' h ')}
-                </button>
-              ))}
-            </div>
-          )}
-          <p className="hint">
-            {autorisation === 'unsupported'
-              ? 'Ce navigateur ne sait pas afficher de notification.'
-              : autorisation === 'denied'
-                ? 'Les notifications sont bloquées pour ce site : à réautoriser dans les réglages du navigateur.'
-                : 'Le rappel n’arrive que si l’application est encore ouverte, même en arrière-plan. Sur téléphone rangé, comptez plutôt sur l’écran d’accueil, qui prévient quand la série est en jeu.'}
-          </p>
-        </div>
-      </div>
-
-      <p className="rayon-label">Charge de travail</p>
-      <div className="panelbox open">
-        <Slider
-          label="Nouveaux mots par jour"
-          hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
-          min={0} max={60} step={5} value={settings.newPerDay}
-          onChange={(v) => onSettings({ ...settings, newPerDay: v })}
+      <div className="reglist">
+        <Ligne
+          titre="Connexion"
+          sous="Compte et sauvegardes."
+          valeur={valeurs.connexion}
+          onClick={() => setTiroir('connexion')}
         />
-        <Slider
-          label="Révisions maximum par jour"
-          min={20} max={200} step={10} value={settings.reviewsPerDay}
-          onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
+        <Ligne
+          icone="/btn-classe.png"
+          titre="Ma classe"
+          sous="Elle range le catalogue, sans rien fermer."
+          valeur={valeurs.classe}
+          onClick={() => setTiroir('classe')}
         />
-        <Slider
-          label="Cartes par session"
-          hint="Pour découper la journée en plusieurs passages courts."
-          min={10} max={60} step={5} value={settings.cardsPerSession}
-          onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
+        <Ligne
+          titre="Apparence"
+          sous="Clair, sombre, ou d’après le système."
+          valeur={valeurs.apparence}
+          onClick={() => setTiroir('apparence')}
+        />
+        <Ligne
+          titre="Rappel quotidien"
+          sous="Si la journée n’est pas faite."
+          valeur={valeurs.rappel}
+          onClick={() => setTiroir('rappel')}
+        />
+        <Ligne
+          titre="Charge de travail"
+          sous="Nouveaux mots et révisions par jour."
+          valeur={valeurs.charge}
+          onClick={() => setTiroir('charge')}
+        />
+        <Ligne
+          titre="Révision"
+          sous="Voix, sens des cartes, prononciation."
+          valeur={valeurs.revision}
+          onClick={() => setTiroir('revision')}
         />
       </div>
-
-      <p className="rayon-label">Révision</p>
-      <div className="panelbox open">
-        <Slider
-          label="Vitesse de la voix"
-          min={0.6} max={1.1} step={0.05} value={settings.speechRate}
-          format={(v) => v.toFixed(2).replace('.', ',')}
-          onChange={(v) => onSettings({ ...settings, speechRate: v })}
-        />
-        <div className="setting" style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-          <Toggle
-            label="Prononcer automatiquement à la réponse"
-            checked={settings.autoSpeak}
-            onChange={(v) => onSettings({ ...settings, autoSpeak: v })}
-          />
-          <Toggle
-            label="Sens inverse : anglais → français"
-            checked={settings.reversed}
-            onChange={(v) => onSettings({ ...settings, reversed: v })}
-          />
-        </div>
-      </div>
-      <p className="hint">
-        Ces réglages s’appliquent à tous les paquets, sauf à ceux qui ont
-        les leurs. Un paquet se particularise depuis son propre écran.
-      </p>
-
-      <p className="rayon-label">Données</p>
-      <button className="btn ghost" onClick={exportBackup}>Enregistrer une sauvegarde</button>
-      <button className="btn ghost" onClick={() => fileRef.current?.click()}>
-        Restaurer une sauvegarde
-      </button>
-      <input
-        ref={fileRef} type="file" accept="application/json,.json" hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          e.target.value = '';
-          if (f) void importBackup(f);
-        }}
-      />
-      <p className="hint">
-        Sans compte, la progression reste sur cet appareil. Pour la retrouver
-        ailleurs, exportez une sauvegarde ici et restaurez-la là-bas.
-      </p>
 
       <button className="btn ghost" style={{ marginTop: 18 }} onClick={onHome}>
         Revoir la page d’accueil
       </button>
+
+      {tiroir === 'connexion' && (
+        <Tiroir titre="Connexion" onFermer={() => setTiroir(null)}>
+          <AccountPanel auth={auth} />
+          <p className="hint" style={{ marginTop: 14 }}>
+            Sans compte, la progression reste sur cet appareil. Pour la
+            retrouver ailleurs, exportez une sauvegarde ici et restaurez-la
+            là-bas.
+          </p>
+          <button className="btn ghost" onClick={exportBackup}>Enregistrer une sauvegarde</button>
+          <button className="btn ghost" onClick={() => fileRef.current?.click()}>
+            Restaurer une sauvegarde
+          </button>
+          <input
+            ref={fileRef} type="file" accept="application/json,.json" hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = '';
+              if (f) void importBackup(f);
+            }}
+          />
+        </Tiroir>
+      )}
+
+      {tiroir === 'classe' && (
+        <Tiroir titre="Ma classe" onFermer={() => setTiroir(null)}>
+          <p className="hint">
+            Elle range le catalogue en « pour ma classe » et « pour plus tard ».
+            Rien ne se ferme : les paquets des classes suivantes restent
+            visibles, plus bas.
+          </p>
+          {CLASSES.map((c: Classe) => (
+            <button
+              key={c}
+              className={`classrow${settings.classe === c ? ' on' : ''}`}
+              onClick={() => choisir(c)}
+            >
+              <i />
+              <span>{CLASSE_LABELS[c]}</span>
+            </button>
+          ))}
+          <button
+            className={`classrow${settings.classe === null ? ' on' : ''}`}
+            onClick={() => choisir(null)}
+          >
+            <i />
+            <span>Non déclarée — voir tout le catalogue</span>
+          </button>
+        </Tiroir>
+      )}
+
+      {tiroir === 'apparence' && (
+        <Tiroir titre="Apparence" onFermer={() => setTiroir(null)}>
+          <div className="themechoix">
+            {(['auto', 'clair', 'sombre'] as Theme[]).map((t) => (
+              <button
+                key={t}
+                className={theme === t ? 'on' : ''}
+                aria-pressed={theme === t}
+                onClick={() => { setTheme(t); setThemeLocal(t); }}
+              >
+                {THEME_LABELS[t]}
+              </button>
+            ))}
+          </div>
+          <p className="hint">
+            Le thème reste sur cet appareil : il ne suit pas le compte, et ne
+            part pas dans les sauvegardes. « Automatique » suit le système et
+            continue de le suivre.
+          </p>
+        </Tiroir>
+      )}
+
+      {tiroir === 'rappel' && (
+        <Tiroir titre="Rappel quotidien" onFermer={() => setTiroir(null)}>
+          <div className="setting">
+            <Toggle
+              label="Me rappeler de réviser"
+              checked={settings.reminderAt !== null}
+              onChange={(v) => void activerRappel(v)}
+            />
+            {settings.reminderAt !== null && (
+              <div className="heures">
+                {HEURES.map((h) => (
+                  <button
+                    key={h}
+                    className={settings.reminderAt === h ? 'on' : ''}
+                    onClick={() => onSettings({ ...settings, reminderAt: h })}
+                  >
+                    {h.replace(':', ' h ')}
+                  </button>
+                ))}
+              </div>
+            )}
+            <p className="hint">
+              {autorisation === 'unsupported'
+                ? 'Ce navigateur ne sait pas afficher de notification.'
+                : autorisation === 'denied'
+                  ? 'Les notifications sont bloquées pour ce site : à réautoriser dans les réglages du navigateur.'
+                  : 'Le rappel n’arrive que si l’application est encore ouverte, même en arrière-plan. Sur téléphone rangé, comptez plutôt sur l’écran d’accueil, qui prévient quand la série est en jeu.'}
+            </p>
+          </div>
+        </Tiroir>
+      )}
+
+      {tiroir === 'charge' && (
+        <Tiroir titre="Charge de travail" onFermer={() => setTiroir(null)}>
+          <Slider
+            label="Nouveaux mots par jour"
+            hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
+            min={0} max={60} step={5} value={settings.newPerDay}
+            onChange={(v) => onSettings({ ...settings, newPerDay: v })}
+          />
+          <Slider
+            label="Révisions maximum par jour"
+            min={20} max={200} step={10} value={settings.reviewsPerDay}
+            onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
+          />
+          <Slider
+            label="Cartes par session"
+            hint="Pour découper la journée en plusieurs passages courts."
+            min={10} max={60} step={5} value={settings.cardsPerSession}
+            onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
+          />
+          <p className="hint">
+            Ces réglages s’appliquent à tous les paquets, sauf à ceux qui ont
+            les leurs. Un paquet se particularise depuis son propre écran.
+          </p>
+        </Tiroir>
+      )}
+
+      {tiroir === 'revision' && (
+        <Tiroir titre="Révision" onFermer={() => setTiroir(null)}>
+          <Slider
+            label="Vitesse de la voix"
+            min={0.6} max={1.1} step={0.05} value={settings.speechRate}
+            format={(v) => v.toFixed(2).replace('.', ',')}
+            onChange={(v) => onSettings({ ...settings, speechRate: v })}
+          />
+          <div className="setting" style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+            <Toggle
+              label="Prononcer automatiquement à la réponse"
+              checked={settings.autoSpeak}
+              onChange={(v) => onSettings({ ...settings, autoSpeak: v })}
+            />
+            <Toggle
+              label="Sens inverse : anglais → français"
+              checked={settings.reversed}
+              onChange={(v) => onSettings({ ...settings, reversed: v })}
+            />
+          </div>
+        </Tiroir>
+      )}
     </>
   );
 }
