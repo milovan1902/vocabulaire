@@ -1,5 +1,12 @@
 /**
- * Onglet « Réglages » : classe, rappel, charge de travail, compte, sauvegardes.
+ * Onglet « Réglages » : classe, apparence, rappel, charge de travail,
+ * compte, sauvegardes.
+ *
+ * CHANTIER 37 — deux changements. L'apparence devient un réglage, clair
+ * ou sombre ou d'après le système ; et le bloc « Série » s'en va dans
+ * « Mes progrès », qui affichait déjà les mêmes deux nombres — la série
+ * du jour et le record. Il était ici par héritage, pas par logique : une
+ * série est une progression, pas un réglage.
  *
  * CHANTIER 36 — « Ma classe » se replie derrière un bouton. Sept rangées
  * dépliées coûtaient un demi-écran à un réglage qu'on fait une fois ; la
@@ -28,14 +35,20 @@ import { Slider, Toggle } from './components';
 import { AccountPanel } from './AccountPanel';
 import type { Auth } from './useAuth';
 import type { Streak } from '../engine/streak';
-import { liveStreak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
+import type { Theme } from './theme';
+import { THEME_LABELS, setTheme, themeChoisi } from './theme';
 
 export function Account({
-  settings, auth, streak, onSettings, onHome,
+  settings, auth, onSettings, onHome,
 }: {
   settings: Settings;
   auth: Auth;
+  /*
+   * La série est partie dans « Mes progrès » : cet écran ne la lit plus.
+   * Le prop reste accepté pour qu'`App.tsx` n'ait pas à changer — il le
+   * passe encore, sans conséquence.
+   */
   streak: Streak;
   onSettings: (s: Settings) => void;
   onHome: () => void;
@@ -43,12 +56,11 @@ export function Account({
   const fileRef = useRef<HTMLInputElement>(null);
   const [autorisation, setAutorisation] = useState(permission());
   const [choixClasse, setChoixClasse] = useState(false);
+  const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
 
   // L'autorisation peut avoir été changée dans les réglages du navigateur
   // pendant que l'application était ouverte.
   useEffect(() => { setAutorisation(permission()); }, []);
-
-  const serie = liveStreak(streak);
 
   /*
    * Ce que le bouton affiche à droite. « Non déclarée » est un état, pas
@@ -181,16 +193,24 @@ export function Account({
         </div>
       )}
 
-      <p className="rayon-label">Série</p>
-      <div className="serie-bloc">
-        <b>{serie}</b>
-        <div>
-          <p>jour{serie > 1 ? 's' : ''} d’affilée</p>
-          <p className="hint">
-            {streak.best > 0 ? `Record : ${streak.best} jours` : 'Une révision par jour suffit à la tenir.'}
-          </p>
-        </div>
+      <p className="rayon-label">Apparence</p>
+      <div className="themechoix">
+        {(['auto', 'clair', 'sombre'] as Theme[]).map((t) => (
+          <button
+            key={t}
+            className={theme === t ? 'on' : ''}
+            aria-pressed={theme === t}
+            onClick={() => { setTheme(t); setThemeLocal(t); }}
+          >
+            {THEME_LABELS[t]}
+          </button>
+        ))}
       </div>
+      <p className="hint">
+        Le thème reste sur cet appareil : il ne suit pas le compte, et ne
+        part pas dans les sauvegardes. « Automatique » suit le système et
+        continue de le suivre.
+      </p>
 
       <p className="rayon-label">Rappel quotidien</p>
       <div className="panelbox open">
