@@ -1,6 +1,13 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 41 — deux retouches. Les icônes passent de 34 à 40 pixels :
+ * la ligne en fait 64, dont 40 utiles entre ses marges, et c'est le
+ * texte sur deux lignes qui fixait déjà sa hauteur — l'icône y flottait.
+ * Et le tiroir « Charge de travail » cesse d'être trois curseurs qui se
+ * ressemblent : il s'ouvre sur la phrase de la journée réglée, chiffres
+ * en or, et le temps que ça demande.
+ *
  * CHANTIER 40 — les cinq carrés en attente reçoivent leur illustration.
  * Rien d'autre ne bouge : six lignes, six icônes, mêmes tiroirs.
  *
@@ -73,7 +80,7 @@ function Ligne({
   return (
     <button className="reglig" onClick={onClick}>
       {icone
-        ? <img src={icone} alt="" width={34} height={34} />
+        ? <img src={icone} alt="" width={40} height={40} />
         : <span className="reglig-attente" aria-hidden="true" />}
       <span>
         <b>{titre}</b>
@@ -83,6 +90,62 @@ function Ligne({
       <i aria-hidden="true">›</i>
     </button>
   );
+}
+
+/**
+ * Un curseur de la charge de travail : nom, rail, valeur, sur une
+ * ligne. Trois fois la même ligne — ce qui distingue les trois
+ * réglages, ce sont leurs nombres, pas leur mise en page.
+ *
+ * Le `Slider` général reste en place ailleurs : il écrit son libellé
+ * au-dessus et sa valeur en gros à droite, ce qui convient à un curseur
+ * seul (la vitesse de la voix) mais empilait trois pavés identiques
+ * ici.
+ */
+function Curseur({
+  label, min, max, step, value, onChange,
+}: {
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <label className="chargeligne">
+      <span>{label}</span>
+      <input
+        type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <b>{value}</b>
+    </label>
+  );
+}
+
+/**
+ * Le temps que la journée réglée demande.
+ *
+ * Un mot nouveau entraîne environ cinq révisions dans les semaines qui
+ * suivent : une fois le rythme installé, la journée pèse les nouveaux
+ * plus cinq fois les nouveaux, plafonnés par le maximum de révisions.
+ * Sept secondes par carte, arrondi aux cinq minutes.
+ *
+ * C'est une estimation, et elle se dit comme telle. Annoncée comme une
+ * promesse, elle se retournerait contre l'application le jour où elle
+ * tombe à côté.
+ */
+function tempsDit(s: Settings): string {
+  if (s.newPerDay === 0) {
+    return 'Aucun nouveau mot : il ne reste que les révisions déjà '
+      + 'lancées, de moins en moins nombreuses.';
+  }
+  const revisions = Math.min(s.newPerDay * 5, s.reviewsPerDay);
+  const cartes = s.newPerDay + revisions;
+  const minutes = Math.max(5, Math.round((cartes * 7) / 60 / 5) * 5);
+  return `Environ ${cartes} cartes par jour, soit ${minutes} minutes, `
+    + 'une fois le rythme installé.';
 }
 
 /**
@@ -385,26 +448,36 @@ export function Account({
 
       {tiroir === 'charge' && (
         <Tiroir titre="Charge de travail" onFermer={() => setTiroir(null)}>
-          <Slider
-            label="Nouveaux mots par jour"
-            hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
-            min={0} max={60} step={5} value={settings.newPerDay}
-            onChange={(v) => onSettings({ ...settings, newPerDay: v })}
-          />
-          <Slider
-            label="Révisions maximum par jour"
-            min={20} max={200} step={10} value={settings.reviewsPerDay}
-            onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
-          />
-          <Slider
-            label="Cartes par session"
-            hint="Pour découper la journée en plusieurs passages courts."
-            min={10} max={60} step={5} value={settings.cardsPerSession}
-            onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
-          />
-          <p className="hint">
-            Ces réglages s’appliquent à tous les paquets, sauf à ceux qui ont
-            les leurs. Un paquet se particularise depuis son propre écran.
+          {/* La journée réglée, dite en une phrase : on voit ce qu'on
+              fabrique avant de toucher aux curseurs. */}
+          <p className="chargephrase">
+            <b>{settings.newPerDay}</b> nouveaux mots par jour,{' '}
+            <b>{settings.reviewsPerDay}</b> révisions au plus, par passages
+            de <b>{settings.cardsPerSession}</b> cartes.
+          </p>
+          <p className="chargetemps">{tempsDit(settings)}</p>
+          <div className="chargelist">
+            <Curseur
+              label="Nouveaux mots"
+              min={0} max={60} step={5} value={settings.newPerDay}
+              onChange={(v) => onSettings({ ...settings, newPerDay: v })}
+            />
+            <Curseur
+              label="Révisions max."
+              min={20} max={200} step={10} value={settings.reviewsPerDay}
+              onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
+            />
+            <Curseur
+              label="Cartes / passage"
+              min={10} max={60} step={5} value={settings.cardsPerSession}
+              onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
+            />
+          </div>
+          <p className="hint chargenote">
+            Un nouveau mot entraîne environ cinq révisions dans les semaines
+            qui suivent. Ces réglages valent pour tous les paquets, sauf ceux
+            qui ont les leurs — un paquet se particularise depuis son propre
+            écran.
           </p>
         </Tiroir>
       )}
