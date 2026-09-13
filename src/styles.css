@@ -3392,3 +3392,29 @@ label.switch input {
   padding-bottom: max(calc(22px + env(safe-area-inset-bottom)), 30px);
   overscroll-behavior: contain;
 }
+/* ==================================================================
+   CHANTIER 49 — le tiroir rogné par la barre d'onglets
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 46.
+   Deux lignes, et le vrai correctif est dans \`tiroir.tsx\`.
+   ================================================================== */
+
+/*
+ * \`will-change\` prévient le navigateur qu'un élément va bouger, pour
+ * qu'il prépare son affichage. Je l'avais posé sur \`.screen\` au
+ * chantier 45 pour les transitions — et il a un effet de bord que je
+ * n'ai pas vu : il fait de l'écran un REPÈRE pour ses enfants fixes, et
+ * un calque à part. Le voile du tiroir, enfant de l'écran, s'est donc
+ * mis à se caler sur la hauteur de la liste défilante au lieu de celle
+ * du téléphone ; et la barre d'onglets, restée à la racine, est passée
+ * devant lui malgré son rang supérieur. D'où le tiroir coupé net au
+ * bord de la barre.
+ *
+ * Le tiroir est désormais posé à la racine du document (voir
+ * \`tiroir.tsx\`), ce qui suffirait. On retire quand même la promesse :
+ * elle ne gagnait rien — une animation de 300 ms est de toute façon
+ * préparée par le navigateur — et elle laisserait le même piège tendu
+ * pour le prochain élément fixe qu'un écran contiendra.
+ */
+.screen.ecran-avance,
+.screen.ecran-recule { will-change: auto; }
