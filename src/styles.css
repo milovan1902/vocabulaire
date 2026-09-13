@@ -3123,3 +3123,81 @@ label.switch input {
 
 @keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   CHANTIER 41 — les icônes des Réglages, et le tiroir de la charge
+
+   À COLLER À LA FIN de src/styles.css, APRÈS le bloc du chantier 39.
+   Il ne le remplace pas : il ne fait que corriger une taille et
+   ajouter le tiroir.
+   ================================================================== */
+
+/* Le carré d'attente suit les icônes, qui passent à 40 pixels. La
+   ligne, elle, ne bouge pas : elle fait 64 de haut, dont 40 utiles
+   entre ses marges de 12, et c'est son texte sur deux lignes qui
+   fixait déjà cette hauteur. L'icône y flottait. */
+.reglig-attente { width: 40px; height: 40px; }
+
+/* ==================================================================
+   Le tiroir « Charge de travail »
+
+   Trois curseurs de même forme empilés, chacun avec son libellé
+   au-dessus et sa valeur en gros à droite : rien ne disait lequel des
+   trois nombres compte, ni ce que les trois fabriquent ensemble.
+
+   Le tiroir s'ouvre maintenant sur la phrase de la journée réglée,
+   puis le temps qu'elle demande, puis les trois curseurs en une ligne
+   chacun. Les réglages, leurs bornes et leur effet n'ont pas changé.
+   ================================================================== */
+.chargephrase {
+  margin: 0 0 9px; padding: 14px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  font-family: var(--serif); font-size: 16.5px; line-height: 1.55;
+  color: var(--ink); text-wrap: pretty;
+}
+/* Les trois nombres en or : ce sont eux qu'on vient lire. Le serif ne
+   passe pas en gras pour autant — la couleur suffit. */
+.chargephrase b {
+  font-weight: 400; font-variant-numeric: tabular-nums;
+  color: var(--chalk-ink);
+}
+
+/* Le temps annoncé. En gris et au-dessous : une estimation, pas une
+   promesse. */
+.chargetemps {
+  margin: 0 0 18px;
+  font-size: 12.5px; line-height: 1.5; color: var(--grey);
+}
+
+.chargelist { display: flex; flex-direction: column; gap: 14px; }
+
+/* Nom, rail, valeur, sur une ligne. Le <label> entier fait 44 pixels
+   de haut : toute la ligne est une cible, pas seulement le rail. */
+.chargeligne {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 44px; cursor: pointer;
+}
+.chargeligne > span {
+  flex: none; width: 104px;
+  font-size: 12.5px; line-height: 1.3; color: var(--ink-soft);
+}
+.chargeligne input[type='range'] {
+  flex: 1; min-width: 0; accent-color: var(--chalk);
+}
+.chargeligne input[type='range']:focus-visible {
+  outline: 2px solid var(--chalk); outline-offset: 3px;
+}
+.chargeligne b {
+  flex: none; width: 40px; text-align: right;
+  font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+}
+
+/* L'explication tombe en fin de tiroir, séparée par un filet, au lieu
+   de s'intercaler entre un nom et sa commande. `.sheet` est nécessaire
+   pour passer devant `.sheet .hint` du chantier 39. */
+.sheet .chargenote {
+  margin: 18px 0 0; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
