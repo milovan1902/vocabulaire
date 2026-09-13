@@ -1,10 +1,21 @@
 /**
- * Onglet « Mes progrès ».
+ * Onglet « Mes progrès » : un encart, deux lignes, trois tiroirs.
  *
- * Ce que l'écran raconte, dans cet ordre : combien de mots sont acquis,
- * depuis combien de temps on s'y tient, quels jours, et où en est chaque
- * paquet. Le total d'abord, le détail ensuite — jamais l'inverse : un
- * écran de chiffres qui commence par le détail ne se lit pas.
+ * CHANTIER 42 — l'écran prend la forme des Réglages. Trois encarts :
+ * « Mes mots », « Mon calendrier », « Mes paquets ». Chacun s'ouvre sur
+ * son détail, et rien n'est perdu — les chiffres, le calendrier, la
+ * courbe et les barres par paquet sont les blocs d'avant, déplacés.
+ *
+ * Une différence avec les Réglages, et elle est volontaire : on vient
+ * REGARDER cet écran, pas y agir. Un onglet de progrès entièrement
+ * replié ne montrerait plus rien. « Mes mots » garde donc son nombre à
+ * l'écran — c'est la raison d'ouvrir l'onglet, et le faire payer d'un
+ * geste serait absurde. Les deux autres lignes disent leur valeur à
+ * droite, comme les Réglages : la série, et le nombre de paquets.
+ *
+ * Ce que l'écran raconte n'a pas changé d'ordre : combien de mots sont
+ * acquis, depuis combien de temps on s'y tient, et où en est chaque
+ * paquet. Le total d'abord, le détail ensuite — jamais l'inverse.
  *
  * Tous les chiffres viennent du même endroit (`progressStats`) et le
  * calendrier comme les compteurs lisent la même liste de dates
@@ -18,6 +29,7 @@ import { firstDay, liveStreak, totalWorked, workedSet } from '../engine/streak';
 import { courbe, monthLabel } from '../engine/jalons';
 import { masteryLabel } from '../engine/mastery';
 import { dureeLabel, loadProgressStats, type ProgressStats } from './progressStats';
+import { Ligne, Tiroir } from './tiroir';
 
 const MOIS_NOMS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
   'août', 'septembre', 'octobre', 'novembre', 'décembre'];
@@ -26,6 +38,9 @@ const JOURS_COURTS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 /** Périmètre du cercle de rayon 15 dans le repère 36×36 de l'anneau. */
 const C = 2 * Math.PI * 15;
+
+/** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
+type Tiroirs = null | 'mots' | 'calendrier' | 'paquets';
 
 /**
  * Le vert d'une barre d'avancement : clair au départ, profond à l'arrivée.
@@ -77,6 +92,27 @@ function grilleDuMois(
   return cases;
 }
 
+/**
+ * L'anneau des mots acquis. Le pourcentage se lit au centre — un chiffre,
+ * pas un mot : « En bonne voie » ne tient pas dans 58 pixels. Le mot,
+ * lui, se lit dans le tiroir, à côté de l'anneau.
+ */
+function Anneau({ percent, taille }: { percent: number; taille: number }) {
+  return (
+    <span className="progring" style={{ width: taille, height: taille }} aria-hidden="true">
+      <svg className="ring" viewBox="0 0 36 36">
+        <circle className="ring-bg" cx="18" cy="18" r="15" />
+        <circle
+          className="ring-fg"
+          cx="18" cy="18" r="15"
+          strokeDasharray={`${(C * Math.min(percent, 100)) / 100} ${C}`}
+        />
+      </svg>
+      <b>{percent} %</b>
+    </span>
+  );
+}
+
 export function Progress({
   decks, settings, streak,
 }: {
@@ -87,6 +123,7 @@ export function Progress({
 }) {
   const [stats, setStats] = useState<ProgressStats | null>(null);
   const [moisRecule, setMoisRecule] = useState(0);
+  const [tiroir, setTiroir] = useState<Tiroirs>(null);
 
   useEffect(() => {
     let alive = true;
@@ -125,150 +162,200 @@ export function Progress({
   }));
   const trace = xy.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
 
+  /*
+   * Ce que les deux lignes affichent à droite. « Série à lancer » est un
+   * état, pas un vide : « 0 jour » se lirait comme une panne.
+   */
+  const serieDite = serie === 0 ? 'Série à lancer' : `${serie} jour${serie > 1 ? 's' : ''}`;
+  const paquetsDits = `${stats.rows.length} paquet${stats.rows.length > 1 ? 's' : ''}`;
+
   return (
     <>
       <h2 className="screen-title">Mes progrès</h2>
 
-      <div className="prog-tete">
-        <div className="prog-grand">
-          <span className="label">Mots acquis</span>
-          <b>{stats.acquis}</b>
-        </div>
-        <span className="prog-anneau" aria-hidden="true">
-          <svg className="ring" viewBox="0 0 36 36">
-            <circle className="ring-bg" cx="18" cy="18" r="15" />
-            <circle
-              className="ring-fg"
-              cx="18" cy="18" r="15"
-              strokeDasharray={`${(C * Math.min(stats.percent, 100)) / 100} ${C}`}
-            />
-          </svg>
-          <b>{masteryLabel(stats.percent)}</b>
-        </span>
-      </div>
-      <p className="hint">
-        Sur {stats.motsEnJeu.toLocaleString('fr-FR')} mots en jeu.
-        {' '}{stats.enCours} sont en cours d’apprentissage.
-      </p>
-
-      <div className="prog-compteurs">
-        <span>
-          <b>{serie}</b>
-          <small>jour{serie > 1 ? 's' : ''} d’affilée</small>
-        </span>
-        <span>
-          <b>{streak.best}</b>
-          <small>meilleure série</small>
-        </span>
-        <span>
-          <b>{total}</b>
-          <small>jours travaillés</small>
-        </span>
-      </div>
-
-      <div className="prog-moisbar">
-        <button
-          className="btn-rond"
-          onClick={() => setMoisRecule((v) => Math.min(v + 1, Math.max(moisMin, 0)))}
-          disabled={recul >= moisMin}
-          aria-label="Mois précédent"
-        >
-          ‹
-        </button>
-        <b>{MOIS_NOMS[vue.getMonth()]} {vue.getFullYear()}</b>
-        <button
-          className="btn-rond"
-          onClick={() => setMoisRecule((v) => Math.max(0, v - 1))}
-          disabled={recul === 0}
-          aria-label="Mois suivant"
-        >
-          ›
-        </button>
-      </div>
-
-      <div className="prog-cal">
-        {JOURS_COURTS.map((j, i) => (
-          <small key={i} className="prog-cal-head">{j}</small>
-        ))}
-        {cases.map((c) => (
-          <span
-            key={c.key}
-            className={
-              'prog-jour'
-              + (c.jour === null ? ' vide' : '')
-              + (c.fait ? ' on' : '')
-              + (c.horsPeriode && !c.fait ? ' hors' : '')
-              + (c.aujourdhui ? ' now' : '')
-            }
-          >
-            {c.jour ?? ''}
+      <div className="reglist">
+        {/* L'encart des mots garde son nombre à l'écran : c'est la
+            réponse qu'on venait chercher. Il s'ouvre sur la courbe. */}
+        <button className="progmots" onClick={() => setTiroir('mots')}>
+          <img src="/ico-mots.png" alt="" width={40} height={40} />
+          <span>
+            <span className="progmots-nom">Mes mots</span>
+            <span className="progmots-ligne">
+              <b>{stats.acquis}</b>
+              <small>acquis</small>
+            </span>
+            <small>
+              sur {stats.motsEnJeu.toLocaleString('fr-FR')} en jeu
+              {' · '}{stats.enCours} en cours
+            </small>
           </span>
-        ))}
-      </div>
-      <p className="hint">
-        {faitsDuMois} jour{faitsDuMois > 1 ? 's' : ''} travaillé{faitsDuMois > 1 ? 's' : ''}
-        {' '}en {MOIS_NOMS[vue.getMonth()]}
-        {debut ? `, ${total} depuis le début` : ''}.
-      </p>
+          <Anneau percent={stats.percent} taille={58} />
+          <i aria-hidden="true">›</i>
+        </button>
 
-      <p className="rayon-label">Les mots acquis, mois par mois</p>
-      {points.length < 2 ? (
-        <p className="hint">
-          Le premier relevé est fait. La courbe se dessinera au fil des mois :
-          le palier d’un mot dit où il en est, pas quand il y est arrivé — le
-          passé d’avant aujourd’hui ne peut donc pas être reconstitué.
-        </p>
-      ) : (
-        <>
-          <div className="prog-courbe">
-            <svg viewBox="0 0 320 100" preserveAspectRatio="none" aria-hidden="true">
-              <path d={`${trace} L320 96 L0 96 Z`} className="aire" />
-              <path d={trace} className="trait" vectorEffect="non-scaling-stroke" />
-            </svg>
-            {xy.map((p) => (
-              <b
-                key={p.month}
-                className="prog-courbe-n"
-                style={{
-                  left: `${Math.min(94, Math.max(6, (100 * p.x) / 320))}%`,
-                  bottom: `${100 - p.y + 7}px`,
-                }}
-              >
-                {p.acquis}
-              </b>
-            ))}
+        <Ligne
+          icone="/ico-calendrier.png"
+          titre="Mon calendrier"
+          sous="La série, et les jours travaillés."
+          valeur={serieDite}
+          onClick={() => setTiroir('calendrier')}
+        />
+        {/* Même icône que l'onglet « Paquets » : c'est la même chose
+            qu'on désigne, et deux dessins pour un objet se paieraient. */}
+        <Ligne
+          icone="/tab-paquets.png"
+          titre="Mes paquets"
+          sous="Où en est chacun, paquet par paquet."
+          valeur={paquetsDits}
+          onClick={() => setTiroir('paquets')}
+        />
+      </div>
+
+      {tiroir === 'mots' && (
+        <Tiroir titre="Mes mots" onFermer={() => setTiroir(null)}>
+          <div className="prog-tete">
+            <div className="prog-grand">
+              <span className="label">Mots acquis</span>
+              <b>{stats.acquis}</b>
+            </div>
+            <span className="progmots-etat">
+              <Anneau percent={stats.percent} taille={54} />
+              <small>{masteryLabel(stats.percent)}</small>
+            </span>
           </div>
-          <div className="prog-courbe-axe">
-            {xy.map((p) => <small key={p.month}>{monthLabel(p.month)}</small>)}
-          </div>
-        </>
+          <p className="hint">
+            Sur {stats.motsEnJeu.toLocaleString('fr-FR')} mots en jeu.
+            {' '}{stats.enCours} sont en cours d’apprentissage.
+          </p>
+
+          <p className="rayon-label">Les mots acquis, mois par mois</p>
+          {points.length < 2 ? (
+            <p className="hint">
+              Le premier relevé est fait. La courbe se dessinera au fil des
+              mois : le palier d’un mot dit où il en est, pas quand il y est
+              arrivé — le passé d’avant aujourd’hui ne peut donc pas être
+              reconstitué.
+            </p>
+          ) : (
+            <>
+              <div className="prog-courbe">
+                <svg viewBox="0 0 320 100" preserveAspectRatio="none" aria-hidden="true">
+                  <path d={`${trace} L320 96 L0 96 Z`} className="aire" />
+                  <path d={trace} className="trait" vectorEffect="non-scaling-stroke" />
+                </svg>
+                {xy.map((p) => (
+                  <b
+                    key={p.month}
+                    className="prog-courbe-n"
+                    style={{
+                      left: `${Math.min(94, Math.max(6, (100 * p.x) / 320))}%`,
+                      bottom: `${100 - p.y + 7}px`,
+                    }}
+                  >
+                    {p.acquis}
+                  </b>
+                ))}
+              </div>
+              <div className="prog-courbe-axe">
+                {xy.map((p) => <small key={p.month}>{monthLabel(p.month)}</small>)}
+              </div>
+            </>
+          )}
+        </Tiroir>
       )}
 
-      <p className="rayon-label">Paquet par paquet</p>
-      <div className="prog-liste">
-        {stats.rows.map((r) => (
-          <span key={r.deck.id} className="prog-ligne">
-            <span className="prog-ligne-haut">
-              <b>{r.deck.name}</b>
-              <small>{r.acquis} / {r.total}</small>
+      {tiroir === 'calendrier' && (
+        <Tiroir titre="Mon calendrier" onFermer={() => setTiroir(null)}>
+          <div className="prog-compteurs">
+            <span>
+              <b>{serie}</b>
+              <small>jour{serie > 1 ? 's' : ''} d’affilée</small>
             </span>
-            <span className="prog-barre">
-              <i
-                style={{
-                  width: `${Math.max(1.5, r.percent)}%`,
-                  background: `linear-gradient(90deg, #a9dcc2, ${vert(r.percent / 60)})`,
-                }}
-              />
+            <span>
+              <b>{streak.best}</b>
+              <small>meilleure série</small>
             </span>
-          </span>
-        ))}
-      </div>
+            <span>
+              <b>{total}</b>
+              <small>jours travaillés</small>
+            </span>
+          </div>
 
-      <p className="hint prog-pied">
-        {stats.revisions.toLocaleString('fr-FR')} cartes revues depuis le début,
-        soit environ {dureeLabel(stats.minutes)} de travail. Le temps est
-        déduit du nombre de cartes, jamais chronométré.
-      </p>
+          <div className="prog-moisbar">
+            <button
+              className="btn-rond"
+              onClick={() => setMoisRecule((v) => Math.min(v + 1, Math.max(moisMin, 0)))}
+              disabled={recul >= moisMin}
+              aria-label="Mois précédent"
+            >
+              ‹
+            </button>
+            <b>{MOIS_NOMS[vue.getMonth()]} {vue.getFullYear()}</b>
+            <button
+              className="btn-rond"
+              onClick={() => setMoisRecule((v) => Math.max(0, v - 1))}
+              disabled={recul === 0}
+              aria-label="Mois suivant"
+            >
+              ›
+            </button>
+          </div>
+
+          <div className="prog-cal">
+            {JOURS_COURTS.map((j, i) => (
+              <small key={i} className="prog-cal-head">{j}</small>
+            ))}
+            {cases.map((c) => (
+              <span
+                key={c.key}
+                className={
+                  'prog-jour'
+                  + (c.jour === null ? ' vide' : '')
+                  + (c.fait ? ' on' : '')
+                  + (c.horsPeriode && !c.fait ? ' hors' : '')
+                  + (c.aujourdhui ? ' now' : '')
+                }
+              >
+                {c.jour ?? ''}
+              </span>
+            ))}
+          </div>
+          <p className="hint">
+            {faitsDuMois} jour{faitsDuMois > 1 ? 's' : ''} travaillé{faitsDuMois > 1 ? 's' : ''}
+            {' '}en {MOIS_NOMS[vue.getMonth()]}
+            {debut ? `, ${total} depuis le début` : ''}.
+          </p>
+        </Tiroir>
+      )}
+
+      {tiroir === 'paquets' && (
+        <Tiroir titre="Mes paquets" onFermer={() => setTiroir(null)}>
+          <div className="prog-liste">
+            {stats.rows.map((r) => (
+              <span key={r.deck.id} className="prog-ligne">
+                <span className="prog-ligne-haut">
+                  <b>{r.deck.name}</b>
+                  <small>{r.acquis} / {r.total}</small>
+                </span>
+                <span className="prog-barre">
+                  <i
+                    style={{
+                      width: `${Math.max(1.5, r.percent)}%`,
+                      background: `linear-gradient(90deg, #a9dcc2, ${vert(r.percent / 60)})`,
+                    }}
+                  />
+                </span>
+              </span>
+            ))}
+          </div>
+
+          <p className="hint prog-pied">
+            {stats.revisions.toLocaleString('fr-FR')} cartes revues depuis le
+            début, soit environ {dureeLabel(stats.minutes)} de travail. Le temps
+            est déduit du nombre de cartes, jamais chronométré.
+          </p>
+        </Tiroir>
+      )}
     </>
   );
 }
