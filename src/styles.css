@@ -3286,3 +3286,18 @@ label.switch input {
 .sheet .rayon-label { margin: 18px 0 8px; }
 .sheet .prog-liste { margin-top: 0; }
 .sheet .prog-pied { margin-bottom: 0; }
+/* ==================================================================
+   CHANTIER 44 — correctif d'affichage de l'anneau
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 42.
+
+   Le pourcentage au centre de l'anneau ne doit jamais se plier : à
+   l'étroit, il vaut mieux qu'il dépasse en largeur — ce qui n'arrive
+   plus, « 100 % » étant le plus long — que de casser sur deux lignes
+   et de déformer la ligne entière.
+   ================================================================== */
+.progring b { white-space: nowrap; font-size: 11.5px; }
+
+/* `.progmots-etat` du chantier 42 ne sert plus : le tiroir n'affiche
+   plus le palier à côté de l'anneau. La règle peut rester, elle ne
+   s'applique à rien. */
