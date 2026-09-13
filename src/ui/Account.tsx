@@ -1,6 +1,10 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 42 — `Ligne` et `Tiroir` déménagent dans `tiroir.tsx` :
+ * « Mes progrès » adopte la même forme et lit les mêmes briques. Rien
+ * d'autre ne change dans cet écran.
+ *
  * CHANTIER 41 — deux retouches. Les icônes passent de 34 à 40 pixels :
  * la ligne en fait 64, dont 40 utiles entre ses marges, et c'est le
  * texte sur deux lignes qui fixait déjà sa hauteur — l'icône y flottait.
@@ -50,47 +54,17 @@
  * atteint par les onglets.
  */
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 import type { Classe, Settings } from '../domain/types';
 import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
+import { Ligne, Tiroir } from './tiroir';
 import { AccountPanel } from './AccountPanel';
 import type { Auth } from './useAuth';
 import type { Streak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
 import type { Theme } from './theme';
 import { THEME_LABELS, setTheme, themeChoisi } from './theme';
-
-/**
- * Une ligne de la table des matières.
- *
- * `icone` est un chemin de `public/` : les six lignes en ont une depuis
- * le chantier 40. Le carré en attente reste pour une ligne à venir.
- */
-function Ligne({
-  icone, titre, sous, valeur, onClick,
-}: {
-  icone?: string;
-  titre: string;
-  sous: string;
-  valeur: string;
-  onClick: () => void;
-}) {
-  return (
-    <button className="reglig" onClick={onClick}>
-      {icone
-        ? <img src={icone} alt="" width={40} height={40} />
-        : <span className="reglig-attente" aria-hidden="true" />}
-      <span>
-        <b>{titre}</b>
-        <small>{sous}</small>
-      </span>
-      <em>{valeur}</em>
-      <i aria-hidden="true">›</i>
-    </button>
-  );
-}
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -146,35 +120,6 @@ function tempsDit(s: Settings): string {
   const minutes = Math.max(5, Math.round((cartes * 7) / 60 / 5) * 5);
   return `Environ ${cartes} cartes par jour, soit ${minutes} minutes, `
     + 'une fois le rythme installé.';
-}
-
-/**
- * Le tiroir. Il monte du bas et laisse voir l'écran derrière : le
- * réglage est une parenthèse, pas une destination. On en sort par le
- * fond, par la poignée, ou en choisissant.
- */
-function Tiroir({
-  titre, onFermer, children,
-}: {
-  titre: string;
-  onFermer: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div className="sheet-fond" onClick={onFermer}>
-      <div
-        className="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-label={titre}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button className="sheet-poignee" aria-label="Fermer" onClick={onFermer} />
-        <h3>{titre}</h3>
-        {children}
-      </div>
-    </div>
-  );
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
