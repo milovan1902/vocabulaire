@@ -18,7 +18,7 @@ import type { ReactNode } from 'react';
  * `icone` est un chemin de `public/` : les six lignes en ont une depuis
  * le chantier 40. Le carré en attente reste pour une ligne à venir.
  */
-function Ligne({
+export function Ligne({
   icone, titre, sous, valeur, onClick,
 }: {
   icone?: string;
@@ -47,7 +47,7 @@ function Ligne({
  * réglage est une parenthèse, pas une destination. On en sort par le
  * fond, par la poignée, ou en choisissant.
  */
-function Tiroir({
+export function Tiroir({
   titre, onFermer, children,
 }: {
   titre: string;
