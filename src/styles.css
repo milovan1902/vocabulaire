@@ -3346,3 +3346,49 @@ label.switch input {
 @media (prefers-reduced-motion: reduce) {
   .screen.ecran-avance, .screen.ecran-recule { animation: none; }
 }
+/* ==================================================================
+   CHANTIER 46 — le tiroir qui dépassait sous le bas de l'écran
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 42.
+   Deux propriétés corrigées, rien d'autre : ni le dessin du tiroir, ni
+   son contenu, ni les lignes des Réglages.
+   ================================================================== */
+
+/*
+ * `inset: 0` place le bas du voile au bas du « layout viewport » — et sur
+ * iPhone, ce repère ignore la barre d'outils du navigateur : il s'arrête
+ * plus bas que ce qu'on voit. Le tiroir, collé à ce bas-là, passait donc
+ * sous la barre de Safari, d'une cinquantaine de pixels. Sur un
+ * ordinateur, où il n'y a pas de barre basse, le défaut ne se voyait pas
+ * — d'où un tiroir juste à la maquette et coupé sur le téléphone.
+ *
+ * `100dvh` est la hauteur RÉELLEMENT visible, et elle suit les barres
+ * quand elles se replient au défilement. Le voile s'arrête maintenant
+ * où l'écran s'arrête, et le tiroir avec lui.
+ *
+ * `100vh` reste écrit au-dessus comme repli : un navigateur qui ne
+ * connaîtrait pas `dvh` ignore la seconde ligne et retrouve le
+ * comportement d'avant, jamais une page cassée.
+ */
+.sheet-fond {
+  inset: 0 0 auto 0;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/*
+ * Une marge basse plancher de 30 pixels. La barre d'outils de Safari
+ * n'est pas une « zone sûre » au sens du système : `env(safe-area-inset-bottom)`
+ * vaut zéro sur un iPhone en navigation normale, et le dernier bouton du
+ * tiroir se retrouvait à raser le bord. Le plancher ne s'ajoute pas à
+ * l'encoche, il la remplace quand elle est plus petite.
+ *
+ * `overscroll-behavior` empêche le défilement d'un tiroir long de se
+ * propager à l'écran derrière lui : sur iPhone, c'est ce qui faisait
+ * réapparaître les barres du navigateur au milieu d'un réglage, et donc
+ * bouger le tiroir sous le doigt.
+ */
+.sheet {
+  padding-bottom: max(calc(22px + env(safe-area-inset-bottom)), 30px);
+  overscroll-behavior: contain;
+}
