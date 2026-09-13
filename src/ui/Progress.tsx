@@ -1,6 +1,11 @@
 /**
  * Onglet « Mes progrès » : un encart, deux lignes, trois tiroirs.
  *
+ * CHANTIER 44 — correction d'affichage : l'anneau écrivait le
+ * pourcentage brut, avec ses dix-sept décimales. Il passe par
+ * `masteryLabel`, comme partout ailleurs. Le tiroir ne répète plus ce
+ * chiffre à côté de l'anneau, où il faisait doublon.
+ *
  * CHANTIER 42 — l'écran prend la forme des Réglages. Trois encarts :
  * « Mes mots », « Mon calendrier », « Mes paquets ». Chacun s'ouvre sur
  * son détail, et rien n'est perdu — les chiffres, le calendrier, la
@@ -93,9 +98,14 @@ function grilleDuMois(
 }
 
 /**
- * L'anneau des mots acquis. Le pourcentage se lit au centre — un chiffre,
- * pas un mot : « En bonne voie » ne tient pas dans 58 pixels. Le mot,
- * lui, se lit dans le tiroir, à côté de l'anneau.
+ * L'anneau des mots acquis, avec son pourcentage au centre.
+ *
+ * CHANTIER 44 — il écrivait `{percent} %` : le nombre brut, soit
+ * « 0.17421602787456447 % » à l'écran, qui débordait de l'anneau et
+ * poussait tout le reste. `masteryLabel` est la fonction que le reste
+ * de l'application emploie depuis toujours pour ce même chiffre : elle
+ * tronque, garde une décimale sous dix pour cent, et écrit « <0,1 % »
+ * plutôt que d'arrondir à zéro un travail commencé.
  */
 function Anneau({ percent, taille }: { percent: number; taille: number }) {
   return (
@@ -108,7 +118,7 @@ function Anneau({ percent, taille }: { percent: number; taille: number }) {
           strokeDasharray={`${(C * Math.min(percent, 100)) / 100} ${C}`}
         />
       </svg>
-      <b>{percent} %</b>
+      <b>{masteryLabel(percent)}</b>
     </span>
   );
 }
@@ -218,10 +228,7 @@ export function Progress({
               <span className="label">Mots acquis</span>
               <b>{stats.acquis}</b>
             </div>
-            <span className="progmots-etat">
-              <Anneau percent={stats.percent} taille={54} />
-              <small>{masteryLabel(stats.percent)}</small>
-            </span>
+            <Anneau percent={stats.percent} taille={58} />
           </div>
           <p className="hint">
             Sur {stats.motsEnJeu.toLocaleString('fr-FR')} mots en jeu.
