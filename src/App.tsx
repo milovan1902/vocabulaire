@@ -1,5 +1,5 @@
 /** Composant racine : navigation entre les écrans. */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import type { Grade } from './domain/types';
 import { useStore, progressFor, type LoadedDeck } from './ui/useStore';
@@ -54,6 +54,33 @@ const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = 
   { name: 'progress', label: 'Mes progrès', Icone: IconProgres },
 ];
 
+/**
+ * CHANTIER 45 — LES TRANSITIONS D'ÉCRAN (option 8b, « la carte qui s'avance »)
+ *
+ * Le rang d'un écran dans l'application. Deux chiffres, deux sens :
+ *
+ * — les dizaines disent l'ÉTAGE. Les quatre onglets sont de plain-pied
+ *   (10 à 13) ; la recherche et l'écran d'un paquet sont un étage plus
+ *   bas (20, 21) ; l'éditeur et la révision plus bas encore (30, 31, 32).
+ * — les unités disent le RANG LATÉRAL dans la barre d'onglets, dans
+ *   l'ordre où ils sont affichés.
+ *
+ * Un rang qui monte, c'est avancer ; un rang qui descend, c'est revenir.
+ * L'animation n'a plus qu'à lire le signe de l'écart : aucune des vingt
+ * lignes qui appellent `setView` n'a à dire dans quel sens elle va, et
+ * aucune ne pourra donc se tromper.
+ */
+function rang(v: View): number {
+  if (v.name === 'welcome') return 0;
+  const onglet = ONGLETS.findIndex((o) => o.name === v.name);
+  if (onglet >= 0) return 10 + onglet;
+  if (v.name === 'search') return 20;
+  if (v.name === 'deck') return 21;
+  if (v.name === 'editor') return 30;
+  if (v.name === 'study') return 31;
+  return 32; // 'done'
+}
+
 export default function App() {
   const store = useStore();
   /** Carte en vol entre la liste et l'écran d'un paquet. */
@@ -66,6 +93,20 @@ export default function App() {
   const auth = useAuth(useCallback(() => { void store.refreshAll(); }, [store]));
   const [loaded, setLoaded] = useState<LoadedDeck | null>(null);
   const [queue, setQueue] = useState<SessionItem[]>([]);
+
+  /*
+   * Le sens du dernier déplacement, tenu dans des refs et calculé PENDANT
+   * le rendu : un effet arriverait après le premier peint, et l'animation
+   * aurait déjà commencé dans le mauvais sens. Le calcul est idempotent —
+   * relancer le rendu sans changer de vue ne change rien.
+   */
+  const rangPrec = useRef(rang(view));
+  const sens = useRef<'avance' | 'recule'>('avance');
+  const rangActuel = rang(view);
+  if (rangActuel !== rangPrec.current) {
+    sens.current = rangActuel > rangPrec.current ? 'avance' : 'recule';
+    rangPrec.current = rangActuel;
+  }
 
   const openDeck = useCallback(
     async (id: string) => {
@@ -225,6 +266,22 @@ export default function App() {
   const surOnglet = view.name === 'today' || view.name === 'library'
     || view.name === 'account' || view.name === 'progress';
 
+  /*
+   * La révision ne s'animera pas. Son fond est une image en `position:
+   * fixed` posée derrière la carte : pendant les 300 ms d'une animation,
+   * un parent transformé redéfinit le repère du fixe, et l'image se met à
+   * bouger avec l'écran. Entrer dans une session doit de toute façon être
+   * immédiat.
+   */
+  const anime = view.name !== 'study';
+
+  /*
+   * La clé commande le remontage, donc l'animation. Elle inclut le paquet :
+   * passer d'un paquet à un autre est un déplacement, pas une mise à jour,
+   * et sans cela l'écran changerait de contenu sans rien dire.
+   */
+  const cleEcran = view.name === 'deck' ? `deck:${loaded?.deck.id ?? ''}` : view.name;
+
   return (
     <div className={`app${surOnglet ? ' tabbed' : ''}`}>
       {zoom && <CardZoom source={zoom} onDone={() => setZoom(null)} />}
@@ -245,25 +302,22 @@ export default function App() {
             ‹
           </button>
           <h1>{title(view, loaded)}</h1>
-          {view.name === 'progress' && (
-          /*
-           * Les paquets POSSÉDÉS, pas ceux en jeu : on rend compte de tout
-           * ce qu'on a travaillé, y compris d'un paquet mis en pause depuis.
-           */
-          <Progress
-            decks={store.decks.filter((d) => store.installed.includes(d.id))}
-            settings={store.common}
-            streak={store.streak}
-          />
-        )}
-
-        {view.name === 'deck' && loaded && (
+          {view.name === 'deck' && loaded && (
             <span className="count">{loaded.cards.length} mots</span>
           )}
         </div>
       )}
 
-      <Screen>
+      {/*
+        * `Screen` est écrit ici à la main, le temps d'une classe et d'une
+        * clé : le composant n'accepte pas de props, et lui en ajouter
+        * obligerait à redéposer `components.tsx` pour deux attributs.
+        * Le balisage est le même — un seul <div className="screen">.
+        */}
+      <div
+        key={cleEcran}
+        className={`screen${anime ? ` ecran-${sens.current}` : ''}`}
+      >
         {view.name === 'today' && (
           <Today
             decks={store.decks}
@@ -399,7 +453,7 @@ export default function App() {
             onSaved={(id) => { void store.refreshAll(); void openDeck(id); }}
           />
         )}
-      </Screen>
+      </div>
 
       {surOnglet && (
         <nav className="tabbar">
