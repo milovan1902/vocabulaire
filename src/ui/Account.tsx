@@ -1,6 +1,9 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 40 — les cinq carrés en attente reçoivent leur illustration.
+ * Rien d'autre ne bouge : six lignes, six icônes, mêmes tiroirs.
+ *
  * CHANTIER 39 — l'écran devient une table des matières. Chaque réglage
  * est une ligne qui porte son nom, son icône et SA VALEUR ACTUELLE à
  * droite ; le détail s'ouvre au doigt. Deux raisons :
@@ -55,8 +58,8 @@ import { THEME_LABELS, setTheme, themeChoisi } from './theme';
 /**
  * Une ligne de la table des matières.
  *
- * `icone` est un chemin de `public/` ; sans lui, la ligne montre un
- * carré en attente plutôt qu'un trou — les icônes arrivent une à une.
+ * `icone` est un chemin de `public/` : les six lignes en ont une depuis
+ * le chantier 40. Le carré en attente reste pour une ligne à venir.
  */
 function Ligne({
   icone, titre, sous, valeur, onClick,
@@ -229,6 +232,7 @@ export function Account({
 
       <div className="reglist">
         <Ligne
+          icone="/ico-connexion.png"
           titre="Connexion"
           sous="Compte et sauvegardes."
           valeur={valeurs.connexion}
@@ -242,24 +246,28 @@ export function Account({
           onClick={() => setTiroir('classe')}
         />
         <Ligne
+          icone="/ico-apparence.png"
           titre="Apparence"
           sous="Clair, sombre, ou d’après le système."
           valeur={valeurs.apparence}
           onClick={() => setTiroir('apparence')}
         />
         <Ligne
+          icone="/ico-rappel.png"
           titre="Rappel quotidien"
           sous="Si la journée n’est pas faite."
           valeur={valeurs.rappel}
           onClick={() => setTiroir('rappel')}
         />
         <Ligne
+          icone="/ico-charge.png"
           titre="Charge de travail"
           sous="Nouveaux mots et révisions par jour."
           valeur={valeurs.charge}
           onClick={() => setTiroir('charge')}
         />
         <Ligne
+          icone="/ico-revision.png"
           titre="Révision"
           sous="Voix, sens des cartes, prononciation."
           valeur={valeurs.revision}
