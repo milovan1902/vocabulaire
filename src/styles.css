@@ -3201,3 +3201,88 @@ label.switch input {
   margin: 18px 0 0; padding-top: 14px;
   border-top: 1px solid var(--rule);
 }
+/* ==================================================================
+   CHANTIER 42 — « Mes progrès » prend la forme des Réglages
+
+   À COLLER À LA FIN de src/styles.css, APRÈS les blocs des chantiers
+   39 et 41. Il ne les remplace pas : les trois encarts réutilisent
+   `.reglist` et `.reglig` du chantier 39, et les tiroirs réutilisent
+   `.sheet`. Les blocs de l'ancien écran — `.prog-tete`,
+   `.prog-compteurs`, `.prog-cal`, `.prog-courbe`, `.prog-liste` — sont
+   ceux du chantier 34, inchangés : ils ont seulement déménagé dans les
+   tiroirs, et n'ont besoin ici que de quelques marges.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   L'encart des mots
+
+   Les deux autres lignes cachent leur détail ; celle-ci garde son
+   nombre à l'écran. On vient regarder cet onglet, pas y agir : faire
+   payer un geste à la seule chose qu'on venait voir serait absurde.
+   ------------------------------------------------------------------ */
+.progmots {
+  display: flex; align-items: flex-start; gap: 13px;
+  width: 100%; padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.progmots:hover { background: var(--panel-hi); }
+.progmots:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.progmots img { display: block; flex: none; }
+.progmots > span { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.progmots-nom { font-size: 14.5px; font-weight: 600; }
+
+/* Le nombre et son mot sur la même ligne de base : « 312 acquis » se
+   lit d'un trait, alors que le mot posé dessous se lirait comme une
+   étiquette de plus. */
+.progmots-ligne { display: flex; align-items: baseline; gap: 6px; }
+.progmots-ligne b {
+  font-family: var(--serif); font-size: 40px; font-weight: 400;
+  line-height: 1; letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.progmots-ligne small { font-size: 13px; font-weight: 600; color: var(--grey); }
+.progmots > span > small { font-size: 12px; line-height: 1.35; color: var(--grey); }
+.progmots > .progring { align-self: center; }
+.progmots i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* ------------------------------------------------------------------
+   L'anneau, à deux tailles
+
+   Le même dessin qu'au chantier 34, mais dimensionné par le composant
+   (58 dans l'encart, 54 dans le tiroir) au lieu d'être figé dans la
+   feuille. Au centre : le pourcentage, un chiffre — « En bonne voie »
+   ne tient pas dans 58 pixels. Le mot se lit dans le tiroir, à côté.
+   ------------------------------------------------------------------ */
+.progring {
+  position: relative; flex: none; display: block;
+  color: var(--good, #4fbf95);
+}
+.progring .ring { width: 100%; height: 100%; }
+.progring b {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+
+/* ------------------------------------------------------------------
+   Les blocs d'avant, dans les tiroirs
+
+   Ils perdent leurs marges d'écran : un tiroir a déjà les siennes.
+   ------------------------------------------------------------------ */
+.progmots-etat { display: flex; align-items: center; gap: 9px; flex: none; }
+.progmots-etat small {
+  max-width: 9ch; font-size: 12.5px; line-height: 1.3; color: var(--ink-soft);
+}
+.sheet .prog-tete { margin-top: 0; }
+/* 62 pixels de chiffre tenaient dans un écran ; dans un tiroir qui
+   porte aussi une courbe, 46 suffisent. */
+.sheet .prog-grand b { font-size: 46px; }
+.sheet .prog-compteurs { margin-top: 0; }
+.sheet .rayon-label { margin: 18px 0 8px; }
+.sheet .prog-liste { margin-top: 0; }
+.sheet .prog-pied { margin-bottom: 0; }
