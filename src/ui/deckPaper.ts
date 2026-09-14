@@ -144,6 +144,21 @@ const PAR_NOM: Record<string, number> = {
   'decrire et comparer 5e': 2,
   'decrire et comparer': 2,
 
+  /*
+   * CHANTIER 61 — le miel aussi pour « Les verbes courants — 5e ».
+   * Demandé, et livré tel quel ; la réserve est écrite dans le
+   * LISEZ-MOI plutôt qu'ici.
+   *
+   * Le rayon « Vocabulaire de base » compte désormais QUATRE cartes sur
+   * le même parchemin. Le papier n'y distingue donc plus rien : tout
+   * repose sur les dessins — une bulle canard, une bulle brique, un
+   * sticker bleu nuit, un mot multicolore. Ces quatre-là se séparent
+   * encore, mais la marge est consommée : une cinquième carte miel dans
+   * ce rayon ne serait plus lisible.
+   */
+  'les verbes courants 5e': 2,
+  'les verbes courants': 2,
+
   'voyage phrases': 6,
   'voyage vocabulaire': 5,
 };
