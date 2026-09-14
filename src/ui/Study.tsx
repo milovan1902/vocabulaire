@@ -48,14 +48,52 @@ export function Study({
   const front = current ? (settings.reversed ? current.card.en : current.card.fr) : '';
   const back = current ? (settings.reversed ? current.card.fr : current.card.en) : '';
 
+  /*
+   * CHANTIER 50 — LA VOIX SUIT L'ANGLAIS, PAS LA RÉPONSE.
+   *
+   * La synthèse dit toujours `card.en` : c'est l'anglais qu'on apprend à
+   * entendre, dans un sens comme dans l'autre. Ce qui changeait, c'était
+   * le MOMENT — fixé à la révélation, quel que soit le sens.
+   *
+   * À l'endroit (FR → EN), la révélation est bien l'instant où l'anglais
+   * apparaît : rien à changer.
+   *
+   * À l'envers (EN → FR), l'anglais est la QUESTION. La voix arrivait
+   * donc un temps trop tard : l'application prononçait « the
+   * headquarters » au moment précis où l'on avait « le siège central »
+   * sous les yeux, et le mot anglais, lui, était resté muet pendant tout
+   * le temps où on le lisait. Or entendre et lire le mot ensemble est
+   * justement ce qu'on vient chercher en révisant dans ce sens.
+   *
+   * L'anglais se dit maintenant au moment où il s'affiche, et une seule
+   * fois par carte.
+   */
+  const anglaisEnQuestion = settings.reversed;
+
   const pronounce = useCallback(() => {
     if (current) speak(current.card.en, settings.speechRate);
   }, [current, settings.speechRate]);
 
+  /*
+   * À l'envers : la carte se présente, l'anglais se dit. La dépendance
+   * porte sur l'identifiant ET sur la position : « À revoir » réinsère
+   * la même carte plus loin dans la session, et elle doit alors se dire
+   * de nouveau.
+   */
+  const carteId = current?.card.id;
+  const motAnglais = current?.card.en;
+  useEffect(() => {
+    if (!anglaisEnQuestion || !settings.autoSpeak || !motAnglais) return;
+    speak(motAnglais, settings.speechRate);
+  }, [carteId, index, motAnglais, anglaisEnQuestion, settings.autoSpeak, settings.speechRate]);
+
   const reveal = useCallback(() => {
     setRevealed(true);
-    if (settings.autoSpeak) pronounce();
-  }, [settings.autoSpeak, pronounce]);
+    /* À l'envers, l'anglais a déjà été dit à la présentation : le répéter
+       ici le collerait à la réponse française, qui n'est pas ce qu'on
+       écoute. Le bouton « Écouter » reste là pour le redemander. */
+    if (settings.autoSpeak && !anglaisEnQuestion) pronounce();
+  }, [settings.autoSpeak, anglaisEnQuestion, pronounce]);
 
   const grade = useCallback(
     async (g: Grade) => {
@@ -129,6 +167,20 @@ export function Study({
           <>
             <p className="ask">{settings.reversed ? 'En français ?' : 'En anglais ?'}</p>
             <p className="word">{front}</p>
+            {/*
+              * Le mot affiché est l'anglais : on peut le réécouter avant de
+              * répondre, autant de fois qu'on veut. `stopPropagation` est
+              * indispensable — toute la zone du mot révèle la réponse, et
+              * demander à entendre n'est pas demander à voir.
+              */}
+            {anglaisEnQuestion && (
+              <button
+                className="speak"
+                onClick={(e) => { e.stopPropagation(); pronounce(); }}
+              >
+                Écouter
+              </button>
+            )}
           </>
         ) : (
           <>
