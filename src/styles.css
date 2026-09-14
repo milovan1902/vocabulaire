@@ -3418,3 +3418,44 @@ label.switch input {
  */
 .screen.ecran-avance,
 .screen.ecran-recule { will-change: auto; }
+/* ==================================================================
+   Chantier 51 — les deux périmètres de « Mes mots »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * Deux blocs de même anatomie dans un seul tiroir : c'est le filet qui
+ * dit qu'ils se comparent, pas un titre. Le premier bloc ne porte pas de
+ * marge haute — le tiroir en a déjà une sous son titre.
+ */
+.prog-perim + .prog-perim {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.prog-perim .rayon-label { margin-top: 0; }
+.prog-perim .prog-tete { margin-top: 2px; }
+.prog-perim .statbar { margin-top: 16px; }
+.prog-perim .hint { margin-bottom: 0; }
+
+/* Les notes de lecture du tiroir : plus basses que le bloc qu'elles
+   commentent, et le gras y sert à pointer un mot, pas à crier. */
+.prog-perim-note { margin-top: 16px; }
+.prog-perim-note b { font-weight: 650; color: var(--ink-soft); }
+
+/* « En pause » dans la liste des paquets. L'étiquette vient AVANT le
+   compteur, qui reste collé à droite : on lit d'abord le nom, puis l'état,
+   puis le chiffre. */
+.prog-ligne-haut em {
+  flex: none;
+  margin-right: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
