@@ -28,6 +28,7 @@ import voyagePhrases from '../assets/packs/voyage-phrases.png';
 import structures5e from '../assets/packs/5e-grammaire.png';
 import phrases5e from '../assets/packs/5e-phrases.png';
 import mots5e from '../assets/packs/5e-vocabulaire.png';
+import adjectifs5e from '../assets/packs/5e-adjectifs.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -178,6 +179,23 @@ const ILLUSTRATIONS: Record<string, string> = {
   '5e-vocabulaire': mots5e,
   'mots-de-tous-les-jours': mots5e,
   'mots-de-tous-les-jours-5e': mots5e,
+
+  /*
+   * CHANTIER 60 — « Décrire et comparer — 5e ».
+   *
+   * Premier visuel qui n'est pas un couple : ce paquet n'a pas
+   * d'homologue en sixième, le dessin est donc le vôtre, sans ascendance.
+   *
+   * Il sort aussi du lot par sa facture — un sticker à fond bleu nuit,
+   * là où les neuf autres sont des sujets détourés sur fond clair. Sur le
+   * parchemin miel, il pèse donc plus lourd que ses voisins, et il porte
+   * un mot (« COMPARE ») qui ne se lira pas à 54 pixels. Les deux loupes
+   * et leurs graphiques, eux, tiennent : c'est la forme, pas le texte,
+   * qui fait reconnaître la carte.
+   */
+  '5e-adjectifs': adjectifs5e,
+  'decrire-et-comparer': adjectifs5e,
+  'decrire-et-comparer-5e': adjectifs5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
