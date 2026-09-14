@@ -388,9 +388,16 @@ export default function App() {
           /*
            * Les paquets POSSÉDÉS, pas ceux en jeu : on rend compte de tout
            * ce qu'on a travaillé, y compris d'un paquet mis en pause depuis.
+           *
+           * CHANTIER 51 — `active` en plus : l'écran distingue maintenant
+           * les deux périmètres au lieu de les additionner sous un seul
+           * nom. Ce qui tourne dans la charge d'aujourd'hui, et tout ce
+           * qu'on possède. Sans cette liste, il ne pouvait pas faire la
+           * différence — c'est de là que venait le chiffre inexplicable.
            */
           <Progress
             decks={store.decks.filter((d) => store.installed.includes(d.id))}
+            active={store.active}
             settings={store.common}
             streak={store.streak}
           />
