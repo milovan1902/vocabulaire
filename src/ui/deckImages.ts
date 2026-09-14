@@ -24,6 +24,7 @@ import nombresMesures from '../assets/packs/nombres-mesures.png';
 import phrasesQuotidien from '../assets/packs/phrases-quotidien.png';
 import preterit from '../assets/packs/preterit.png';
 import voyageVocabulaire from '../assets/packs/voyage-vocabulaire.png';
+import voyagePhrases from '../assets/packs/voyage-phrases.png';
 import structures5e from '../assets/packs/5e-grammaire.png';
 
 const FOURNIS: Record<string, string> = {
@@ -90,6 +91,26 @@ const ILLUSTRATIONS: Record<string, string> = {
   'voyage-vocabulaire': voyageVocabulaire,
   'voyage-mots': voyageVocabulaire,
   'voyages-mots': voyageVocabulaire,
+
+  /*
+   * CHANTIER 55 — « Voyage — phrases » reçoit enfin le sien.
+   *
+   * Il en était privé depuis le chantier 48 pour une raison qui ne tient
+   * plus : les deux paquets de voyage se suivant dans la même liste, une
+   * illustration partagée les aurait rendus indiscernables. Ils ont
+   * maintenant deux dessins distincts — le globe et les papiers d'un
+   * côté, le globe et les bulles de dialogue de l'autre — et deux
+   * papiers différents (voir `deckPaper.ts`).
+   *
+   * Réserve à connaître : ce dessin porte du TEXTE dans ses bulles
+   * (« Hello ! », « Bonjour ! »…). À 54 pixels, la largeur de la
+   * vignette dans les listes, ces mots ne se lisent plus — il reste cinq
+   * bulles de couleur, ce qui suffit à reconnaître le paquet mais ne dit
+   * plus « des langues ». C'est le seul visuel du catalogue dans ce cas.
+   */
+  'voyage-phrases': voyagePhrases,
+  'voyages-phrases': voyagePhrases,
+  'voyage-phrase': voyagePhrases,
 
   /*
    * CHANTIER 54 — le même puzzle que « Premières structures — 6e », aux
