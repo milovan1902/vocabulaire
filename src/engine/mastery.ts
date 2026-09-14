@@ -78,6 +78,25 @@ export interface MasteryBreakdown {
   acquis: number;
 }
 
+/**
+ * Comment les cinq tas s'écrivent et se colorent.
+ *
+ * CHANTIER 51 — cette table vivait dans `Today.tsx`, qui était le seul
+ * écran à dessiner la barre des statuts. « Mes progrès » la dessine
+ * maintenant aussi : deux exemplaires de la même table auraient fini par
+ * donner deux ordres, ou deux libellés pour le même tas. L'ordre est celui
+ * du trajet d'un mot, pas celui de son importance.
+ */
+export const STATUTS = [
+  { cle: 'decouvrir', libelle: 'À découvrir', classe: 'st-decouvrir' },
+  { cle: 'reprendre', libelle: 'À reprendre', classe: 'st-reprendre' },
+  { cle: 'cours', libelle: 'En cours', classe: 'st-cours' },
+  { cle: 'presque', libelle: 'Presque acquis', classe: 'st-presque' },
+  { cle: 'acquis', libelle: 'Acquis', classe: 'st-acquis' },
+] as const satisfies ReadonlyArray<{
+  cle: keyof MasteryBreakdown; libelle: string; classe: string;
+}>;
+
 export interface DeckMastery {
   /**
    * De 0 à 100, NON arrondi.
