@@ -27,6 +27,7 @@ import voyageVocabulaire from '../assets/packs/voyage-vocabulaire.png';
 import voyagePhrases from '../assets/packs/voyage-phrases.png';
 import structures5e from '../assets/packs/5e-grammaire.png';
 import phrases5e from '../assets/packs/5e-phrases.png';
+import mots5e from '../assets/packs/5e-vocabulaire.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -151,6 +152,32 @@ const ILLUSTRATIONS: Record<string, string> = {
    */
   '5e-phrases': phrases5e,
   'phrases-de-tous-les-jours-5e': phrases5e,
+
+  /*
+   * CHANTIER 57 — la bulle de « Premiers mots », pour la cinquième.
+   *
+   * Troisième couple bâti sur la règle du chantier 56 : le dessin dit la
+   * matière, la couleur dit la classe. Même bulle, même contour bleu
+   * nuit, même crème pour les lettres ; l'aplat passe du canard à la
+   * brique.
+   *
+   * Une différence avec les deux autres couples : ce dessin PORTE un
+   * mot. « 1st words » ne pouvait pas rester sur un paquet de
+   * cinquième — il disait la classe, et la fausse. Le texte est donc
+   * redessiné en « everyday words », à la mesure de l'ancien (583 px de
+   * large, même centre optique) et dans la même hiérarchie : la première
+   * ligne plus petite que la seconde, comme « 1st » l'était.
+   *
+   * Réserve assumée : les lettres ne sont pas de la police d'origine,
+   * qui n'était pas fournie avec le fichier. C'est un grotesque large et
+   * gras, très proche à l'œil ; la différence se voit sur le « y » et le
+   * « a » si l'on compare les deux bulles côte à côte en grand. À 54 et
+   * 132 pixels — les deux seules tailles d'affichage — elle est
+   * invisible.
+   */
+  '5e-vocabulaire': mots5e,
+  'mots-de-tous-les-jours': mots5e,
+  'mots-de-tous-les-jours-5e': mots5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
