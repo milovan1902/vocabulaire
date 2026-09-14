@@ -14,6 +14,7 @@ import type { Deck, Progress, Settings } from '../domain/types';
 import { repository } from '../data/repository';
 import { deckMastery } from '../engine/mastery';
 import { noteJalon, type Jalon } from '../engine/jalons';
+import { SECONDES_PAR_CARTE } from '../engine/tempo';
 
 export interface DeckProgressRow {
   deck: Deck;
@@ -39,14 +40,6 @@ export interface ProgressStats {
   rows: DeckProgressRow[];
   jalons: Jalon[];
 }
-
-/**
- * Vingt secondes par carte, comme dans `deckSummary`.
- *
- * La même constante des deux côtés : deux estimations de durée qui ne
- * tombent pas d'accord dans la même application, c'est une de trop.
- */
-const SECONDES_PAR_CARTE = 20;
 
 export async function loadProgressStats(
   decks: Deck[],
