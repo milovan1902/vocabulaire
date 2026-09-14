@@ -1,6 +1,10 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 50 — la durée annoncée par « Charge de travail » comptait
+ * sept secondes par carte, contre vingt partout ailleurs. Elle passe par
+ * `engine/tempo`, désormais seule source du chiffre.
+ *
  * CHANTIER 42 — `Ligne` et `Tiroir` déménagent dans `tiroir.tsx` :
  * « Mes progrès » adopte la même forme et lit les mêmes briques. Rien
  * d'autre ne change dans cet écran.
@@ -59,6 +63,7 @@ import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
 import { Ligne, Tiroir } from './tiroir';
+import { minutesPour } from '../engine/tempo';
 import { AccountPanel } from './AccountPanel';
 import type { Auth } from './useAuth';
 import type { Streak } from '../engine/streak';
@@ -104,11 +109,22 @@ function Curseur({
  * Un mot nouveau entraîne environ cinq révisions dans les semaines qui
  * suivent : une fois le rythme installé, la journée pèse les nouveaux
  * plus cinq fois les nouveaux, plafonnés par le maximum de révisions.
- * Sept secondes par carte, arrondi aux cinq minutes.
  *
- * C'est une estimation, et elle se dit comme telle. Annoncée comme une
- * promesse, elle se retournerait contre l'application le jour où elle
- * tombe à côté.
+ * CHANTIER 50 — deux corrections.
+ *
+ * La durée passait par sept secondes par carte, quand tout le reste de
+ * l'application en compte vingt : le même travail s'annonçait en douze
+ * minutes ici et en quarante sur l'écran d'accueil. Elle passe par
+ * `minutesPour`, comme les trois autres endroits, et l'arrondi aux cinq
+ * minutes tombe — il ajoutait sa propre erreur à une estimation qui en a
+ * déjà une.
+ *
+ * Et la phrase dit désormais de quoi elle parle. Ce nombre n'est PAS
+ * celui de l'accueil, et il n'a pas à l'être : l'accueil compte les
+ * cartes réellement dues aujourd'hui, qui varient d'un jour à l'autre ;
+ * ici on décrit le rythme qu'on vient de régler, une fois installé. Deux
+ * questions différentes, deux réponses différentes — ce qui était
+ * fautif, c'était de ne pas le dire.
  */
 function tempsDit(s: Settings): string {
   if (s.newPerDay === 0) {
@@ -117,9 +133,8 @@ function tempsDit(s: Settings): string {
   }
   const revisions = Math.min(s.newPerDay * 5, s.reviewsPerDay);
   const cartes = s.newPerDay + revisions;
-  const minutes = Math.max(5, Math.round((cartes * 7) / 60 / 5) * 5);
-  return `Environ ${cartes} cartes par jour, soit ${minutes} minutes, `
-    + 'une fois le rythme installé.';
+  return `Une fois ce rythme installé : environ ${cartes} cartes par `
+    + `jour, soit ${minutesPour(cartes)} minutes.`;
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
@@ -420,9 +435,11 @@ export function Account({
           </div>
           <p className="hint chargenote">
             Un nouveau mot entraîne environ cinq révisions dans les semaines
-            qui suivent. Ces réglages valent pour tous les paquets, sauf ceux
-            qui ont les leurs — un paquet se particularise depuis son propre
-            écran.
+            qui suivent. Le nombre annoncé ici est celui du rythme installé :
+            l’écran d’accueil, lui, compte les cartes réellement dues
+            aujourd’hui, qui sont plus ou moins nombreuses selon les jours.
+            Ces réglages valent pour tous les paquets, sauf ceux qui ont les
+            leurs — un paquet se particularise depuis son propre écran.
           </p>
         </Tiroir>
       )}
