@@ -67,74 +67,55 @@ const PAR_NOM: Record<string, number> = {
   'le preterit': 6,
 
   /*
-   * CHANTIER 54 — le papier lilas pour « Structures et repères — 5e ».
+   * CHANTIERS 54 À 58 — LES COUPLES 6e / 5e PARTAGENT LEUR PAPIER
    *
-   * Attribué et non laissé au hachage : le repli aurait pu tomber sur la
-   * sauge, celle de « Premières structures — 6e », et les deux paquets de
-   * grammaire se seraient retrouvés sur le même papier avec le même
-   * dessin. C'est précisément la confusion que la recoloration cherchait
-   * à éviter.
+   * Décision du chantier 58, et elle renverse celle des chantiers 54 à
+   * 57 : un paquet de cinquième prend LE MÊME parchemin que son homologue
+   * de sixième. Seule l'illustration les distingue.
    *
-   * Le lilas est celui de la variante retenue : le fond reprend, en très
-   * pâle, le violet de la pièce dominante. La carte tient alors d'une
-   * seule couleur au lieu de deux systèmes qui se contredisent.
+   *    Premières structures — 6e   \                     sauge
+   *    Structures et repères — 5e  /  même papier
    *
-   * Le nom porte « — 5e », que `normaliser` réduit à « 5e » : la clé
-   * complète est donc « structures et reperes 5e ». La graphie sans la
-   * classe est gardée aussi, au cas où vous renommiez le paquet.
+   *    Phrases de tous les jours — 6e  \                 bleu ardoise
+   *    Phrases de tous les jours — 5e  /  même papier
+   *
+   *    Premiers mots — 6e          \                     miel
+   *    Mots de tous les jours — 5e /  même papier
+   *
+   * Ce que ça dit, et c'est plus juste que ce que je faisais : le papier
+   * devient la MATIÈRE — la grammaire est sauge, les phrases sont
+   * ardoise, le vocabulaire est miel — et la couleur du dessin devient la
+   * seule marque de la classe. Un repère par question posée, au lieu de
+   * deux qui variaient ensemble.
+   *
+   * Ce qu'il faut accepter en échange : dans la liste d'un rayon, les
+   * deux paquets d'un couple sont sur le même fond. Ils ne se
+   * distinguent que par l'aplat du sujet — canard contre brique, sauge
+   * contre violet, bleu contre menthe. En vignette de 54 pixels c'est
+   * l'aplat qui porte tout ; les trois couples ont été choisis pour que
+   * l'écart de teinte y suffise, mais la marge est plus mince qu'avec
+   * deux parchemins différents. La pastille de classe sous la vignette
+   * reste le repère sûr.
+   *
+   * « Voyage — phrases » garde le bleu-vert du chantier 55 : il n'a pas
+   * d'homologue, et le bleu ardoise l'aurait posé sur le même parchemin
+   * que les DEUX paquets « Phrases de tous les jours » — trois cartes
+   * identiques de fond dans un rayon de trois.
    */
-  'structures et reperes 5e': 3,
-  'structures et reperes': 3,
+  'premieres structures 6e': 1,
+  'structures et reperes 5e': 1,
+  'structures et reperes': 1,
 
-  /*
-   * CHANTIER 55 — les deux paquets de voyage, épinglés.
-   *
-   * Ils tombaient jusqu'ici sur le repli par hachage, qui rendait « bleu
-   * ardoise » pour les phrases et « miel » pour le vocabulaire. Le second
-   * convenait ; le premier était le papier de « Phrases de tous les jours
-   * — 6e », c'est-à-dire l'autre paquet du MÊME rayon. Deux cartes
-   * voisines sur le même parchemin, dans la liste où l'on choisit : c'est
-   * l'unique cas qu'il faut interdire.
-   *
-   * « Voyage — phrases » passe donc en bleu-vert. Ce papier est aussi
-   * celui du « Prétérit », mais celui-là vit en Grammaire, avec un tout
-   * autre dessin : on ne les verra jamais côte à côte.
-   *
-   * Les deux sont épinglés et non plus laissés au hachage — un paquet
-   * renommé ne doit pas changer de papier du jour au lendemain.
-   *
-   * À savoir pour la suite : la roue ne porte que SEPT teintes, et le
-   * catalogue compte maintenant quatorze paquets. Les doublons sont
-   * désormais inévitables ; la règle tenable est celle-ci — deux paquets
-   * du même rayon ne partagent jamais un papier. Le jour où un rayon
-   * dépasse sept paquets, il faudra élargir la roue.
-   */
+  'phrases de tous les jours 6e': 0,
+  'phrases de tous les jours 5e': 0,
+
+  'premiers mots 6e': 2,
+  'mots de tous les jours 5e': 2,
+  'mots de tous les jours': 2,
+
   'voyage phrases': 6,
   'voyage vocabulaire': 2,
-
-  /*
-   * CHANTIER 56 — le papier lilas pour « Phrases de tous les jours — 5e ».
-   *
-   * Le rayon « Phrases toutes faites » porte maintenant trois paquets
-   * illustrés, et c'est le seul endroit où un doublon de papier serait
-   * fautif : on les voit l'un sous l'autre au moment de choisir.
-   *
-   *    Phrases de tous les jours — 6e   bleu ardoise
-   *    Phrases de tous les jours — 5e   lilas        ← ici
-   *    Voyage — phrases                 bleu-vert
-   *
-   * Le lilas reprend, en très pâle, la bulle lavande du dessin — la carte
-   * tient d'une seule couleur. Il sert aussi à « Structures et repères —
-   * 5e », mais celui-là vit en Grammaire, avec un puzzle : aucun risque
-   * de les confondre.
-   *
-   * Noter que le nom se réduit à « phrases de tous les jours 5e » : la
-   * clé sans la classe, déjà présente plus haut, reste celle du paquet de
-   * sixième. Les deux ne se marchent donc pas dessus.
-   */
-  'phrases de tous les jours 5e': 3,
 };
-
 /** À remplir si l'identifiant est le repère le plus sûr chez vous. */
 const PAR_ID: Record<string, number> = {};
 
