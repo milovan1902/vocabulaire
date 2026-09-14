@@ -23,6 +23,7 @@ import premiersMots from '../assets/packs/premiers-mots.png';
 import nombresMesures from '../assets/packs/nombres-mesures.png';
 import phrasesQuotidien from '../assets/packs/phrases-quotidien.png';
 import preterit from '../assets/packs/preterit.png';
+import voyageVocabulaire from '../assets/packs/voyage-vocabulaire.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -84,6 +85,20 @@ const ILLUSTRATIONS: Record<string, string> = {
 
   'preterit': preterit,
   'le-preterit': preterit,
+
+  /*
+   * CHANTIER 52 — le paquet de mots du voyage (3e), livré au chantier 48
+   * sans illustration. « Voyage — vocabulaire » se normalise en
+   * 'voyage-vocabulaire', comme son identifiant ; les deux autres graphies
+   * sont celles sous lesquelles le paquet se dit à l'oral.
+   *
+   * « Voyage — phrases » n'en reçoit pas : ces deux paquets vivent côte à
+   * côte dans la même liste, et une illustration partagée les rendrait
+   * indiscernables — ce que le dos dessiné, lui, ne fait pas.
+   */
+  'voyage-vocabulaire': voyageVocabulaire,
+  'voyage-mots': voyageVocabulaire,
+  'voyages-mots': voyageVocabulaire,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
