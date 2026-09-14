@@ -24,6 +24,7 @@ import nombresMesures from '../assets/packs/nombres-mesures.png';
 import phrasesQuotidien from '../assets/packs/phrases-quotidien.png';
 import preterit from '../assets/packs/preterit.png';
 import voyageVocabulaire from '../assets/packs/voyage-vocabulaire.png';
+import voyagePhrases from '../assets/packs/voyage-phrases.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -87,18 +88,23 @@ const ILLUSTRATIONS: Record<string, string> = {
   'le-preterit': preterit,
 
   /*
-   * CHANTIER 52 — le paquet de mots du voyage (3e), livré au chantier 48
-   * sans illustration. « Voyage — vocabulaire » se normalise en
-   * 'voyage-vocabulaire', comme son identifiant ; les deux autres graphies
-   * sont celles sous lesquelles le paquet se dit à l'oral.
+   * CHANTIERS 52 et 53 — les deux paquets de voyage (3e), livrés au
+   * chantier 48 sans illustration. Leurs noms se normalisent en
+   * 'voyage-vocabulaire' et 'voyage-phrases', comme leurs identifiants ;
+   * les autres graphies sont celles sous lesquelles ils se disent.
    *
-   * « Voyage — phrases » n'en reçoit pas : ces deux paquets vivent côte à
-   * côte dans la même liste, et une illustration partagée les rendrait
-   * indiscernables — ce que le dos dessiné, lui, ne fait pas.
+   * Les deux visuels partagent le globe et l'avion, et les deux paquets se
+   * suivent dans la même liste : ce qui les distingue doit donc être net.
+   * L'un porte les panneaux de destination — des MOTS, un par flèche ;
+   * l'autre des bulles de parole — des PHRASES, dites par quelqu'un. La
+   * différence entre les deux paquets est exactement celle-là.
    */
   'voyage-vocabulaire': voyageVocabulaire,
   'voyage-mots': voyageVocabulaire,
   'voyages-mots': voyageVocabulaire,
+
+  'voyage-phrases': voyagePhrases,
+  'voyages-phrases': voyagePhrases,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
