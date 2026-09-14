@@ -15,6 +15,7 @@ import { repository } from '../data/repository';
 import { imageFor } from './deckImages';
 import { isDue, isNew } from '../engine/scheduler';
 import { deckMastery, type DeckMastery } from '../engine/mastery';
+import { minutesPour } from '../engine/tempo';
 
 export interface DeckSummary {
   deck: Deck;
@@ -54,8 +55,6 @@ export interface Charge {
 }
 
 const JOUR = 86_400_000;
-/** Vingt secondes par carte : mesuré large, une session courte est plus rapide. */
-const SECONDES_PAR_CARTE = 20;
 
 export async function loadSummaries(decks: Deck[], settings: Settings): Promise<Charge> {
   const now = Date.now();
@@ -136,6 +135,6 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
     dueByDay,
     resting,
     steadyLoad,
-    steadyMinutes: Math.max(1, Math.round((steadyLoad * SECONDES_PAR_CARTE) / 60)),
+    steadyMinutes: minutesPour(steadyLoad),
   };
 }
