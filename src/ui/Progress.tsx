@@ -1,6 +1,18 @@
 /**
  * Onglet « Mes progrès » : un encart, deux lignes, trois tiroirs.
  *
+ * CHANTIER 51 — le tiroir « Mes mots » montre DEUX totaux au lieu d'un.
+ * Le nombre unique qu'il affichait s'appelait « mots en jeu » alors qu'il
+ * additionnait aussi les paquets en pause — et « Aujourd'hui » emploie les
+ * mêmes mots pour les cartes dues du matin. On ne pouvait pas rapprocher
+ * les deux écrans sans se tromper.
+ *
+ * Le tiroir dit maintenant, l'un sous l'autre et avec la même anatomie :
+ * ce qui tourne dans la charge de travail d'aujourd'hui, puis tout ce qu'on
+ * possède, pauses comprises. Chacun avec son anneau, ses cinq tas et son
+ * compte de paquets. Quand rien n'est en pause, les deux coïncident et le
+ * second bloc s'efface — un bloc qui répète le précédent n'apprend rien.
+ *
  * CHANTIER 44 — correction d'affichage : l'anneau écrivait le
  * pourcentage brut, avec ses dix-sept décimales. Il passe par
  * `masteryLabel`, comme partout ailleurs. Le tiroir ne répète plus ce
@@ -18,10 +30,6 @@
  * geste serait absurde. Les deux autres lignes disent leur valeur à
  * droite, comme les Réglages : la série, et le nombre de paquets.
  *
- * Ce que l'écran raconte n'a pas changé d'ordre : combien de mots sont
- * acquis, depuis combien de temps on s'y tient, et où en est chaque
- * paquet. Le total d'abord, le détail ensuite — jamais l'inverse.
- *
  * Tous les chiffres viennent du même endroit (`progressStats`) et le
  * calendrier comme les compteurs lisent la même liste de dates
  * (`streak.days`). C'est ce qui rend impossible qu'ils se contredisent.
@@ -32,8 +40,10 @@ import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { firstDay, liveStreak, totalWorked, workedSet } from '../engine/streak';
 import { courbe, monthLabel } from '../engine/jalons';
-import { masteryLabel } from '../engine/mastery';
-import { dureeLabel, loadProgressStats, type ProgressStats } from './progressStats';
+import { masteryLabel, STATUTS } from '../engine/mastery';
+import {
+  dureeLabel, loadProgressStats, type Perimetre, type ProgressStats,
+} from './progressStats';
 import { Ligne, Tiroir } from './tiroir';
 
 const MOIS_NOMS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
@@ -46,6 +56,8 @@ const C = 2 * Math.PI * 15;
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
 type Tiroirs = null | 'mots' | 'calendrier' | 'paquets';
+
+const nb = (n: number) => n.toLocaleString('fr-FR');
 
 /**
  * Le vert d'une barre d'avancement : clair au départ, profond à l'arrivée.
@@ -123,11 +135,58 @@ function Anneau({ percent, taille }: { percent: number; taille: number }) {
   );
 }
 
+/**
+ * Un périmètre de mots : son titre, son anneau, ses cinq tas.
+ *
+ * La barre et la liste des statuts sont celles de « Aujourd'hui », aux
+ * mêmes classes et dans le même ordre (`STATUTS`, dans `engine/mastery`) :
+ * ce que l'accueil montre pour un paquet, ce bloc le montre pour un
+ * ensemble de paquets, et les couleurs veulent dire la même chose.
+ */
+function BlocMots({ titre, p, note }: { titre: string; p: Perimetre; note: string }) {
+  const tas = STATUTS.map((s) => ({ ...s, n: p.tas[s.cle] })).filter((s) => s.n > 0);
+
+  return (
+    <div className="prog-perim">
+      <p className="rayon-label">{titre}</p>
+      <div className="prog-tete">
+        <div className="prog-grand">
+          <span className="label">Mots acquis</span>
+          <b>{nb(p.acquis)}</b>
+        </div>
+        <Anneau percent={p.percent} taille={58} />
+      </div>
+      <p className="hint">{note}</p>
+
+      {tas.length > 0 && (
+        <>
+          <span className="statbar" aria-hidden="true">
+            {tas.map((s) => (
+              <i key={s.cle} className={s.classe} style={{ width: `${(100 * s.n) / p.mots}%` }} />
+            ))}
+          </span>
+          <span className="statlist">
+            {tas.map((s) => (
+              <span key={s.cle} className="statline">
+                <i className={s.classe} />
+                <span>{s.libelle}</span>
+                <b>{nb(s.n)}</b>
+              </span>
+            ))}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function Progress({
-  decks, settings, streak,
+  decks, active, settings, streak,
 }: {
   /** Les paquets possédés : on rend compte de tout ce qu'on a, pas du seul jeu du jour. */
   decks: Deck[];
+  /** Les paquets en jeu, parmi les précédents. Ils font le premier périmètre. */
+  active: string[];
   settings: Settings;
   streak: Streak;
 }) {
@@ -138,11 +197,11 @@ export function Progress({
   useEffect(() => {
     let alive = true;
     (async () => {
-      const s = await loadProgressStats(decks, settings);
+      const s = await loadProgressStats(decks, active, settings);
       if (alive) setStats(s);
     })();
     return () => { alive = false; };
-  }, [decks, settings]);
+  }, [decks, active, settings]);
 
   if (!stats) return <p className="lead">Chargement…</p>;
 
@@ -179,27 +238,44 @@ export function Progress({
   const serieDite = serie === 0 ? 'Série à lancer' : `${serie} jour${serie > 1 ? 's' : ''}`;
   const paquetsDits = `${stats.rows.length} paquet${stats.rows.length > 1 ? 's' : ''}`;
 
+  const { charge, tout } = stats;
+  const enPause = stats.paquetsEnPause > 0;
+
+  /*
+   * La phrase sous chaque anneau. Elle dit le périmètre — combien de mots,
+   * dans combien de paquets — et non le chiffre de l'anneau, qui est déjà
+   * à l'écran juste au-dessus.
+   */
+  const noteCharge = charge.paquets === 0
+    ? 'Aucun paquet en jeu : votre charge de travail est vide. Remettez-en un en jeu depuis l’onglet Paquets.'
+    : `Sur ${nb(charge.mots)} mots en jeu, dans ${charge.paquets} paquet${charge.paquets > 1 ? 's' : ''}.`
+      + ` ${nb(charge.enCours)} sont en cours d’apprentissage.`;
+
+  const noteTout = `Sur ${nb(tout.mots)} mots au total, dans ${tout.paquets} paquet${tout.paquets > 1 ? 's' : ''}`
+    + ` — dont ${nb(stats.motsEnPause)} mots dans ${stats.paquetsEnPause} paquet${stats.paquetsEnPause > 1 ? 's' : ''} en pause.`;
+
   return (
     <>
       <h2 className="screen-title">Mes progrès</h2>
 
       <div className="reglist">
         {/* L'encart des mots garde son nombre à l'écran : c'est la
-            réponse qu'on venait chercher. Il s'ouvre sur la courbe. */}
+            réponse qu'on venait chercher. Il compte TOUT ce qu'on
+            possède — le tiroir sépare ensuite les deux périmètres. */}
         <button className="progmots" onClick={() => setTiroir('mots')}>
           <img src="/ico-mots.png" alt="" width={40} height={40} />
           <span>
             <span className="progmots-nom">Mes mots</span>
             <span className="progmots-ligne">
-              <b>{stats.acquis}</b>
+              <b>{nb(tout.acquis)}</b>
               <small>acquis</small>
             </span>
             <small>
-              sur {stats.motsEnJeu.toLocaleString('fr-FR')} en jeu
-              {' · '}{stats.enCours} en cours
+              sur {nb(tout.mots)} mots au total
+              {' · '}{nb(tout.enCours)} en cours
             </small>
           </span>
-          <Anneau percent={stats.percent} taille={58} />
+          <Anneau percent={tout.percent} taille={58} />
           <i aria-hidden="true">›</i>
         </button>
 
@@ -223,16 +299,30 @@ export function Progress({
 
       {tiroir === 'mots' && (
         <Tiroir titre="Mes mots" onFermer={() => setTiroir(null)}>
-          <div className="prog-tete">
-            <div className="prog-grand">
-              <span className="label">Mots acquis</span>
-              <b>{stats.acquis}</b>
-            </div>
-            <Anneau percent={stats.percent} taille={58} />
-          </div>
-          <p className="hint">
-            Sur {stats.motsEnJeu.toLocaleString('fr-FR')} mots en jeu.
-            {' '}{stats.enCours} sont en cours d’apprentissage.
+          {/*
+            * Les paquets en jeu d'abord : c'est le vocabulaire que la
+            * charge d'« Aujourd'hui » fait tourner, donc le seul des deux
+            * totaux qu'un travail de la journée peut faire bouger.
+            */}
+          <BlocMots
+            titre={enPause ? 'Dans ma charge de travail' : 'Mes paquets en jeu'}
+            p={charge}
+            note={noteCharge}
+          />
+
+          {enPause ? (
+            <BlocMots titre="Tout compris, pauses incluses" p={tout} note={noteTout} />
+          ) : (
+            <p className="hint prog-perim-note">
+              Aucun paquet en pause : votre charge de travail couvre tout
+              votre vocabulaire, et ce total est donc le seul.
+            </p>
+          )}
+
+          <p className="hint prog-perim-note">
+            À ne pas confondre avec le nombre de l’onglet « Aujourd’hui » :
+            celui-là compte les cartes <b>à revoir ce matin</b>, pas les mots
+            travaillés. Il est bien plus petit, et il change chaque jour.
           </p>
 
           <p className="rayon-label">Les mots acquis, mois par mois</p>
@@ -266,6 +356,12 @@ export function Progress({
               <div className="prog-courbe-axe">
                 {xy.map((p) => <small key={p.month}>{monthLabel(p.month)}</small>)}
               </div>
+              {/* La courbe suit le périmètre complet : mettre un paquet en
+                  pause ne doit pas faire redescendre un historique. */}
+              <p className="hint prog-perim-note">
+                La courbe compte tous les paquets, pauses comprises : un mot
+                acquis reste acquis.
+              </p>
             </>
           )}
         </Tiroir>
@@ -342,7 +438,10 @@ export function Progress({
               <span key={r.deck.id} className="prog-ligne">
                 <span className="prog-ligne-haut">
                   <b>{r.deck.name}</b>
-                  <small>{r.acquis} / {r.total}</small>
+                  {/* La pause se dit ici : sans quoi on cherche pourquoi ce
+                      paquet ne bouge plus d'un mois sur l'autre. */}
+                  {!r.enJeu && <em>en pause</em>}
+                  <small>{nb(r.acquis)} / {nb(r.total)}</small>
                 </span>
                 <span className="prog-barre">
                   <i
@@ -357,7 +456,7 @@ export function Progress({
           </div>
 
           <p className="hint prog-pied">
-            {stats.revisions.toLocaleString('fr-FR')} cartes revues depuis le
+            {nb(stats.revisions)} cartes revues depuis le
             début, soit environ {dureeLabel(stats.minutes)} de travail. Le temps
             est déduit du nombre de cartes, jamais chronométré.
           </p>
