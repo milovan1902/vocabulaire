@@ -111,6 +111,28 @@ const PAR_NOM: Record<string, number> = {
    */
   'voyage phrases': 6,
   'voyage vocabulaire': 2,
+
+  /*
+   * CHANTIER 56 — le papier lilas pour « Phrases de tous les jours — 5e ».
+   *
+   * Le rayon « Phrases toutes faites » porte maintenant trois paquets
+   * illustrés, et c'est le seul endroit où un doublon de papier serait
+   * fautif : on les voit l'un sous l'autre au moment de choisir.
+   *
+   *    Phrases de tous les jours — 6e   bleu ardoise
+   *    Phrases de tous les jours — 5e   lilas        ← ici
+   *    Voyage — phrases                 bleu-vert
+   *
+   * Le lilas reprend, en très pâle, la bulle lavande du dessin — la carte
+   * tient d'une seule couleur. Il sert aussi à « Structures et repères —
+   * 5e », mais celui-là vit en Grammaire, avec un puzzle : aucun risque
+   * de les confondre.
+   *
+   * Noter que le nom se réduit à « phrases de tous les jours 5e » : la
+   * clé sans la classe, déjà présente plus haut, reste celle du paquet de
+   * sixième. Les deux ne se marchent donc pas dessus.
+   */
+  'phrases de tous les jours 5e': 3,
 };
 
 /** À remplir si l'identifiant est le repère le plus sûr chez vous. */
