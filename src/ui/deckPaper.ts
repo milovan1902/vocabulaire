@@ -61,10 +61,27 @@ const PAR_NOM: Record<string, number> = {
   'phrases de tous les jours': 0,
   'premieres structures': 1,
   'premiers mots': 2,
-  'nombres quantites et mesures': 3,
-  'loisirs et sport': 4,
-  'les vetements': 5,
   'le preterit': 6,
+
+  /*
+   * CHANTIER 59 — QUATRE PAQUETS SUR LE MÊME ROSE POUDRÉ
+   *
+   * « Les vêtements », « Loisirs et sport », « Nombres, quantités et
+   * mesures » et « Voyage — vocabulaire » partagent désormais le rose.
+   * Choix du propriétaire, et il faut savoir ce qu'il coûte : le
+   * parchemin ne distingue plus ces quatre paquets, seuls leurs dessins
+   * le font. Le lilas (3) et le terracotta (4) sortent donc de l'usage
+   * — ils ne sont plus attribués à personne.
+   *
+   * Ce qui restait de ma règle vaut encore pour les couples 6e / 5e
+   * ci-dessous : là, le papier dit la matière. Ici, il ne dit plus rien
+   * de particulier, et c'est tenable tant que les quatre dessins sont
+   * franchement différents — un maillot, des chiffres, une valise, un
+   * tee-shirt le sont.
+   */
+  'les vetements': 5,
+  'loisirs et sport': 5,
+  'nombres quantites et mesures': 5,
 
   /*
    * CHANTIERS 54 À 58 — LES COUPLES 6e / 5e PARTAGENT LEUR PAPIER
@@ -114,7 +131,7 @@ const PAR_NOM: Record<string, number> = {
   'mots de tous les jours': 2,
 
   'voyage phrases': 6,
-  'voyage vocabulaire': 2,
+  'voyage vocabulaire': 5,
 };
 /** À remplir si l'identifiant est le repère le plus sûr chez vous. */
 const PAR_ID: Record<string, number> = {};
