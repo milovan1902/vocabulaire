@@ -29,6 +29,7 @@ import structures5e from '../assets/packs/5e-grammaire.png';
 import phrases5e from '../assets/packs/5e-phrases.png';
 import mots5e from '../assets/packs/5e-vocabulaire.png';
 import adjectifs5e from '../assets/packs/5e-adjectifs.png';
+import verbes5e from '../assets/packs/5e-verbes.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -196,6 +197,28 @@ const ILLUSTRATIONS: Record<string, string> = {
   '5e-adjectifs': adjectifs5e,
   'decrire-et-comparer': adjectifs5e,
   'decrire-et-comparer-5e': adjectifs5e,
+
+  /*
+   * CHANTIER 61 — « Les verbes courants — 5e ». Le dernier paquet de
+   * cinquième à recevoir son visuel : les cinq sont illustrés.
+   *
+   * Seul mot-image du catalogue — les autres visuels sont des objets. Il
+   * est aussi le seul LARGE et BAS : 922 x 236 dans un carré de 1024, le
+   * reste transparent. Ce vide n'est pas une négligence, c'est ce qui
+   * garde le sujet centré dans le cadre du dos : la feuille de style
+   * pose toute illustration à 26 % du haut sur 67,7 % de largeur, en
+   * supposant un carré. Recadré au ras des lettres, le mot se
+   * retrouverait collé en haut du cadre.
+   *
+   * Conséquence à assumer : les lettres sont plus petites que les sujets
+   * des autres cartes. À 54 pixels, « VERBS » ne se lit plus — il reste
+   * cinq blocs de couleur vive, ce qui suffit à reconnaître la carte et
+   * ne suffit pas à dire « des verbes ». Troisième visuel dans ce cas,
+   * après « Voyage — phrases » et « Décrire et comparer ».
+   */
+  '5e-verbes': verbes5e,
+  'les-verbes-courants': verbes5e,
+  'les-verbes-courants-5e': verbes5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
