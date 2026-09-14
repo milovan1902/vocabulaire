@@ -1,13 +1,46 @@
 /** Écran d'un paquet : statistiques, filtres de thème, réglages, actions. */
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import type { DeckOverride, Settings } from '../domain/types';
 import type { LoadedDeck } from './useStore';
 import { progressFor } from './useStore';
 import { computeStats } from '../engine/session';
 import { repository } from '../data/repository';
 import { paletteFor, Slider, Toggle } from './components';
-import { resizeToCardImage } from './image';
 import { clearRemoteProgress } from '../data/sync';
+
+/*
+ * CHANTIER 59 — DEUX ACTIONS RETIRÉES : L'IMAGE ET LE RENOMMAGE
+ *
+ * Elles datent du temps où les paquets étaient les vôtres, créés dans
+ * l'application. Ils viennent maintenant du catalogue, et les deux
+ * boutons ne pouvaient plus que faire des dégâts :
+ *
+ *  - « Choisir une image pour ce paquet » posait une image de carte
+ *    ENTIÈRE, qui l'emporte sur tout — elle recouvrait donc le dos
+ *    dessiné, son parchemin et son illustration, c'est-à-dire tout le
+ *    système de reconnaissance des paquets bâti aux chantiers 52 à 58.
+ *    Un geste, et la carte perdait sa place dans la liste.
+ *  - « Renommer ce paquet » écrivait le nouveau nom en local seulement.
+ *    Or c'est le NOM qui décide de l'illustration (`artFor`) et du
+ *    parchemin (`papierFor`) : renommer un paquet lui faisait perdre les
+ *    deux, silencieusement, et la prochaine synchronisation rapatriait
+ *    l'ancien nom du serveur sans rien dire non plus.
+ *
+ * Ce qui reste : ajouter des mots, effacer la progression, supprimer un
+ * paquet qu'on a créé soi-même. Trois gestes dont on répond.
+ *
+ * Ce que je n'ai PAS touché, et qui pourra suivre si vous le voulez :
+ *  - `repository.saveImage` / `removeImage` et `resizeToCardImage`
+ *    existent toujours et restent appelés par l'éditeur de paquet. Rien
+ *    ne les invoque plus depuis cet écran.
+ *  - Les images déjà choisies par le passé sont TOUJOURS EN BASE et
+ *    toujours affichées — on ne peut simplement plus en poser de
+ *    nouvelle, ni retirer l'ancienne. Si un paquet porte chez vous une
+ *    image qui masque son illustration, dites-le-moi : c'est une ligne
+ *    de SQL, pas un chantier.
+ *  - Les deux curseurs « marge du texte sur le visuel » restent utiles :
+ *    ils servent aux visuels livrés avec l'application.
+ */
 
 export function DeckHome({
   loaded, settings, overrides, counter, userId, general,
@@ -30,9 +63,8 @@ export function DeckHome({
   /** Identifiant du compte connecté, ou null en usage purement local. */
   userId: string | null;
 }) {
-  const { deck, cards, progress, themes, selectedThemes, image } = loaded;
+  const { deck, cards, progress, themes, selectedThemes } = loaded;
   const particulier = overrides !== null;
-  const fileRef = useRef<HTMLInputElement>(null);
 
   /**
    * Modifier un curseur agit sur les réglages du paquet s'il en a,
@@ -66,19 +98,6 @@ export function DeckHome({
       : [...selectedThemes, theme];
     await repository.saveThemes(deck.id, next.length ? next : [theme]);
     onReload();
-  }
-
-  async function pickImage(file: File) {
-    try {
-      const dataUrl = await resizeToCardImage(file);
-      await repository.saveImage(deck.id, dataUrl);
-      const decks = await repository.listDecks();
-      const target = decks.find((d) => d.id === deck.id);
-      if (target) { target.hasImage = true; await repository.saveDecks(decks); }
-      onReload();
-    } catch (e) {
-      alert("Image illisible : " + (e as Error).message);
-    }
   }
 
   return (
@@ -168,7 +187,7 @@ export function DeckHome({
         />
         <Slider
           label="Marge verticale du texte sur le visuel"
-          hint="À ajuster si le cadre de votre image est plus épais ou plus fin."
+          hint="À ajuster si le cadre du visuel est plus épais ou plus fin."
           min={5} max={30} step={1} value={settings.panelInsetY}
           format={(v) => `${v} %`}
           onChange={(v) => change({ panelInsetY: v })}
@@ -218,39 +237,7 @@ export function DeckHome({
         </button>
       )}
 
-      <button className="btn ghost" onClick={() => fileRef.current?.click()}>
-        {image ? 'Remplacer l’image du paquet' : 'Choisir une image pour ce paquet'}
-      </button>
-      <input
-        ref={fileRef} type="file" accept="image/*" hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          e.target.value = '';
-          if (f) void pickImage(f);
-        }}
-      />
-      {image && (
-        <button className="btn ghost" onClick={async () => {
-          await repository.removeImage(deck.id);
-          onReload();
-        }}>
-          Retirer l’image
-        </button>
-      )}
-
       <button className="btn ghost" onClick={onAddCards}>Ajouter des mots à ce paquet</button>
-
-      <button className="btn ghost" onClick={async () => {
-        const name = prompt('Nouveau nom du paquet :', deck.name);
-        if (!name?.trim()) return;
-        const decks = await repository.listDecks();
-        const target = decks.find((d) => d.id === deck.id);
-        if (target) { target.name = name.trim(); target.updatedAt = Date.now(); }
-        await repository.saveDecks(decks);
-        onReload();
-      }}>
-        Renommer ce paquet
-      </button>
 
       <button className="btn ghost danger" onClick={async () => {
         const message = userId
