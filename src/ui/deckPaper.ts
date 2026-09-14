@@ -85,6 +85,32 @@ const PAR_NOM: Record<string, number> = {
    */
   'structures et reperes 5e': 3,
   'structures et reperes': 3,
+
+  /*
+   * CHANTIER 55 — les deux paquets de voyage, épinglés.
+   *
+   * Ils tombaient jusqu'ici sur le repli par hachage, qui rendait « bleu
+   * ardoise » pour les phrases et « miel » pour le vocabulaire. Le second
+   * convenait ; le premier était le papier de « Phrases de tous les jours
+   * — 6e », c'est-à-dire l'autre paquet du MÊME rayon. Deux cartes
+   * voisines sur le même parchemin, dans la liste où l'on choisit : c'est
+   * l'unique cas qu'il faut interdire.
+   *
+   * « Voyage — phrases » passe donc en bleu-vert. Ce papier est aussi
+   * celui du « Prétérit », mais celui-là vit en Grammaire, avec un tout
+   * autre dessin : on ne les verra jamais côte à côte.
+   *
+   * Les deux sont épinglés et non plus laissés au hachage — un paquet
+   * renommé ne doit pas changer de papier du jour au lendemain.
+   *
+   * À savoir pour la suite : la roue ne porte que SEPT teintes, et le
+   * catalogue compte maintenant quatorze paquets. Les doublons sont
+   * désormais inévitables ; la règle tenable est celle-ci — deux paquets
+   * du même rayon ne partagent jamais un papier. Le jour où un rayon
+   * dépasse sept paquets, il faudra élargir la roue.
+   */
+  'voyage phrases': 6,
+  'voyage vocabulaire': 2,
 };
 
 /** À remplir si l'identifiant est le repère le plus sûr chez vous. */
