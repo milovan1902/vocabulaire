@@ -130,6 +130,20 @@ const PAR_NOM: Record<string, number> = {
   'mots de tous les jours 5e': 2,
   'mots de tous les jours': 2,
 
+  /*
+   * CHANTIER 60 — le miel aussi pour « Décrire et comparer — 5e », comme
+   * « Premiers mots ». Choix du propriétaire.
+   *
+   * Le rayon « Vocabulaire de base » porte donc trois cartes sur le même
+   * parchemin. C'est le plus grand groupe à fond commun du catalogue, et
+   * la distinction repose entièrement sur les dessins — une bulle
+   * canard, une bulle brique, un sticker bleu nuit. Ces trois-là sont
+   * franchement différents ; une quatrième carte miel dans ce rayon
+   * serait de trop.
+   */
+  'decrire et comparer 5e': 2,
+  'decrire et comparer': 2,
+
   'voyage phrases': 6,
   'voyage vocabulaire': 5,
 };
