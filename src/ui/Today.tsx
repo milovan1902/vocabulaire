@@ -10,12 +10,19 @@
  * s'ouvre sur une proposition qu'on refuse a perdu son ouverture. Les
  * paquets arrivent maintenant à égalité ; le bouton de révision n'existe
  * pas tant qu'aucun n'est choisi.
+ *
+ * CHANTIER 51 — le grand nombre disait « cartes en jeu ». « Mes progrès »
+ * emploie les mêmes mots pour un tout autre chiffre : les mots travaillés,
+ * dix ou vingt fois plus nombreux. Deux sens pour une expression, dans deux
+ * onglets voisins — l'écart passait pour une erreur de calcul alors qu'il
+ * n'était qu'une erreur de vocabulaire. Ici, c'est « à revoir » : ce qui est
+ * dû ce matin, et rien d'autre.
  */
 import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
-import { masteryLabel } from '../engine/mastery';
+import { masteryLabel, STATUTS } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
 import { doneToday, lastSeven, liveStreak } from '../engine/streak';
 import { minutesPour } from '../engine/tempo';
@@ -67,14 +74,19 @@ function ecrireChoix(id: string | null) {
   }
 }
 
-/** L'ordre est celui du trajet d'un mot, pas celui de son importance. */
-const STATUTS = [
-  { cle: 'decouvrir', libelle: 'À découvrir', classe: 'st-decouvrir' },
-  { cle: 'reprendre', libelle: 'À reprendre', classe: 'st-reprendre' },
-  { cle: 'cours', libelle: 'En cours', classe: 'st-cours' },
-  { cle: 'presque', libelle: 'Presque acquis', classe: 'st-presque' },
-  { cle: 'acquis', libelle: 'Acquis', classe: 'st-acquis' },
-] as const;
+/**
+ * Ce que dit la ligne sous le nom d'un paquet.
+ *
+ * CHANTIER 51 — elle annonçait le paquet ENTIER (« 12 thèmes sur 30 · 420
+ * mots ») alors que le travail ne porte que sur les thèmes retenus. Le
+ * nombre de mots suit maintenant le même périmètre que la charge et que
+ * « Mes progrès » : les trois écrans comptent enfin la même chose.
+ */
+function sousTitre(r: DeckSummary): string {
+  return r.themesSelected < r.themesTotal
+    ? `${r.themesSelected} thèmes sur ${r.themesTotal} · ${r.enJeu} mots en jeu`
+    : `${r.themesTotal} thèmes · ${r.total} mots`;
+}
 
 export function Today({
   decks, active, settings, streak, onReview, onOpen, onManage,
@@ -147,12 +159,7 @@ export function Today({
           </span>
           <span className="workrow-txt">
             <b>{r.deck.name}</b>
-            <small>
-              {r.themesSelected < r.themesTotal
-                ? `${r.themesSelected} thèmes sur ${r.themesTotal}`
-                : `${r.themesTotal} thèmes`}
-              {' · '}{r.total} mots
-            </small>
+            <small>{sousTitre(r)}</small>
           </span>
         </button>
         <span className="due">{r.due}</span>
@@ -198,12 +205,7 @@ export function Today({
           </span>
           <span className="avant-txt">
             <b>{r.deck.name}</b>
-            <small>
-              {r.themesSelected < r.themesTotal
-                ? `${r.themesSelected} thèmes sur ${r.themesTotal}`
-                : `${r.themesTotal} thèmes`}
-              {' · '}{r.total} mots
-            </small>
+            <small>{sousTitre(r)}</small>
             <span className="avant-avanc">
               <span className="avant-anneau" aria-hidden="true">
                 <svg className="ring" viewBox="0 0 36 36">
@@ -282,7 +284,7 @@ export function Today({
         <>
           <div className="today-count">
             <b>0</b>
-            <span>carte<br />en jeu</span>
+            <span>carte<br />à revoir</span>
           </div>
           <p className="hint">
             Aucun paquet en jeu. Choisissez ceux sur lesquels vous voulez
@@ -294,7 +296,7 @@ export function Today({
         <>
           <div className="today-count">
             <b>0</b>
-            <span>carte<br />en jeu</span>
+            <span>carte<br />à revoir</span>
           </div>
           <p className="hint">
             {faitAujourdhui
@@ -305,14 +307,15 @@ export function Today({
       ) : (
         <>
           {/*
-            * « en jeu » plutôt que « à voir aujourd'hui » : c'est l'étendue
-            * de ce qui a été mis en chantier, pas une dette du jour. Un
-            * chiffre qui décrit ne décourage pas ; un chiffre qui réclame,
-            * si.
+            * « à revoir » : les cartes dues ce matin, sur les paquets en jeu
+            * et les thèmes retenus. Ce n'est pas une dette — elles sont là
+            * parce qu'elles commencent à s'effacer — mais c'est bien un
+            * travail du jour, et non l'étendue du vocabulaire. « Mes
+            * progrès » compte celle-là, et dit « mots », jamais « cartes ».
             */}
           <div className="today-count">
             <b>{total}</b>
-            <span>carte{total > 1 ? 's' : ''}<br />en jeu</span>
+            <span>carte{total > 1 ? 's' : ''}<br />à revoir</span>
           </div>
           <p className="today-est">
             {aFaire.length > 1 ? `Répartis sur ${aFaire.length} paquets. ` : ''}
