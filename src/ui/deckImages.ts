@@ -26,6 +26,7 @@ import preterit from '../assets/packs/preterit.png';
 import voyageVocabulaire from '../assets/packs/voyage-vocabulaire.png';
 import voyagePhrases from '../assets/packs/voyage-phrases.png';
 import structures5e from '../assets/packs/5e-grammaire.png';
+import phrases5e from '../assets/packs/5e-phrases.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -130,6 +131,26 @@ const ILLUSTRATIONS: Record<string, string> = {
   '5e-grammaire': structures5e,
   'structures-et-reperes': structures5e,
   'structures-et-reperes-5e': structures5e,
+
+  /*
+   * CHANTIER 56 — les bulles de « Phrases de tous les jours », recolorées
+   * en menthe et lavande pour la cinquième. Même dessin que le paquet de
+   * sixième, mêmes bulles, même contour ardoise, même liseré blanc : les
+   * rôles de couleur sont permutés, rien d'autre.
+   *
+   * C'est le second couple de paquets bâti sur ce principe, après les
+   * deux puzzles de grammaire (chantier 54). La règle qui en sort et qui
+   * vaut pour la suite : un paquet de 5e reprend le dessin de son
+   * homologue de 6e et en change les couleurs. Le dessin dit la MATIÈRE,
+   * la couleur dit la CLASSE — et l'élève qui monte d'un niveau retrouve
+   * ses repères sans confondre les deux paquets.
+   *
+   * Le fichier est distinct, et non un filtre appliqué au vol : une
+   * teinte CSS toucherait aussi le contour ardoise et le liseré blanc,
+   * qui doivent rester identiques d'un paquet à l'autre.
+   */
+  '5e-phrases': phrases5e,
+  'phrases-de-tous-les-jours-5e': phrases5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
