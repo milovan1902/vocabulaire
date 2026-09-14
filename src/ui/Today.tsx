@@ -18,6 +18,7 @@ import { DeckFace, DeckVign } from './components';
 import { masteryLabel } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
 import { doneToday, lastSeven, liveStreak } from '../engine/streak';
+import { minutesPour } from '../engine/tempo';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -315,7 +316,10 @@ export function Today({
           </div>
           <p className="today-est">
             {aFaire.length > 1 ? `Répartis sur ${aFaire.length} paquets. ` : ''}
-            Environ {Math.max(1, Math.round(total / 3))} minutes.
+            {/* CHANTIER 50 — `total / 3` valait bien vingt secondes par
+                carte, mais rien ne le disait : le jour où la constante
+                bouge, cette ligne serait restée seule en arrière. */}
+            Environ {minutesPour(total)} minutes.
           </p>
 
           {serieEnJeu && (
