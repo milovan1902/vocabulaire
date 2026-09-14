@@ -65,6 +65,26 @@ const PAR_NOM: Record<string, number> = {
   'loisirs et sport': 4,
   'les vetements': 5,
   'le preterit': 6,
+
+  /*
+   * CHANTIER 54 — le papier lilas pour « Structures et repères — 5e ».
+   *
+   * Attribué et non laissé au hachage : le repli aurait pu tomber sur la
+   * sauge, celle de « Premières structures — 6e », et les deux paquets de
+   * grammaire se seraient retrouvés sur le même papier avec le même
+   * dessin. C'est précisément la confusion que la recoloration cherchait
+   * à éviter.
+   *
+   * Le lilas est celui de la variante retenue : le fond reprend, en très
+   * pâle, le violet de la pièce dominante. La carte tient alors d'une
+   * seule couleur au lieu de deux systèmes qui se contredisent.
+   *
+   * Le nom porte « — 5e », que `normaliser` réduit à « 5e » : la clé
+   * complète est donc « structures et reperes 5e ». La graphie sans la
+   * classe est gardée aussi, au cas où vous renommiez le paquet.
+   */
+  'structures et reperes 5e': 3,
+  'structures et reperes': 3,
 };
 
 /** À remplir si l'identifiant est le repère le plus sûr chez vous. */
