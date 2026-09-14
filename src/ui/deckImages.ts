@@ -24,7 +24,7 @@ import nombresMesures from '../assets/packs/nombres-mesures.png';
 import phrasesQuotidien from '../assets/packs/phrases-quotidien.png';
 import preterit from '../assets/packs/preterit.png';
 import voyageVocabulaire from '../assets/packs/voyage-vocabulaire.png';
-import voyagePhrases from '../assets/packs/voyage-phrases.png';
+import structures5e from '../assets/packs/5e-grammaire.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -87,24 +87,28 @@ const ILLUSTRATIONS: Record<string, string> = {
   'preterit': preterit,
   'le-preterit': preterit,
 
-  /*
-   * CHANTIERS 52 et 53 — les deux paquets de voyage (3e), livrés au
-   * chantier 48 sans illustration. Leurs noms se normalisent en
-   * 'voyage-vocabulaire' et 'voyage-phrases', comme leurs identifiants ;
-   * les autres graphies sont celles sous lesquelles ils se disent.
-   *
-   * Les deux visuels partagent le globe et l'avion, et les deux paquets se
-   * suivent dans la même liste : ce qui les distingue doit donc être net.
-   * L'un porte les panneaux de destination — des MOTS, un par flèche ;
-   * l'autre des bulles de parole — des PHRASES, dites par quelqu'un. La
-   * différence entre les deux paquets est exactement celle-là.
-   */
   'voyage-vocabulaire': voyageVocabulaire,
   'voyage-mots': voyageVocabulaire,
   'voyages-mots': voyageVocabulaire,
 
-  'voyage-phrases': voyagePhrases,
-  'voyages-phrases': voyagePhrases,
+  /*
+   * CHANTIER 54 — le même puzzle que « Premières structures — 6e », aux
+   * mêmes pièces et au même contour, recoloré en violet, framboise et
+   * lilas. Les deux paquets sont de la même main : c'est ce qui dit que
+   * la grammaire de cinquième continue celle de sixième.
+   *
+   * Aucune des trois couleurs ne figure ailleurs au catalogue — c'est ce
+   * qui empêche de prendre ce paquet pour un autre dans une liste de
+   * douze, là où une simple variation de la palette du 6e aurait créé
+   * deux cartes jumelles.
+   *
+   * Le fichier est distinct de `premieres-structures.png`, et non une
+   * teinte appliquée au vol : un filtre CSS toucherait aussi le contour
+   * bleu nuit, qui doit rester identique d'un paquet à l'autre.
+   */
+  '5e-grammaire': structures5e,
+  'structures-et-reperes': structures5e,
+  'structures-et-reperes-5e': structures5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
