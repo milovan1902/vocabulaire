@@ -3,8 +3,9 @@
  *
  * Tout se calcule ici, à partir de ce qui est déjà stocké : les paliers des
  * cartes et les passages (`reps`) enregistrés par FSRS. Aucune donnée
- * nouvelle n'est nécessaire — à une exception près, les jalons mensuels,
- * qui ne peuvent pas se déduire (voir `engine/jalons.ts`).
+ * nouvelle n'est nécessaire — à deux exceptions près, les jalons mensuels
+ * et les relevés quotidiens, qui ne peuvent pas se déduire (voir
+ * `engine/jalons.ts` et `engine/paliers.ts`).
  *
  * Le fichier est séparé de l'écran pour la même raison que `deckSummary` :
  * un écran qui calcule ses propres chiffres finit par en calculer deux
@@ -29,6 +30,7 @@ import type { Deck, Progress, Settings } from '../domain/types';
 import { repository } from '../data/repository';
 import { deckMastery, type DeckMastery, type MasteryBreakdown } from '../engine/mastery';
 import { noteJalon, type Jalon } from '../engine/jalons';
+import { noteReleve, type Releve } from '../engine/paliers';
 import { SECONDES_PAR_CARTE } from '../engine/tempo';
 
 export interface DeckProgressRow {
@@ -76,6 +78,8 @@ export interface ProgressStats {
   minutes: number;
   rows: DeckProgressRow[];
   jalons: Jalon[];
+  /** L'historique quotidien des cinq paliers (chantier 62). */
+  releves: Releve[];
 }
 
 const AUCUN: MasteryBreakdown = {
@@ -166,30 +170,49 @@ export async function loadProgressStats(
   // Le plus avancé en tête : on vient voir ce qui marche, pas l'inverse.
   rows.sort((a, b) => b.percent - a.percent);
 
+  const perimetreTout = clos(tout);
+
   /*
-   * Le relevé du mois est écrit à la lecture de l'écran.
+   * Les deux relevés sont écrits à la lecture de l'écran.
    *
-   * C'est le seul moment où le chiffre est certainement juste et où l'on
-   * est certain que l'application tourne. Conséquence assumée : un mois
-   * pendant lequel cet onglet n'est jamais ouvert ne laisse pas de point,
-   * et la courbe relie alors les deux mois voisins.
+   * C'est le seul moment où les chiffres sont certainement justes et où
+   * l'on est certain que l'application tourne. Conséquence assumée : un
+   * jour pendant lequel cet onglet n'est jamais ouvert ne laisse pas de
+   * point, et la courbe relie alors les deux mesures voisines.
    *
-   * Le jalon suit le périmètre COMPLET, et c'est voulu : mettre un paquet
-   * en pause ne doit pas faire baisser une courbe historique. Un mot acquis
-   * reste acquis.
+   * LES DEUX SUIVENT LE PÉRIMÈTRE COMPLET, et c'est voulu : mettre un
+   * paquet en pause ne doit pas faire plonger une courbe historique. Un mot
+   * acquis reste acquis. C'est la seule règle qui rende la courbe lisible
+   * dans le temps — indexée sur la charge du moment, elle mesurerait les
+   * changements d'avis plutôt que le travail.
+   *
+   * CHANTIER 62 — le relevé quotidien des cinq paliers vient s'ajouter au
+   * jalon mensuel, sans le remplacer. Le jalon porte le passé déjà noté,
+   * que les relevés ne peuvent pas inventer : ils commencent aujourd'hui.
    */
-  const jalons = noteJalon((await repository.getJalons()) ?? [], tout.acquis);
-  await repository.saveJalons(jalons);
+  const [jalonsVus, relevesVus] = await Promise.all([
+    repository.getJalons(),
+    repository.getReleves(),
+  ]);
+
+  const jalons = noteJalon(jalonsVus ?? [], perimetreTout.acquis);
+  const releves = noteReleve(relevesVus ?? [], perimetreTout.tas);
+
+  await Promise.all([
+    repository.saveJalons(jalons),
+    repository.saveReleves(releves),
+  ]);
 
   return {
-    tout: clos(tout),
+    tout: perimetreTout,
     charge: clos(charge),
-    motsEnPause: tout.mots - charge.mots,
-    paquetsEnPause: tout.paquets - charge.paquets,
+    motsEnPause: perimetreTout.mots - charge.mots,
+    paquetsEnPause: perimetreTout.paquets - charge.paquets,
     revisions,
     minutes: Math.round((revisions * SECONDES_PAR_CARTE) / 60),
     rows,
     jalons,
+    releves,
   };
 }
 
