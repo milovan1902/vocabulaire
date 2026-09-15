@@ -3685,3 +3685,111 @@ label.switch input {
 }
 .cal-revenir:hover { color: var(--chalk-ink, var(--chalk)); }
 .cal-revenir:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+/* ---------- chantier 66 : l'ouverture de l'application ---------- */
+
+.lancement {
+  position: fixed;
+  inset: 0;
+  z-index: 120; /* au-dessus des onglets (40), de la carte en vol (60) et des tiroirs */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Le marine du logo, donc celui de l'écran système : aucune coupure
+     entre l'icône qu'on touche et l'écran qui s'ouvre. */
+  background: #0f253c;
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+.lancement.sort {
+  opacity: 0;
+}
+
+.lancement-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+/* Le cadre des deux profils. L'écart entre eux — 11 % de la largeur —
+   est celui du logo : c'est lui qui fait qu'ils se font face au lieu de
+   se toucher. */
+.lancement-profils {
+  position: relative;
+  width: min(74vw, 300px);
+  aspect-ratio: 252 / 172;
+}
+.lancement-g,
+.lancement-d {
+  position: absolute;
+  top: 0;
+  width: 44.4%;
+  opacity: 0;
+}
+.lancement-g {
+  left: 0;
+  animation: lanc-gauche 4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.lancement-d {
+  right: 0;
+  animation: lanc-droit 4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.lancement-trait {
+  width: 48%;
+  max-width: 140px;
+  height: 1px;
+  background: var(--chalk);
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: lanc-trait 4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Hauteur fixe et ligne insécable : sans elles, le nom passe de deux lignes
+   à une quand l'interlettrage se resserre, et toute la colonne centrée
+   sursaute juste avant qu'il apparaisse. */
+.lancement-nom {
+  margin: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0;
+  animation: lanc-nom 4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes lanc-gauche {
+  0%, 4% { transform: translateX(-62%); opacity: 0; }
+  28%, 100% { transform: none; opacity: 1; }
+}
+@keyframes lanc-droit {
+  0%, 4% { transform: translateX(62%); opacity: 0; }
+  28%, 100% { transform: none; opacity: 1; }
+}
+@keyframes lanc-trait {
+  0%, 30% { transform: scaleX(0); }
+  46%, 100% { transform: scaleX(1); }
+}
+@keyframes lanc-nom {
+  0%, 50% { opacity: 0; letter-spacing: 0.34em; transform: translateY(7px); }
+  68%, 100% { opacity: 1; letter-spacing: 0.2em; transform: none; }
+}
+
+/* Mouvement réduit : l'écran final, tenu sept dixièmes de seconde. */
+@media (prefers-reduced-motion: reduce) {
+  .lancement-g,
+  .lancement-d,
+  .lancement-trait,
+  .lancement-nom {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
