@@ -3685,9 +3685,10 @@ label.switch input {
 }
 .cal-revenir:hover { color: var(--chalk-ink, var(--chalk)); }
 .cal-revenir:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
-/* ---------- chantier 67 : l'ouverture, corrigée ----------
-   Remplace le bloc « chantier 66 » de styles.css : supprimez-le en entier
-   (de son titre jusqu'à la dernière accolade du @media) et collez ceci. */
+/* ---------- chantier 68 : l'ouverture de l'application ----------
+   Remplace le bloc « chantier 67 » de styles.css : supprimez-le en entier
+   et collez ceci. Ce bloc ne décrit plus que la mise en place et les
+   couleurs — ce qui bouge est commandé par Lancement.tsx. */
 
 .lancement {
   position: fixed;
@@ -3713,9 +3714,8 @@ label.switch input {
   gap: 26px;
 }
 
-/* ---- les deux profils ----
-   L'écart entre eux — 11 % de la largeur — est celui du logo : c'est lui
-   qui fait qu'ils se font face au lieu de se toucher. */
+/* L'écart entre les deux profils — 11 % de la largeur — est celui du logo :
+   c'est lui qui fait qu'ils se font face au lieu de se toucher. */
 .lancement-profils {
   position: relative;
   width: min(74vw, 300px);
@@ -3726,51 +3726,24 @@ label.switch input {
   position: absolute;
   top: 0;
   width: 44.4%;
-  opacity: 0;
-  transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.75s ease;
 }
-.lancement-g {
-  left: 0;
-  transform: translateX(-62%);
-}
-.lancement-d {
-  right: 0;
-  transform: translateX(62%);
-}
-/* Dès la première étape, ils glissent à leur place et y restent. */
-.lancement.e1 .lancement-g,
-.lancement.e2 .lancement-g,
-.lancement.e3 .lancement-g,
-.lancement.e1 .lancement-d,
-.lancement.e2 .lancement-d,
-.lancement.e3 .lancement-d {
-  transform: translateX(0);
-  opacity: 1;
-}
+.lancement-g { left: 0; }
+.lancement-d { right: 0; }
 
-/* ---- le trait ----
-   L'or est écrit en clair, pas pris dans var(--chalk) : cet écran précède
-   le thème de l'application et son fond est marine dans tous les cas. */
+/* L'or et le crème sont écrits en clair, pas pris dans var(--chalk) et
+   var(--ink) : cet écran précède le thème de l'application, et son fond
+   est marine même en thème clair. */
 .lancement-trait {
   width: 48%;
   max-width: 140px;
   height: 1px;
   background: #f2b705;
-  transform: scaleX(0);
   transform-origin: center;
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.lancement.e2 .lancement-trait,
-.lancement.e3 .lancement-trait {
-  transform: scaleX(1);
 }
 
-/* ---- le nom ----
-   Hauteur fixe et ligne insécable : sans elles, le nom passe de deux lignes
+/* Hauteur fixe et ligne insécable : sans elles, le nom passe de deux lignes
    à une quand l'interlettrage se resserre, et toute la colonne centrée
-   sursaute juste avant qu'il apparaisse. La couleur est écrite en clair
-   pour la même raison que l'or : en thème clair, var(--ink) serait sombre
-   sur sombre, donc invisible. */
+   sursaute juste avant qu'il apparaisse. */
 .lancement-nom {
   margin: 0;
   height: 26px;
@@ -3781,27 +3754,6 @@ label.switch input {
   font-size: 21px;
   font-weight: 400;
   line-height: 1.2;
-  letter-spacing: 0.34em;
   text-transform: uppercase;
   color: #eae6db;
-  opacity: 0;
-  transform: translateY(7px);
-  transition: opacity 0.7s ease, letter-spacing 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.lancement.e3 .lancement-nom {
-  opacity: 1;
-  letter-spacing: 0.2em;
-  transform: translateY(0);
-}
-
-/* Mouvement réduit : le composant passe directement à l'étape 3 ; on retire
-   seulement la durée, pas l'état final. */
-@media (prefers-reduced-motion: reduce) {
-  .lancement-g,
-  .lancement-d,
-  .lancement-trait,
-  .lancement-nom {
-    transition-duration: 0.01s;
-  }
 }
