@@ -186,8 +186,22 @@ const PAR_NOM: Record<string, number> = {
   'raconter au passe 5e': 6,
   'raconter au passe': 6,
 
-  'les verbes irreguliers 5e': 4,
-  'les verbes irreguliers': 4,
+  /*
+   * CHANTIER 73 — les irréguliers passent sur le bleu-vert du prétérit,
+   * et non plus sur le terracotta. Choix du propriétaire.
+   *
+   * Ce que ça dit, et c'est défendable : le rayon Conjugaison porte
+   * désormais UNE seule teinte pour ses trois paquets — le prétérit, ses
+   * phrases, et le tableau des irréguliers sont la même matière. Le
+   * parchemin dit le rayon ; seuls les dessins distinguent les paquets,
+   * et ils sont franchement différents (calendrier, lettres de
+   * plastique).
+   *
+   * Le terracotta ressort donc d'usage. La roue retrouve une teinte
+   * libre pour la prochaine matière.
+   */
+  'les verbes irreguliers 5e': 6,
+  'les verbes irreguliers': 6,
 
   /*
    * EDHEC ÉPINGLÉ SUR LE LILAS
