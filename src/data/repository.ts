@@ -23,6 +23,7 @@ import type {
 import { DEFAULT_SETTINGS } from '../domain/types';
 import type { DeckJournal } from '../domain/deckState';
 import type { Jalon } from '../engine/jalons';
+import type { Releve } from '../engine/paliers';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK } from '../engine/streak';
 
@@ -75,6 +76,19 @@ const k = {
    * toutes les clés du préfixe.
    */
   jalons: (u: UserId) => `u:${u}:jalons`,
+  /*
+   * Les relevés QUOTIDIENS des cinq paliers (chantier 62).
+   *
+   * Une clé de plus, et non un élargissement des jalons ci-dessus : ce sont
+   * deux grains et deux contenus — un nombre par mois là, cinq par jour
+   * ici. Élargir les jalons aurait demandé de deviner quatre valeurs pour
+   * tous les mois déjà écrits, c'est-à-dire d'inventer un passé.
+   *
+   * Deux ans conservés au plus, plafond tenu par `noteReleve` : six nombres
+   * par jour, deux kilo-octets par an. La sauvegarde les emporte sans rien
+   * changer, comme tout ce qui porte le préfixe.
+   */
+  paliers: (u: UserId) => `u:${u}:paliers`,
 };
 
 export interface Repository {
@@ -111,6 +125,9 @@ export interface Repository {
   /** `null` = aucun relevé mensuel encore écrit. */
   getJalons(): Promise<Jalon[] | null>;
   saveJalons(j: Jalon[]): Promise<void>;
+  /** `null` = aucun relevé quotidien encore écrit : la courbe commence aujourd'hui. */
+  getReleves(): Promise<Releve[] | null>;
+  saveReleves(r: Releve[]): Promise<void>;
   deleteDeck(deckId: DeckId): Promise<void>;
   exportAll(): Promise<Record<string, unknown>>;
   importAll(data: Record<string, unknown>): Promise<void>;
@@ -214,6 +231,12 @@ export class IdbRepository implements Repository {
   async saveJalons(j: Jalon[]) {
     await set(k.jalons(this.user), j);
   }
+  async getReleves() {
+    return (await get<Releve[]>(k.paliers(this.user))) ?? null;
+  }
+  async saveReleves(r: Releve[]) {
+    await set(k.paliers(this.user), r);
+  }
   async deleteDeck(d: DeckId) {
     await Promise.all([
       del(k.cards(this.user, d)),
@@ -237,6 +260,13 @@ export class IdbRepository implements Repository {
       delete journal[d];
       await this.saveDeckJournal(journal);
     }
+    /*
+     * Les relevés de paliers, eux, ne sont PAS touchés. Ils ne sont pas
+     * rangés par paquet — ce sont des totaux datés — et les corriger
+     * rétroactivement reviendrait à réécrire un passé qui a bien eu lieu.
+     * La courbe portera donc une marche le jour de la suppression ; c'est
+     * la vérité de ce qui s'est passé.
+     */
     const decks = (await this.listDecks()).filter((x) => x.id !== d);
     await this.saveDecks(decks);
   }
