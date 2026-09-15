@@ -144,20 +144,64 @@ const PAR_NOM: Record<string, number> = {
   'decrire et comparer 5e': 2,
   'decrire et comparer': 2,
 
-  /*
-   * CHANTIER 61 — le miel aussi pour « Les verbes courants — 5e ».
-   * Demandé, et livré tel quel ; la réserve est écrite dans le
-   * LISEZ-MOI plutôt qu'ici.
+/*
+   * CHANTIER 70 — LES CINQ PAQUETS DE CONSOLIDATION, ET LA ROUE PLEINE
    *
-   * Le rayon « Vocabulaire de base » compte désormais QUATRE cartes sur
-   * le même parchemin. Le papier n'y distingue donc plus rien : tout
-   * repose sur les dessins — une bulle canard, une bulle brique, un
-   * sticker bleu nuit, un mot multicolore. Ces quatre-là se séparent
-   * encore, mais la marge est consommée : une cinquième carte miel dans
-   * ce rayon ne serait plus lisible.
+   * Trois suivent la règle du chantier 58 sans discussion — le papier dit
+   * la matière :
+   *
+   *    Le monde autour de nous — 5e      miel        (vocabulaire)
+   *    Modaux, futur et petits mots — 5e sauge       (grammaire)
+   *    Réagir et s'expliquer — 5e        ardoise     (phrases)
+   *
+   * Le miel porte donc CINQ cartes dans « Vocabulaire de base ». Ce n'est
+   * pas la règle qui casse, c'est la règle qui s'applique : le vocabulaire
+   * est miel. La distinction repose entièrement sur les dessins, et il n'y
+   * a plus de marge — une sixième carte miel dans ce rayon ne serait plus
+   * tenable.
+   *
+   *    Raconter au passé — 5e            bleu-vert   (même matière que
+   *                                                   « Le prétérit »)
+   *    Les verbes irréguliers — 5e       terracotta  (matière nouvelle)
+   *
+   * Le terracotta sortait d'usage depuis le chantier 59 ; il revient pour
+   * les irréguliers, seul paquet du catalogue qui soit un TABLEAU —
+   * l'infinitif d'un côté, l'infinitif et le prétérit de l'autre. Dans le
+   * rayon « Conjugaison », trois paquets, deux teintes : bleu-vert pour
+   * les deux prétérits, terracotta pour le tableau.
+   *
+   * APRÈS CE CHANTIER LA ROUE EST PLEINE : sept teintes, sept usages, plus
+   * une seule libre. La prochaine matière demandera une huitième teinte —
+   * dites-le-moi et je la dessine sur le même palier de clarté.
    */
-  'les verbes courants 5e': 2,
-  'les verbes courants': 2,
+  'le monde autour de nous 5e': 2,
+  'le monde autour de nous': 2,
+
+  'modaux futur et petits mots 5e': 1,
+  'modaux futur et petits mots': 1,
+
+  'reagir et s expliquer 5e': 0,
+  'reagir et s expliquer': 0,
+
+  'raconter au passe 5e': 6,
+  'raconter au passe': 6,
+
+  'les verbes irreguliers 5e': 4,
+  'les verbes irreguliers': 4,
+
+  /*
+   * EDHEC ÉPINGLÉ SUR LE LILAS
+   *
+   * Il y était déjà — mais par le hachage de repli, pas par décision, et
+   * un repli change de teinte dès qu'on touche au nom du paquet ou à la
+   * taille de la roue. L'épingler fige ce que vous voyez aujourd'hui.
+   *
+   * C'est une exception assumée à la règle du papier-matière : ce paquet
+   * est dans « Vocabulaire de base » sans être du vocabulaire de base, et
+   * son lilas le dit. Le passer au miel ferait six cartes miel dans le
+   * rayon — c'est la raison de fond.
+   */
+  'edhec business school': 3,
 
   'voyage phrases': 6,
   'voyage vocabulaire': 5,
