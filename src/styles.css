@@ -3459,3 +3459,89 @@ label.switch input {
   text-transform: uppercase;
   color: var(--grey);
 }
+/* ==================================================================
+   Chantier 62 — la courbe des quatre paliers
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le sélecteur jour / semaine / mois
+
+   C'est le `.themechoix` des Réglages, tel quel : trois pastilles à
+   filet, l'or en aplat sur celle qui est active. Rien de nouveau à
+   dessiner — le vocabulaire existe, et un second sélecteur inventé
+   pour l'occasion aurait donné deux grammaires pour un même geste.
+   Seules les marges changent, parce qu'ici il vit sous un titre de
+   rayon et au-dessus d'un tracé.
+   ------------------------------------------------------------------ */
+.prog-grain { margin-top: 2px; margin-bottom: 14px; }
+
+/* ------------------------------------------------------------------
+   Les quatre tracés
+
+   Les couleurs sont celles des statuts, et ce n'est pas un hasard :
+   la barre empilée du même tiroir emploie les mêmes. Une ligne verte
+   dans la courbe et un segment vert dans la barre doivent parler du
+   même tas, sinon les deux se contredisent sous les yeux.
+
+   Le nom des classes se déduit de celui des statuts (st-x → tr-x),
+   ce qui évite une seconde table à tenir à jour : `Progress.tsx` fait
+   la substitution, `engine/mastery.ts` reste la seule liste.
+   ------------------------------------------------------------------ */
+.prog-courbe .tr {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.prog-courbe .tr-reprendre { stroke: var(--bad); }
+.prog-courbe .tr-cours { stroke: var(--chalk); }
+.prog-courbe .tr-presque { stroke: #8fd0ae; }
+/*
+ * « Acquis » est plus épaisse que les trois autres. C'est la ligne qu'on
+ * vient chercher : à épaisseur égale, quatre traits de même poids font
+ * un écheveau où l'œil n'a pas de point d'entrée.
+ */
+.prog-courbe .tr-acquis { stroke: var(--good); stroke-width: 2.6; }
+
+/*
+ * La valeur du dernier point, posée contre le bord droit.
+ *
+ * `.prog-courbe-n` existe déjà et centre son texte sur le point ; au
+ * bord droit, la moitié dépasserait du cadre. Ce modificateur le fait
+ * finir sur le bord au lieu de l'enjamber.
+ */
+.prog-courbe-n.fin { transform: translateX(-100%); }
+
+/*
+ * Le cadre vide des premiers jours.
+ *
+ * Un tracé a besoin de deux points ; avec un seul, il n'y a rien à
+ * dessiner. Plutôt que de masquer le cadre — ce qui ferait croire que
+ * la fonction n'existe pas — on le garde et on écrit dedans pourquoi
+ * il est vide. Le filet du bas et celui de gauche suffisent à dire
+ * qu'un graphique va venir là.
+ */
+.prog-courbe.attente { border-left: 1px solid var(--rule); }
+.prog-courbe.attente p {
+  position: absolute;
+  left: 12px;
+  right: 4px;
+  bottom: 14px;
+  margin: 0;
+}
+
+/* ==================================================================
+   Correction — « À découvrir » était invisible en thème clair
+
+   `.st-decouvrir` vaut `rgba(234, 230, 219, 0.20)` : du blanc dilué,
+   juste sur le bleu nuit, et qu'aucune règle ne redéfinissait pour le
+   fond clair. Sur du blanc, le segment des mots jamais vus ne se
+   voyait pas — le tas le plus gros d'un paquet neuf était donc le seul
+   qu'on ne pouvait pas lire. Même défaut sur la piste de `.prog-barre`.
+
+   Ce n'est pas lié à la courbe ; c'est le chantier qui l'a mis au
+   jour, en regardant la barre des statuts sur fond clair.
+   ================================================================== */
+[data-theme='clair'] .st-decouvrir { background: rgba(22, 35, 63, 0.13); }
+[data-theme='clair'] .prog-barre { background: rgba(22, 35, 63, 0.09); }
