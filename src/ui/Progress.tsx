@@ -1,6 +1,30 @@
 /**
  * Onglet « Mes progrès » : un encart, deux lignes, trois tiroirs.
  *
+ * CHANTIER 62 — LA COURBE DES QUATRE PALIERS
+ *
+ * Le tiroir « Mes mots » porte maintenant l'évolution des paliers, au
+ * grain jour, semaine ou mois. Trois décisions s'y lisent, et la première
+ * est celle qui a écarté les autres formes :
+ *
+ * 1. QUATRE LIGNES, PAS CINQ. « À découvrir » compte les mots jamais
+ *    présentés — sur un paquet neuf, c'est presque tout. Tracé avec les
+ *    autres, il impose une échelle où « à reprendre » (quelques dizaines)
+ *    devient une ligne plate collée au filet, et où l'on ne voit plus
+ *    rien du travail. Ce n'est pas un progrès mais un stock : la barre
+ *    empilée juste au-dessus le montre déjà, et mieux.
+ *
+ * 2. ON TRACE UN ÉTAT, PAS UN DÉBIT. Chaque point est le dernier relevé
+ *    de sa période, jamais une moyenne — la moyenne de 380 et 390 mots
+ *    acquis ne veut rien dire (voir `engine/paliers.ts`).
+ *
+ * 3. LA COURBE MENSUELLE DES MOTS ACQUIS RESTE. Elle porte le passé déjà
+ *    noté depuis le chantier 34, que les relevés quotidiens ne peuvent
+ *    pas inventer : ils commencent le jour de la livraison. Dans quelques
+ *    mois, quand la série quotidienne couvrira le même terrain, elle
+ *    pourra partir — mais la retirer aujourd'hui effacerait de l'écran
+ *    le seul historique réel.
+ *
  * CHANTIER 51 — le tiroir « Mes mots » montre DEUX totaux au lieu d'un.
  * Le nombre unique qu'il affichait s'appelait « mots en jeu » alors qu'il
  * additionnait aussi les paquets en pause — et « Aujourd'hui » emploie les
@@ -15,20 +39,16 @@
  *
  * CHANTIER 44 — correction d'affichage : l'anneau écrivait le
  * pourcentage brut, avec ses dix-sept décimales. Il passe par
- * `masteryLabel`, comme partout ailleurs. Le tiroir ne répète plus ce
- * chiffre à côté de l'anneau, où il faisait doublon.
+ * `masteryLabel`, comme partout ailleurs.
  *
  * CHANTIER 42 — l'écran prend la forme des Réglages. Trois encarts :
  * « Mes mots », « Mon calendrier », « Mes paquets ». Chacun s'ouvre sur
- * son détail, et rien n'est perdu — les chiffres, le calendrier, la
- * courbe et les barres par paquet sont les blocs d'avant, déplacés.
+ * son détail.
  *
  * Une différence avec les Réglages, et elle est volontaire : on vient
  * REGARDER cet écran, pas y agir. Un onglet de progrès entièrement
  * replié ne montrerait plus rien. « Mes mots » garde donc son nombre à
- * l'écran — c'est la raison d'ouvrir l'onglet, et le faire payer d'un
- * geste serait absurde. Les deux autres lignes disent leur valeur à
- * droite, comme les Réglages : la série, et le nombre de paquets.
+ * l'écran — c'est la raison d'ouvrir l'onglet.
  *
  * Tous les chiffres viennent du même endroit (`progressStats`) et le
  * calendrier comme les compteurs lisent la même liste de dates
@@ -40,6 +60,7 @@ import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { firstDay, liveStreak, totalWorked, workedSet } from '../engine/streak';
 import { courbe, monthLabel } from '../engine/jalons';
+import { GRAINS, labelDe, serie, type Grain, type Releve } from '../engine/paliers';
 import { masteryLabel, STATUTS } from '../engine/mastery';
 import {
   dureeLabel, loadProgressStats, type Perimetre, type ProgressStats,
@@ -109,16 +130,7 @@ function grilleDuMois(
   return cases;
 }
 
-/**
- * L'anneau des mots acquis, avec son pourcentage au centre.
- *
- * CHANTIER 44 — il écrivait `{percent} %` : le nombre brut, soit
- * « 0.17421602787456447 % » à l'écran, qui débordait de l'anneau et
- * poussait tout le reste. `masteryLabel` est la fonction que le reste
- * de l'application emploie depuis toujours pour ce même chiffre : elle
- * tronque, garde une décimale sous dix pour cent, et écrit « <0,1 % »
- * plutôt que d'arrondir à zéro un travail commencé.
- */
+/** L'anneau des mots acquis, avec son pourcentage au centre. */
 function Anneau({ percent, taille }: { percent: number; taille: number }) {
   return (
     <span className="progring" style={{ width: taille, height: taille }} aria-hidden="true">
@@ -180,6 +192,163 @@ function BlocMots({ titre, p, note }: { titre: string; p: Perimetre; note: strin
   );
 }
 
+/*
+ * Les quatre paliers tracés : tous sauf « à découvrir ».
+ *
+ * Voir l'en-tête du fichier pour le pourquoi. Le nom de la classe de
+ * tracé se déduit de celui du statut — `st-acquis` donne `tr-acquis` —
+ * afin que `engine/mastery.ts` reste la seule liste des cinq tas. Une
+ * deuxième table aurait fini par donner un autre ordre ou une autre
+ * couleur, et deux lectures d'un même vert.
+ */
+const LIGNES = STATUTS.filter((s) => s.cle !== 'decouvrir');
+
+/**
+ * L'évolution des paliers, au grain choisi.
+ *
+ * L'ÉCHELLE NE PART PAS DE ZÉRO EN HAUT : le sommet du cadre est le plus
+ * grand des quatre nombres affichés, recalculé à chaque changement de
+ * grain. C'est ce qui rend les quatre lignes comparables entre elles —
+ * une échelle fixée sur le total des mots les aplatirait toutes.
+ */
+function CourbePaliers({ releves }: { releves: Releve[] }) {
+  const [grain, setGrain] = useState<Grain>('semaine');
+  const points = serie(releves, grain);
+
+  /*
+   * Le sélecteur n'apparaît qu'une fois deux relevés en magasin. Avant,
+   * les trois vues donnent le même point unique : trois boutons qui ne
+   * changent rien sont une promesse en trop.
+   */
+  const choixUtile = releves.length >= 2;
+
+  if (points.length < 2) {
+    return (
+      <>
+        <p className="rayon-label">Où en sont mes mots</p>
+        {choixUtile && (
+          <div className="themechoix prog-grain">
+            {GRAINS.map((g) => (
+              <button
+                key={g.cle}
+                className={grain === g.cle ? 'on' : ''}
+                aria-pressed={grain === g.cle}
+                onClick={() => setGrain(g.cle)}
+              >
+                {g.libelle}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="prog-courbe attente">
+          <p className="hint">
+            {choixUtile
+              ? 'Pas encore deux relevés à ce grain. Essayez « Jour », ou revenez dans quelques semaines.'
+              : 'Le premier relevé est fait. Revenez demain : chaque jour travaillé ajoute une mesure, et la courbe se dessinera d’elle-même.'}
+          </p>
+        </div>
+        <div className="prog-courbe-axe">
+          <small>aujourd’hui</small>
+          <small>{releves.length} relevé{releves.length > 1 ? 's' : ''}</small>
+        </div>
+        <p className="hint prog-perim-note">
+          Le palier d’un mot dit où il en est, jamais quand il y est arrivé :
+          le passé d’avant le premier relevé ne peut pas être reconstitué.
+        </p>
+      </>
+    );
+  }
+
+  const max = Math.max(
+    1,
+    ...points.flatMap((r) => LIGNES.map((s) => r[s.cle])),
+  );
+  const x = (i: number) => (320 * i) / (points.length - 1);
+  const y = (v: number) => 96 - (88 * v) / max;
+
+  const trace = (cle: (typeof LIGNES)[number]['cle']) =>
+    points
+      .map((r, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(r[cle]).toFixed(1)}`)
+      .join(' ');
+
+  /*
+   * Au plus quatre libellés sous l'axe. La vue « jour » porte jusqu'à
+   * trente points : trente dates dans la largeur d'un téléphone se
+   * chevauchent et ne se lisent plus. On garde les bornes et deux repères
+   * au tiers.
+   */
+  const indices = points.length <= 4
+    ? points.map((_, i) => i)
+    : [0, 1, 2, 3].map((k) => Math.round((k * (points.length - 1)) / 3));
+
+  const dernier = points[points.length - 1];
+
+  return (
+    <>
+      <p className="rayon-label">Où en sont mes mots</p>
+      <div className="themechoix prog-grain">
+        {GRAINS.map((g) => (
+          <button
+            key={g.cle}
+            className={grain === g.cle ? 'on' : ''}
+            aria-pressed={grain === g.cle}
+            onClick={() => setGrain(g.cle)}
+          >
+            {g.libelle}
+          </button>
+        ))}
+      </div>
+
+      <div className="prog-courbe">
+        <svg viewBox="0 0 320 100" preserveAspectRatio="none" aria-hidden="true">
+          {LIGNES.map((s) => (
+            <path
+              key={s.cle}
+              className={`tr ${s.classe.replace('st-', 'tr-')}`}
+              d={trace(s.cle)}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+        {/* Le dernier nombre de la ligne « acquis » : c'est celui qu'on
+            vient chercher, et le seul qu'on puisse poser sans encombrer. */}
+        <b
+          className="prog-courbe-n fin"
+          style={{ left: '100%', bottom: `${100 - y(dernier.acquis) + 7}px` }}
+        >
+          {nb(dernier.acquis)}
+        </b>
+      </div>
+      <div className="prog-courbe-axe">
+        {indices.map((i) => (
+          <small key={points[i].jour}>{labelDe(points[i].jour, grain)}</small>
+        ))}
+      </div>
+
+      <span className="statlist">
+        {LIGNES.map((s) => (
+          <span key={s.cle} className="statline">
+            <i className={s.classe} />
+            <span>{s.libelle}</span>
+            <b>{nb(dernier[s.cle])}</b>
+          </span>
+        ))}
+      </span>
+
+      <p className="hint prog-perim-note">
+        Les mots <b>à découvrir</b> ne sont pas tracés : ce sont les mots
+        jamais présentés, un stock et non un progrès, et leur nombre écrase
+        les quatre autres lignes. La barre plus haut les compte.
+      </p>
+      <p className="hint">
+        La courbe suit tous les paquets, pauses comprises : un mot acquis
+        reste acquis. Chaque point est l’état à la fin de sa période, pas une
+        moyenne — et un jour sans ouverture ne laisse pas de point.
+      </p>
+    </>
+  );
+}
+
 export function Progress({
   decks, active, settings, streak,
 }: {
@@ -208,7 +377,7 @@ export function Progress({
   const aujourd = todayKey();
   const faits = workedSet(streak);
   const debut = firstDay(streak);
-  const serie = liveStreak(streak);
+  const serieJours = liveStreak(streak);
   const total = totalWorked(streak);
 
   /* Jusqu'où on peut remonter : le mois du premier jour travaillé. */
@@ -235,7 +404,9 @@ export function Progress({
    * Ce que les deux lignes affichent à droite. « Série à lancer » est un
    * état, pas un vide : « 0 jour » se lirait comme une panne.
    */
-  const serieDite = serie === 0 ? 'Série à lancer' : `${serie} jour${serie > 1 ? 's' : ''}`;
+  const serieDite = serieJours === 0
+    ? 'Série à lancer'
+    : `${serieJours} jour${serieJours > 1 ? 's' : ''}`;
   const paquetsDits = `${stats.rows.length} paquet${stats.rows.length > 1 ? 's' : ''}`;
 
   const { charge, tout } = stats;
@@ -325,16 +496,21 @@ export function Progress({
             travaillés. Il est bien plus petit, et il change chaque jour.
           </p>
 
-          <p className="rayon-label">Les mots acquis, mois par mois</p>
-          {points.length < 2 ? (
-            <p className="hint">
-              Le premier relevé est fait. La courbe se dessinera au fil des
-              mois : le palier d’un mot dit où il en est, pas quand il y est
-              arrivé — le passé d’avant aujourd’hui ne peut donc pas être
-              reconstitué.
-            </p>
-          ) : (
-            <>
+          {/* CHANTIER 62 — l'évolution des quatre paliers. */}
+          <div className="prog-perim">
+            <CourbePaliers releves={stats.releves} />
+          </div>
+
+          {/*
+            * La courbe mensuelle des mots acquis, conservée.
+            *
+            * Elle porte le passé noté depuis le chantier 34, que les relevés
+            * quotidiens ne peuvent pas inventer. Le jour où la série
+            * quotidienne couvrira le même terrain, ce bloc pourra partir.
+            */}
+          {points.length >= 2 && (
+            <div className="prog-perim">
+              <p className="rayon-label">Les mots acquis, mois par mois</p>
               <div className="prog-courbe">
                 <svg viewBox="0 0 320 100" preserveAspectRatio="none" aria-hidden="true">
                   <path d={`${trace} L320 96 L0 96 Z`} className="aire" />
@@ -356,13 +532,11 @@ export function Progress({
               <div className="prog-courbe-axe">
                 {xy.map((p) => <small key={p.month}>{monthLabel(p.month)}</small>)}
               </div>
-              {/* La courbe suit le périmètre complet : mettre un paquet en
-                  pause ne doit pas faire redescendre un historique. */}
               <p className="hint prog-perim-note">
-                La courbe compte tous les paquets, pauses comprises : un mot
-                acquis reste acquis.
+                Le relevé mensuel, tenu depuis plus longtemps que celui des
+                cinq paliers. Il ne compte que les mots acquis.
               </p>
-            </>
+            </div>
           )}
         </Tiroir>
       )}
@@ -371,8 +545,8 @@ export function Progress({
         <Tiroir titre="Mon calendrier" onFermer={() => setTiroir(null)}>
           <div className="prog-compteurs">
             <span>
-              <b>{serie}</b>
-              <small>jour{serie > 1 ? 's' : ''} d’affilée</small>
+              <b>{serieJours}</b>
+              <small>jour{serieJours > 1 ? 's' : ''} d’affilée</small>
             </span>
             <span>
               <b>{streak.best}</b>
