@@ -10,27 +10,33 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.png', 'icon-512.png'],
+      includeAssets: [
+        'icon-192.png',
+        'icon-512.png',
+        'icon-512-maskable.png',
+        'apple-touch-icon.png',
+        'favicon.png',
+      ],
       manifest: {
-        name: 'Vocabulaire anglais',
-        short_name: 'Vocabulaire',
+        name: 'Neuro Anglais',
+        short_name: 'Neuro Anglais',
         description: 'Révision de vocabulaire anglais par répétition espacée.',
         lang: 'fr',
         start_url: './',
         scope: './',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#FBFAF6',
-        theme_color: '#16233F',
+        background_color: '#0F253C',
+        theme_color: '#0F253C',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          // Android recadre l'icône : celle-ci a le motif dans le cercle de
+          // sécurité, l'autre garderait un bord rogné.
+          { src: 'icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
-        // webp ajouté : sans lui, les visuels de dos fournis avec
-        // l'application ne sont pas mis en cache et disparaissent hors ligne.
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,webp}'],
       },
     }),
