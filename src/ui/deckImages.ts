@@ -29,6 +29,7 @@ import structures5e from '../assets/packs/5e-grammaire.png';
 import phrases5e from '../assets/packs/5e-phrases.png';
 import mots5e from '../assets/packs/5e-vocabulaire.png';
 import irreguliers5e from '../assets/packs/5e-irreguliers.png';
+import modaux5e from '../assets/packs/5e-modaux.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -201,6 +202,34 @@ const ILLUSTRATIONS: Record<string, string> = {
    * sur le « R » et le « S » en comparant les deux dos côte à côte en
    * grand. Aux deux tailles d'affichage, elle est invisible.
    */
+/*
+   * CHANTIER 72 — MODAUX, FUTUR ET PETITS MOTS
+   *
+   * Parti de votre nuage de mots, recomposé en carré : les lettres de
+   * plastique au centre avec leurs couleurs d'origine, les mots noirs en
+   * condensé gras au-dessus et au-dessous.
+   *
+   * L'écart avec votre modèle, et il est volontaire : les mots noirs ne
+   * sont plus « Dream », « Achieve », « New beginnings » mais les formes
+   * que le paquet enseigne — CAN, SHOULD, MUST, GOING TO, WILL, BECAUSE,
+   * BOTH, NEITHER, ENOUGH. Le dos devient un sommaire ; à l'ancienne il
+   * ne disait rien du contenu. Les petites enveloppes du modèle sont
+   * tombées : elles ne voulaient rien dire ici.
+   *
+   * LE FOND N'EST PAS TRANSPARENT — c'est la seule illustration du
+   * catalogue dans ce cas. Il porte #e8f0e7, exactement la sauge du
+   * parchemin de « Premières structures », donc le carré ne se voit pas
+   * sur la carte : aucun bord n'apparaît. Si vous changez un jour le
+   * parchemin de ce paquet, cette image devra changer avec lui.
+   *
+   * Troisième carte sauge du catalogue. Ce qui la distingue à 38 pixels
+   * n'est pas un sujet mais une DENSITÉ : un bloc de texte serré, là où
+   * les deux autres portent un dessin isolé.
+   */
+  '5e-modaux': modaux5e,
+  'modaux-futur-et-petits-mots-5e': modaux5e,
+  'modaux-futur-et-petits-mots': modaux5e,
+
   '5e-irreguliers': irreguliers5e,
   'les-verbes-irreguliers-5e': irreguliers5e,
   'les-verbes-irreguliers': irreguliers5e,
