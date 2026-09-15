@@ -3545,3 +3545,90 @@ label.switch input {
    ================================================================== */
 [data-theme='clair'] .st-decouvrir { background: rgba(22, 35, 63, 0.13); }
 [data-theme='clair'] .prog-barre { background: rgba(22, 35, 63, 0.09); }
+/* ==================================================================
+   Chantier 63 — « Mes mots » devient un écran
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le retour, dans l'écran
+
+   L'écran « Mes mots » vit dans l'onglet « Mes progrès » : la barre du
+   haut d'`App.tsx` ne s'affiche pas pour les écrans d'onglet, et la
+   faire apparaître aurait demandé de toucher à `App.tsx` — donc de
+   redéployer la navigation entière pour un chevron. Le chevron est donc
+   posé dans l'écran, à la place exacte où la barre du haut l'aurait mis,
+   avec la même taille et la même couleur.
+
+   44 px de haut : c'est la cible minimale du pouce, et la seule mesure
+   qui compte pour un bouton de retour — on le manque souvent.
+   ------------------------------------------------------------------ */
+.sousecran-retour {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  margin: 0 0 2px;
+  padding: 0 10px 0 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.sousecran-retour span { font-size: 20px; line-height: 1; }
+.sousecran-retour:hover { color: var(--ink); }
+.sousecran-retour:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+/* Le titre suit le chevron de près : deux lignes, un seul objet. */
+.sousecran-retour + .screen-title { margin-top: 0; }
+
+/* ------------------------------------------------------------------
+   L'entrée dans l'écran
+
+   La même animation que les écrans d'`App.tsx` (chantier 45) : le
+   nouveau contenu monte du fond, légèrement réduit. Il s'agit du même
+   geste — on entre dans quelque chose — et deux mouvements différents
+   pour un même geste se remarqueraient.
+
+   Aucun tiroir ne vit dans cet écran, donc la transformation ne peut
+   pas détourner le repère d'un `position: fixed` — c'était le défaut
+   corrigé au chantier 49.
+   ------------------------------------------------------------------ */
+.sousecran { animation: ecran-avance 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sousecran { animation: none; }
+}
+
+/* ------------------------------------------------------------------
+   Les deux volets
+
+   C'est le `.themechoix` des Réglages, comme le sélecteur de grain
+   qu'il surplombe : deux pastilles à filet, l'or en aplat sur l'active.
+   Seules les marges changent — il vit sous un titre d'écran et non dans
+   une liste de réglages.
+   ------------------------------------------------------------------ */
+.prog-volets { margin: 6px 0 22px; }
+
+/* ------------------------------------------------------------------
+   Le tracé des paliers, à sa vraie hauteur
+
+   100 px de tracé dans le tiroir faisaient un écheveau : quatre lignes
+   dont les écarts se comptaient en pixels. 196 px les séparent — le
+   jaune qui plafonne pendant que le vert monte se voit sans qu'on ait à
+   le chercher. C'est la raison principale du chantier.
+
+   `MesMots.tsx` connaît cette valeur (`H_TRACE`) : la valeur du dernier
+   point est posée en pixels depuis le bas, et le repère du SVG fait 100
+   de haut. Les deux doivent dire la même chose.
+   ------------------------------------------------------------------ */
+.prog-courbe.haute { height: 210px; }
+.prog-courbe.haute svg { height: 196px; }
+
+/* Le cadre d'attente des premiers jours garde la hauteur du tracé :
+   voir tout de suite la place que la courbe prendra vaut mieux qu'un
+   cadre étroit qui grandirait un matin sans qu'on sache pourquoi. */
+.prog-courbe.attente.haute p { bottom: auto; top: 50%; transform: translateY(-50%); }
