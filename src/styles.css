@@ -3632,3 +3632,56 @@ label.switch input {
    voir tout de suite la place que la courbe prendra vaut mieux qu'un
    cadre étroit qui grandirait un matin sans qu'on sache pourquoi. */
 .prog-courbe.attente.haute p { bottom: auto; top: 50%; transform: translateY(-50%); }
+/* ==================================================================
+   Chantier 64 — « Mon calendrier » devient un écran
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Le chevron de retour (`.sousecran-retour`) et l'animation d'entrée
+   (`.sousecran`) sont ceux du chantier 63 : le calendrier les réutilise
+   tels quels. Deux écrans frères doivent entrer de la même façon.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   La grille, à la taille d'un écran
+
+   Dans le tiroir, les cases faisaient une quarantaine de pixels et leur
+   chiffre 11,5 px : c'était la place disponible. Sur un écran entier, la
+   grille prend toute la largeur — les cases grandissent d'elles-mêmes
+   (elles sont carrées par `aspect-ratio`), et le chiffre doit suivre,
+   sans quoi il flotte au milieu d'un carré trop grand pour lui.
+   ------------------------------------------------------------------ */
+.sousecran .prog-cal { gap: 5px; }
+.sousecran .prog-jour { font-size: 13px; border-radius: 11px; }
+
+/* Les trois compteurs suivent le titre de près : ils en sont le résumé. */
+.sousecran .prog-compteurs { margin-top: 4px; }
+
+/* La barre du mois respire un peu plus que dans le tiroir : c'est le
+   gouvernail de l'écran, et on y revient à chaque mois feuilleté. */
+.sousecran .prog-moisbar { margin: 24px 0 14px; }
+
+/* ------------------------------------------------------------------
+   « Revenir à ce mois-ci »
+
+   Onze clics séparent janvier de décembre. Le raccourci n'apparaît que
+   lorsqu'on est effectivement parti, et il se présente comme un lien —
+   un bouton plein en ferait une action importante, alors que ce n'est
+   qu'une commodité de navigation.
+   ------------------------------------------------------------------ */
+.cal-revenir {
+  display: block;
+  min-height: 44px;
+  margin: 2px 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--chalk);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.cal-revenir:hover { color: var(--chalk-ink, var(--chalk)); }
+.cal-revenir:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
