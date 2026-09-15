@@ -28,8 +28,7 @@ import voyagePhrases from '../assets/packs/voyage-phrases.png';
 import structures5e from '../assets/packs/5e-grammaire.png';
 import phrases5e from '../assets/packs/5e-phrases.png';
 import mots5e from '../assets/packs/5e-vocabulaire.png';
-import adjectifs5e from '../assets/packs/5e-adjectifs.png';
-import verbes5e from '../assets/packs/5e-verbes.png';
+import irreguliers5e from '../assets/packs/5e-irreguliers.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -177,48 +176,38 @@ const ILLUSTRATIONS: Record<string, string> = {
    * 132 pixels — les deux seules tailles d'affichage — elle est
    * invisible.
    */
+/*
+   * CHANTIER 71 — LES VERBES IRRÉGULIERS
+   *
+   * Parti de vos lettres de plastique de « Les verbes courants » : même
+   * graisse, même arrondi, même relief poussé vers le bas à droite. Deux
+   * choses changent.
+   *
+   * Le mot « IRREGULAR » au-dessus, à 132 px contre 310 px pour VERBS :
+   * il ne se lira pas dans la liste, et c'est assumé — à 38 pixels ce
+   * qui distingue une ligne de sa voisine est la masse de couleur, pas
+   * un mot. Il sert à la carte ouverte, où il lève toute ambiguïté avec
+   * l'autre paquet de verbes.
+   *
+   * Les cinq couleurs passent dans la famille chaude du parchemin
+   * terracotta — brique, ambre, noix, safran, cuivre — là où « Les
+   * verbes courants » garde l'arc-en-ciel froid. C'est la règle du
+   * chantier 58 appliquée à la lettre : le papier dit la matière, la
+   * couleur du dessin fait le reste du travail.
+   *
+   * Réserve, la même qu'au chantier 57 : les lettres ne sont pas de la
+   * police d'origine, qui n'était pas fournie avec l'image. C'est un
+   * arrondi large et gras très proche à l'œil ; la différence se voit
+   * sur le « R » et le « S » en comparant les deux dos côte à côte en
+   * grand. Aux deux tailles d'affichage, elle est invisible.
+   */
+  '5e-irreguliers': irreguliers5e,
+  'les-verbes-irreguliers-5e': irreguliers5e,
+  'les-verbes-irreguliers': irreguliers5e,
+
   '5e-vocabulaire': mots5e,
   'mots-de-tous-les-jours': mots5e,
   'mots-de-tous-les-jours-5e': mots5e,
-
-  /*
-   * CHANTIER 60 — « Décrire et comparer — 5e ».
-   *
-   * Premier visuel qui n'est pas un couple : ce paquet n'a pas
-   * d'homologue en sixième, le dessin est donc le vôtre, sans ascendance.
-   *
-   * Il sort aussi du lot par sa facture — un sticker à fond bleu nuit,
-   * là où les neuf autres sont des sujets détourés sur fond clair. Sur le
-   * parchemin miel, il pèse donc plus lourd que ses voisins, et il porte
-   * un mot (« COMPARE ») qui ne se lira pas à 54 pixels. Les deux loupes
-   * et leurs graphiques, eux, tiennent : c'est la forme, pas le texte,
-   * qui fait reconnaître la carte.
-   */
-  '5e-adjectifs': adjectifs5e,
-  'decrire-et-comparer': adjectifs5e,
-  'decrire-et-comparer-5e': adjectifs5e,
-
-  /*
-   * CHANTIER 61 — « Les verbes courants — 5e ». Le dernier paquet de
-   * cinquième à recevoir son visuel : les cinq sont illustrés.
-   *
-   * Seul mot-image du catalogue — les autres visuels sont des objets. Il
-   * est aussi le seul LARGE et BAS : 922 x 236 dans un carré de 1024, le
-   * reste transparent. Ce vide n'est pas une négligence, c'est ce qui
-   * garde le sujet centré dans le cadre du dos : la feuille de style
-   * pose toute illustration à 26 % du haut sur 67,7 % de largeur, en
-   * supposant un carré. Recadré au ras des lettres, le mot se
-   * retrouverait collé en haut du cadre.
-   *
-   * Conséquence à assumer : les lettres sont plus petites que les sujets
-   * des autres cartes. À 54 pixels, « VERBS » ne se lit plus — il reste
-   * cinq blocs de couleur vive, ce qui suffit à reconnaître la carte et
-   * ne suffit pas à dire « des verbes ». Troisième visuel dans ce cas,
-   * après « Voyage — phrases » et « Décrire et comparer ».
-   */
-  '5e-verbes': verbes5e,
-  'les-verbes-courants': verbes5e,
-  'les-verbes-courants-5e': verbes5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
