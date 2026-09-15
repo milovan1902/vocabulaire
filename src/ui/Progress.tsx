@@ -1,29 +1,23 @@
 /**
- * Onglet « Mes progrès » : un encart, deux lignes, deux tiroirs — et un
- * écran.
+ * Onglet « Mes progrès » : un encart, deux lignes, deux écrans, un
+ * tiroir.
  *
- * CHANTIER 63 — « MES MOTS » N'EST PLUS UN TIROIR
+ * CHANTIER 64 — « MON CALENDRIER » DEVIENT UN ÉCRAN
  *
- * L'encart « Mes mots » ouvrait une feuille montée du bas qui portait
- * deux anneaux, cinq tas, un sélecteur, deux courbes et quatre notes :
- * trois hauteurs d'écran dans une parenthèse. Il ouvre maintenant un
- * écran — `MesMots.tsx`, deux volets — et cet écran s'affiche À LA PLACE
- * de la table des matières, dans le même onglet.
+ * Même mouvement qu'au chantier 63 pour « Mes mots » : la ligne n'ouvre
+ * plus une feuille montée du bas, elle affiche un écran à la place de la
+ * table des matières, dans le même onglet. `MonCalendrier.tsx` en porte
+ * le contenu — et remonte maintenant douze mois en arrière au moins, là
+ * où le tiroir s'arrêtait au premier jour travaillé.
  *
- * Pourquoi ici et pas dans `App.tsx` : l'écran reste un état de l'onglet
- * « Mes progrès ». La barre d'onglets ne bouge pas, ses quatre icônes
- * non plus, et `App.tsx` n'a pas une ligne à changer — donc rien à
- * redéployer de ce côté. Le retour est un chevron dans l'écran, au-dessus
- * du titre, à la place où la barre du haut l'aurait mis.
+ * « Mes paquets » RESTE un tiroir, et c'est un choix : c'est une liste
+ * qu'on parcourt d'un coup d'œil, sans navigation interne ni mois à
+ * feuilleter. La promouvoir en écran n'ajouterait qu'un aller-retour.
+ * On ne change de contenant que là où le contenu a débordé.
  *
- * Le calendrier et les paquets RESTENT des tiroirs. Chacun ne montre
- * qu'une chose et tient dans une feuille : les promouvoir en écrans
- * n'aurait ajouté que des allers-retours. On ne change de contenant que
- * là où le contenu a débordé.
- *
- * CHANTIER 51 — deux totaux au lieu d'un : ce qui tourne dans la charge
- * de travail d'aujourd'hui, puis tout ce qu'on possède, pauses comprises.
- * Les deux blocs vivent maintenant dans `MesMots.tsx`.
+ * Comme au chantier 63, rien dans `App.tsx` : les deux écrans sont des
+ * états de l'onglet, la barre d'onglets et ses quatre icônes ne bougent
+ * pas.
  *
  * CHANTIER 42 — l'écran prend la forme des Réglages. Trois encarts :
  * « Mes mots », « Mon calendrier », « Mes paquets ».
@@ -39,24 +33,19 @@
  */
 import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
-import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
-import { firstDay, liveStreak, totalWorked, workedSet } from '../engine/streak';
+import { liveStreak } from '../engine/streak';
 import {
   dureeLabel, loadProgressStats, type ProgressStats,
 } from './progressStats';
 import { Anneau, MesMots } from './MesMots';
+import { MonCalendrier } from './MonCalendrier';
 import { Ligne, Tiroir } from './tiroir';
 
-const MOIS_NOMS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
-  'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-/** La semaine commence le lundi : c'est un calendrier français. */
-const JOURS_COURTS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-
-/** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'calendrier' | 'paquets';
-
 const nb = (n: number) => n.toLocaleString('fr-FR');
+
+/** Quel écran de détail est ouvert, à la place de la table des matières. */
+type Sous = null | 'mots' | 'calendrier';
 
 /**
  * Le vert d'une barre d'avancement : clair au départ, profond à l'arrivée.
@@ -72,42 +61,6 @@ function vert(t: number): string {
   return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',')})`;
 }
 
-interface Case {
-  key: string;
-  jour: number | null;
-  fait: boolean;
-  horsPeriode: boolean;
-  aujourdhui: boolean;
-}
-
-function grilleDuMois(
-  annee: number,
-  mois: number,
-  faits: Set<string>,
-  debut: string | null,
-  aujourd: string,
-): Case[] {
-  const premier = new Date(annee, mois, 1);
-  const decalage = (premier.getDay() + 6) % 7;
-  const nbJours = new Date(annee, mois + 1, 0).getDate();
-
-  const cases: Case[] = [];
-  for (let i = 0; i < decalage; i++) {
-    cases.push({ key: `vide-${i}`, jour: null, fait: false, horsPeriode: true, aujourdhui: false });
-  }
-  for (let d = 1; d <= nbJours; d++) {
-    const key = todayKey(new Date(annee, mois, d));
-    cases.push({
-      key,
-      jour: d,
-      fait: faits.has(key),
-      horsPeriode: key > aujourd || (!!debut && key < debut),
-      aujourdhui: key === aujourd,
-    });
-  }
-  return cases;
-}
-
 export function Progress({
   decks, active, settings, streak,
 }: {
@@ -119,10 +72,8 @@ export function Progress({
   streak: Streak;
 }) {
   const [stats, setStats] = useState<ProgressStats | null>(null);
-  const [moisRecule, setMoisRecule] = useState(0);
-  const [tiroir, setTiroir] = useState<Tiroirs>(null);
-  /** Vrai quand l'écran « Mes mots » est ouvert, à la place de la liste. */
-  const [surMots, setSurMots] = useState(false);
+  const [sous, setSous] = useState<Sous>(null);
+  const [tiroirOuvert, setTiroirOuvert] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -136,30 +87,18 @@ export function Progress({
   if (!stats) return <p className="lead">Chargement…</p>;
 
   /*
-   * L'écran « Mes mots » remplace la table des matières. Les deux tiroirs
-   * ne peuvent pas être ouverts en même temps que lui — on ne peut pas
-   * les atteindre depuis là — donc rien à refermer au passage.
+   * Les écrans de détail remplacent la table des matières. Le tiroir ne
+   * peut pas être ouvert en même temps que l'un d'eux — on ne peut pas
+   * l'atteindre depuis là — donc rien à refermer au passage.
    */
-  if (surMots) {
-    return <MesMots stats={stats} onRetour={() => setSurMots(false)} />;
+  if (sous === 'mots') {
+    return <MesMots stats={stats} onRetour={() => setSous(null)} />;
+  }
+  if (sous === 'calendrier') {
+    return <MonCalendrier streak={streak} onRetour={() => setSous(null)} />;
   }
 
-  const aujourd = todayKey();
-  const faits = workedSet(streak);
-  const debut = firstDay(streak);
   const serieJours = liveStreak(streak);
-  const total = totalWorked(streak);
-
-  /* Jusqu'où on peut remonter : le mois du premier jour travaillé. */
-  const maintenant = new Date();
-  const moisMin = debut
-    ? (maintenant.getFullYear() - Number(debut.slice(0, 4))) * 12
-      + (maintenant.getMonth() - (Number(debut.slice(5, 7)) - 1))
-    : 0;
-  const recul = Math.min(moisRecule, Math.max(moisMin, 0));
-  const vue = new Date(maintenant.getFullYear(), maintenant.getMonth() - recul, 1);
-  const cases = grilleDuMois(vue.getFullYear(), vue.getMonth(), faits, debut, aujourd);
-  const faitsDuMois = cases.filter((c) => c.jour !== null && c.fait).length;
 
   /*
    * Ce que les deux lignes affichent à droite. « Série à lancer » est un
@@ -180,7 +119,7 @@ export function Progress({
         {/* L'encart des mots garde son nombre à l'écran : c'est la
             réponse qu'on venait chercher. Il compte TOUT ce qu'on
             possède — l'écran sépare ensuite les deux périmètres. */}
-        <button className="progmots" onClick={() => setSurMots(true)}>
+        <button className="progmots" onClick={() => setSous('mots')}>
           <img src="/ico-mots.png" alt="" width={40} height={40} />
           <span>
             <span className="progmots-nom">Mes mots</span>
@@ -202,7 +141,7 @@ export function Progress({
           titre="Mon calendrier"
           sous="La série, et les jours travaillés."
           valeur={serieDite}
-          onClick={() => setTiroir('calendrier')}
+          onClick={() => setSous('calendrier')}
         />
         {/* Même icône que l'onglet « Paquets » : c'est la même chose
             qu'on désigne, et deux dessins pour un objet se paieraient. */}
@@ -211,76 +150,12 @@ export function Progress({
           titre="Mes paquets"
           sous="Où en est chacun, paquet par paquet."
           valeur={paquetsDits}
-          onClick={() => setTiroir('paquets')}
+          onClick={() => setTiroirOuvert(true)}
         />
       </div>
 
-      {tiroir === 'calendrier' && (
-        <Tiroir titre="Mon calendrier" onFermer={() => setTiroir(null)}>
-          <div className="prog-compteurs">
-            <span>
-              <b>{serieJours}</b>
-              <small>jour{serieJours > 1 ? 's' : ''} d’affilée</small>
-            </span>
-            <span>
-              <b>{streak.best}</b>
-              <small>meilleure série</small>
-            </span>
-            <span>
-              <b>{total}</b>
-              <small>jours travaillés</small>
-            </span>
-          </div>
-
-          <div className="prog-moisbar">
-            <button
-              className="btn-rond"
-              onClick={() => setMoisRecule((v) => Math.min(v + 1, Math.max(moisMin, 0)))}
-              disabled={recul >= moisMin}
-              aria-label="Mois précédent"
-            >
-              ‹
-            </button>
-            <b>{MOIS_NOMS[vue.getMonth()]} {vue.getFullYear()}</b>
-            <button
-              className="btn-rond"
-              onClick={() => setMoisRecule((v) => Math.max(0, v - 1))}
-              disabled={recul === 0}
-              aria-label="Mois suivant"
-            >
-              ›
-            </button>
-          </div>
-
-          <div className="prog-cal">
-            {JOURS_COURTS.map((j, i) => (
-              <small key={i} className="prog-cal-head">{j}</small>
-            ))}
-            {cases.map((c) => (
-              <span
-                key={c.key}
-                className={
-                  'prog-jour'
-                  + (c.jour === null ? ' vide' : '')
-                  + (c.fait ? ' on' : '')
-                  + (c.horsPeriode && !c.fait ? ' hors' : '')
-                  + (c.aujourdhui ? ' now' : '')
-                }
-              >
-                {c.jour ?? ''}
-              </span>
-            ))}
-          </div>
-          <p className="hint">
-            {faitsDuMois} jour{faitsDuMois > 1 ? 's' : ''} travaillé{faitsDuMois > 1 ? 's' : ''}
-            {' '}en {MOIS_NOMS[vue.getMonth()]}
-            {debut ? `, ${total} depuis le début` : ''}.
-          </p>
-        </Tiroir>
-      )}
-
-      {tiroir === 'paquets' && (
-        <Tiroir titre="Mes paquets" onFermer={() => setTiroir(null)}>
+      {tiroirOuvert && (
+        <Tiroir titre="Mes paquets" onFermer={() => setTiroirOuvert(false)}>
           <div className="prog-liste">
             {stats.rows.map((r) => (
               <span key={r.deck.id} className="prog-ligne">
