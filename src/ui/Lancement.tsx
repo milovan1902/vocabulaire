@@ -3,58 +3,70 @@ import profilGauche from '../assets/profil-gauche.png';
 import profilDroit from '../assets/profil-droit.png';
 
 /*
- * L'ouverture de l'application : les deux profils du logo entrent par les
- * bords, le trait d'or se tire entre eux, le nom entre en dernier.
+ * L'ouverture de l'application.
  *
- * Un seul passage par lancement. Le drapeau vit au niveau du module, pas
- * dans l'état : si React remonte l'arbre (le double montage de StrictMode
- * en développement, une reprise après une erreur), l'ouverture ne rejoue
- * pas. Un logo qu'on revoit dix fois par jour devient une porte à pousser.
+ * L'animation est commandée depuis React, par étapes, et non par un
+ * @keyframes : c'est le composant qui décide quand chaque chose entre, donc
+ * l'état de départ est celui du premier rendu — pas celui qu'une règle CSS
+ * manquante ou neutralisée laisserait apparaître.
+ *
+ * Un seul passage par lancement : le drapeau vit au niveau du module, donc
+ * un remontage de React ne rejoue pas l'ouverture.
  */
 let dejaJoue = false;
 
-/** Durée de l'animation. Doit rester égale aux 4s du CSS. */
-const DUREE = 4000;
+/** Les étapes, en millisecondes depuis le premier rendu. */
+const PROFILS = 60;
+const TRAIT = 1150;
+const NOM = 2000;
+const FIN = 4000;
 /** L'estompage qui découvre l'application. Égal à la transition du CSS. */
 const SORTIE = 450;
-/** Mouvement réduit : on montre l'état final, sans le glissement. */
-const DUREE_SOBRE = 700;
+/** Mouvement réduit : l'état final, tenu sept dixièmes de seconde. */
+const FIN_SOBRE = 700;
+
+type Etape = 0 | 1 | 2 | 3;
 
 export default function Lancement() {
-  const [etat, setEtat] = useState<'joue' | 'sort' | 'fini'>(() =>
-    dejaJoue ? 'fini' : 'joue',
-  );
+  const [vivant, setVivant] = useState(!dejaJoue);
+  const [etape, setEtape] = useState<Etape>(0);
+  const [sort, setSort] = useState(false);
   const minuteries = useRef<number[]>([]);
 
+  const arreter = () => {
+    minuteries.current.forEach((m) => clearTimeout(m));
+    minuteries.current = [];
+  };
+
   useEffect(() => {
-    if (etat !== 'joue') return;
+    if (dejaJoue) return;
     dejaJoue = true;
     const sobre = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const attente = sobre ? DUREE_SOBRE : DUREE;
-    minuteries.current = [
-      window.setTimeout(() => setEtat('sort'), attente),
-      window.setTimeout(() => setEtat('fini'), attente + SORTIE),
-    ];
-    return () => {
-      minuteries.current.forEach((m) => clearTimeout(m));
-      minuteries.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const t = (ms: number, f: () => void) => window.setTimeout(f, ms);
+    minuteries.current = sobre
+      ? [t(0, () => setEtape(3)), t(FIN_SOBRE, () => setSort(true)), t(FIN_SOBRE + SORTIE, () => setVivant(false))]
+      : [
+          t(PROFILS, () => setEtape(1)),
+          t(TRAIT, () => setEtape(2)),
+          t(NOM, () => setEtape(3)),
+          t(FIN, () => setSort(true)),
+          t(FIN + SORTIE, () => setVivant(false)),
+        ];
+    return arreter;
   }, []);
 
-  if (etat === 'fini') return null;
+  if (!vivant) return null;
 
   /** Un appui passe l'ouverture : personne ne doit attendre son application. */
   const passer = () => {
-    minuteries.current.forEach((m) => clearTimeout(m));
-    minuteries.current = [];
-    setEtat('sort');
-    minuteries.current = [window.setTimeout(() => setEtat('fini'), SORTIE)];
+    arreter();
+    setSort(true);
+    minuteries.current = [window.setTimeout(() => setVivant(false), SORTIE)];
   };
 
   return (
     <div
-      className={`lancement${etat === 'sort' ? ' sort' : ''}`}
+      className={`lancement e${etape}${sort ? ' sort' : ''}`}
       onClick={passer}
       role="presentation"
       aria-hidden="true"
