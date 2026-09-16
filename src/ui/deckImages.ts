@@ -34,6 +34,7 @@ import modaux5e from '../assets/packs/5e-modaux.png';
 import monde5e from '../assets/packs/5e-monde.png';
 import reagir5e from '../assets/packs/5e-reagir.png';
 import raconter5e from '../assets/packs/5e-raconter.png';
+import courants5e from '../assets/packs/5e-courants.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -214,8 +215,11 @@ const ILLUSTRATIONS: Record<string, string> = {
    * ambiguïté avec l'autre paquet de verbes.
    *
    * Les cinq couleurs passent dans une famille chaude — brique, ambre,
-   * noix, safran, cuivre — là où « Les verbes courants » garde
-   * l'arc-en-ciel froid. Le parchemin, lui, est le bleu-vert du rayon
+   * noix, safran, cuivre. Au chantier 71 c'était pour se distinguer de
+   * l'arc-en-ciel de « Les verbes courants » ; depuis le chantier 76 ce
+   * paquet porte une affiche typographique verte, et l'écart est plus
+   * franc encore. (L'arc-en-ciel d'origine dort dans
+   * `assets/packs/5e-verbes.png`, non raccordé.) Le parchemin, lui, est le bleu-vert du rayon
    * Conjugaison depuis le chantier 73 : le fond dit le rayon, les
    * lettres disent le paquet.
    *
@@ -295,6 +299,42 @@ const ILLUSTRATIONS: Record<string, string> = {
   '5e-raconter': raconter5e,
   'raconter-au-passe-5e': raconter5e,
   'raconter-au-passe': raconter5e,
+
+  /*
+   * CHANTIER 76 — LES VERBES COURANTS
+   *
+   * Votre affiche, reprise telle quelle : les quatre vignettes d'angle,
+   * les avions en papier, le titre en capitales vertes. Rien n'est
+   * redessiné.
+   *
+   * LE FOND A ÉTÉ TEINTÉ, et c'est le seul traitement. Votre crème
+   * (#fdfffa) est repeint au miel exact du parchemin (#f7efdd) — le même
+   * que « Premiers mots », comme demandé. Ce n'est pas un aplat posé
+   * par-dessus : chaque pixel du fond est remis à l'échelle canal par
+   * canal, donc la texture de papier de votre affiche est conservée. Sur
+   * la carte, aucun carré ne se devine : le dessin et le parchemin sont
+   * la même teinte au pixel près.
+   *
+   * Le fond est repeint PAR DIFFUSION DEPUIS LES BORDS, pas par couleur :
+   * les blancs intérieurs — les trois avions, l'enveloppe, le « A » —
+   * sont enclos par des traits et gardent leur blanc. Sans cela ils
+   * auraient viré au miel et se seraient effacés dans le fond.
+   *
+   * Conséquence à connaître : si vous changez un jour le parchemin de ce
+   * paquet, cette image devra être reteintée avec lui. C'est le même
+   * couplage que « Modaux » et sa sauge.
+   *
+   * CINQUIÈME CARTE MIEL du rayon « Vocabulaire de base », avec
+   * Premiers mots, Mots de tous les jours, Décrire et comparer et Le
+   * monde autour de nous. La distinction repose entièrement
+   * sur les dessins, et celui-ci est dense et typographique là où les
+   * autres sont des dessins isolés : il se reconnaît de loin.
+   */
+  '5e-courants': courants5e,
+  'les-verbes-courants-5e': courants5e,
+  'les-verbes-courants': courants5e,
+  'verbes-du-quotidien-5e': courants5e,
+
 
 };
 
