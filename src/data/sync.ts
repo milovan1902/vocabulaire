@@ -18,6 +18,8 @@ import { readClasse } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
+import { fusionnerJalons, type Jalon } from '../engine/jalons';
+import { fusionnerReleves, type Releve } from '../engine/paliers';
 import {
   fusionner, journalDepuisListes, listes,
   type DeckJournal,
@@ -279,7 +281,22 @@ export async function clearRemoteProgress(userId: string, deckId: string): Promi
 }
 
 /**
- * Réglages, compteur du jour, série, collection et paquets en jeu.
+ * Réglages, compteur du jour, série, collection, paquets en jeu, et
+ * l'historique de « Mes progrès ».
+ *
+ * ── Ce qui change au chantier 83 ───────────────────────────────────────
+ *
+ * Les deux historiques de « Mes mots » ne voyageaient pas. Ils n'étaient
+ * écrits que dans l'IndexedDB de l'appareil où l'écran avait été ouvert :
+ * le téléphone portait des mois de relevés, l'ordinateur affichait une
+ * page vierge, et le serveur n'en avait jamais eu copie. Rien n'aurait pu
+ * la rendre — ces deux séries sont les seules données de l'application qui
+ * ne se recalculent pas.
+ *
+ * Elles rejoignent donc le paquet JSON, avec les autres : deux clés de
+ * plus dans `settings`, aucune table, aucune colonne, aucune règle d'accès
+ * nouvelle. Deux kilo-octets par an pour les relevés, quelques dizaines
+ * d'octets par an pour les jalons.
  *
  * Tout voyage dans le même paquet JSON de la colonne `settings` : aucune
  * table, aucune colonne, aucune règle d'accès nouvelle du côté de Supabase.
@@ -305,6 +322,9 @@ export async function syncSettings(userId: string): Promise<void> {
   const localCounters = await repository.getCounters();
   const localStreak = await repository.getStreak();
   const localOverrides = await repository.getOverrides();
+  /* Les deux historiques de « Mes progrès ». Absents = jamais relevé ici. */
+  const localJalons = (await repository.getJalons()) ?? [];
+  const localReleves = (await repository.getReleves()) ?? [];
   /*
    * Le journal local, ou sa reconstitution depuis les deux anciennes listes
    * si cet appareil n'en a pas encore. Reconstitué, il est daté à zéro : il
@@ -331,6 +351,8 @@ export async function syncSettings(userId: string): Promise<void> {
     installed?: string[];
     active?: string[];
     deckJournal?: DeckJournal;
+    jalons?: Jalon[];
+    paliers?: Releve[];
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -348,6 +370,17 @@ export async function syncSettings(userId: string): Promise<void> {
   }
 
   const streak = mergeStreak(localStreak, remoteStreak);
+
+  /*
+   * Les deux historiques : mois par mois et jour par jour.
+   *
+   * La fusion est symétrique et sans date — voir `fusionnerJalons` et
+   * `fusionnerReleves`. Un appareil qui n'a rien relevé reçoit donc tout le
+   * passé de l'autre, et n'efface rien en échange : c'est exactement le cas
+   * de l'ordinateur ouvert pour la première fois depuis cette correction.
+   */
+  const jalons = fusionnerJalons(localJalons, bundle?.jalons ?? []);
+  const paliers = fusionnerReleves(localReleves, bundle?.paliers ?? []);
 
   /*
    * Collection et paquets en jeu : la décision la plus récente gagne, pour
@@ -390,6 +423,8 @@ export async function syncSettings(userId: string): Promise<void> {
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
   await repository.saveStreak(streak);
+  await repository.saveJalons(jalons);
+  await repository.saveReleves(paliers);
   await repository.saveDeckJournal(deckJournal);
   await repository.saveInstalled(installed);
   await repository.saveActive(active);
@@ -405,7 +440,9 @@ export async function syncSettings(userId: string): Promise<void> {
   const { error: upErr } = await supabase.from('user_settings').upsert(
     {
       user_id: userId,
-      settings: { general, decks: overrides, streak, installed, active, deckJournal },
+      settings: {
+        general, decks: overrides, streak, installed, active, deckJournal, jalons, paliers,
+      },
       counter: counters,
       updated_at: new Date().toISOString(),
     },
