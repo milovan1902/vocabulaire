@@ -62,3 +62,36 @@ export function noteJalon(
 export function courbe(jalons: Jalon[], max = 12): Jalon[] {
   return jalons.slice(-max);
 }
+
+/**
+ * Fusion de deux historiques mensuels : celui de cet appareil, celui du
+ * serveur.
+ *
+ * CHANTIER 83 — POURQUOI CETTE FONCTION EXISTE. Les jalons n'étaient pas
+ * synchronisés du tout. Un historique de plusieurs mois vivait dans
+ * l'IndexedDB d'un seul navigateur : le téléphone l'avait, l'ordinateur
+ * voyait un écran vierge, et rien côté serveur n'aurait pu le rendre.
+ *
+ * LA RÈGLE : POUR CHAQUE MOIS, LE PLUS GRAND DES DEUX. Deux appareils
+ * calculent le même nombre à partir de la même progression synchronisée ;
+ * quand ils diffèrent, c'est que l'un a relevé avant d'avoir tout reçu, et
+ * le plus grand est alors le plus complet. Pas de date à stocker, pas
+ * d'ordre d'arrivée à respecter : fusionner A avec B donne le même
+ * résultat que B avec A, ce qui est la seule garantie qui tienne quand on
+ * ne sait pas qui a synchronisé en premier.
+ *
+ * Ce que la règle coûte, et c'est assumé : le mois où l'on supprime un
+ * paquet garde son chiffre d'avant la suppression jusqu'à sa clôture. Un
+ * mois trop haut vaut mieux qu'un passé qui rétrécit sans qu'on sache
+ * pourquoi.
+ */
+export function fusionnerJalons(a: Jalon[], b: Jalon[]): Jalon[] {
+  const parMois = new Map<string, number>();
+  for (const jalon of [...a, ...b]) {
+    const vu = parMois.get(jalon.month);
+    parMois.set(jalon.month, vu === undefined ? jalon.acquis : Math.max(vu, jalon.acquis));
+  }
+  return [...parMois]
+    .map(([month, acquis]): Jalon => ({ month, acquis }))
+    .sort((x, y) => x.month.localeCompare(y.month));
+}
