@@ -180,6 +180,14 @@ const PAR_NOM: Record<string, number> = {
   'modaux futur et petits mots 5e': 1,
   'modaux futur et petits mots': 1,
 
+  /*
+   * CHANTIER 75 — le paquet s'appelle « Réagir et s'exprimer », le nom que
+   * porte son dessin. Les deux graphies sont enregistrées : un paquet qui
+   * perd son parchemin parce qu'on a renommé sa carte, c'est le genre de
+   * panne qu'on ne voit pas venir.
+   */
+  'reagir et s exprimer 5e': 0,
+  'reagir et s exprimer': 0,
   'reagir et s expliquer 5e': 0,
   'reagir et s expliquer': 0,
 
