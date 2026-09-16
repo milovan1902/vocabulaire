@@ -31,6 +31,9 @@ import mots5e from '../assets/packs/5e-vocabulaire.png';
 import adjectifs5e from '../assets/packs/5e-adjectifs.png';
 import irreguliers5e from '../assets/packs/5e-irreguliers.png';
 import modaux5e from '../assets/packs/5e-modaux.png';
+import monde5e from '../assets/packs/5e-monde.png';
+import reagir5e from '../assets/packs/5e-reagir.png';
+import raconter5e from '../assets/packs/5e-raconter.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -253,6 +256,46 @@ const ILLUSTRATIONS: Record<string, string> = {
   '5e-modaux': modaux5e,
   'modaux-futur-et-petits-mots-5e': modaux5e,
   'modaux-futur-et-petits-mots': modaux5e,
+
+  /*
+   * CHANTIER 75 — LES TROIS DERNIERS DOS DE LA CINQUIÈME
+   *
+   * Vos trois images, reprises telles quelles : je n'ai rien redessiné.
+   * Deux traitements seulement, et il faut les connaître.
+   *
+   * LE DAMIER ÉTAIT CUIT DANS LE FICHIER. « Le monde autour de nous » et
+   * « Raconter au passé » n'étaient pas transparents : le damier gris qui
+   * signale d'habitude la transparence était, ici, de vrais pixels. Posés
+   * tels quels, les deux dos auraient porté un carré à carreaux sur le
+   * parchemin. Le fond est retiré par diffusion depuis les bords, ce qui
+   * préserve les blancs INTÉRIEURS — la bulle de dialogue, les pages du
+   * livre, les enveloppes — parce qu'ils sont enclos par des traits
+   * sombres. 40 % de la planche pour le monde, 65 % pour raconter.
+   *
+   * « RÉAGIR ET S'EXPRIMER » GARDE SON FOND CRÈME (#fbfbf6). Ce n'est pas
+   * un oubli : le crème fait partie du dessin, c'est le papier sur lequel
+   * la typographie est posée, et le retirer laisserait les lettres
+   * blanches du « A » et des avions en papier sans support. La planche
+   * carrée est comblée avec la même teinte, échantillonnée au coin. C'est
+   * donc la DEUXIÈME illustration non transparente du catalogue, après
+   * « Modaux » — à cette différence près : celle-ci ne s'accorde pas à son
+   * parchemin ardoise, un très léger carré crème se devinera sur la carte.
+   * Dites-moi si vous le voyez et je le détoure autrement.
+   */
+  '5e-monde': monde5e,
+  'le-monde-autour-de-nous-5e': monde5e,
+  'le-monde-autour-de-nous': monde5e,
+
+  '5e-reagir': reagir5e,
+  'reagir-et-s-exprimer-5e': reagir5e,
+  'reagir-et-sexprimer-5e': reagir5e,
+  'reagir-et-s-exprimer': reagir5e,
+  'reagir-et-s-expliquer-5e': reagir5e,
+
+  '5e-raconter': raconter5e,
+  'raconter-au-passe-5e': raconter5e,
+  'raconter-au-passe': raconter5e,
+
 };
 
 /** Minuscules, sans accent ni ponctuation. */
