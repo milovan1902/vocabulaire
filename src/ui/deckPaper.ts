@@ -126,6 +126,16 @@ const PAR_NOM: Record<string, number> = {
   'phrases de tous les jours 6e': 0,
   'phrases de tous les jours 5e': 0,
 
+  /*
+   * CHANTIER 76 — « Les verbes courants » prend le miel de « Premiers
+   * mots ». Le dos livré au même chantier a son fond teinté de cette
+   * teinte exacte : les deux vont ensemble, ne changez pas l'un sans
+   * l'autre.
+   */
+  'les verbes courants 5e': 2,
+  'les verbes courants': 2,
+  'verbes du quotidien 5e': 2,
+
   'premiers mots 6e': 2,
   'mots de tous les jours 5e': 2,
   'mots de tous les jours': 2,
