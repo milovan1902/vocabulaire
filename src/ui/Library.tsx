@@ -307,7 +307,7 @@ export function Library({
   onSetActive: (id: string, on: boolean) => void;
   onSearch: () => void;
   /*
-   * CHANTIER 78 — le rayon affiché peut être tenu par le parent.
+   * CHANTIER 80 — le rayon affiché peut être tenu par le parent.
    *
    * Cet écran est démonté dès qu'on ouvre un paquet, et son état local
    * partait avec lui : au retour, on retombait sur « Mon travail » quel que
