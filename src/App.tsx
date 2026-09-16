@@ -1,11 +1,14 @@
 /** Composant racine : navigation entre les écrans. */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactElement } from 'react';
 import type { Grade } from './domain/types';
 import { useStore, progressFor, type LoadedDeck } from './ui/useStore';
 import { buildSession, type SessionItem } from './engine/session';
 import { Today } from './ui/Today';
 import { Library, type Tab as Rayon } from './ui/Library';
 import { Account } from './ui/Account';
+import { Progress } from './ui/Progress';
+import { IconAujourdhui, IconPaquets, IconReglages, IconProgres } from './ui/icons';
 import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
@@ -25,11 +28,15 @@ import { scheduleReminder } from './ui/reminder';
 const SEEN = 'vocab:accueil-vu';
 
 /**
- * Les trois écrans atteints par les onglets du bas. Réunis en un seul
+ * Les quatre écrans atteints par les onglets du bas. Réunis en un seul
  * cas : aucun ne porte de donnée propre, et les onglets ont besoin de
  * les désigner indifféremment.
+ *
+ * Le nom interne 'account' ne change pas — seul son libellé devient
+ * « Réglages ». Renommer une vue oblige à toucher tous les endroits qui la
+ * désignent, pour un mot que personne ne lit.
  */
-type Tab = 'today' | 'library' | 'account';
+type Tab = 'today' | 'library' | 'account' | 'progress';
 
 type View =
   | { name: 'welcome' }
@@ -40,11 +47,39 @@ type View =
   | { name: 'done'; reviewed: number }
   | { name: 'editor'; mode: 'create' | 'append' };
 
-const ONGLETS: Array<{ name: Tab; label: string }> = [
-  { name: 'today', label: 'Aujourd’hui' },
-  { name: 'library', label: 'Paquets' },
-  { name: 'account', label: 'Compte' },
+const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = [
+  { name: 'today', label: 'Aujourd’hui', Icone: IconAujourdhui },
+  { name: 'library', label: 'Paquets', Icone: IconPaquets },
+  { name: 'account', label: 'Réglages', Icone: IconReglages },
+  { name: 'progress', label: 'Mes progrès', Icone: IconProgres },
 ];
+
+/**
+ * CHANTIER 45 — LES TRANSITIONS D'ÉCRAN (option 8b, « la carte qui s'avance »)
+ *
+ * Le rang d'un écran dans l'application. Deux chiffres, deux sens :
+ *
+ * — les dizaines disent l'ÉTAGE. Les quatre onglets sont de plain-pied
+ *   (10 à 13) ; la recherche et l'écran d'un paquet sont un étage plus
+ *   bas (20, 21) ; l'éditeur et la révision plus bas encore (30, 31, 32).
+ * — les unités disent le RANG LATÉRAL dans la barre d'onglets, dans
+ *   l'ordre où ils sont affichés.
+ *
+ * Un rang qui monte, c'est avancer ; un rang qui descend, c'est revenir.
+ * L'animation n'a plus qu'à lire le signe de l'écart : aucune des vingt
+ * lignes qui appellent `setView` n'a à dire dans quel sens elle va, et
+ * aucune ne pourra donc se tromper.
+ */
+function rang(v: View): number {
+  if (v.name === 'welcome') return 0;
+  const onglet = ONGLETS.findIndex((o) => o.name === v.name);
+  if (onglet >= 0) return 10 + onglet;
+  if (v.name === 'search') return 20;
+  if (v.name === 'deck') return 21;
+  if (v.name === 'editor') return 30;
+  if (v.name === 'study') return 31;
+  return 32; // 'done'
+}
 
 export default function App() {
   const store = useStore();
@@ -56,31 +91,46 @@ export default function App() {
   );
 
   /*
-   * CHANTIER 78 — DEUX SOUVENIRS QUE LE RETOUR AVAIT PERDUS.
+   * CHANTIER 79 — DEUX SOUVENIRS QUE LE RETOUR AVAIT PERDUS.
    *
    * 1. Le rayon de l'onglet « Paquets ». Library est démonté dès qu'on
    *    ouvre un paquet ; son état partait avec lui et on retombait sur
    *    « Mon travail ». Il est tenu ici, où rien ne le démonte.
    *
    * 2. L'onglet d'où l'on est parti. Le retour d'un paquet allait
-   *    toujours à « Paquets », même quand on avait ouvert le paquet
+   *    toujours à « Paquets », même quand le paquet avait été ouvert
    *    depuis « Aujourd'hui ».
+   *
+   * `origine` n'accepte que les quatre onglets : depuis l'éditeur qui
+   * vient d'enregistrer, on garde le dernier connu au lieu d'en inventer
+   * un.
    */
   const [rayon, setRayon] = useState<Rayon>('travail');
   const [origine, setOrigine] = useState<Tab>('library');
+  const estOnglet = (n: View['name']): n is Tab =>
+    n === 'today' || n === 'library' || n === 'account' || n === 'progress';
   // La synchronisation modifie les données sous nos pieds : on relit ensuite.
   const auth = useAuth(useCallback(() => { void store.refreshAll(); }, [store]));
   const [loaded, setLoaded] = useState<LoadedDeck | null>(null);
   const [queue, setQueue] = useState<SessionItem[]>([]);
 
+  /*
+   * Le sens du dernier déplacement, tenu dans des refs et calculé PENDANT
+   * le rendu : un effet arriverait après le premier peint, et l'animation
+   * aurait déjà commencé dans le mauvais sens. Le calcul est idempotent —
+   * relancer le rendu sans changer de vue ne change rien.
+   */
+  const rangPrec = useRef(rang(view));
+  const sens = useRef<'avance' | 'recule'>('avance');
+  const rangActuel = rang(view);
+  if (rangActuel !== rangPrec.current) {
+    sens.current = rangActuel > rangPrec.current ? 'avance' : 'recule';
+    rangPrec.current = rangActuel;
+  }
+
   const openDeck = useCallback(
     async (id: string) => {
-      // L'onglet courant devient le point de retour. Depuis un écran qui
-      // n'est pas un onglet (l'éditeur qui vient d'enregistrer), on garde
-      // le dernier connu plutôt que d'en inventer un.
-      if (view.name === 'today' || view.name === 'library' || view.name === 'account') {
-        setOrigine(view.name);
-      }
+      if (estOnglet(view.name)) setOrigine(view.name);
       setLoaded(await store.loadDeck(id));
       setView({ name: 'deck' });
     },
@@ -142,9 +192,7 @@ export default function App() {
     async (id: string) => {
       const deck = await store.loadDeck(id);
       setLoaded(deck);
-      if (view.name === 'today' || view.name === 'library' || view.name === 'account') {
-        setOrigine(view.name);
-      }
+      if (estOnglet(view.name)) setOrigine(view.name);
       if (!startSession(deck)) setView({ name: 'deck' });
     },
     [store, startSession, view.name],
@@ -238,7 +286,24 @@ export default function App() {
    * Aucun écran ne porte les deux à la fois : la barre du bas sert de
    * repère fixe, la barre du haut ne sert qu'à revenir.
    */
-  const surOnglet = view.name === 'today' || view.name === 'library' || view.name === 'account';
+  const surOnglet = view.name === 'today' || view.name === 'library'
+    || view.name === 'account' || view.name === 'progress';
+
+  /*
+   * La révision ne s'animera pas. Son fond est une image en `position:
+   * fixed` posée derrière la carte : pendant les 300 ms d'une animation,
+   * un parent transformé redéfinit le repère du fixe, et l'image se met à
+   * bouger avec l'écran. Entrer dans une session doit de toute façon être
+   * immédiat.
+   */
+  const anime = view.name !== 'study';
+
+  /*
+   * La clé commande le remontage, donc l'animation. Elle inclut le paquet :
+   * passer d'un paquet à un autre est un déplacement, pas une mise à jour,
+   * et sans cela l'écran changerait de contenu sans rien dire.
+   */
+  const cleEcran = view.name === 'deck' ? `deck:${loaded?.deck.id ?? ''}` : view.name;
 
   return (
     <div className={`app${surOnglet ? ' tabbed' : ''}`}>
@@ -266,7 +331,16 @@ export default function App() {
         </div>
       )}
 
-      <Screen>
+      {/*
+        * `Screen` est écrit ici à la main, le temps d'une classe et d'une
+        * clé : le composant n'accepte pas de props, et lui en ajouter
+        * obligerait à redéposer `components.tsx` pour deux attributs.
+        * Le balisage est le même — un seul <div className="screen">.
+        */}
+      <div
+        key={cleEcran}
+        className={`screen${anime ? ` ecran-${sens.current}` : ''}`}
+      >
         {view.name === 'today' && (
           <Today
             decks={store.decks}
@@ -287,14 +361,6 @@ export default function App() {
             categories={store.categories}
             settings={store.common}
             auth={auth}
-            /*
-             * La classe déclarée est un réglage comme un autre : elle passe
-             * par le même chemin d'écriture que ceux de l'écran Compte.
-             * `setCommon` date lui-même la modification, c'est ce qui la
-             * fera gagner face à une version plus ancienne venue d'un autre
-             * appareil — Library n'a donc pas à toucher `updatedAt`.
-             */
-            onSettings={(s) => void store.setCommon(s)}
             onSearch={() => setView({ name: 'search' })}
             rayon={rayon}
             onRayon={setRayon}
@@ -340,6 +406,25 @@ export default function App() {
             streak={store.streak}
             onSettings={(s) => void store.setCommon(s)}
             onHome={() => setView({ name: 'welcome' })}
+          />
+        )}
+
+        {view.name === 'progress' && (
+          /*
+           * Les paquets POSSÉDÉS, pas ceux en jeu : on rend compte de tout
+           * ce qu'on a travaillé, y compris d'un paquet mis en pause depuis.
+           *
+           * CHANTIER 51 — `active` en plus : l'écran distingue maintenant
+           * les deux périmètres au lieu de les additionner sous un seul
+           * nom. Ce qui tourne dans la charge d'aujourd'hui, et tout ce
+           * qu'on possède. Sans cette liste, il ne pouvait pas faire la
+           * différence — c'est de là que venait le chiffre inexplicable.
+           */
+          <Progress
+            decks={store.decks.filter((d) => store.installed.includes(d.id))}
+            active={store.active}
+            settings={store.common}
+            streak={store.streak}
           />
         )}
 
@@ -400,19 +485,19 @@ export default function App() {
             onSaved={(id) => { void store.refreshAll(); void openDeck(id); }}
           />
         )}
-      </Screen>
+      </div>
 
       {surOnglet && (
         <nav className="tabbar">
-          {ONGLETS.map((o) => (
+          {ONGLETS.map(({ name, label, Icone }) => (
             <button
-              key={o.name}
-              className={view.name === o.name ? 'on' : ''}
-              aria-current={view.name === o.name ? 'page' : undefined}
-              onClick={() => setView({ name: o.name })}
+              key={name}
+              className={view.name === name ? 'on' : ''}
+              aria-current={view.name === name ? 'page' : undefined}
+              onClick={() => setView({ name })}
             >
-              <i />
-              {o.label}
+              <Icone />
+              <span>{label}</span>
             </button>
           ))}
         </nav>
@@ -425,7 +510,8 @@ function title(view: View, loaded: LoadedDeck | null): string {
   if (view.name === 'welcome') return 'Vocabulaire';
   if (view.name === 'today') return 'Aujourd’hui';
   if (view.name === 'library') return 'Paquets';
-  if (view.name === 'account') return 'Compte';
+  if (view.name === 'account') return 'Réglages';
+  if (view.name === 'progress') return 'Mes progrès';
   if (view.name === 'search') return 'Rechercher';
   if (view.name === 'editor') return view.mode === 'create' ? 'Nouveau paquet' : 'Ajouter des mots';
   return loaded?.deck.name ?? 'Vocabulaire';
