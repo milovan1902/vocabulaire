@@ -28,6 +28,7 @@ import voyagePhrases from '../assets/packs/voyage-phrases.png';
 import structures5e from '../assets/packs/5e-grammaire.png';
 import phrases5e from '../assets/packs/5e-phrases.png';
 import mots5e from '../assets/packs/5e-vocabulaire.png';
+import adjectifs5e from '../assets/packs/5e-adjectifs.png';
 import irreguliers5e from '../assets/packs/5e-irreguliers.png';
 import modaux5e from '../assets/packs/5e-modaux.png';
 
@@ -177,43 +178,66 @@ const ILLUSTRATIONS: Record<string, string> = {
    * 132 pixels — les deux seules tailles d'affichage — elle est
    * invisible.
    */
-/*
+  '5e-vocabulaire': mots5e,
+  'mots-de-tous-les-jours': mots5e,
+  'mots-de-tous-les-jours-5e': mots5e,
+
+  /*
+   * CHANTIER 60 — « Décrire et comparer — 5e ».
+   *
+   * Premier visuel qui n'est pas un couple : ce paquet n'a pas
+   * d'homologue en sixième, le dessin est donc le vôtre, sans ascendance.
+   *
+   * Il sort aussi du lot par sa facture — un sticker à fond bleu nuit,
+   * là où les neuf autres sont des sujets détourés sur fond clair. Sur le
+   * parchemin miel, il pèse donc plus lourd que ses voisins, et il porte
+   * un mot (« COMPARE ») qui ne se lira pas à 54 pixels. Les deux loupes
+   * et leurs graphiques, eux, tiennent : c'est la forme, pas le texte,
+   * qui fait reconnaître la carte.
+   */
+  '5e-adjectifs': adjectifs5e,
+  'decrire-et-comparer': adjectifs5e,
+  'decrire-et-comparer-5e': adjectifs5e,
+
+  /*
    * CHANTIER 71 — LES VERBES IRRÉGULIERS
    *
    * Parti de vos lettres de plastique de « Les verbes courants » : même
-   * graisse, même arrondi, même relief poussé vers le bas à droite. Deux
-   * choses changent.
+   * graisse, même arrondi, même relief poussé vers le bas à droite. Le
+   * mot « IRREGULAR » s'ajoute au-dessus, à 132 px contre 310 px pour
+   * VERBS — il ne se lira pas dans la liste, et c'est assumé : à 38
+   * pixels, ce qui distingue une ligne de sa voisine est la masse de
+   * couleur, pas un mot. Il sert à la carte ouverte, où il lève toute
+   * ambiguïté avec l'autre paquet de verbes.
    *
-   * Le mot « IRREGULAR » au-dessus, à 132 px contre 310 px pour VERBS :
-   * il ne se lira pas dans la liste, et c'est assumé — à 38 pixels ce
-   * qui distingue une ligne de sa voisine est la masse de couleur, pas
-   * un mot. Il sert à la carte ouverte, où il lève toute ambiguïté avec
-   * l'autre paquet de verbes.
+   * Les cinq couleurs passent dans une famille chaude — brique, ambre,
+   * noix, safran, cuivre — là où « Les verbes courants » garde
+   * l'arc-en-ciel froid. Le parchemin, lui, est le bleu-vert du rayon
+   * Conjugaison depuis le chantier 73 : le fond dit le rayon, les
+   * lettres disent le paquet.
    *
-   * Les cinq couleurs passent dans la famille chaude du parchemin
-   * terracotta — brique, ambre, noix, safran, cuivre — là où « Les
-   * verbes courants » garde l'arc-en-ciel froid. C'est la règle du
-   * chantier 58 appliquée à la lettre : le papier dit la matière, la
-   * couleur du dessin fait le reste du travail.
-   *
-   * Réserve, la même qu'au chantier 57 : les lettres ne sont pas de la
-   * police d'origine, qui n'était pas fournie avec l'image. C'est un
-   * arrondi large et gras très proche à l'œil ; la différence se voit
-   * sur le « R » et le « S » en comparant les deux dos côte à côte en
-   * grand. Aux deux tailles d'affichage, elle est invisible.
+   * Réserve : les lettres ne sont pas de la police d'origine, qui
+   * n'était pas fournie avec le fichier. C'est un arrondi large et gras
+   * très proche à l'œil ; la différence se voit sur le « R » et le « S »
+   * en comparant les deux dos côte à côte en grand. Aux deux tailles
+   * d'affichage, elle est invisible.
    */
-/*
+  '5e-irreguliers': irreguliers5e,
+  'les-verbes-irreguliers-5e': irreguliers5e,
+  'les-verbes-irreguliers': irreguliers5e,
+
+  /*
    * CHANTIER 72 — MODAUX, FUTUR ET PETITS MOTS
    *
    * Parti de votre nuage de mots, recomposé en carré : les lettres de
    * plastique au centre avec leurs couleurs d'origine, les mots noirs en
-   * condensé gras au-dessus et au-dessous.
+   * condensé gras au-dessus et au-dessous, en tailles mélangées.
    *
-   * L'écart avec votre modèle, et il est volontaire : les mots noirs ne
-   * sont plus « Dream », « Achieve », « New beginnings » mais les formes
-   * que le paquet enseigne — CAN, SHOULD, MUST, GOING TO, WILL, BECAUSE,
-   * BOTH, NEITHER, ENOUGH. Le dos devient un sommaire ; à l'ancienne il
-   * ne disait rien du contenu. Les petites enveloppes du modèle sont
+   * L'écart avec le modèle est volontaire : les mots noirs ne sont plus
+   * « Dream », « Achieve », « New beginnings » mais les formes que le
+   * paquet enseigne — CAN, SHOULD, MUST, GOING TO, WILL, BECAUSE, BOTH,
+   * NEITHER, ENOUGH. Le dos devient un sommaire ; à l'ancienne il ne
+   * disait rien du contenu. Les petites enveloppes du modèle sont
    * tombées : elles ne voulaient rien dire ici.
    *
    * LE FOND N'EST PAS TRANSPARENT — c'est la seule illustration du
@@ -229,14 +253,6 @@ const ILLUSTRATIONS: Record<string, string> = {
   '5e-modaux': modaux5e,
   'modaux-futur-et-petits-mots-5e': modaux5e,
   'modaux-futur-et-petits-mots': modaux5e,
-
-  '5e-irreguliers': irreguliers5e,
-  'les-verbes-irreguliers-5e': irreguliers5e,
-  'les-verbes-irreguliers': irreguliers5e,
-
-  '5e-vocabulaire': mots5e,
-  'mots-de-tous-les-jours': mots5e,
-  'mots-de-tous-les-jours-5e': mots5e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
