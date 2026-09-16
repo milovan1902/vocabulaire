@@ -370,6 +370,17 @@ export default function App() {
             onSearch={() => setView({ name: 'search' })}
             rayon={rayon}
             onRayon={setRayon}
+            /*
+             * CHANTIER 82 — la prop qui manquait, et qui faisait échouer
+             * tous les dépôts depuis le 79.
+             *
+             * Le catalogue écrit la classe déclarée (« Ma classe », les
+             * lignes .classrow) : c'est un réglage, et Library ne l'écrit
+             * pas lui-même, il le demande. La prop est OBLIGATOIRE dans
+             * son type. En réécrivant l'appel au chantier 79 pour y
+             * ajouter rayon/onRayon, je l'ai perdue.
+             */
+            onSettings={(s) => void store.setCommon(s)}
             onOpen={(id, vol) => {
               /*
                * Avec « animations réduites », on n'entame pas le vol : la
