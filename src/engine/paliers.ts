@@ -123,3 +123,45 @@ export function labelDe(jour: string, grain: Grain): string {
   if (grain === 'mois') return monthLabel(`${annee}-${mois}`);
   return `${j}/${mois}`;
 }
+
+/** Le total des cinq tas : combien de mots ce relevé a pesés en tout. */
+function combien(r: Releve): number {
+  return r.decouvrir + r.reprendre + r.cours + r.presque + r.acquis;
+}
+
+/**
+ * Des deux relevés d'un même jour, le plus complet.
+ *
+ * D'abord les acquis, puis le total des cinq tas. Un relevé écrit avant
+ * que la synchronisation n'ait tout rapatrié porte moins de cartes : c'est
+ * une photographie partielle, pas un autre jour.
+ */
+function plusComplet(a: Releve, b: Releve): Releve {
+  if (a.acquis !== b.acquis) return a.acquis > b.acquis ? a : b;
+  return combien(a) >= combien(b) ? a : b;
+}
+
+/**
+ * Fusion de deux historiques quotidiens : celui de cet appareil, celui du
+ * serveur.
+ *
+ * CHANTIER 83 — même raison qu'aux jalons, et même exigence : la fusion ne
+ * doit pas dépendre de l'ordre des arguments, puisqu'on ne sait pas quel
+ * appareil synchronise le premier. Jour par jour, on garde le relevé le
+ * plus complet ; les jours que l'un des deux ne connaît pas sont
+ * simplement repris.
+ *
+ * Le plafond de deux ans est réappliqué APRÈS la fusion : deux appareils
+ * peuvent porter des jours différents, et leur réunion pourrait dépasser
+ * ce que chacun gardait séparément.
+ */
+export function fusionnerReleves(a: Releve[], b: Releve[]): Releve[] {
+  const parJour = new Map<string, Releve>();
+  for (const r of [...a, ...b]) {
+    const vu = parJour.get(r.jour);
+    parJour.set(r.jour, vu ? plusComplet(vu, r) : r);
+  }
+  return [...parJour.values()]
+    .sort((x, y) => x.jour.localeCompare(y.jour))
+    .slice(-MAX_JOURS);
+}
