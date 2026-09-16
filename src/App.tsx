@@ -5,7 +5,7 @@ import type { Grade } from './domain/types';
 import { useStore, progressFor, type LoadedDeck } from './ui/useStore';
 import { buildSession, type SessionItem } from './engine/session';
 import { Today } from './ui/Today';
-import { Library, type Tab as Rayon } from './ui/Library';
+import { Library } from './ui/Library';
 import { Account } from './ui/Account';
 import { Progress } from './ui/Progress';
 import { IconAujourdhui, IconPaquets, IconReglages, IconProgres } from './ui/icons';
@@ -104,8 +104,14 @@ export default function App() {
    * `origine` n'accepte que les quatre onglets : depuis l'éditeur qui
    * vient d'enregistrer, on garde le dernier connu au lieu d'en inventer
    * un.
+   *
+   * Le type du rayon est écrit ICI, en clair, et non importé de
+   * `Library.tsx`. Un import de type aurait lié les deux fichiers : celui
+   * qui arrive le premier sur le serveur ne compilerait pas, et c'est
+   * exactement ce qui a fait échouer le déploiement du chantier 79.
+   * Chaque fichier se déploie maintenant seul.
    */
-  const [rayon, setRayon] = useState<Rayon>('travail');
+  const [rayon, setRayon] = useState<'travail' | 'collection' | 'catalogue'>('travail');
   const [origine, setOrigine] = useState<Tab>('library');
   const estOnglet = (n: View['name']): n is Tab =>
     n === 'today' || n === 'library' || n === 'account' || n === 'progress';
