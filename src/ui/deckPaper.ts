@@ -47,6 +47,25 @@ export const ROUE: Papier[] = [
   { ink: '#6d4231', mid: '#c69a88', pale: '#f7eae4' }, // terracotta
   { ink: '#633f50', mid: '#ba97a8', pale: '#f4e8ee' }, // rose poudré
   { ink: '#2f5a57', mid: '#8fb2af', pale: '#e6f0ef' }, // bleu-vert
+  /*
+   * CHANTIER 77 — LA GLYCINE, HUITIÈME TEINTE
+   *
+   * La sauge de la Grammaire (#e8f0e7) et le bleu-vert de la Conjugaison
+   * (#e6f0ef) n'avaient que deux unités d'écart sur un seul canal : à 54
+   * pixels, dans la liste, c'était le même papier. La Conjugaison prend
+   * donc un violet franc.
+   *
+   * Un ajout et non une reteinte : « Voyage — phrases » est encore sur le
+   * bleu-vert, et repeindre la case l'aurait emmené au violet avec les
+   * paquets de conjugaison.
+   *
+   * Cette teinte sort volontairement du palier de clarté des sept
+   * autres — elle est un cran plus dense. C'est le prix de l'écart
+   * demandé : dans la liste, les trois cartes de conjugaison pèseront un
+   * peu plus que leurs voisines. C'était le compromis annoncé de
+   * l'option 1b.
+   */
+  { ink: '#443a6e', mid: '#9d90c4', pale: '#e5dff2' }, // glycine
 ];
 
 /**
@@ -61,7 +80,7 @@ const PAR_NOM: Record<string, number> = {
   'phrases de tous les jours': 0,
   'premieres structures': 1,
   'premiers mots': 2,
-  'le preterit': 6,
+  'le preterit': 7, // chantier 77 : glycine
 
   /*
    * CHANTIER 59 — QUATRE PAQUETS SUR LE MÊME ROSE POUDRÉ
@@ -201,12 +220,13 @@ const PAR_NOM: Record<string, number> = {
   'reagir et s expliquer 5e': 0,
   'reagir et s expliquer': 0,
 
-  'raconter au passe 5e': 6,
-  'raconter au passe': 6,
+  'raconter au passe 5e': 7,
+  'raconter au passe': 7,
 
   /*
-   * CHANTIER 73 — les irréguliers passent sur le bleu-vert du prétérit,
-   * et non plus sur le terracotta. Choix du propriétaire.
+   * CHANTIER 73, REVU AU 77 — les irréguliers suivent le prétérit, et
+   * les trois paquets du rayon sont désormais sur la GLYCINE (7), non
+   * plus sur le bleu-vert. Choix du propriétaire.
    *
    * Ce que ça dit, et c'est défendable : le rayon Conjugaison porte
    * désormais UNE seule teinte pour ses trois paquets — le prétérit, ses
@@ -215,11 +235,12 @@ const PAR_NOM: Record<string, number> = {
    * et ils sont franchement différents (calendrier, lettres de
    * plastique).
    *
-   * Le terracotta ressort donc d'usage. La roue retrouve une teinte
-   * libre pour la prochaine matière.
+   * Le terracotta ressort d'usage : il reste libre pour la prochaine
+   * matière. Le bleu-vert, lui, n'est plus porté que par « Voyage —
+   * phrases ».
    */
-  'les verbes irreguliers 5e': 6,
-  'les verbes irreguliers': 6,
+  'les verbes irreguliers 5e': 7,
+  'les verbes irreguliers': 7,
 
   /*
    * EDHEC ÉPINGLÉ SUR LE LILAS
