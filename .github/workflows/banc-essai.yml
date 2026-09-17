@@ -1,0 +1,32 @@
+name: Banc d'essai
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/engine/**'
+      - 'src/data/**'
+      - 'src/domain/**'
+
+jobs:
+  simulation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Installer
+        run: npm ci
+      - name: Simulation de cent vingt jours
+        run: npx vitest run src/engine/simulation.test.ts 2>&1 | tee rapport.txt
+      - name: Tous les autres tests
+        if: always()
+        run: npx vitest run 2>&1 | tee -a rapport.txt
+      - name: Garder le relevé
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport
+          path: rapport.txt
