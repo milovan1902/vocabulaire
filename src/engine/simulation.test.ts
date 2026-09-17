@@ -322,8 +322,17 @@ describe('banc d’essai — quatre mois de travail', () => {
   });
 
   it('la série de jours suit les jours réellement travaillés', () => {
+    /*
+     * CORRIGÉ (86). J'attendais un plafond de trente jours : c'était la
+     * valeur d'avant le chantier 34, qui l'a porté à 3660 pour que « Mes
+     * progrès » puisse afficher un calendrier et un total depuis le début.
+     * La bonne loi n'est donc pas « au plus trente jours » mais « aucun
+     * jour inventé, aucun doublon, et une borne qui existe ».
+     */
     const travailles = bilans.filter((b) => b.cartes > 0).map((b) => b.jour);
-    expect(tel.streak.days.length).toBeLessThanOrEqual(30);
+    expect(tel.streak.days.length).toBe(travailles.length);
+    expect(new Set(tel.streak.days).size).toBe(tel.streak.days.length);
+    expect([...tel.streak.days].sort()).toEqual(tel.streak.days);
     for (const j of tel.streak.days) expect(travailles).toContain(j);
     expect(tel.streak.best).toBeGreaterThanOrEqual(tel.streak.current);
   });
@@ -337,15 +346,23 @@ describe('banc d’essai — quatre mois de travail', () => {
     expect(serie(tel.releves, 'mois').length).toBeLessThanOrEqual(12);
   });
 
-  it('la courbe des mots acquis ne redescend jamais sans raison', () => {
+  it('la courbe des mots acquis monte dans l’ensemble, et ses reculs restent petits', () => {
     /*
-     * Aucun paquet n'est supprimé dans cette simulation : un mois clos ne
-     * peut donc que monter ou stagner. Une baisse signalerait un relevé
-     * écrit sur des données incomplètes.
+     * CORRIGÉ (86). J'exigeais une courbe jamais décroissante. C'est faux,
+     * et pour une bonne raison : un mot acquis qui reçoit un « Encore »
+     * perd cinquante points et sort du tas des acquis. L'oubli existe, la
+     * courbe doit pouvoir le montrer — 389 puis 388 était la réalité.
+     *
+     * Ce qu'on vérifie donc : la tendance monte du premier au dernier
+     * mois, et aucun mois ne perd plus d'un dixième des acquis. Une chute
+     * franche, elle, ne serait pas de l'oubli — ce serait un relevé écrit
+     * sur des données incomplètes.
      */
     const c = courbe(tel.jalons, 12);
+    expect(c[c.length - 1].acquis).toBeGreaterThan(c[0].acquis);
     for (let i = 1; i < c.length; i++) {
-      expect(c[i].acquis).toBeGreaterThanOrEqual(c[i - 1].acquis);
+      const recul = c[i - 1].acquis - c[i].acquis;
+      expect(recul).toBeLessThanOrEqual(Math.ceil(c[i - 1].acquis * 0.1));
     }
   });
 
@@ -459,17 +476,59 @@ describe('banc d’essai — téléphone et ordinateur', () => {
     expect(mergeStreak(pc.streak, tel.streak).days).toEqual(f.days);
   });
 
-  it('les compteurs du jour ne s’additionnent pas deux fois', () => {
+  it('le compteur du jour additionne le travail des deux appareils', () => {
+    /*
+     * CORRIGÉ (86). J'attendais le maximum ; `sync.ts` additionne, et c'est
+     * écrit noir sur blanc dans son commentaire : sept cartes sur le
+     * téléphone et trois sur l'ordinateur font bien dix cartes faites.
+     */
     const aujourd = todayKey();
     const ici: DailyCounter = { day: aujourd, newSeen: 7, reviewsDone: 12 };
     const la: DailyCounter = { day: aujourd, newSeen: 3, reviewsDone: 20 };
     const f = mergeCounters(ici, la, aujourd);
-    expect(f.newSeen).toBeLessThanOrEqual(REGLAGES.newPerDay);
-    expect(f.newSeen).toBe(Math.max(ici.newSeen, la.newSeen));
-    expect(f.reviewsDone).toBe(Math.max(ici.reviewsDone, la.reviewsDone));
+    expect(f.newSeen).toBe(10);
+    expect(f.reviewsDone).toBe(32);
     // Un compteur de la veille ne doit pas ressusciter.
     const hier: DailyCounter = { day: shiftDay(aujourd, -1), newSeen: 10, reviewsDone: 30 };
     expect(mergeCounters(hier, null, aujourd).newSeen).toBe(0);
+  });
+
+  it('resynchroniser sans rien faire ne gonfle pas le compteur', () => {
+    /*
+     * Le garde-fou `synced` sert à cela : sans lui, chaque passage
+     * rajouterait le total de l'autre appareil. On vérifie la boucle
+     * normale — fusionner, pousser le résultat, refusionner.
+     */
+    const j = todayKey();
+    const tel1: DailyCounter = { day: j, newSeen: 7, reviewsDone: 12 };
+    const serveur: DailyCounter = { day: j, newSeen: 3, reviewsDone: 20 };
+    const apres = mergeCounters(tel1, serveur, j);
+    // Le serveur reçoit ce résultat (c'est ce que fait `syncSettings`).
+    expect(mergeCounters(apres, apres, j).newSeen).toBe(apres.newSeen);
+    expect(mergeCounters(apres, apres, j).reviewsDone).toBe(apres.reviewsDone);
+  });
+
+  it('une synchronisation interrompue ne doit pas faire retomber le compteur', () => {
+    /*
+     * LE CAS FRAGILE, repéré en corrigeant ce fichier.
+     *
+     * `syncSettings` fusionne, écrit en local, PUIS pousse vers Supabase.
+     * Si l'envoi échoue — réseau coupé, session expirée —, le local porte
+     * déjà `synced: 10` tandis que le serveur en est resté à 3. Au passage
+     * suivant, l'apport local est calculé à 10 − 10 = 0 et le total
+     * retombe à 3 : le travail du jour disparaît du compteur.
+     *
+     * Ce test échoue aujourd'hui. Il dit ce que la fonction devrait
+     * garantir : jamais moins que ce que cet appareil a réellement fait.
+     */
+    const j = todayKey();
+    const tel1: DailyCounter = { day: j, newSeen: 7, reviewsDone: 12 };
+    const serveur: DailyCounter = { day: j, newSeen: 3, reviewsDone: 20 };
+    const local = mergeCounters(tel1, serveur, j); // écrit en local…
+    // …puis l'envoi échoue : le serveur n'a pas bougé.
+    const rejoue = mergeCounters(local, serveur, j);
+    expect(rejoue.newSeen).toBeGreaterThanOrEqual(local.newSeen);
+    expect(rejoue.reviewsDone).toBeGreaterThanOrEqual(local.reviewsDone);
   });
 });
 
