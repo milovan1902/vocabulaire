@@ -489,9 +489,28 @@ export function mergeCounters(
     newSeen: Math.max(0, here.newSeen - dejaCompte.newSeen),
     reviewsDone: Math.max(0, here.reviewsDone - dejaCompte.reviewsDone),
   };
+  /*
+   * CHANTIER 87 — LE PLANCHER : jamais moins que ce que cet appareil
+   * portait déjà.
+   *
+   * `syncSettings` écrit en local AVANT de pousser vers Supabase. Si
+   * l'envoi échoue — réseau coupé, session expirée —, le local porte déjà
+   * `synced: 10` tandis que le serveur en est resté à 3. Au passage
+   * suivant, l'apport local se calculait alors à 10 − 10 = 0 et le total
+   * retombait à 3 : le compteur du jour se vidait sous l'élève, l'objectif
+   * se dé-remplissait, et les quotas se réouvraient pour la journée.
+   *
+   * Le plancher ne change rien au cas normal — dix cartes sur le téléphone
+   * et trois sur l'ordinateur font toujours treize, et treize est bien
+   * supérieur à dix — et il ne gonfle rien en cas de répétition, puisque
+   * l'apport déjà mis en commun reste déduit.
+   *
+   * Trouvé par le banc d'essai du chantier 86, pas par l'usage : c'est un
+   * cas que personne n'aurait su reproduire à la main.
+   */
   const total = {
-    newSeen: there.newSeen + apportLocal.newSeen,
-    reviewsDone: there.reviewsDone + apportLocal.reviewsDone,
+    newSeen: Math.max(there.newSeen + apportLocal.newSeen, here.newSeen),
+    reviewsDone: Math.max(there.reviewsDone + apportLocal.reviewsDone, here.reviewsDone),
   };
   return {
     day: today,
