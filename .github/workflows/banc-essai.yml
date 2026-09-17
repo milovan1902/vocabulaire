@@ -19,11 +19,8 @@ jobs:
           cache: npm
       - name: Installer
         run: npm ci
-      - name: Simulation de cent vingt jours
-        run: npx vitest run src/engine/simulation.test.ts 2>&1 | tee rapport.txt
-      - name: Tous les autres tests
-        if: always()
-        run: npx vitest run 2>&1 | tee -a rapport.txt
+      - name: Tous les tests, simulation comprise
+        run: npx vitest run 2>&1 | tee rapport.txt
       - name: Garder le relevé
         if: always()
         uses: actions/upload-artifact@v4
