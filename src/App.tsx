@@ -70,6 +70,17 @@ const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = 
  * lignes qui appellent `setView` n'a à dire dans quel sens elle va, et
  * aucune ne pourra donc se tromper.
  */
+/**
+ * Deux vues désignent-elles le même écran ? Le paquet ouvert n'entre pas
+ * en compte (il est tenu à part, dans `loaded`) ; seul l'éditeur porte une
+ * donnée qui distingue deux écrans de même nom.
+ */
+function memeEcran(a: View, b: View): boolean {
+  if (a.name !== b.name) return false;
+  if (a.name === 'editor' && b.name === 'editor') return a.mode === b.mode;
+  return true;
+}
+
 function rang(v: View): number {
   if (v.name === 'welcome') return 0;
   const onglet = ONGLETS.findIndex((o) => o.name === v.name);
@@ -86,9 +97,54 @@ export default function App() {
   /** Carte en vol entre la liste et l'écran d'un paquet. */
   const [zoom, setZoom] = useState<ZoomSource | null>(null);
 
-  const [view, setView] = useState<View>(() =>
+  const [view, poseVue] = useState<View>(() =>
     localStorage.getItem(SEEN) ? { name: 'today' } : { name: 'welcome' },
   );
+
+  /*
+   * CHANTIER 88 — LA TOUCHE RETOUR DU TÉLÉPHONE.
+   *
+   * L'application tient sur une seule page : elle ne créait donc aucune
+   * entrée d'historique, et la touche retour d'Android, n'ayant rien à
+   * dépiler, quittait l'application depuis n'importe quel écran.
+   *
+   * On tient maintenant la pile des écrans traversés, doublée d'une
+   * entrée d'historique par écran. Chaque entrée porte sa PROFONDEUR :
+   * au retour, il n'y a pas à deviner de combien de crans on a reculé —
+   * le navigateur le dit, et la pile est tronquée à cette hauteur. Un
+   * appui long (plusieurs crans d'un coup) tombe donc juste lui aussi.
+   *
+   * `setView` garde son nom et sa signature : les vingt appels qui
+   * changent d'écran n'ont rien à savoir de tout ceci.
+   */
+  const pile = useRef<View[]>([view]);
+  /** Vrai le temps d'un `history.go` demandé par l'application elle-même. */
+  const depileInterne = useRef(false);
+
+  const setView = useCallback((v: View) => {
+    const p = pile.current;
+    if (memeEcran(p[p.length - 1], v)) return;
+    /*
+     * Écran déjà traversé : on redescend la pile par l'historique au lieu
+     * de l'allonger. Sans cela, « Aujourd'hui → Paquets → Aujourd'hui »
+     * demanderait trois retours pour sortir.
+     */
+    for (let i = p.length - 2; i >= 0; i--) {
+      if (memeEcran(p[i], v)) {
+        depileInterne.current = true;
+        history.go(i + 1 - p.length);
+        return;
+      }
+    }
+    p.push(v);
+    history.pushState({ profondeur: p.length }, '');
+    poseVue(v);
+  }, []);
+
+  /* L'entrée du chargement est le fond de la pile. */
+  useEffect(() => {
+    history.replaceState({ profondeur: 1 }, '');
+  }, []);
 
   /*
    * CHANTIER 79 — DEUX SOUVENIRS QUE LE RETOUR AVAIT PERDUS.
@@ -231,6 +287,47 @@ export default function App() {
   useEffect(() => {
     document.title = title(view, loaded);
   }, [view, loaded]);
+
+  /*
+   * Le retour du téléphone (et celui du navigateur sur ordinateur).
+   * On dépile ; l'application ne se quitte que depuis le fond de la pile,
+   * c'est-à-dire l'écran d'ouverture.
+   */
+  useEffect(() => {
+    const onRetour = (e: PopStateEvent) => {
+      const p = pile.current;
+      const profondeur = (e.state as { profondeur?: number } | null)?.profondeur ?? 1;
+      // Un pas en avant (bouton « suivant » du navigateur) : rien à restituer.
+      if (profondeur >= p.length) return;
+      const cible = p[profondeur - 1];
+      if (!cible) return;
+
+      /*
+       * Un retour demandé par l'application (bouton « ‹ », fin de session,
+       * onglet déjà visité) : la confirmation et la relecture ont déjà été
+       * faites par l'appelant, on ne les rejoue pas.
+       */
+      const interne = depileInterne.current;
+      depileInterne.current = false;
+
+      if (!interne && view.name === 'study') {
+        if (!confirm('Quitter la session en cours ?')) {
+          // Refus : on remet l'entrée que l'appui vient de consommer.
+          history.pushState({ profondeur: p.length }, '');
+          return;
+        }
+        void endSession();
+      } else if (!interne && (view.name === 'deck' || view.name === 'done' || view.name === 'editor')) {
+        // On a pu écrire depuis ces écrans : l'écran d'arrivée doit relire.
+        void store.refreshAll();
+      }
+
+      p.length = profondeur;
+      poseVue(cible);
+    };
+    addEventListener('popstate', onRetour);
+    return () => removeEventListener('popstate', onRetour);
+  }, [view.name, endSession, store]);
 
   /*
    * Marqueur lu par la feuille de style pendant le vol de la carte : il
