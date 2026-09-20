@@ -17,6 +17,7 @@ import { Editor } from './ui/Editor';
 import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
+import { Onboarding } from './ui/Onboarding';
 import { loadSummaries } from './ui/deckSummary';
 import { scheduleReminder } from './ui/reminder';
 
@@ -26,6 +27,16 @@ import { scheduleReminder } from './ui/reminder';
  * la bibliothèque apparaît une fraction de seconde avant l'accueil.
  */
 const SEEN = 'vocab:accueil-vu';
+
+/**
+ * CHANTIER 90 — drapeau « guidage fait ». Même stockage et même raison
+ * que le précédent : la décision est prise au premier rendu.
+ *
+ * Le guidage ne se déclenche QUE dans la foulée d'un premier lancement
+ * (voir `premierLancement`). Quelqu'un qui revient volontairement lire la
+ * page d'accueil depuis les réglages n'a pas à le retraverser.
+ */
+const GUIDE = 'vocab:guidage-fait';
 
 /**
  * Les quatre écrans atteints par les onglets du bas. Réunis en un seul
@@ -40,6 +51,7 @@ type Tab = 'today' | 'library' | 'account' | 'progress';
 
 type View =
   | { name: 'welcome' }
+  | { name: 'onboarding' }
   | { name: Tab }
   | { name: 'search' }
   | { name: 'deck' }
@@ -83,6 +95,7 @@ function memeEcran(a: View, b: View): boolean {
 
 function rang(v: View): number {
   if (v.name === 'welcome') return 0;
+  if (v.name === 'onboarding') return 1;
   const onglet = ONGLETS.findIndex((o) => o.name === v.name);
   if (onglet >= 0) return 10 + onglet;
   if (v.name === 'search') return 20;
@@ -145,6 +158,21 @@ export default function App() {
   useEffect(() => {
     history.replaceState({ profondeur: 1 }, '');
   }, []);
+
+  /*
+   * CHANTIER 90 — vrai seulement si l'application s'ouvre pour la
+   * première fois sur cet appareil. Lu une fois, au montage : après le
+   * premier passage par l'accueil le drapeau SEEN est posé, et la
+   * question ne se poserait plus dans le bon sens.
+   */
+  const premierLancement = useRef(!localStorage.getItem(SEEN));
+
+  /** Sortie de l'accueil : le guidage, ou la journée s'il est déjà fait. */
+  const apresAccueil = useCallback(() => {
+    localStorage.setItem(SEEN, '1');
+    const aGuider = premierLancement.current && !localStorage.getItem(GUIDE);
+    setView({ name: aGuider ? 'onboarding' : 'today' });
+  }, [setView]);
 
   /*
    * CHANTIER 79 — DEUX SOUVENIRS QUE LE RETOUR AVAIT PERDUS.
@@ -349,10 +377,9 @@ export default function App() {
     // revient volontairement lire la page d'accueil en serait aussitôt
     // éjecté, et le bouton « Revoir la page d'accueil » ne ferait rien.
     if (view.name === 'welcome' && auth.session && !localStorage.getItem(SEEN)) {
-      localStorage.setItem(SEEN, '1');
-      setView({ name: 'today' });
+      apresAccueil();
     }
-  }, [view.name, auth.session]);
+  }, [view.name, auth.session, apresAccueil]);
 
   if (!store.ready) {
     return (
@@ -372,12 +399,44 @@ export default function App() {
           ) : (
             <Welcome
               auth={auth}
-              onSkip={() => {
-                localStorage.setItem(SEEN, '1');
-                setView({ name: 'today' });
-              }}
+              onSkip={apresAccueil}
             />
           )}
+        </Screen>
+      </div>
+    );
+  }
+
+  /*
+   * CHANTIER 90 — le guidage du premier lancement. Comme l'accueil : ni
+   * barre de titre, ni onglets. Tant qu'aucun paquet n'est choisi, la
+   * barre du bas n'aurait rien à montrer.
+   */
+  if (view.name === 'onboarding') {
+    return (
+      <div className="app">
+        <Screen>
+          <Onboarding
+            decks={store.decks}
+            classe={store.common.classe}
+            onClasse={(c) => { void store.setCommon({ ...store.common, classe: c }); }}
+            /*
+             * Obtenir NE MET PAS en jeu (voir `addDeck`) : ici, si, et
+             * c'est tout l'objet de l'étape. Sans mise en jeu, la journée
+             * resterait à zéro et le guidage n'aurait rien réglé.
+             */
+            onChoisir={async (id) => {
+              await store.addDeck(id);
+              await store.setActive(id, true);
+            }}
+            loadDeck={(id) => store.loadDeck(id)}
+            onGrade={(deckId, p, g, wasNew) => store.gradeCard(deckId, p, g, wasNew)}
+            onFini={(vers) => {
+              localStorage.setItem(GUIDE, '1');
+              void store.refreshAll();
+              setView({ name: vers });
+            }}
+          />
         </Screen>
       </div>
     );
@@ -622,6 +681,7 @@ export default function App() {
 
 function title(view: View, loaded: LoadedDeck | null): string {
   if (view.name === 'welcome') return 'Vocabulaire';
+  if (view.name === 'onboarding') return 'Premiers pas';
   if (view.name === 'today') return 'Aujourd’hui';
   if (view.name === 'library') return 'Paquets';
   if (view.name === 'account') return 'Réglages';
