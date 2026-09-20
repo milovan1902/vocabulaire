@@ -3757,3 +3757,167 @@ label.switch input {
   text-transform: uppercase;
   color: #eae6db;
 }
+/* ==================================================================
+   CHANTIER 90 — le premier pas guidé
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Aucune couleur en dur : tout vient des variables du haut de la
+   feuille, pour que le guidage suive le thème clair comme le sombre.
+   Les boutons de jugement de l'étape 4 réemploient `.grades / .grade`
+   de la révision — mêmes formes, mêmes cibles, rien à réapprendre.
+   ================================================================== */
+
+.guide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(14px + env(safe-area-inset-top));
+}
+
+/* ---------- l'en-tête : où l'on en est, et la sortie ---------- */
+
+.guide-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 34px;
+}
+.guide-pas {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--grey);
+}
+.guide-skip {
+  background: none; border: none; padding: 8px 0;
+  font-family: inherit; font-size: 13px; color: var(--grey); cursor: pointer;
+}
+.guide-skip:hover { color: var(--ink); }
+
+/* ---------- le texte ---------- */
+
+.guide-titre {
+  font-family: var(--serif); font-weight: 400; font-size: 27px;
+  line-height: 1.15; letter-spacing: -0.2px;
+  margin: 16px 0 0;
+}
+.guide-texte {
+  font-size: 13.5px; line-height: 1.6; color: var(--ink-soft);
+  margin: 11px 0 0;
+}
+/* La phrase qui porte la méthode : elle se lit avant d'être lue. */
+.guide-regle {
+  font-family: var(--serif); font-size: 17px; line-height: 1.32;
+  color: var(--ink); margin: 16px 0 0;
+}
+.guide-note {
+  font-size: 12px; line-height: 1.5; color: var(--grey); margin: 12px 0 0;
+}
+.guide-kicker {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--grey);
+}
+
+/* Le pied pousse l'action en bas d'écran, jamais sous la ligne de flottaison. */
+.guide-pied { margin-top: auto; padding-top: 20px; }
+.guide-pied .btn { width: 100%; }
+
+/* ---------- étape 1 : la frise des rappels ---------- */
+
+.guide-frise {
+  margin: 18px 0 0; padding: 14px 14px 12px;
+  background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+/* `currentColor` : la frise prend l'encre du thème, l'or reste à l'or. */
+.frise { display: block; width: 100%; height: auto; margin: 10px 0 0; color: var(--ink-soft); }
+
+/* ---------- étape 2 : la classe ---------- */
+
+.guide-classes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0 0;
+}
+.guide-classes button {
+  min-height: 52px; padding: 0 12px;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 14px;
+  font-family: var(--serif); font-size: 19px; cursor: pointer;
+}
+.guide-classes button:hover { border-color: var(--rule-strong); }
+.guide-classes button.on {
+  border-color: var(--chalk); color: var(--chalk);
+}
+
+/* ---------- étape 3 : le paquet ---------- */
+
+.guide-paquets { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 0; }
+.guide-paquets button {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  padding: 11px 13px; background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 16px;
+  font-family: inherit; cursor: pointer;
+}
+.guide-paquets button:hover { border-color: var(--rule-strong); }
+.guide-paquets button:disabled { opacity: 0.5; cursor: default; }
+.guide-paquets .dos { flex: none; width: 54px; height: 76px; }
+.guide-paquets .dos img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  border-radius: 8px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+.guide-paquets .dos-vide {
+  display: block; width: 100%; height: 100%;
+  border-radius: 8px; border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+}
+.guide-paquets .quoi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.guide-paquets .quoi b { font-size: 15px; font-weight: 600; }
+.guide-paquets .meta {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+.guide-paquets .dit {
+  font-size: 12px; line-height: 1.4; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- étape 4 : les cinq cartes ---------- */
+
+.guide-consigne { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: 18px 0 0; }
+.guide-carte {
+  flex: 1; margin: 16px 0 0; padding: 26px 18px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 20px;
+}
+.guide-carte .recto {
+  font-family: var(--serif); font-size: 34px; line-height: 1.15; margin: 0;
+}
+.guide-carte .verso {
+  font-family: var(--serif); font-size: 25px; line-height: 1.2; margin: 0;
+  color: var(--chalk);
+}
+.guide-carte .exemple {
+  font-size: 12.5px; line-height: 1.5; font-style: italic; color: var(--grey); margin: 0;
+}
+.guide-grades { margin-top: 14px; }
+
+/* ---------- étape 5 : les échéances ---------- */
+
+.guide-echeances {
+  list-style: none; margin: 18px 0 0; padding: 0;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 16px;
+  overflow: hidden;
+}
+.guide-echeances li {
+  display: flex; align-items: center; gap: 10px; padding: 9px 13px;
+  border-top: 1px solid var(--rule);
+}
+.guide-echeances li:first-child { border-top: none; }
+.guide-echeances .mot { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.guide-echeances .mot b { font-size: 14px; font-weight: 600; }
+.guide-echeances .mot small { font-size: 11px; color: var(--grey); }
+.guide-echeances .juge {
+  flex: none; font-size: 10px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--grey);
+}
+.guide-echeances .quand {
+  flex: none; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  text-align: right; color: var(--ink);
+}
