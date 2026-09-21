@@ -167,9 +167,17 @@ export default function App() {
    */
   const premierLancement = useRef(!localStorage.getItem(SEEN));
 
+  /*
+   * CHANTIER 91 — le guidage est-il traversé pour de bon, ou relu depuis
+   * les réglages ? Un état, pas une vue de plus : la pile des écrans et
+   * la touche retour n'ont pas à connaître cette nuance.
+   */
+  const [relecture, setRelecture] = useState(false);
+
   /** Sortie de l'accueil : le guidage, ou la journée s'il est déjà fait. */
   const apresAccueil = useCallback(() => {
     localStorage.setItem(SEEN, '1');
+    setRelecture(false);
     const aGuider = premierLancement.current && !localStorage.getItem(GUIDE);
     setView({ name: aGuider ? 'onboarding' : 'today' });
   }, [setView]);
@@ -417,6 +425,8 @@ export default function App() {
       <div className="app">
         <Screen>
           <Onboarding
+            relecture={relecture}
+            enJeu={store.active}
             decks={store.decks}
             classe={store.common.classe}
             onClasse={(c) => { void store.setCommon({ ...store.common, classe: c }); }}
@@ -434,6 +444,7 @@ export default function App() {
             onFini={(vers) => {
               localStorage.setItem(GUIDE, '1');
               void store.refreshAll();
+              setRelecture(false);
               setView({ name: vers });
             }}
           />
@@ -579,6 +590,7 @@ export default function App() {
             streak={store.streak}
             onSettings={(s) => void store.setCommon(s)}
             onHome={() => setView({ name: 'welcome' })}
+            onGuide={() => { setRelecture(true); setView({ name: 'onboarding' }); }}
           />
         )}
 
