@@ -35,6 +35,11 @@ import monde5e from '../assets/packs/5e-monde.png';
 import reagir5e from '../assets/packs/5e-reagir.png';
 import raconter5e from '../assets/packs/5e-raconter.png';
 import courants5e from '../assets/packs/5e-courants.png';
+import mots4e from '../assets/packs/4e-mots.png';
+import formes4e from '../assets/packs/4e-formes.png';
+import presentPerfect4e from '../assets/packs/4e-present-perfect.png';
+import irreguliers4e from '../assets/packs/4e-irreguliers.png';
+import reagir4e from '../assets/packs/4e-reagir.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -335,7 +340,118 @@ const ILLUSTRATIONS: Record<string, string> = {
   'les-verbes-courants': courants5e,
   'verbes-du-quotidien-5e': courants5e,
 
+  /*
+   * CHANTIER 96 — LES CINQ DOS DE LA QUATRIÈME
+   *
+   * Vos cinq images, reprises telles quelles : aucun sujet n'est
+   * redessiné, aucune couleur du dessin n'est touchée. Le seul travail
+   * est le DÉTOURAGE, et il fallait qu'il soit exact — quatre de ces
+   * cinq planches arrivaient sur un fond opaque (noir pour trois,
+   * crème pour deux) qui, posé tel quel, aurait mis un carré au milieu
+   * du parchemin du chantier 95. C'est précisément la couleur qu'il ne
+   * faut pas perdre.
+   *
+   * LE FOND EST RETIRÉ PAR DIFFUSION DEPUIS LES BORDS pour les trois
+   * planches noires : le noir extérieur devient transparent, les noirs
+   * INTÉRIEURS — le contour de la bulle, l'ombre portée des lettres,
+   * les traits du calendrier — sont enclos et restent. C'est la
+   * méthode du chantier 75, avec un seuil plus serré pour le present
+   * perfect, dont le socle gris foncé frôle le noir du fond.
+   *
+   * Les cinq illustrations sont TRANSPARENTES, sans exception. Aucune
+   * n'est couplée à la teinte de son parchemin comme le sont « Modaux »
+   * (sauge) et « Les verbes courants » (miel) : si vous changez un jour
+   * le papier d'un de ces cinq paquets, il n'y a rien à reteinter.
+   *
+   * Le filigrane « Groupe SNCF GPT » du coin bas-droit est effacé sur
+   * les quatre planches qui le portaient.
+   */
 
+  /*
+   * LES MOTS — 4e. La bulle bleue de « words », cousine de celle de
+   * « Premiers mots » (canard) et de « Mots de tous les jours »
+   * (brique) : troisième bulle du catalogue, troisième aplat. Le bleu
+   * franc ne se confond avec aucun des deux, et c'est ce qui permet une
+   * SIXIÈME carte miel dans « Vocabulaire de base ».
+   */
+  '4e-vocabulaire': mots4e,
+  'les-mots-4e': mots4e,
+  'les-mots': mots4e,
+
+  /*
+   * LES FORMES — 4e. Le monogramme de lettres imbriquées, recadré sur
+   * son sujet : votre planche le posait petit au centre d'un grand
+   * carré crème, il aurait occupé le quart du cadre. Il est donc
+   * découpé à sa boîte et remis à l'échelle des autres dos.
+   *
+   * C'est le seul dessin purement abstrait du catalogue. Ses quatre
+   * couleurs — bleu nuit, orange, framboise, violet — ne figurent
+   * ensemble nulle part ailleurs, ce qui compte double ici : il partage
+   * la sauge avec « Le present perfect », et c'est le dessin, seul, qui
+   * sépare les deux cartes dans le rayon Grammaire.
+   */
+  '4e-grammaire': formes4e,
+  'les-formes-4e': formes4e,
+  'les-formes': formes4e,
+
+  /*
+   * LE PRESENT PERFECT — 4e. Le calendrier qui s'effeuille et la flèche
+   * de retour : le passé qui revient dans le présent, ce que dit ce
+   * temps. Détouré au seuil le plus serré du lot (12/24 contre 26/70),
+   * parce que son socle gris foncé n'est qu'à trente niveaux du noir du
+   * fond — au-delà, le détourage l'aurait mangé.
+   *
+   * RÉSERVE À CONNAÎTRE : c'est le seul dos monochrome du catalogue.
+   * Gris et noir sur sauge, il est plus sourd que ses voisins, et à 38
+   * pixels il se lit comme une masse grise. Il se distingue tout de même
+   * des « Formes », qui sont quatre couleurs vives sur le même papier.
+   * Si vous le voulez dans une famille de couleur, comme les lettres des
+   * « Verbes irréguliers » du chantier 71, dites-le : c'est une recolo-
+   * risation, pas un redessin.
+   */
+  '4e-present-perfect': presentPerfect4e,
+  'le-present-perfect-4e': presentPerfect4e,
+  'le-present-perfect': presentPerfect4e,
+
+  /*
+   * LES VERBES IRRÉGULIERS — 4e. Les mêmes lettres de plastique que le
+   * paquet de cinquième (chantier 71), au même relief, mais restées
+   * dans leur camaïeu de BLEUS là où celles de 5e sont passées dans les
+   * chaudes. C'est la règle du chantier 56 appliquée à l'envers : le
+   * dessin dit la matière, la couleur dit la classe — ici, deux paquets
+   * de verbes irréguliers que rien ne doit faire confondre, puisqu'ils
+   * se suivent dans le rayon Conjugaison et que le second CONTINUE le
+   * premier (troisième forme).
+   *
+   * Les clés n'incluent volontairement PAS 'les-verbes-irreguliers'
+   * tout court : cette graphie est déjà celle du paquet de cinquième,
+   * plus haut. Seul le suffixe -4e mène ici.
+   */
+  '4e-irreguliers': irreguliers4e,
+  'les-verbes-irreguliers-4e': irreguliers4e,
+
+  /*
+   * RÉAGIR ET RACONTER — 4e. Votre affiche typographique, détourée de
+   * son crème : les lettres, les traits de couleur et les six vignettes
+   * se posent directement sur l'ardoise du rayon.
+   *
+   * C'est ce qui la sépare de « Réagir et s'exprimer — 5e » du chantier
+   * 75, qui a GARDÉ son carré crème faute d'un détourage possible à
+   * l'époque. Les deux paquets se suivent dans « Phrases toutes faites »
+   * et sur le même papier : le carré de l'un, l'absence de carré de
+   * l'autre, c'est aujourd'hui leur différence la plus visible à petite
+   * taille. Si le carré de la 5e vous gêne maintenant qu'il a un voisin
+   * propre, je le détoure de la même façon — un mot et c'est fait.
+   *
+   * RÉSERVE : cette planche porte des LÉGENDES en capitales (« RÉACTIONS
+   * & ÉMOTIONS », « LE RÉCIT ET LES ARTS SCÉNIQUES »…). À 38 et 54
+   * pixels elles ne se lisent pas ; il reste deux grands mots et six
+   * vignettes, ce qui suffit à reconnaître la carte. Même réserve que
+   * « Voyage — phrases » (chantier 55).
+   */
+  '4e-reagir': reagir4e,
+  'reagir-et-raconter-4e': reagir4e,
+  'reagir-et-raconter': reagir4e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
