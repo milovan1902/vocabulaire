@@ -258,9 +258,65 @@ const PAR_NOM: Record<string, number> = {
 
   'voyage phrases': 6,
   'voyage vocabulaire': 5,
+
+  /*
+   * CHANTIER 95 — les noms des paquets de 4e, en SECOND recours.
+   *
+   * `PAR_ID` ci-dessus les épingle déjà, et c'est lui qui répond. Ces
+   * lignes ne servent qu'au cas où un paquet serait recréé à la main
+   * avec un autre identifiant — un import, une manipulation en base. Le
+   * papier ne doit pas dépendre d'une chance.
+   *
+   * « les verbes irreguliers » sans classe est déjà là, au chantier 73,
+   * et sur la même glycine : les deux paquets de verbes irréguliers
+   * partagent le papier de leur rayon, comme il se doit.
+   */
+  'les mots 4e': 2,
+  'les formes 4e': 1,
+  'le present perfect 4e': 1,
+  'les verbes irreguliers 4e': 7,
+  'reagir et raconter 4e': 0,
+  'reagir et raconter': 0,
 };
-/** À remplir si l'identifiant est le repère le plus sûr chez vous. */
-const PAR_ID: Record<string, number> = {};
+/**
+ * À remplir si l'identifiant est le repère le plus sûr chez vous.
+ *
+ * CHANTIER 95 — LES CINQ PAQUETS DE QUATRIÈME Y SONT, ET PAR IDENTIFIANT.
+ *
+ * Par identifiant et non par nom, contrairement à tout ce qui précède :
+ * ces cinq paquets sont créés par le SQL du même chantier, leurs
+ * identifiants sont donc connus et stables. Un nom peut se retoucher au
+ * catalogue ; '4e-irreguliers' ne bougera pas.
+ *
+ * LE PAPIER DIT LE RAYON. C'est la règle du chantier 58, appliquée sans
+ * exception ici — et c'est ce qui était demandé :
+ *
+ *    Les mots — 4e                 miel        (Vocabulaire de base)
+ *    Les formes — 4e               sauge       (Grammaire)
+ *    Le present perfect — 4e       sauge       (Grammaire)
+ *    Les verbes irréguliers — 4e   glycine     (Conjugaison)
+ *    Réagir et raconter — 4e       ardoise     (Phrases toutes faites)
+ *
+ * Ce que ça coûte, et il faut le savoir avant de l'ouvrir : le miel porte
+ * maintenant SIX cartes, la sauge QUATRE dont deux de 4e sur le même
+ * papier, et la glycine TROIS. Dans un rayon, ces cartes ne se
+ * distinguent plus que par leur dessin — et ces cinq paquets n'en ont pas
+ * encore. Voir la note du LISEZ-MOI : d'ici là, c'est le monogramme sur
+ * parchemin teinté qui les sépare, deux lettres et rien d'autre.
+ *
+ * Les deux paquets de grammaire sur la MÊME sauge est le seul point que
+ * je changerais si vous me le demandez : « Le present perfect » pourrait
+ * prendre le terracotta, libre depuis le chantier 77. Le papier cesserait
+ * alors de dire le rayon pour ce paquet-là — c'est l'arbitrage, et il
+ * vous revient.
+ */
+const PAR_ID: Record<string, number> = {
+  '4e-vocabulaire': 2,     // miel
+  '4e-grammaire': 1,       // sauge
+  '4e-present-perfect': 1, // sauge
+  '4e-irreguliers': 7,     // glycine
+  '4e-reagir': 0,          // bleu ardoise
+};
 
 /** Minuscules, sans accent ni ponctuation : la clé de correspondance. */
 function normaliser(nom: string): string {
@@ -297,8 +353,30 @@ function hacher(cle: string): number {
  * doivent donc se tromper ensemble ou pas du tout.
  */
 export function papierFor(id: string, name: string): Papier {
+  const voulu = papierExplicite(id, name);
+  if (voulu) return voulu;
+  return ROUE[hacher(normaliser(name) || id) % ROUE.length];
+}
+
+/**
+ * Le papier VOULU pour ce paquet, ou null si personne ne l'a décidé.
+ *
+ * CHANTIER 95 — la même lecture que `papierFor`, amputée de son repli au
+ * hasard. Elle existe pour une raison précise : jusqu'ici le parchemin ne
+ * s'appliquait qu'aux paquets ILLUSTRÉS (`CardBack` en mode `bare`), et
+ * un paquet sans dessin retombait sur `paletteFor` — six couleurs franches
+ * tirées d'un hachage de son identifiant. Résultat : les cinq paquets de
+ * 4e, qui n'ont pas encore de dos dessiné, auraient porté une couleur
+ * tirée au sort au lieu de celle de leur rayon.
+ *
+ * Distinguer « décidé » de « au hasard » permet à `CardBack` de servir le
+ * parchemin du rayon dès maintenant, dessin ou pas, et de ne garder
+ * `paletteFor` que pour ce dont personne n'a jamais rien dit — un paquet
+ * que vous créez vous-même dans l'application, par exemple.
+ */
+export function papierExplicite(id: string, name: string): Papier | null {
   if (id in PAR_ID) return ROUE[PAR_ID[id]];
   const cle = normaliser(name);
   if (cle in PAR_NOM) return ROUE[PAR_NOM[cle]];
-  return ROUE[hacher(cle || id) % ROUE.length];
+  return null;
 }
