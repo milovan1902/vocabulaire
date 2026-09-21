@@ -277,6 +277,24 @@ const PAR_NOM: Record<string, number> = {
   'les verbes irreguliers 4e': 7,
   'reagir et raconter 4e': 0,
   'reagir et raconter': 0,
+
+  /*
+   * CHANTIER 97 — les cinq paquets de FIN de quatrième, en second
+   * recours comme ceux du chantier 95. `PAR_ID` répond le premier.
+   *
+   * « si alors 4e » est la forme normalisée de « Si… alors — 4e » :
+   * les points de suspension et le tiret cadratin tombent au passage
+   * dans `normaliser`. Vérifié, pas supposé.
+   */
+  'parler de tout 4e': 2,
+  'parler de tout': 2,
+  'fabriquer les mots 4e': 2,
+  'fabriquer les mots': 2,
+  'tous les temps 4e': 1,
+  'tous les temps': 1,
+  'si alors 4e': 1,
+  'prendre la parole 4e': 0,
+  'prendre la parole': 0,
 };
 /**
  * À remplir si l'identifiant est le repère le plus sûr chez vous.
@@ -316,6 +334,40 @@ const PAR_ID: Record<string, number> = {
   '4e-present-perfect': 1, // sauge
   '4e-irreguliers': 7,     // glycine
   '4e-reagir': 0,          // bleu ardoise
+
+  /*
+   * CHANTIER 97 — LES CINQ PAQUETS DE FIN DE QUATRIÈME
+   *
+   * MÊME RÈGLE, SANS EXCEPTION : le papier dit le rayon.
+   *
+   *    Parler de tout — 4e         miel      (Vocabulaire de base)
+   *    Fabriquer les mots — 4e     miel      (Vocabulaire de base)
+   *    Tous les temps — 4e         sauge     (Grammaire)
+   *    Si… alors — 4e              sauge     (Grammaire)
+   *    Prendre la parole — 4e      ardoise   (Phrases toutes faites)
+   *
+   * CE QUE ÇA COÛTE, ET C'EST LE PLUS LOURD DEPUIS LE CHANTIER 58.
+   * Le rayon « Vocabulaire de base » porte maintenant HUIT cartes sur
+   * le même miel, la sauge en porte quatre, l'ardoise trois. J'avais
+   * écrit au chantier 70 qu'une sixième carte miel « ne serait plus
+   * tenable » ; le chantier 95 l'a faite, celui-ci en ajoute deux.
+   *
+   * Je ne propose pas de reteindre pour autant, et voici pourquoi :
+   * changer la teinte d'un seul de ces huit paquets ne dirait rien —
+   * il ne serait pas « d'un autre rayon », il serait juste différent
+   * sans raison, ce qui est pire qu'identique. La seule sortie propre
+   * est l'illustration, comme au chantier 96 pour les deux sauges.
+   *
+   * D'ICI LÀ, HUIT MONOGRAMMES SUR LE MÊME PARCHEMIN. Dans le rayon
+   * Vocabulaire, deux lettres séparent « Parler de tout » (PT) de
+   * « Premiers mots » (PM). C'est mince. C'est la réserve à lever en
+   * priorité, et elle se lève avec cinq dessins.
+   */
+  '4e-fin-vocabulaire': 2, // miel
+  '4e-fin-mots': 2,        // miel
+  '4e-fin-temps': 1,       // sauge
+  '4e-fin-modaux': 1,      // sauge
+  '4e-fin-phrases': 0,     // bleu ardoise
 };
 
 /** Minuscules, sans accent ni ponctuation : la clé de correspondance. */
