@@ -3,6 +3,14 @@
  * CHANTIER 91 — le même parcours, relisible à tout moment depuis les
  * réglages (prop `relecture`) : trois étapes au lieu de cinq, puisque
  * la classe et le paquet sont déjà réglés.
+ * CHANTIER 93 — l'écran vide réparé. En relecture, le galop d'essai
+ * partait du premier paquet en jeu SANS vérifier qu'il avait des cartes
+ * à montrer : un paquet illisible, absent du catalogue local ou vide
+ * menait à une étape « cinq cartes » qui n'affichait rien du tout, et
+ * l'en-tête seul restait à l'écran. Trois verrous : on essaie chaque
+ * paquet en jeu jusqu'à en trouver un qui tient, l'étape ne se change
+ * qu'une fois les cartes en main, et s'il n'y en a nulle part le
+ * parcours complet reprend la main au lieu de laisser un vide.
  *
  * Ce que ce guidage n'est pas : un carrousel d'explications. On se
  * balaie ces choses-là sans les lire, et on arrive quand même sur un
@@ -95,12 +103,18 @@ export function Onboarding({
   const [index, setIndex] = useState(0);
   const [montre, setMontre] = useState(false);
   const [resultats, setResultats] = useState<Resultat[]>([]);
+  /*
+   * CHANTIER 93 — la relecture n'a pas trouvé de paquet montrable, et
+   * repasse par le parcours complet : choisir un paquet redevient une
+   * étape, puisque c'est redevenu une question.
+   */
+  const [secours, setSecours] = useState(false);
 
   /*
    * Relire suppose d'avoir de quoi réviser. Sans paquet en jeu, la
    * relecture retombe sur le parcours complet : classe, paquet, cartes.
    */
-  const relu = relecture && enJeu.length > 0;
+  const relu = relecture && enJeu.length > 0 && !secours;
   const parcours = useMemo<readonly Etape[]>(
     () => (relu ? (['methode', 'cartes', 'echeances'] as const) : ETAPES),
     [relu],
@@ -123,18 +137,37 @@ export function Onboarding({
       .slice(0, 3);
   }, [decks, classe]);
 
-  /** Relecture : on reprend le paquet déjà en jeu, sans rien obtenir. */
+  /**
+   * Relecture : on reprend un paquet déjà en jeu, sans rien obtenir.
+   *
+   * CHANTIER 93 — on les essaie dans l'ordre, et on ne change d'étape
+   * qu'avec des cartes en main. Un paquet peut échouer pour trois
+   * raisons : il a disparu du catalogue local (identifiant resté « en
+   * jeu » après une synchronisation), ses cartes ne sont pas encore
+   * descendues, ou il est vide. Dans les trois cas, le suivant a ses
+   * chances ; si aucun ne tient, le parcours complet reprend la main.
+   */
   const reprendre = useCallback(async () => {
-    const id = enJeu[0];
-    if (!id) return;
     setEnCours(true);
-    const c = await loadDeck(id);
-    setCharge(c);
-    setIndex(0);
-    setMontre(false);
-    setResultats([]);
+    for (const id of enJeu) {
+      try {
+        const c = await loadDeck(id);
+        if (c && c.deck && c.cards && c.cards.length > 0) {
+          setCharge({ ...c, progress: c.progress ?? {} });
+          setIndex(0);
+          setMontre(false);
+          setResultats([]);
+          setEnCours(false);
+          setEtape('cartes');
+          return;
+        }
+      } catch {
+        /* Paquet illisible : on passe au suivant, sans rien dire. */
+      }
+    }
     setEnCours(false);
-    setEtape('cartes');
+    setSecours(true);
+    setEtape('paquet');
   }, [enJeu, loadDeck]);
 
   const choisirPaquet = useCallback(
@@ -161,12 +194,14 @@ export function Onboarding({
    * réponse de démonstration repousserait à tort.
    */
   const jeu = useMemo(() => {
-    if (!charge) return [];
-    if (!relu) return charge.cards.slice(0, CARTES_DESSAI);
-    const jamais = charge.cards.filter((c) => !charge.progress[c.id]);
-    const vues = charge.cards
-      .filter((c) => charge.progress[c.id])
-      .sort((a, b) => charge.progress[a.id].due - charge.progress[b.id].due);
+    const cartes = charge?.cards ?? [];
+    if (cartes.length === 0) return [];
+    const vu = charge?.progress ?? {};
+    if (!relu) return cartes.slice(0, CARTES_DESSAI);
+    const jamais = cartes.filter((c) => !vu[c.id]);
+    const vues = cartes
+      .filter((c) => vu[c.id])
+      .sort((a, b) => vu[a.id].due - vu[b.id].due);
     return [...jamais, ...vues].slice(0, CARTES_DESSAI);
   }, [charge, relu]);
   const carte = jeu[index];
@@ -338,7 +373,7 @@ export function Onboarding({
           </p>
 
           <div className="guide-carte" onClick={() => { if (!montre) setMontre(true); }}>
-            <span className="guide-kicker">{charge?.deck.name}</span>
+            <span className="guide-kicker">{charge?.deck?.name ?? ''}</span>
             <p className="recto">{carte.fr}</p>
             {montre && (
               <>
@@ -363,6 +398,30 @@ export function Onboarding({
               ))}
             </div>
           )}
+        </>
+      )}
+
+      {etape === 'cartes' && !carte && (
+        <>
+          <h2 className="guide-titre">Aucune carte à montrer.</h2>
+          <p className="guide-texte">
+            Le paquet en jeu n’a pas pu être lu sur cet appareil : ses cartes ne
+            sont peut-être pas encore descendues. Choisissez-en un, ou fermez et
+            revenez plus tard.
+          </p>
+          <div className="guide-pied">
+            <button
+              className="btn"
+              onClick={() => { setSecours(true); setEtape('paquet'); }}
+            >
+              Choisir un paquet
+            </button>
+          </div>
+          <div className="guide-pied">
+            <button className="btn ghost wide" onClick={() => onFini('today')}>
+              Voir ma journée
+            </button>
+          </div>
         </>
       )}
 
