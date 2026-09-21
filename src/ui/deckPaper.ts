@@ -328,6 +328,46 @@ const PAR_NOM: Record<string, number> = {
  * alors de dire le rayon pour ce paquet-là — c'est l'arbitrage, et il
  * vous revient.
  */
+/**
+ * LE RAYON, ET NON PLUS LA LISTE : LA TABLE DE DERNIER RECOURS.
+ *
+ * CHANTIER 98 — écrit après une panne, et il faut la raconter parce
+ * qu'elle se reproduira autrement.
+ *
+ * Les cinq paquets de fin de 4e sont sortis en bleu, bleu, orange,
+ * violet, violet — les couleurs franches de `paletteFor`, tirées du
+ * hachage de leur identifiant. La cause immédiate était une build en
+ * retard sur `deckPaper.ts`. Mais la cause de fond est ailleurs, et
+ * elle est dans ce fichier : depuis le chantier 52, LE PARCHEMIN
+ * DÉPEND D'UNE TABLE TENUE À LA MAIN. Un paquet oublié dans `PAR_ID`
+ * et `PAR_NOM` ne tombe pas sur une couleur approchante — il tombe
+ * dans six couleurs franches qui n'ont rien à voir avec son rayon.
+ *
+ * Or la règle qu'on écrit depuis le chantier 58 est « LE PAPIER DIT LE
+ * RAYON », et le rayon est en base : c'est `deck.categoryId`. La règle
+ * peut donc être le code au lieu d'être une liste à recopier.
+ *
+ * Ce qui NE CHANGE PAS : les deux tables passent toujours en premier.
+ * Chaque décision prise depuis le chantier 52 est intacte — le lilas
+ * d'EDHEC, le rose des quatre paquets du 59, la glycine du 77, le
+ * bleu-vert de « Voyage — phrases ». Aucune carte ne change de couleur.
+ *
+ * Ce que ça change : un paquet AJOUTÉ DEMAIN, oublié dans les tables,
+ * porte le parchemin de son rayon au lieu d'une couleur au hasard. Le
+ * hachage de repli ne sert plus qu'aux paquets sans rayon — ceux qu'on
+ * crée dans l'application.
+ *
+ * Les rayons absents d'ici n'ont pas de teinte imposée, volontairement :
+ * « Pièges » (terracotta) et les rayons à venir restent libres. Mettez
+ * une ligne ici le jour où vous en décidez une.
+ */
+const PAR_RAYON: Record<string, number> = {
+  vocabulaire: 2,  // miel
+  grammaire: 1,    // sauge
+  conjugaison: 7,  // glycine
+  phrases: 0,      // bleu ardoise
+};
+
 const PAR_ID: Record<string, number> = {
   '4e-vocabulaire': 2,     // miel
   '4e-grammaire': 1,       // sauge
@@ -404,8 +444,8 @@ function hacher(cle: string): number {
  * deux répondent à la même question — « de quel paquet s'agit-il ? » — et
  * doivent donc se tromper ensemble ou pas du tout.
  */
-export function papierFor(id: string, name: string): Papier {
-  const voulu = papierExplicite(id, name);
+export function papierFor(id: string, name: string, categoryId?: string | null): Papier {
+  const voulu = papierExplicite(id, name, categoryId);
   if (voulu) return voulu;
   return ROUE[hacher(normaliser(name) || id) % ROUE.length];
 }
@@ -426,9 +466,26 @@ export function papierFor(id: string, name: string): Papier {
  * `paletteFor` que pour ce dont personne n'a jamais rien dit — un paquet
  * que vous créez vous-même dans l'application, par exemple.
  */
-export function papierExplicite(id: string, name: string): Papier | null {
+export function papierExplicite(
+  id: string,
+  name: string,
+  categoryId?: string | null,
+): Papier | null {
   if (id in PAR_ID) return ROUE[PAR_ID[id]];
   const cle = normaliser(name);
   if (cle in PAR_NOM) return ROUE[PAR_NOM[cle]];
+  /*
+   * CHANTIER 98 — le rayon, en dernier recours avant le hasard.
+   *
+   * Troisième et non premier : les deux tables gardent la main, sans
+   * quoi les exceptions assumées tomberaient. EDHEC repasserait au miel
+   * alors que son lilas dit précisément qu'il n'est pas du vocabulaire
+   * de base ; les quatre paquets du chantier 59 perdraient leur rose.
+   *
+   * L'argument est OPTIONNEL : tout appel existant à deux arguments
+   * continue de fonctionner à l'identique. C'est ce qui permet de ne
+   * toucher qu'aux écrans qui ont le rayon sous la main.
+   */
+  if (categoryId && categoryId in PAR_RAYON) return ROUE[PAR_RAYON[categoryId]];
   return null;
 }
