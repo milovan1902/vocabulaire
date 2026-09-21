@@ -427,6 +427,8 @@ export default function App() {
           <Onboarding
             relecture={relecture}
             enJeu={store.active}
+            /* CHANTIER 94 — la voix du guidage suit la vitesse réglée. */
+            debit={store.common.speechRate}
             decks={store.decks}
             classe={store.common.classe}
             onClasse={(c) => { void store.setCommon({ ...store.common, classe: c }); }}
