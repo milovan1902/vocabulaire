@@ -417,12 +417,36 @@ export function Library({
    * À défaut, une illustration se pose dans le dos dessiné, dont les
    * losanges et le monogramme s'effacent. À défaut encore, le dos dessiné
    * reste tel qu'il est.
+   *
+   * CHANTIER 98 — LE RAYON DESCEND JUSQU'AU DOS.
+   *
+   * `categoryId` est le troisième recours de `papierExplicite`, après
+   * `PAR_ID` et `PAR_NOM`. Il ne change donc AUCUNE carte déjà décidée :
+   * EDHEC garde son lilas, « Voyage — phrases » son bleu-vert, les quatre
+   * paquets du chantier 59 leur rose. Ce qu'il change, c'est le sort d'un
+   * paquet ABSENT des deux tables — il porte désormais le parchemin de son
+   * rayon au lieu d'une des six couleurs franches tirées au hasard de son
+   * identifiant.
+   *
+   * C'est la panne des cinq paquets de fin de 4e, sortis en bleu, bleu,
+   * orange, violet, violet. Trois écrans passent par cette fonction — mon
+   * travail, ma collection, mon catalogue — ce qui en fait la ligne la plus
+   * utile des quatre du chantier.
    */
   function vignette(s: DeckSummary, w: number, h: number) {
     if (s.image) {
       return <img src={s.image} alt="" style={{ width: w, height: h }} className="vign" />;
     }
-    return <DeckVign id={s.deck.id} name={s.deck.name} image={null} w={w} h={h} />;
+    return (
+      <DeckVign
+        id={s.deck.id}
+        name={s.deck.name}
+        image={null}
+        w={w}
+        h={h}
+        categoryId={s.deck.categoryId}
+      />
+    );
   }
 
   /**
