@@ -154,7 +154,28 @@ export function Today({
       <div key={r.deck.id} className="workrow">
         <button className="workrow-main" onClick={() => choisir(r.deck.id)}>
           <span className="vign-wrap">
-            <DeckVign id={r.deck.id} name={r.deck.name} image={r.image} w={54} h={76} />
+            {/*
+              * CHANTIER 100 — `categoryId` : le parchemin du rayon.
+              *
+              * Troisième recours de `papierExplicite`, après `PAR_ID` et
+              * `PAR_NOM` : aucune carte déjà décidée ne change. Ce qu'il
+              * corrige, c'est le paquet ABSENT des deux tables, qui tirait
+              * jusqu'ici une des six couleurs franches au hasard de son
+              * identifiant — la panne des cinq paquets de fin de 4e.
+              *
+              * Cette ligne et celle de `carteEnAvant` VONT ENSEMBLE. N'en
+              * corriger qu'une laisserait le paquet mis en avant sur sa
+              * couleur franche pendant que sa propre ligne en liste serait
+              * sur parchemin, dans le même écran.
+              */}
+            <DeckVign
+              id={r.deck.id}
+              name={r.deck.name}
+              image={r.image}
+              w={54}
+              h={76}
+              categoryId={r.deck.categoryId}
+            />
             {r.deck.classeFrom && <span className="classdot">{r.deck.classeFrom}</span>}
           </span>
           <span className="workrow-txt">
@@ -187,7 +208,14 @@ export function Today({
             */}
           <span className="avant-vign-wrap">
             <span className="avant-vign">
-              <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} />
+              {/* CHANTIER 100 — le pendant de la ligne de liste ; voir la
+                  note dans `ligne()`. Les deux se corrigent ensemble. */}
+              <DeckFace
+                id={r.deck.id}
+                name={r.deck.name}
+                image={r.image}
+                categoryId={r.deck.categoryId}
+              />
             </span>
             {/*
               * La classe plancher, comme sur les lignes de la liste.
