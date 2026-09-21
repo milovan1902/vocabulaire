@@ -1,7 +1,7 @@
 /** Petits composants partagés, sans logique métier. */
 import type { ReactNode } from 'react';
 import { artFor } from './deckImages';
-import { papierFor, IVOIRE, type Papier } from './deckPaper';
+import { papierFor, papierExplicite, IVOIRE, type Papier } from './deckPaper';
 
 /** Palette déterministe : un paquet garde toujours la même couleur. */
 const PALETTES = [
@@ -60,9 +60,16 @@ export function initialsOf(name: string): string {
  *  - `bare` — il y a une illustration à poser. Le papier prend la teinte du
  *    paquet (`papierFor`), très pâle, et le filet la reprend deux crans plus
  *    foncé. C'est ce qui distingue sept paquets dans une liste.
- *  - sinon — pas d'illustration, donc monogramme sur disque plein. La
- *    palette franche de `paletteFor` s'applique comme avant : ici la couleur
- *    EST le dos, il n'y a pas de dessin avec qui la partager.
+ *  - sinon, mais le paquet a un parchemin VOULU (chantier 95) — pas de
+ *    dessin, et pourtant sa place au catalogue est décidée. Le monogramme
+ *    se pose sur le parchemin de son rayon, et son encre en est l'encre.
+ *    C'est ce qui permet aux cinq paquets de 4e de porter la couleur de
+ *    leur rayon avant d'avoir un dos dessiné : sans cela, `paletteFor`
+ *    leur tirait une couleur au sort dans les six franches.
+ *  - sinon — personne n'a rien décidé pour ce paquet, ce qui est le cas de
+ *    ceux que l'on crée dans l'application. La palette franche de
+ *    `paletteFor` s'applique comme avant : ici la couleur EST le dos, il
+ *    n'y a pas de dessin avec qui la partager.
  *
  * Le doublage intérieur est à 0,88 et non 0,7 : c'est le seul trait qui
  * survive à la vignette de 54 pixels, et sur un papier désormais teinté un
@@ -71,7 +78,9 @@ export function initialsOf(name: string): string {
 export function CardBack({
   id, name, bare = false,
 }: { id: string; name: string; bare?: boolean }) {
-  const p: Papier = bare ? papierFor(id, name) : paletteFor(id);
+  const p: Papier = bare
+    ? papierFor(id, name)
+    : (papierExplicite(id, name) ?? paletteFor(id));
   return (
     <svg viewBox="0 0 620 874" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <rect x="10" y="10" width="600" height="854" rx="70" fill={p.pale} stroke={p.mid} strokeWidth="10" />
