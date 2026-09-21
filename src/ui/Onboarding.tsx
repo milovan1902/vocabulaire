@@ -1,5 +1,8 @@
 /**
  * CHANTIER 90 — LE PREMIER PAS GUIDÉ.
+ * CHANTIER 91 — le même parcours, relisible à tout moment depuis les
+ * réglages (prop `relecture`) : trois étapes au lieu de cinq, puisque
+ * la classe et le paquet sont déjà réglés.
  *
  * Ce que ce guidage n'est pas : un carrousel d'explications. On se
  * balaie ces choses-là sans les lire, et on arrive quand même sur un
@@ -62,6 +65,7 @@ type Resultat = { card: Card; grade: Grade; due: number };
 
 export function Onboarding({
   decks, classe, onClasse, onChoisir, loadDeck, onGrade, onFini,
+  relecture = false, enJeu = [],
 }: {
   decks: Deck[];
   classe: Classe | null;
@@ -72,7 +76,18 @@ export function Onboarding({
   loadDeck: (id: string) => Promise<PaquetCharge>;
   onGrade: (deckId: string, p: Progress, g: Grade, wasNew: boolean) => Promise<Progress>;
   /** Sortie du guidage. « Plus tard » mène aux paquets, la fin à la journée. */
-  onFini: (vers: 'today' | 'library') => void;
+  onFini: (vers: 'today' | 'library' | 'account') => void;
+  /**
+   * CHANTIER 91 — relecture volontaire, depuis les réglages.
+   *
+   * Le même composant, amputé de ses deux écrans de réglage : la classe
+   * est déjà déclarée, le paquet déjà en jeu. Les redemander à quelqu'un
+   * qui vient relire la méthode, c'est lui faire refaire un choix qu'il
+   * n'a pas demandé à refaire.
+   */
+  relecture?: boolean;
+  /** Les paquets en jeu. Le premier sert de terrain au galop d'essai. */
+  enJeu?: string[];
 }) {
   const [etape, setEtape] = useState<Etape>('methode');
   const [charge, setCharge] = useState<PaquetCharge | null>(null);
@@ -81,7 +96,16 @@ export function Onboarding({
   const [montre, setMontre] = useState(false);
   const [resultats, setResultats] = useState<Resultat[]>([]);
 
-  const rang = ETAPES.indexOf(etape) + 1;
+  /*
+   * Relire suppose d'avoir de quoi réviser. Sans paquet en jeu, la
+   * relecture retombe sur le parcours complet : classe, paquet, cartes.
+   */
+  const relu = relecture && enJeu.length > 0;
+  const parcours = useMemo<readonly Etape[]>(
+    () => (relu ? (['methode', 'cartes', 'echeances'] as const) : ETAPES),
+    [relu],
+  );
+  const rang = parcours.indexOf(etape) + 1;
 
   /*
    * Les propositions de l'étape 3.
@@ -99,6 +123,20 @@ export function Onboarding({
       .slice(0, 3);
   }, [decks, classe]);
 
+  /** Relecture : on reprend le paquet déjà en jeu, sans rien obtenir. */
+  const reprendre = useCallback(async () => {
+    const id = enJeu[0];
+    if (!id) return;
+    setEnCours(true);
+    const c = await loadDeck(id);
+    setCharge(c);
+    setIndex(0);
+    setMontre(false);
+    setResultats([]);
+    setEnCours(false);
+    setEtape('cartes');
+  }, [enJeu, loadDeck]);
+
   const choisirPaquet = useCallback(
     async (id: string) => {
       setEnCours(true);
@@ -114,11 +152,23 @@ export function Onboarding({
     [onChoisir, loadDeck],
   );
 
-  /* Les cartes du galop d'essai : les premières du paquet, jamais vues. */
-  const jeu = useMemo(
-    () => (charge ? charge.cards.slice(0, CARTES_DESSAI) : []),
-    [charge],
-  );
+  /*
+   * Les cartes du galop d'essai.
+   *
+   * Au premier lancement, les premières du paquet : rien n'a été vu.
+   * En relecture, les mots jamais rencontrés d'abord, puis les plus
+   * proches de leur échéance — jamais un mot révisé ce matin, qu'une
+   * réponse de démonstration repousserait à tort.
+   */
+  const jeu = useMemo(() => {
+    if (!charge) return [];
+    if (!relu) return charge.cards.slice(0, CARTES_DESSAI);
+    const jamais = charge.cards.filter((c) => !charge.progress[c.id]);
+    const vues = charge.cards
+      .filter((c) => charge.progress[c.id])
+      .sort((a, b) => charge.progress[a.id].due - charge.progress[b.id].due);
+    return [...jamais, ...vues].slice(0, CARTES_DESSAI);
+  }, [charge, relu]);
   const carte = jeu[index];
 
   const progression = useMemo(
@@ -160,12 +210,12 @@ export function Onboarding({
   const entete = (
     <div className="guide-head">
       <span className="guide-pas">
-        Étape {rang} sur {ETAPES.length}
+        Étape {rang} sur {parcours.length}
         {etape === 'cartes' && jeu.length > 0 && ` · carte ${index + 1} sur ${jeu.length}`}
       </span>
       {etape !== 'echeances' && (
-        <button className="guide-skip" onClick={() => onFini('library')}>
-          Plus tard
+        <button className="guide-skip" onClick={() => onFini(relu ? 'account' : 'library')}>
+          {relu ? 'Fermer' : 'Plus tard'}
         </button>
       )}
     </div>
@@ -204,7 +254,13 @@ export function Onboarding({
           </div>
 
           <div className="guide-pied">
-            <button className="btn" onClick={() => setEtape('classe')}>Commencer</button>
+            <button
+              className="btn"
+              disabled={enCours}
+              onClick={() => { if (relu) void reprendre(); else setEtape('classe'); }}
+            >
+              {relu ? 'Refaire cinq cartes' : 'Commencer'}
+            </button>
           </div>
         </>
       )}
