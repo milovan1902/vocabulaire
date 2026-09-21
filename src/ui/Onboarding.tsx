@@ -3,6 +3,11 @@
  * CHANTIER 91 — le même parcours, relisible à tout moment depuis les
  * réglages (prop `relecture`) : trois étapes au lieu de cinq, puisque
  * la classe et le paquet sont déjà réglés.
+ * CHANTIER 94 — la voix. Les cinq cartes prononcent l'anglais à la
+ * révélation, comme la vraie révision, et un bouton « Écouter » le
+ * répète : le guidage ne peut pas annoncer une application qui parle
+ * sans la faire parler. Et l'étape des échéances explique pourquoi deux
+ * « Facile » ne tombent pas le même jour.
  * CHANTIER 93 — l'écran vide réparé. En relecture, le galop d'essai
  * partait du premier paquet en jeu SANS vérifier qu'il avait des cartes
  * à montrer : un paquet illisible, absent du catalogue local ou vide
@@ -44,6 +49,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Card, Classe, Deck, Grade, Progress } from '../domain/types';
 import { CLASSES, CLASSE_LABELS, classeConvient, classeRank } from '../domain/types';
 import { emptyProgress, isNew, previewIntervals } from '../engine/scheduler';
+import { speak } from './speech';
 import { imageFor } from './deckImages';
 
 /** Le strict nécessaire de ce que renvoie `loadDeck`. */
@@ -73,7 +79,7 @@ type Resultat = { card: Card; grade: Grade; due: number };
 
 export function Onboarding({
   decks, classe, onClasse, onChoisir, loadDeck, onGrade, onFini,
-  relecture = false, enJeu = [],
+  relecture = false, enJeu = [], debit = 1,
 }: {
   decks: Deck[];
   classe: Classe | null;
@@ -96,6 +102,8 @@ export function Onboarding({
   relecture?: boolean;
   /** Les paquets en jeu. Le premier sert de terrain au galop d'essai. */
   enJeu?: string[];
+  /** La vitesse de la voix réglée dans les réglages. */
+  debit?: number;
 }) {
   const [etape, setEtape] = useState<Etape>('methode');
   const [charge, setCharge] = useState<PaquetCharge | null>(null);
@@ -214,6 +222,29 @@ export function Onboarding({
     () => (progression ? previewIntervals(progression) : null),
     [progression],
   );
+
+  /*
+   * CHANTIER 94 — LA VOIX, DÈS LE GUIDAGE.
+   *
+   * L'application prononce l'anglais à chaque révélation : c'est un de
+   * ses gestes quotidiens, et le guidage n'en disait rien. Une phrase
+   * l'aurait annoncé ; la voix le montre.
+   *
+   * Même règle que la révision (chantier 50) : on prononce l'anglais au
+   * moment où il s'affiche — ici la révélation, puisque le galop d'essai
+   * va toujours du français vers l'anglais.
+   */
+  const dire = useCallback(() => {
+    if (carte) speak(carte.en, debit);
+  }, [carte, debit]);
+
+  /* La dépendance porte sur le mot ET sur la révélation : une carte
+     déjà dite ne se redit pas à chaque rendu. */
+  const motAnglais = carte?.en;
+  useEffect(() => {
+    if (etape !== 'cartes' || !montre || !motAnglais) return;
+    speak(motAnglais, debit);
+  }, [etape, montre, motAnglais, debit]);
 
   const juger = useCallback(
     async (g: Grade) => {
@@ -368,8 +399,8 @@ export function Onboarding({
         <>
           <p className="guide-consigne">
             {montre
-              ? 'Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'
-              : 'Cherchez la réponse dans votre tête, puis vérifiez.'}
+              ? 'Le mot anglais vient d’être prononcé — « Écouter » le répète. Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'
+              : 'Cherchez la réponse dans votre tête, puis vérifiez. L’application dira le mot anglais à voix haute.'}
           </p>
 
           <div className="guide-carte" onClick={() => { if (!montre) setMontre(true); }}>
@@ -380,6 +411,14 @@ export function Onboarding({
                 <span className="ruleline" aria-hidden="true" />
                 <p className="verso">{carte.en}</p>
                 {carte.example && <p className="exemple">{carte.example}</p>}
+                {/* stopPropagation : toute la carte est cliquable, et
+                    demander à entendre n'est pas demander à voir. */}
+                <button
+                  className="speak guide-speak"
+                  onClick={(e) => { e.stopPropagation(); dire(); }}
+                >
+                  Écouter
+                </button>
               </>
             )}
           </div>
@@ -453,6 +492,16 @@ export function Onboarding({
           <p className="guide-note">
             À chaque rappel réussi, ces écarts doubleront presque. C’est là que le mot
             passe en mémoire profonde — et vous n’avez rien à calculer.
+          </p>
+          {/*
+            * CHANTIER 94 — deux « Facile » ne tombent pas le même jour, et
+            * c'est voulu. Sans cette phrase, l'écran a l'air de se tromper.
+            */}
+          <p className="guide-note">
+            Deux mots jugés pareils peuvent revenir à des dates différentes : chaque
+            mot garde sa propre histoire — combien de fois vous l’avez retrouvé, et à
+            quels écarts —, et l’application décale légèrement les échéances au hasard
+            pour ne pas vous coller cinquante rappels le même matin.
           </p>
 
           <div className="guide-pied">
