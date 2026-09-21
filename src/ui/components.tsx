@@ -76,11 +76,23 @@ export function initialsOf(name: string): string {
  * liseré à 0,7 se referme en bouillie grise.
  */
 export function CardBack({
-  id, name, bare = false,
-}: { id: string; name: string; bare?: boolean }) {
+  id, name, bare = false, categoryId = null,
+}: { id: string; name: string; bare?: boolean; categoryId?: string | null }) {
+  /*
+   * CHANTIER 98 — le rayon descend jusqu'ici.
+   *
+   * Il est OPTIONNEL, et c'est délibéré : les écrans qui ne l'ont pas
+   * sous la main appellent exactement comme avant, et `papierExplicite`
+   * retombe sur ses deux tables. Rien à migrer d'un coup.
+   *
+   * Ce qu'il apporte : un paquet absent des tables ne tire plus une
+   * couleur franche au hasard, il porte le parchemin de son rayon. Voir
+   * la note de `PAR_RAYON` dans `deckPaper.ts` — elle raconte la panne
+   * des cinq paquets de fin de 4e, qui est la raison de ce chantier.
+   */
   const p: Papier = bare
-    ? papierFor(id, name)
-    : (papierExplicite(id, name) ?? paletteFor(id));
+    ? papierFor(id, name, categoryId)
+    : (papierExplicite(id, name, categoryId) ?? paletteFor(id));
   return (
     <svg viewBox="0 0 620 874" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <rect x="10" y="10" width="600" height="854" rx="70" fill={p.pale} stroke={p.mid} strokeWidth="10" />
@@ -126,13 +138,13 @@ export function CardBack({
  * exactement tel qu'il était.
  */
 export function DeckFace({
-  id, name, image,
-}: { id: string; name: string; image?: string | null }) {
+  id, name, image, categoryId = null,
+}: { id: string; name: string; image?: string | null; categoryId?: string | null }) {
   if (image) return <img src={image} alt="" />;
   const art = artFor(id, name);
   return (
     <>
-      <CardBack id={id} name={name} bare={!!art} />
+      <CardBack id={id} name={name} bare={!!art} categoryId={categoryId} />
       {art && <img src={art} alt="" className="dos-illus-img" />}
     </>
   );
@@ -151,14 +163,17 @@ export function DeckFace({
  * l'animation d'ouverture, en silence.
  */
 export function DeckVign({
-  id, name, image, w, h,
-}: { id: string; name: string; image?: string | null; w: number; h: number }) {
+  id, name, image, w, h, categoryId = null,
+}: {
+  id: string; name: string; image?: string | null; w: number; h: number;
+  categoryId?: string | null;
+}) {
   if (image) {
     return <img src={image} alt="" style={{ width: w, height: h }} className="vign" />;
   }
   return (
     <span className="vign vign-draw" style={{ width: w, height: h }}>
-      <DeckFace id={id} name={name} image={null} />
+      <DeckFace id={id} name={name} image={null} categoryId={categoryId} />
     </span>
   );
 }
