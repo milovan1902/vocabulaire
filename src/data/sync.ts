@@ -156,6 +156,37 @@ async function remoteCardIds(): Promise<Set<string>> {
   return new Set(rows.map((r) => r.id));
 }
 
+/*
+ * CHANTIER 101 — `mastery` NE VOYAGEAIT PAS.
+ *
+ * Constaté sur deux captures du même compte, le même jour, à la même
+ * minute : téléphone 31 % d'avancement, ventilés en cinq tas ; ordinateur
+ * 0 %, et les 58 mots déjà vus tous rangés dans « À reprendre ». Les
+ * compteurs de révision, eux, coïncidaient parfaitement — 80 cartes, deux
+ * paquets, 27 minutes, 9 jours d'affilée.
+ *
+ * C'est exactement la signature du défaut : la progression FSRS se
+ * synchronise, l'avancement AFFICHÉ non. `toRow` ne l'envoyait pas,
+ * `fromRow` ne le lisait pas. Le champ était écrit par `scheduler.ts` à
+ * chaque note, rangé dans l'IndexedDB de l'appareil, et il s'arrêtait là.
+ *
+ * L'ordinateur ne voyait donc, de chaque carte, que `reps > 0` et un
+ * `mastery` absent — ce que `deckMastery` lit, à juste titre, comme « vue
+ * et retombée à zéro ». D'où les 58 « à reprendre » : ce ne sont pas des
+ * mots ratés, ce sont des mots dont l'avancement n'est jamais arrivé.
+ *
+ * C'EST LE MÊME DÉFAUT QUE `grade_from` AU CHANTIER 30, raconté vingt
+ * lignes plus haut dans ce fichier : une colonne oubliée d'un `select` ou
+ * d'un `insert` ne laisse rien « tel quel », elle efface. La leçon n'avait
+ * pas été appliquée à `progress`.
+ *
+ * RIEN N'EST PERDU : le téléphone porte les vraies valeurs et les pousse
+ * dès la première synchronisation après ce chantier. Mais rien ne se
+ * reconstitue non plus — aucun journal de notes n'est conservé (voir
+ * `types.ts`). Si vous effaciez le téléphone avant de déposer ceci,
+ * l'avancement repartirait de zéro pour de bon.
+ */
+
 function toRow(userId: string, p: Progress) {
   return {
     user_id: userId,
@@ -170,6 +201,14 @@ function toRow(userId: string, p: Progress) {
     lapses: p.lapses,
     state: p.state,
     last_review: p.lastReview ? new Date(p.lastReview).toISOString() : null,
+    /*
+     * `null` et non `0` quand le champ est absent, et la distinction
+     * compte. `0` affirme « cette carte est retombée à zéro » ; `null`
+     * dit « cet appareil n'en sait rien ». C'est ce qui permet à la
+     * fusion ci-dessous de ne jamais écraser l'avancement d'un autre
+     * appareil par l'ignorance de celui-ci.
+     */
+    mastery: p.mastery ?? null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -187,6 +226,14 @@ function fromRow(r: Record<string, unknown>): Progress {
     lapses: Number(r.lapses),
     state: Number(r.state) as 0 | 1 | 2 | 3,
     lastReview: r.last_review ? new Date(r.last_review as string).getTime() : undefined,
+    /*
+     * Reste `undefined` tant que la colonne est nulle — y compris sur
+     * toutes les lignes écrites AVANT ce chantier, qui sont la totalité
+     * de vos données d'aujourd'hui. `masteryOf` les traite comme 0, ce
+     * qui est le comportement actuel : rien ne change tant que le
+     * téléphone n'a pas poussé ses valeurs.
+     */
+    mastery: r.mastery == null ? undefined : Number(r.mastery),
   };
 }
 
@@ -199,6 +246,38 @@ export function pickFresher(a: Progress | undefined, b: Progress | undefined): P
   if (ta !== tb) return ta > tb ? a : b;
   // Jamais révisées ou même horodatage : on garde la plus travaillée.
   return a.reps >= b.reps ? a : b;
+}
+
+/**
+ * L'avancement rescapé des deux versions.
+ *
+ * CHANTIER 101 — sans cette fonction, la correction se retournerait contre
+ * vous dès la première synchronisation.
+ *
+ * Voici pourquoi. Les deux appareils portent, pour une même carte, le même
+ * `lastReview` et le même `reps` : `pickFresher` départage alors en faveur
+ * du LOCAL. Sur l'ordinateur, le local est précisément celui qui n'a pas
+ * d'avancement. Il gagnerait donc l'arbitrage, serait poussé au serveur
+ * avec `mastery: null`, et effacerait les 31 % du téléphone — une capture
+ * d'écran plus tard, les deux appareils afficheraient 0 % et l'on croirait
+ * la correction responsable.
+ *
+ * La règle est donc dissociée : `pickFresher` décide de l'ORDONNANCEMENT,
+ * cette fonction décide de l'AVANCEMENT. Un `mastery` connu l'emporte
+ * toujours sur un `mastery` absent, quel que soit le gagnant par ailleurs.
+ * À deux valeurs connues, celle du gagnant — c'est la plus récente.
+ *
+ * Ce n'est pas une règle de confort : `mastery` ne se recalcule à partir de
+ * rien, contrairement à tout le reste de `Progress`. Une valeur perdue
+ * l'est définitivement.
+ */
+export function garderMastery(
+  gagnant: Progress,
+  perdant: Progress | undefined,
+): Progress {
+  if (gagnant.mastery != null) return gagnant;
+  if (perdant?.mastery == null) return gagnant;
+  return { ...gagnant, mastery: perdant.mastery };
 }
 
 export async function syncProgress(
@@ -238,7 +317,21 @@ export async function syncProgress(
       const there = remote.get(card.id);
       if (!here && !there) continue;
 
-      const winner = pickFresher(here, there);
+      const brut = pickFresher(here, there);
+      /*
+       * CHANTIER 101 — l'avancement est repêché chez le perdant s'il est
+       * le seul à en porter un. Voir `garderMastery` : sans cette ligne,
+       * l'ordinateur écraserait l'avancement du téléphone.
+       */
+      const winner = garderMastery(brut, brut === here ? there : here);
+
+      /*
+       * La comparaison reste une IDENTITÉ d'objet, et c'est voulu :
+       * quand `garderMastery` a dû recoller un avancement, elle renvoie
+       * un objet neuf, donc différent des deux côtés à la fois. La
+       * version complétée part alors au serveur ET s'écrit en local,
+       * ce qui est exactement ce qu'on veut de cette réparation.
+       */
       if (winner !== there) toPush.push(winner);
       if (winner !== here) {
         merged[card.id] = winner;
