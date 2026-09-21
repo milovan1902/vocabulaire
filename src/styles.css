@@ -3921,3 +3921,70 @@ label.switch input {
   flex: none; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
   text-align: right; color: var(--ink);
 }
+/* ==================================================================
+   CHANTIER 94 — les jugements lisibles, et le bouton « Écouter »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css, après le bloc du
+   chantier 90. Rien à retirer.
+   ================================================================== */
+
+/* ---------- les quatre jugements du guidage ----------
+
+   Ils réemployaient `.grade` de la révision, dont l'encre est prévue
+   pour le fond plein cadre d'une session : posée sur le panneau clair
+   du guidage, elle devenait presque blanche sur presque blanc.
+
+   L'encre est donc écrite ici, franche, pour les deux thèmes — et
+   « À revoir » comme « Facile » gardent leur couleur, en version
+   assez sombre pour se lire. */
+
+.guide-grades .grade {
+  color: #eae6db;
+  background: rgba(234, 230, 219, 0.07);
+  border-color: rgba(234, 230, 219, 0.3);
+}
+.guide-grades .grade small { color: rgba(234, 230, 219, 0.66); }
+.guide-grades .grade.again {
+  color: #f0a79d; border-color: rgba(224, 119, 109, 0.55);
+  background: rgba(224, 119, 109, 0.14);
+}
+.guide-grades .grade.easy {
+  color: #86dcb6; border-color: rgba(79, 191, 149, 0.5);
+  background: rgba(79, 191, 149, 0.14);
+}
+
+[data-theme='clair'] .guide-grades .grade {
+  color: #16233f;
+  background: #ffffff;
+  border-color: rgba(22, 35, 63, 0.18);
+}
+[data-theme='clair'] .guide-grades .grade small { color: #5c6884; }
+[data-theme='clair'] .guide-grades .grade.again {
+  color: #9c3226; border-color: rgba(156, 50, 38, 0.32);
+  background: rgba(224, 119, 109, 0.09);
+}
+[data-theme='clair'] .guide-grades .grade.easy {
+  color: #0d6b4e; border-color: rgba(13, 107, 78, 0.3);
+  background: rgba(79, 191, 149, 0.1);
+}
+
+/* ---------- « Écouter », dans la carte du galop d'essai ----------
+
+   Le bouton de la révision vit sur un fond photographique et prend
+   26 pixels de marge haute ; dans la carte du guidage il suit le mot
+   de près, et se cadre sur le panneau. */
+
+.guide-carte .guide-speak {
+  margin: 4px 0 0;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+}
+[data-theme='clair'] .guide-carte .guide-speak {
+  color: #16233f;
+  border-color: rgba(22, 35, 63, 0.18);
+  background: #ffffff;
+}
