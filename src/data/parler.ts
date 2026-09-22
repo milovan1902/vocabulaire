@@ -53,11 +53,14 @@ export interface Bilan {
  */
 export class ErreurParler extends Error {
   quotaEpuise: boolean;
+  /** Le message brut du service, quand il y en a un. Pour le débogage. */
+  detail?: string;
 
-  constructor(message: string, quotaEpuise = false) {
+  constructor(message: string, quotaEpuise = false, detail?: string) {
     super(message);
     this.name = 'ErreurParler';
     this.quotaEpuise = quotaEpuise;
+    this.detail = detail;
   }
 }
 
@@ -83,8 +86,17 @@ async function appelle<T>(chemin: string, corps?: unknown): Promise<T> {
     throw new ErreurParler('quota du jour épuisé', true);
   }
   if (!r.ok) {
-    const d = (await r.json().catch(() => ({}))) as { erreur?: string };
-    throw new ErreurParler(d.erreur ?? `erreur ${r.status}`);
+    const d = (await r.json().catch(() => ({}))) as { erreur?: string; detail?: string };
+    /*
+     * CHANTIER 105 — LE DÉTAIL REMONTE JUSQU'À L'ÉCRAN.
+     *
+     * « La conversation ne répond pas » est une phrase honnête pour un
+     * élève et inutilisable pour vous : clé invalide, crédit à zéro et
+     * identifiant de modèle inconnu donnent le même message, et il faut
+     * une demi-heure pour les distinguer. Le détail renvoyé par la
+     * fonction est donc conservé ici, et l'écran l'affiche en petit.
+     */
+    throw new ErreurParler(d.erreur ?? `erreur ${r.status}`, false, d.detail);
   }
   return (await r.json()) as T;
 }
