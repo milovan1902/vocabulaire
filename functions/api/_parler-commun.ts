@@ -29,6 +29,12 @@
 export interface Env {
   /** La clé d'API. Secret Cloudflare, jamais dans le dépôt. */
   ANTHROPIC_API_KEY: string;
+  /**
+   * Facultatif. À renseigner seulement si la clé n'est pas rattachée à un
+   * espace de travail : l'API refuse alors l'appel (400) tant qu'on ne lui
+   * dit pas quel espace débiter.
+   */
+  ANTHROPIC_WORKSPACE_ID?: string;
   /** L'URL du projet Supabase — la même que celle du client. */
   SUPABASE_URL: string;
   /**
@@ -101,6 +107,21 @@ const TAUX_EUR = 0.92;
 export const JETONS_JOUR = 33_000;
 
 /**
+ * CHANTIER 106 — LE SECOND QUOTA : LE TEMPS RÉEL.
+ *
+ * Le compte en jetons restait juste et restait ILLISIBLE : un élève qui
+ * parle huit minutes par phrases courtes consomme peu de jetons, et voyait
+ * « 10 min restantes » en sortant. Le chiffre était vrai au sens du
+ * serveur et faux au sens de l'élève — donc faux.
+ *
+ * On compte désormais aussi les SECONDES réellement passées en séance, et
+ * le temps affiché est le plus petit des deux budgets. Le quota en jetons
+ * reste la ceinture (un bavard ne ruine personne), les secondes sont la
+ * promesse (dix minutes veut dire dix minutes).
+ */
+export const SECONDES_JOUR = 600;
+
+/**
  * Second plafond, en centimes d'euro. Une ceinture en plus de la bretelle :
  * si un tarif change ou si un modèle plus cher est branché par erreur, le
  * compte en jetons ne verrait rien passer. Celui-ci, si.
@@ -118,6 +139,8 @@ export interface Consommation extends Usage {
   ponderes: number;
   coutCentimes: number;
   appels: number;
+  /** Secondes de séance réellement écoulées aujourd'hui. */
+  secondes: number;
 }
 
 export function modeleParler(env: Env): string {
@@ -148,10 +171,27 @@ export function coutCentimes(modele: string, u: Usage): number {
   return dollars * TAUX_EUR * 100;
 }
 
-/** Minutes restantes, telles que l'élève les lit. Jamais négatives. */
-export function minutesRestantes(ponderesDuJour: number): number {
-  const part = Math.max(0, 1 - ponderesDuJour / JETONS_JOUR);
-  return Math.round(part * 10);
+/**
+ * Minutes restantes, telles que l'élève les lit. Jamais négatives.
+ *
+ * LE PLUS PETIT DES DEUX BUDGETS — les jetons et les secondes. Et deux
+ * précautions d'affichage, qui ne sont pas de la coquetterie :
+ *
+ * — dès qu'une seule seconde a été consommée, le chiffre ne peut plus
+ *   afficher 10. Un compteur qui reste à son maximum pendant trois minutes
+ *   passe pour cassé, et il l'était à moitié : l'arrondi au plus proche
+ *   gardait « 10 » jusqu'à 5 % du quota.
+ * — tant qu'il reste quoi que ce soit, il ne peut pas afficher 0. « 0 min
+ *   restantes » alors que la conversation marche encore est le même
+ *   mensonge, dans l'autre sens.
+ */
+export function minutesRestantes(ponderesDuJour: number, secondesDuJour = 0): number {
+  const partJetons = 1 - ponderesDuJour / JETONS_JOUR;
+  const partTemps = 1 - secondesDuJour / SECONDES_JOUR;
+  const part = Math.min(partJetons, partTemps);
+  if (part <= 0) return 0;
+  if (part >= 1) return 10;
+  return Math.min(9, Math.max(1, Math.round(part * 10)));
 }
 
 export function json(corps: unknown, status = 200): Response {
@@ -201,7 +241,7 @@ export function jourUtc(): string {
  */
 export async function consommationDuJour(userId: string, env: Env): Promise<Consommation> {
   const url = `${env.SUPABASE_URL}/rest/v1/parler_usage`
-    + `?select=jetons_in,jetons_cache,jetons_out,cout_centimes`
+    + `?select=jetons_in,jetons_cache,jetons_out,cout_centimes,secondes`
     + `&user_id=eq.${userId}&jour=eq.${jourUtc()}`;
 
   const r = await fetch(url, {
@@ -211,13 +251,30 @@ export async function consommationDuJour(userId: string, env: Env): Promise<Cons
     },
   });
 
+  /*
+   * CHANTIER 106 — UNE LECTURE RATÉE N'EST PAS UNE CONSOMMATION NULLE.
+   *
+   * Cette fonction renvoyait des zéros quand la base ne répondait pas. Le
+   * résultat se voyait à l'écran : le compteur remontait tout seul à dix
+   * minutes au milieu d'une séance. Pire, invisible celui-là : pendant
+   * cette panne, le plafond du jour n'existait plus — chaque appel croyait
+   * repartir d'un budget intact.
+   *
+   * On lève donc, et l'appelant refuse. Un quota qu'on ne sait pas lire se
+   * traite comme un quota épuisé, jamais comme un quota neuf.
+   */
+  if (!r.ok) {
+    throw new Error(`lecture du quota impossible (${r.status})`);
+  }
+
   const vide: Consommation = {
-    jetonsIn: 0, jetonsCache: 0, jetonsOut: 0, ponderes: 0, coutCentimes: 0, appels: 0,
+    jetonsIn: 0, jetonsCache: 0, jetonsOut: 0,
+    ponderes: 0, coutCentimes: 0, appels: 0, secondes: 0,
   };
-  if (!r.ok) return vide;
 
   const lignes = (await r.json()) as Array<{
-    jetons_in: number; jetons_cache: number; jetons_out: number; cout_centimes: number;
+    jetons_in: number; jetons_cache: number; jetons_out: number;
+    cout_centimes: number; secondes: number;
   }>;
 
   const c = { ...vide, appels: lignes.length };
@@ -226,6 +283,7 @@ export async function consommationDuJour(userId: string, env: Env): Promise<Cons
     c.jetonsCache += l.jetons_cache ?? 0;
     c.jetonsOut += l.jetons_out ?? 0;
     c.coutCentimes += Number(l.cout_centimes ?? 0);
+    c.secondes += l.secondes ?? 0;
   }
   c.ponderes = ponderes(c);
   return c;
@@ -238,9 +296,23 @@ export async function consommationDuJour(userId: string, env: Env): Promise<Cons
  * ligne par appel ne se perd pas, et elle garde le détail — quel modèle,
  * quand, combien. Le jour où un chiffre vous surprend, il est explicable.
  */
+/**
+ * CHANTIER 106 — `secondes` EST DÉSORMAIS UN ÉCART, PAS UN TOTAL.
+ *
+ * L'application envoyait les secondes écoulées DEPUIS LE DÉBUT de la
+ * séance, à chaque tour. Additionner ces lignes donnait des heures pour
+ * une conversation de dix minutes — le chiffre était donc inutilisable, et
+ * c'est pour cela que le quota l'ignorait.
+ *
+ * Elle envoie maintenant les secondes écoulées DEPUIS LE TOUR PRÉCÉDENT :
+ * la somme des lignes du jour est exactement le temps parlé. Le plafond
+ * ci-dessous (cinq minutes pour un seul tour) écarte le cas de l'écran
+ * resté ouvert pendant le dîner.
+ */
 export async function noteConsommation(
   userId: string, modele: string, u: Usage, secondes: number, env: Env,
 ): Promise<void> {
+  const ecart = Math.min(300, Math.max(0, Math.round(secondes)));
   await fetch(`${env.SUPABASE_URL}/rest/v1/parler_usage`, {
     method: 'POST',
     headers: {
@@ -257,7 +329,7 @@ export async function noteConsommation(
       jetons_cache: u.jetonsCache,
       jetons_out: u.jetonsOut,
       cout_centimes: Number(coutCentimes(modele, u).toFixed(4)),
-      secondes: Math.max(0, Math.round(secondes)),
+      secondes: ecart,
     }),
   });
 }
@@ -357,13 +429,18 @@ export async function appelleClaude(
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   maxJetons: number,
 ): Promise<{ texte: string; usage: Usage }> {
+  const entetes: Record<string, string> = {
+    'x-api-key': env.ANTHROPIC_API_KEY,
+    'anthropic-version': '2023-06-01',
+    'content-type': 'application/json',
+  };
+  if (env.ANTHROPIC_WORKSPACE_ID) {
+    entetes['anthropic-workspace-id'] = env.ANTHROPIC_WORKSPACE_ID;
+  }
+
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'x-api-key': env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
+    headers: entetes,
     body: JSON.stringify({
       model: modele,
       max_tokens: maxJetons,
@@ -409,4 +486,61 @@ export async function appelleClaude(
       jetonsOut: u.output_tokens ?? 0,
     },
   };
+}
+
+
+/* ------------------------------------------------------------------
+   CHANTIER 106 — LA SÉANCE GARDÉE
+
+   Jusqu'ici le compte rendu s'affichait une fois et disparaissait avec
+   l'écran. C'est la pièce la plus précieuse de tout le chantier : c'est
+   elle qui dit ce que l'élève a réellement produit, et c'est elle que
+   vous relirez pour connaître le volume d'une séance.
+
+   Elle est écrite par la fonction, avec la clé de service, comme la
+   consommation — et relue par le téléphone à travers la RLS, donc par
+   son propriétaire et personne d'autre.
+   ------------------------------------------------------------------ */
+
+export interface SeanceAGarder {
+  secondes: number;
+  repliques: number;
+  themes: string[];
+  classe: string | null;
+  transcription: Array<{ role: 'user' | 'assistant'; content: string }>;
+  corrections: Array<{ dit: string; juste: string; pourquoi: string }>;
+  mots: Array<{ en: string; fr: string }>;
+}
+
+export async function noteSeance(
+  userId: string, s: SeanceAGarder, env: Env,
+): Promise<void> {
+  try {
+    await fetch(`${env.SUPABASE_URL}/rest/v1/parler_seance`, {
+      method: 'POST',
+      headers: {
+        apikey: env.SUPABASE_SERVICE_KEY,
+        authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        'content-type': 'application/json',
+        prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        jour: jourUtc(),
+        secondes: Math.max(0, Math.round(s.secondes)),
+        repliques: s.repliques,
+        themes: s.themes,
+        classe: s.classe,
+        transcription: s.transcription,
+        corrections: s.corrections,
+        mots: s.mots,
+      }),
+    });
+  } catch {
+    /*
+     * L'archive qui échoue ne doit pas emporter le bilan : l'élève vient
+     * de parler dix minutes, il a droit à son compte rendu même si la
+     * base a hoqueté au moment de le ranger.
+     */
+  }
 }
