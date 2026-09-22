@@ -38,6 +38,20 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,webp}'],
+        /*
+         * CHANTIER 104 — /api/ N'EST PAS DE L'APPLICATION.
+         *
+         * En mode `generateSW`, le service worker répond à toute NAVIGATION
+         * par `index.html` : c'est ce qui permet d'ouvrir l'application hors
+         * ligne depuis n'importe quelle adresse. Mais il avalait du même
+         * geste les adresses des fonctions Cloudflare — ouvrir /api/parler
+         * servait la coquille de l'application, donc une page blanche.
+         *
+         * Les appels `fetch` de l'écran « Parler » passaient, eux : ce ne
+         * sont pas des navigations. La confusion ne portait donc que sur le
+         * diagnostic — mais elle coûterait une demi-heure à chaque fois.
+         */
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],
