@@ -10,11 +10,15 @@
  *
  * QUATRE DÉCISIONS :
  *
- * 1. UN APPUI POUR PARLER, PAS UNE ÉCOUTE PERMANENTE. Un micro toujours
- *    ouvert s'entend lui-même : il transcrit la voix de synthèse et
- *    l'élève se retrouve à converser avec l'écho. Un bouton dit qui a la
- *    parole, et c'est aussi ce qui rend la chose apprenable en une
- *    seconde.
+ * 1. UNE TAPE POUR PARLER, UNE TAPE POUR ENVOYER — pas d'appui maintenu.
+ *    Tenir le doigt pendant qu'on cherche ses mots en anglais est une
+ *    charge de trop : on relâche sans le vouloir au milieu d'une phrase.
+ *    Le micro se referme aussi de lui-même au silence, donc la seconde
+ *    tape n'est même pas obligatoire.
+ *
+ *    Ce n'est pour autant PAS une écoute permanente : un micro toujours
+ *    ouvert s'entend lui-même, transcrit la voix de synthèse, et l'élève
+ *    finit par converser avec l'écho. Le bouton dit qui a la parole.
  *
  * 2. CE QUI A ÉTÉ ENTENDU S'AFFICHE, et part sans confirmation. Demander
  *    « est-ce bien cela ? » à chaque tour tuerait le rythme ; mais l'élève
@@ -138,7 +142,7 @@ export function ParlerSeance({
     });
   }, [enVol, ecoutant, b.fini, envoie]);
 
-  /** Relâcher : on ferme le micro, `onFini` enverra. */
+  /** Seconde tape : on ferme le micro, `onFini` enverra. */
   const relache = useCallback(() => {
     session.current?.arrete();
   }, []);
@@ -237,7 +241,7 @@ export function ParlerSeance({
         {messages.length === 0 && !ecoutant && (
           <p className="hint">
             {mode === 'voix'
-              ? 'Appuie sur le micro, dis bonjour en anglais, et relâche. La réponse se fait entendre.'
+              ? 'Appuie sur le micro et dis bonjour en anglais. La réponse se fait entendre.'
               : 'Écris en anglais. La réponse est dite à voix haute.'}
           </p>
         )}
@@ -262,14 +266,11 @@ export function ParlerSeance({
             className={ecoutant ? 'micro on' : 'micro'}
             disabled={enVol || b.fini}
             /*
-             * Appui maintenu, pointeur unifié : un seul jeu d'événements
-             * pour le doigt, la souris et le stylet. `onPointerLeave`
-             * ferme la session si le doigt glisse hors du bouton, sans
-             * quoi le micro resterait ouvert.
+             * UNE TAPE, pas un appui maintenu : la première ouvre le
+             * micro, la seconde envoie. Le micro se referme de toute
+             * façon au silence — la seconde tape ne sert qu'à couper court.
              */
-            onPointerDown={parle}
-            onPointerUp={relache}
-            onPointerLeave={() => { if (ecoutant) relache(); }}
+            onClick={() => { if (ecoutant) relache(); else parle(); }}
             aria-pressed={ecoutant}
           >
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -283,8 +284,8 @@ export function ParlerSeance({
               : enVol
                 ? 'Il réfléchit…'
                 : ecoutant
-                  ? 'J’écoute — relâche quand tu as fini.'
-                  : 'Maintiens appuyé et parle'}
+                  ? 'J’écoute — appuie pour envoyer'
+                  : 'Appuie et parle'}
           </p>
           <button className="seance-bascule" onClick={() => setMode('clavier')}>
             Écrire plutôt
