@@ -43,10 +43,21 @@ export interface Bilan {
   mots: Array<{ en: string; fr: string }>;
 }
 
-/** Levée quand la conversation n'est pas joignable — on la montre telle quelle. */
+/**
+ * Levée quand la conversation n'est pas joignable — on la montre telle quelle.
+ *
+ * Le champ est déclaré puis affecté dans le corps, et NON en propriété de
+ * constructeur : TypeScript 5.8 refuse `constructor(readonly x)` quand
+ * `erasableSyntaxOnly` est actif, et c'est le cas des gabarits Vite
+ * récents. Deux lignes de plus, un build qui passe partout.
+ */
 export class ErreurParler extends Error {
-  constructor(message: string, readonly quotaEpuise = false) {
+  quotaEpuise: boolean;
+
+  constructor(message: string, quotaEpuise = false) {
     super(message);
+    this.name = 'ErreurParler';
+    this.quotaEpuise = quotaEpuise;
   }
 }
 
