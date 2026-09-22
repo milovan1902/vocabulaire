@@ -10,7 +10,9 @@
  *
  * Les fichiers de FOURNIS sont en 620 x 874, le format de carte de
  * l'application. Ceux d'ILLUSTRATIONS sont carrés, 1024 x 1024, sujet
- * détouré sur fond transparent.
+ * détouré sur fond transparent — à trois exceptions documentées à leur
+ * place : « Modaux » (chantier 72), « Réagir et s'exprimer — 5e »
+ * (chantier 75) et « Fabriquer les mots » (chantier 102).
  */
 import collegeUs from '../assets/decks/college-us.webp';
 import irregularVerbs from '../assets/decks/irregular-verbs.webp';
@@ -40,6 +42,11 @@ import formes4e from '../assets/packs/4e-formes.png';
 import presentPerfect4e from '../assets/packs/4e-present-perfect.png';
 import irreguliers4e from '../assets/packs/4e-irreguliers.png';
 import reagir4e from '../assets/packs/4e-reagir.png';
+import parler4eFin from '../assets/packs/4e-parler.png';
+import fabriquer4eFin from '../assets/packs/4e-fabriquer.png';
+import temps4eFin from '../assets/packs/4e-temps.png';
+import siAlors4eFin from '../assets/packs/4e-si-alors.png';
+import prendre4eFin from '../assets/packs/4e-prendre.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -452,6 +459,143 @@ const ILLUSTRATIONS: Record<string, string> = {
   '4e-reagir': reagir4e,
   'reagir-et-raconter-4e': reagir4e,
   'reagir-et-raconter': reagir4e,
+
+  /*
+   * CHANTIER 102 — LES CINQ DOS DE FIN DE QUATRIÈME
+   *
+   * Les cinq paquets du chantier 97 reçoivent leur illustration, et la
+   * réserve ouverte ce jour-là est levée : le rayon « Vocabulaire de
+   * base » portait huit cartes sur le même miel, dont deux n'avaient que
+   * deux lettres. Les huit se distinguent maintenant par le dessin seul.
+   *
+   * Vos cinq planches sont reprises telles quelles — aucun sujet
+   * redessiné, aucune couleur du dessin touchée. Les parchemins du
+   * chantier 97 ne bougent pas : `deckPaper.ts` n'est pas modifié par
+   * cette livraison.
+   *
+   * QUATRE SUR CINQ SONT TRANSPARENTES. La cinquième, « Fabriquer les
+   * mots », ne l'est pas et ne peut pas l'être : voir sa note.
+   */
+
+  /*
+   * PARLER DE TOUT — 4e. Les deux interlocuteurs en vis-à-vis, au trait.
+   *
+   * LE DAMIER GRIS ÉTAIT CUIT DANS LE FICHIER — de vrais pixels, comme
+   * « Le monde autour de nous » au chantier 75. Il est retiré par
+   * diffusion depuis les bords : les blancs INTÉRIEURS — les visages,
+   * les mains, les chemises, les chaises — sont enclos par le trait et
+   * gardent leur blanc. Sans cela les deux personnages se seraient
+   * vidés.
+   *
+   * Le sujet n'occupait qu'un tiers de la planche (496 x 383 px sur
+   * 1024). Il est découpé à sa boîte et agrandi de 1,9 x, donc remis à
+   * l'échelle des autres dos ; sans ce recadrage il aurait pesé trois
+   * fois moins que ses voisins dans la même liste.
+   *
+   * RÉSERVE : deuxième dos MONOCHROME du catalogue, après « Le present
+   * perfect » (chantier 96). À 38 px il se lit comme deux silhouettes
+   * claires cernées de noir — assez pour le séparer des sept autres
+   * miels, tous colorés, mais c'est la carte la plus sourde du rayon.
+   * Une mise en couleur est possible sans redessin ; validé tel quel.
+   */
+  '4e-fin-vocabulaire': parler4eFin,
+  'parler-de-tout-4e': parler4eFin,
+  'parler-de-tout': parler4eFin,
+
+  /*
+   * FABRIQUER LES MOTS — 4e. L'usine à lettres, en bande dessinée.
+   *
+   * SEULE ILLUSTRATION DU LOT QUI N'EST PAS TRANSPARENTE, et c'est un
+   * choix, pas un renoncement : c'est un PANNEAU de bande dessinée où le
+   * fond fait partie du dessin — le ciel en rayons, les usines, la
+   * perspective. Le détourer reviendrait à démonter l'image. Elle reste
+   * donc un plat rectangulaire posé dans le cadre du dos, et son propre
+   * filet noir tient ce rôle : le bord est assumé, il encadre.
+   *
+   * TROISIÈME illustration opaque du catalogue, après « Modaux » (sauge)
+   * et « Réagir et s'exprimer — 5e » (crème). Différence à connaître :
+   * celles-là s'accordaient — ou tentaient de s'accorder — à leur
+   * parchemin ; celle-ci ne s'y accorde pas du tout et n'a pas à le
+   * faire. Son fond est sa propre matière imprimée. Conséquence : si
+   * vous reteignez un jour le miel du rayon, rien à refaire ici, le
+   * panneau est indépendant.
+   *
+   * RECADRAGE, VARIANTE A, validée. La planche d'origine fait 1408 x 768
+   * (1,86 : 1). Posée entière dans le cadre du dos elle devenait une
+   * frise de 550 px de haut sur 1024, illisible à 38 px. Elle est donc
+   * coupée juste avant le nuage de mots — PAROLES / CULTURE / ÉCHANGE
+   * tombe, mais aucun mot n'est tronqué — et garde le titre entier, la
+   * chaîne de montage, la machine et les trois personnages. Le fichier
+   * du panneau entier dort dans `assets/packs/4e-fabriquer-panneau.png`,
+   * non raccordé, si vous changez d'avis.
+   *
+   * RÉSERVE : le titre « FABRIQUER LES MOTS » ne se lira pas à 38 px. Ce
+   * qui reste est une masse dense et bariolée — la seule du rayon, les
+   * sept autres miels étant des sujets isolés sur fond clair. C'est la
+   * DENSITÉ qui identifie cette carte, comme pour « Modaux » au
+   * chantier 72.
+   */
+  '4e-fin-mots': fabriquer4eFin,
+  'fabriquer-les-mots-4e': fabriquer4eFin,
+  'fabriquer-les-mots': fabriquer4eFin,
+
+  /*
+   * TOUS LES TEMPS — 4e. Le sablier, l'horloge et la flèche, reliés par
+   * la boucle : les trois moments et le retour, ce que le paquet
+   * enseigne.
+   *
+   * SEULE PLANCHE DÉJÀ TRANSPARENTE des cinq — rien à détourer, aucun
+   * seuil à régler. Recadrée à sa boîte et centrée, c'est tout le
+   * travail.
+   *
+   * QUATRIÈME CARTE SAUGE du rayon Grammaire, avec « Les formes »,
+   * « Le present perfect » et « Si… alors ». Ce qui la distingue à 38 px
+   * n'est pas sa couleur — son ocre et son vert sont proches du papier —
+   * mais sa GÉOMÉTRIE : trois cercles alignés, forme que ne porte aucune
+   * autre carte du catalogue.
+   */
+  '4e-fin-temps': temps4eFin,
+  'tous-les-temps-4e': temps4eFin,
+  'tous-les-temps': temps4eFin,
+
+  /*
+   * SI… ALORS — 4e. Les deux bulles et la flèche : la condition à
+   * gauche, la conséquence à droite.
+   *
+   * Fond blanc franc, détourage net au seuil large (244/10). Le sujet
+   * est très large (1153 x 448, soit 2,6 : 1) : il occupe la largeur du
+   * cadre et laisse du parchemin au-dessus et au-dessous. L'agrandir
+   * davantage écraserait les bulles contre le filet du dos.
+   *
+   * RÉSERVE : ce dessin PORTE du texte, « Si… » et « Alors… ». À 38 px
+   * les mots ne se lisent plus ; il reste une bulle bleu pâle, une
+   * flèche et une bulle jaune. C'est paradoxalement le plus
+   * reconnaissable des cinq — aucune autre carte n'a deux taches de
+   * couleur côte à côte. Même réserve qu'au chantier 55, même
+   * conclusion : la forme suffit.
+   */
+  '4e-fin-modaux': siAlors4eFin,
+  'si-alors-4e': siAlors4eFin,
+  'si-alors': siAlors4eFin,
+
+  /*
+   * PRENDRE LA PAROLE — 4e. Le profil et la bulle : quelqu'un parle.
+   *
+   * Détourage net sur fond blanc. Une chose à savoir : L'INTÉRIEUR DE LA
+   * BOUCHE RESTE BLANC, parce qu'il est enclos par le trait du visage et
+   * qu'il fait partie du dessin — c'est lui qui dit que la bouche est
+   * ouverte. Sur l'ardoise du rayon, ce petit blanc se voit et se lit
+   * comme tel. Le retirer aurait troué le menton.
+   *
+   * TROISIÈME CARTE du rayon « Phrases toutes faites », après « Réagir
+   * et s'exprimer — 5e » (carré crème, chantier 75) et « Réagir et
+   * raconter — 4e » (affiche typographique, chantier 96). C'est la seule
+   * des trois à porter une FIGURE ; les deux autres sont
+   * typographiques. Aucune confusion possible dans la liste.
+   */
+  '4e-fin-phrases': prendre4eFin,
+  'prendre-la-parole-4e': prendre4eFin,
+  'prendre-la-parole': prendre4eFin,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
