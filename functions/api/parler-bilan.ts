@@ -21,7 +21,7 @@
  */
 import {
   appelleClaude, consommationDuJour, json, minutesRestantes, modeleBilan,
-  noteConsommation, promptSysteme, utilisateur,
+  noteConsommation, noteSeance, promptSysteme, utilisateur,
   type Contexte, type Fiche,
 } from './_parler-commun';
 
@@ -29,7 +29,10 @@ interface Requete {
   fiche: Fiche;
   /** La séance entière, dans l'ordre. */
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  /** Secondes depuis le dernier tour — l'écart, comme partout ailleurs. */
   secondes?: number;
+  /** Durée totale de la séance, pour l'archive. Elle, c'est un total. */
+  totalSecondes?: number;
 }
 
 export interface Bilan {
@@ -134,13 +137,38 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
 
   await noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env);
 
-  const c = await consommationDuJour(userId, env);
-  return json({
-    bilan: litBilan(resultat.texte),
-    budget: {
-      minutes: minutesRestantes(c.ponderes),
-      coutJour: Number(c.coutCentimes.toFixed(2)),
-      appels: c.appels,
-    },
-  });
+  const bilan = litBilan(resultat.texte);
+
+  /*
+   * CHANTIER 106 — ON RANGE LA SÉANCE.
+   *
+   * La transcription entière et le compte rendu partent en archive, sous
+   * le compte de l'élève. C'est ce qui manquait pour répondre à « où puis-je
+   * retrouver ma conversation ? » — et c'est aussi la seule source honnête
+   * du volume réel d'une séance de dix minutes.
+   */
+  await noteSeance(userId, {
+    secondes: corps.totalSecondes ?? corps.secondes ?? 0,
+    repliques: messages.length,
+    themes: corps.fiche?.themes ?? [],
+    classe: corps.fiche?.classe ?? null,
+    transcription: messages,
+    corrections: bilan.corrections,
+    mots: bilan.mots,
+  }, env);
+
+  try {
+    const c = await consommationDuJour(userId, env);
+    return json({
+      bilan,
+      budget: {
+        minutes: minutesRestantes(c.ponderes, c.secondes),
+        coutJour: Number(c.coutCentimes.toFixed(2)),
+        appels: c.appels,
+      },
+    });
+  } catch {
+    /* Le bilan passe avant la jauge : on le rend sans elle. */
+    return json({ bilan });
+  }
 };
