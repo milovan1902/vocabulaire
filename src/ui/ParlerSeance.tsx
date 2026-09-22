@@ -2,40 +2,32 @@
  * La séance de parole.
  *
  * CHANTIER 104 — le banc d'essai au clavier.
- * CHANTIER 105 — LE MICRO.
+ * CHANTIER 105 — le micro.
+ * CHANTIER 106 — CE QUE HUIT MINUTES D'ESSAI ONT APPRIS.
  *
- * L'élève appuie, parle, relâche : ce qu'il a dit part tel quel, et la
- * réponse se fait entendre. Les trois appels au serveur n'ont pas changé
- * d'une ligne — seule l'entrée a changé, comme annoncé.
+ * Quatre choses sont revenues du premier vrai test, et les quatre étaient
+ * du même ordre : l'écran mentait un peu, sans le faire exprès.
  *
- * QUATRE DÉCISIONS :
+ * 1. LE COMPTEUR NE BOUGEAIT PAS. Il disait « 10 min restantes » après
+ *    huit minutes de conversation. Deux causes, toutes deux corrigées
+ *    côté serveur : le temps envoyé était un total renvoyé à chaque tour
+ *    (donc inadditionnable, donc ignoré), et une lecture de quota ratée
+ *    rendait un budget neuf. Ici, on n'envoie plus que l'ÉCART depuis le
+ *    tour précédent.
  *
- * 1. UNE TAPE POUR PARLER, UNE TAPE POUR ENVOYER — pas d'appui maintenu.
- *    Tenir le doigt pendant qu'on cherche ses mots en anglais est une
- *    charge de trop : on relâche sans le vouloir au milieu d'une phrase.
- *    Le micro se referme aussi de lui-même au silence, donc la seconde
- *    tape n'est même pas obligatoire.
+ * 2. LE MICRO COUPAIT LES PHRASES. Corrigé dans `ecoute.ts` : trois
+ *    secondes de silence, et non plus le jugement du navigateur.
  *
- *    Ce n'est pour autant PAS une écoute permanente : un micro toujours
- *    ouvert s'entend lui-même, transcrit la voix de synthèse, et l'élève
- *    finit par converser avec l'écho. Le bouton dit qui a la parole.
+ * 3. LES CORRECTIONS FRANÇAISES ÉTAIENT DITES EN ANGLAIS. Corrigé dans
+ *    `speech.ts` : la réplique est découpée, chaque passage part dans la
+ *    voix de sa langue. D'où `parle()` ici, à la place de `speak()`.
  *
- * 2. CE QUI A ÉTÉ ENTENDU S'AFFICHE, et part sans confirmation. Demander
- *    « est-ce bien cela ? » à chaque tour tuerait le rythme ; mais l'élève
- *    voit sa phrase telle qu'elle a été comprise, et une transcription
- *    ratée se lit tout de suite. C'est un compromis, assumé : la fluidité
- *    d'abord, la justesse visible.
- *
- * 3. LA VOIX SE COUPE DÈS QU'ON APPUIE. Interrompre le partenaire est un
- *    droit dans une conversation, et un besoin pour un élève qui a
- *    compris avant la fin.
- *
- * 4. LE CLAVIER RESTE, en second. La reconnaissance est capricieuse sur
- *    iPhone et absente de quelques navigateurs : sans repli, l'écran
- *    serait inutilisable pour une part des élèves.
+ * 4. LE COMPTE RENDU DISPARAISSAIT. Il est maintenant gardé, et l'écran
+ *    le dit — la phrase de fin n'est pas décorative, c'est la réponse à
+ *    « où est-ce que je le retrouve ? ».
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { speak } from './speech';
+import { parle } from './speech';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import {
   bilanDeSeance, euros, tourDeParole, ErreurParler,
@@ -74,9 +66,21 @@ export function ParlerSeance({
   const session = useRef<Ecoute | null>(null);
   const fil = useRef<HTMLDivElement | null>(null);
 
+  /*
+   * Le chronomètre vit dans une référence autant que dans l'état : le
+   * calcul de l'écart a besoin de la valeur courante, pas de celle que la
+   * fermeture a capturée au dernier rendu.
+   */
+  const horodatage = useRef(0);
+  /** Secondes déjà déclarées au serveur. L'écart part de là. */
+  const declarees = useRef(0);
+
   useEffect(() => {
     if (bilan) return;
-    const t = setInterval(() => setSecondes((s) => s + 1), 1000);
+    const t = setInterval(() => {
+      horodatage.current += 1;
+      setSecondes(horodatage.current);
+    }, 1000);
     return () => clearInterval(t);
   }, [bilan]);
 
@@ -87,6 +91,13 @@ export function ParlerSeance({
 
   /* La voix ne survit pas à la sortie de l'écran. */
   useEffect(() => () => { tais(); session.current?.arrete(); }, []);
+
+  /** L'écart depuis la dernière déclaration, et on avance le repère. */
+  const ecart = useCallback(() => {
+    const e = Math.max(0, horodatage.current - declarees.current);
+    declarees.current = horodatage.current;
+    return e;
+  }, []);
 
   const envoie = useCallback(async (texte: string) => {
     const dit = texte.trim();
@@ -101,25 +112,25 @@ export function ParlerSeance({
     setDetail(null);
 
     try {
-      const r = await tourDeParole(suite, fiche, secondes);
+      const r = await tourDeParole(suite, fiche, ecart());
       setMessages([...suite, { role: 'assistant', content: r.texte }]);
       setB(r.budget);
-      speak(r.texte, debit);
+      /* Anglais et français dans la même réplique, chacun dans sa voix. */
+      parle(r.texte, debit);
     } catch (e) {
       setErreur(
         e instanceof ErreurParler && e.quotaEpuise
           ? 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.'
           : 'La conversation ne répond pas. Réessaie dans un instant.',
       );
-      /* Le message brut du service, pour que la panne soit diagnosticable. */
       setDetail(e instanceof ErreurParler ? e.detail ?? null : String(e));
     } finally {
       setEnVol(false);
     }
-  }, [enVol, messages, fiche, secondes, debit]);
+  }, [enVol, messages, fiche, debit, ecart]);
 
   /** Appuyer : on coupe la voix, on ouvre le micro. */
-  const parle = useCallback(() => {
+  const parleTour = useCallback(() => {
     if (enVol || ecoutant || b.fini) return;
     tais();
     setErreur(null);
@@ -146,7 +157,6 @@ export function ParlerSeance({
     });
   }, [enVol, ecoutant, b.fini, envoie]);
 
-  /** Seconde tape : on ferme le micro, `onFini` enverra. */
   const relache = useCallback(() => {
     session.current?.arrete();
   }, []);
@@ -156,7 +166,7 @@ export function ParlerSeance({
     session.current?.arrete();
     setEnVol(true);
     try {
-      const r = await bilanDeSeance(messages, fiche, secondes);
+      const r = await bilanDeSeance(messages, fiche, ecart(), horodatage.current);
       setBilan(r.bilan);
       setTropCourt(!!r.trop_court);
     } catch {
@@ -165,7 +175,7 @@ export function ParlerSeance({
     } finally {
       setEnVol(false);
     }
-  }, [messages, fiche, secondes]);
+  }, [messages, fiche, ecart]);
 
   /* ---------------- le compte rendu ---------------- */
   if (bilan) {
@@ -213,6 +223,17 @@ export function ParlerSeance({
           </div>
         )}
 
+        {/*
+          * La phrase la plus utile de l'écran : elle répond à la question
+          * qu'on se pose en refermant un compte rendu qu'on vient de lire
+          * en diagonale.
+          */}
+        <p className="hint seance-gardee">
+          Cette conversation est gardée. Tu la retrouveras en entier —
+          la transcription et ce compte rendu — dans <b>Parler ›
+          Tes conversations</b>.
+        </p>
+
         {exploitant && (
           <p className="seance-exploitant">
             Vue exploitant · {euros(b.coutJour)} aujourd’hui, {b.appels} appels.
@@ -229,7 +250,9 @@ export function ParlerSeance({
     <section className="parler seance" aria-label="Conversation en cours">
       <div className="seance-tete">
         <b className="seance-chrono">{horloge(secondes)}</b>
-        <span className="seance-reste">{b.minutes} min restantes</span>
+        <span className="seance-reste">
+          reste {b.minutes} min aujourd’hui
+        </span>
         <button className="seance-stop" onClick={() => void termine()} disabled={enVol}>
           Terminer
         </button>
@@ -245,7 +268,7 @@ export function ParlerSeance({
         {messages.length === 0 && !ecoutant && (
           <p className="hint">
             {mode === 'voix'
-              ? 'Appuie sur le micro et dis bonjour en anglais. La réponse se fait entendre.'
+              ? 'Appuie sur le micro et dis bonjour en anglais. Prends ton temps : le micro attend trois secondes de silence avant d’envoyer.'
               : 'Écris en anglais. La réponse est dite à voix haute.'}
           </p>
         )}
@@ -270,12 +293,7 @@ export function ParlerSeance({
           <button
             className={ecoutant ? 'micro on' : 'micro'}
             disabled={enVol || b.fini}
-            /*
-             * UNE TAPE, pas un appui maintenu : la première ouvre le
-             * micro, la seconde envoie. Le micro se referme de toute
-             * façon au silence — la seconde tape ne sert qu'à couper court.
-             */
-            onClick={() => { if (ecoutant) relache(); else parle(); }}
+            onClick={() => { if (ecoutant) relache(); else parleTour(); }}
             aria-pressed={ecoutant}
           >
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -289,7 +307,7 @@ export function ParlerSeance({
               : enVol
                 ? 'Il réfléchit…'
                 : ecoutant
-                  ? 'J’écoute — appuie pour envoyer'
+                  ? 'J’écoute — appuie pour envoyer tout de suite'
                   : 'Appuie et parle'}
           </p>
           <button className="seance-bascule" onClick={() => setMode('clavier')}>
