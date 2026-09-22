@@ -20,7 +20,7 @@
 import {
   appelleClaude, consommationDuJour, json, minutesRestantes, modeleParler,
   noteConsommation, PLAFOND_CENTIMES_JOUR, promptSysteme, utilisateur,
-  type Env, type Fiche,
+  type Contexte, type Fiche,
 } from './_parler-commun';
 
 /** Ce que l'écran reçoit. Aucun jeton ne figure ici : ce n'est pas son sujet. */
@@ -55,7 +55,7 @@ function budgetDe(c: { ponderes: number; coutCentimes: number; appels: number })
   };
 }
 
-export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestGet = async ({ request, env }: Contexte): Promise<Response> => {
   const userId = await utilisateur(request, env);
   if (!userId) return json({ erreur: 'compte requis' }, 401);
 
@@ -63,7 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return json(budgetDe(c));
 };
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: Contexte): Promise<Response> => {
   const userId = await utilisateur(request, env);
   if (!userId) return json({ erreur: 'compte requis' }, 401);
 

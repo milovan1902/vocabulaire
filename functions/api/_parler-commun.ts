@@ -49,6 +49,18 @@ export interface Env {
   MODELE_BILAN?: string;
 }
 
+/**
+ * Le contexte d'une fonction Pages, déclaré ici.
+ *
+ * On n'emploie PAS le type ambiant `PagesFunction` : il n'existe que si
+ * `@cloudflare/workers-types` est installé, et un dépôt qui ne l'a pas voit
+ * son build échouer sur un nom inconnu. Ces trois champs suffisent.
+ */
+export interface Contexte {
+  request: Request;
+  env: Env;
+}
+
 const PARLER_DEFAUT = 'claude-sonnet-4-5';
 const BILAN_DEFAUT = 'claude-opus-4-1';
 

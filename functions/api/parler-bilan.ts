@@ -22,7 +22,7 @@
 import {
   appelleClaude, consommationDuJour, json, minutesRestantes, modeleBilan,
   noteConsommation, promptSysteme, utilisateur,
-  type Env, type Fiche,
+  type Contexte, type Fiche,
 } from './_parler-commun';
 
 interface Requete {
@@ -76,7 +76,7 @@ function litBilan(texte: string): Bilan {
   }
 }
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost = async ({ request, env }: Contexte): Promise<Response> => {
   const userId = await utilisateur(request, env);
   if (!userId) return json({ erreur: 'compte requis' }, 401);
 
