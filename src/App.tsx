@@ -8,7 +8,8 @@ import { Today } from './ui/Today';
 import { Library } from './ui/Library';
 import { Account } from './ui/Account';
 import { Progress } from './ui/Progress';
-import { IconAujourdhui, IconPaquets, IconReglages, IconProgres } from './ui/icons';
+import { Parler } from './ui/Parler';
+import { IconAujourdhui, IconPaquets, IconParler, IconReglages, IconProgres } from './ui/icons';
 import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
@@ -39,7 +40,7 @@ const SEEN = 'vocab:accueil-vu';
 const GUIDE = 'vocab:guidage-fait';
 
 /**
- * Les quatre écrans atteints par les onglets du bas. Réunis en un seul
+ * Les cinq écrans atteints par les onglets du bas. Réunis en un seul
  * cas : aucun ne porte de donnée propre, et les onglets ont besoin de
  * les désigner indifféremment.
  *
@@ -47,7 +48,7 @@ const GUIDE = 'vocab:guidage-fait';
  * « Réglages ». Renommer une vue oblige à toucher tous les endroits qui la
  * désignent, pour un mot que personne ne lit.
  */
-type Tab = 'today' | 'library' | 'account' | 'progress';
+type Tab = 'today' | 'library' | 'parler' | 'account' | 'progress';
 
 type View =
   | { name: 'welcome' }
@@ -62,6 +63,12 @@ type View =
 const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = [
   { name: 'today', label: 'Aujourd’hui', Icone: IconAujourdhui },
   { name: 'library', label: 'Paquets', Icone: IconPaquets },
+  /*
+   * CHANTIER 103 — « Parler » se pose au MILIEU, troisième sur cinq.
+   * C'est la place du pouce, et elle dit que parler compte autant que
+   * réviser. Les quatre autres gardent leur ordre et leur icône.
+   */
+  { name: 'parler', label: 'Parler', Icone: IconParler },
   { name: 'account', label: 'Réglages', Icone: IconReglages },
   { name: 'progress', label: 'Mes progrès', Icone: IconProgres },
 ];
@@ -71,8 +78,8 @@ const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = 
  *
  * Le rang d'un écran dans l'application. Deux chiffres, deux sens :
  *
- * — les dizaines disent l'ÉTAGE. Les quatre onglets sont de plain-pied
- *   (10 à 13) ; la recherche et l'écran d'un paquet sont un étage plus
+ * — les dizaines disent l'ÉTAGE. Les cinq onglets sont de plain-pied
+ *   (10 à 14) ; la recherche et l'écran d'un paquet sont un étage plus
  *   bas (20, 21) ; l'éditeur et la révision plus bas encore (30, 31, 32).
  * — les unités disent le RANG LATÉRAL dans la barre d'onglets, dans
  *   l'ordre où ils sont affichés.
@@ -193,7 +200,7 @@ export default function App() {
    *    toujours à « Paquets », même quand le paquet avait été ouvert
    *    depuis « Aujourd'hui ».
    *
-   * `origine` n'accepte que les quatre onglets : depuis l'éditeur qui
+   * `origine` n'accepte que les cinq onglets : depuis l'éditeur qui
    * vient d'enregistrer, on garde le dernier connu au lieu d'en inventer
    * un.
    *
@@ -206,7 +213,8 @@ export default function App() {
   const [rayon, setRayon] = useState<'travail' | 'collection' | 'catalogue'>('travail');
   const [origine, setOrigine] = useState<Tab>('library');
   const estOnglet = (n: View['name']): n is Tab =>
-    n === 'today' || n === 'library' || n === 'account' || n === 'progress';
+    n === 'today' || n === 'library' || n === 'parler'
+    || n === 'account' || n === 'progress';
   // La synchronisation modifie les données sous nos pieds : on relit ensuite.
   const auth = useAuth(useCallback(() => { void store.refreshAll(); }, [store]));
   const [loaded, setLoaded] = useState<LoadedDeck | null>(null);
@@ -462,7 +470,7 @@ export default function App() {
    * repère fixe, la barre du haut ne sert qu'à revenir.
    */
   const surOnglet = view.name === 'today' || view.name === 'library'
-    || view.name === 'account' || view.name === 'progress';
+    || view.name === 'parler' || view.name === 'account' || view.name === 'progress';
 
   /*
    * La révision ne s'animera pas. Son fond est une image en `position:
@@ -574,6 +582,25 @@ export default function App() {
             onAdd={(id) => void store.addDeck(id)}
             onRemove={(id) => void store.removeDeck(id)}
             onSetActive={(id, on) => void store.setActive(id, on)}
+          />
+        )}
+
+        {/*
+          * CHANTIER 103 — l'onglet « Parler ».
+          *
+          * `onParler` n'est PAS passé : aucun service de conversation n'est
+          * raccordé, l'écran le dit et son bouton reste éteint. Le jour où
+          * la voix existe, c'est la seule ligne à ajouter ici.
+          *
+          * Les paquets EN JEU, pas tous : la conversation se sert du
+          * vocabulaire que la charge du jour fait tourner.
+          */}
+        {view.name === 'parler' && (
+          <Parler
+            decks={store.decks}
+            active={store.active}
+            settings={store.common}
+            onReglages={() => setView({ name: 'account' })}
           />
         )}
 
@@ -698,6 +725,7 @@ function title(view: View, loaded: LoadedDeck | null): string {
   if (view.name === 'onboarding') return 'Premiers pas';
   if (view.name === 'today') return 'Aujourd’hui';
   if (view.name === 'library') return 'Paquets';
+  if (view.name === 'parler') return 'Parler anglais';
   if (view.name === 'account') return 'Réglages';
   if (view.name === 'progress') return 'Mes progrès';
   if (view.name === 'search') return 'Rechercher';
