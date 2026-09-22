@@ -1,48 +1,56 @@
 /**
- * La séance de parole — le banc d'essai.
+ * La séance de parole.
  *
- * CHANTIER 104 — POURQUOI ON TAPE AVANT DE PARLER
+ * CHANTIER 104 — le banc d'essai au clavier.
+ * CHANTIER 105 — LE MICRO.
  *
- * La voix demande une boucle à part entière : permission du micro,
- * reconnaissance, interruptions, les caprices d'iOS. C'est un chantier, et
- * il vient après. Or vous avez besoin de mesurer votre consommation
- * MAINTENANT — dix séances de dix minutes, pour connaître votre charge en
- * euros avant de promettre un abonnement.
+ * L'élève appuie, parle, relâche : ce qu'il a dit part tel quel, et la
+ * réponse se fait entendre. Les trois appels au serveur n'ont pas changé
+ * d'une ligne — seule l'entrée a changé, comme annoncé.
  *
- * Cet écran fait exactement cela : la vraie fonction, le vrai prompt, le
- * vrai décompte de jetons, le vrai bilan. Seule l'entrée change — on tape
- * au lieu de parler. La réponse, elle, est DITE À VOIX HAUTE par la
- * synthèse qui prononce déjà vos cartes : l'oreille travaille dès
- * aujourd'hui.
+ * QUATRE DÉCISIONS :
  *
- * Ce qui se mesure ici est donc juste, à une nuance près, et il faut la
- * connaître : on tape des phrases plus longues qu'on n'en prononce. Votre
- * relevé sera un plafond, pas une moyenne — la bonne erreur à faire.
+ * 1. UN APPUI POUR PARLER, PAS UNE ÉCOUTE PERMANENTE. Un micro toujours
+ *    ouvert s'entend lui-même : il transcrit la voix de synthèse et
+ *    l'élève se retrouve à converser avec l'écho. Un bouton dit qui a la
+ *    parole, et c'est aussi ce qui rend la chose apprenable en une
+ *    seconde.
  *
- * Le jour où le micro arrive, il remplace le champ de saisie et rien
- * d'autre : les trois appels au serveur ne changent pas d'une ligne.
+ * 2. CE QUI A ÉTÉ ENTENDU S'AFFICHE, et part sans confirmation. Demander
+ *    « est-ce bien cela ? » à chaque tour tuerait le rythme ; mais l'élève
+ *    voit sa phrase telle qu'elle a été comprise, et une transcription
+ *    ratée se lit tout de suite. C'est un compromis, assumé : la fluidité
+ *    d'abord, la justesse visible.
+ *
+ * 3. LA VOIX SE COUPE DÈS QU'ON APPUIE. Interrompre le partenaire est un
+ *    droit dans une conversation, et un besoin pour un élève qui a
+ *    compris avant la fin.
+ *
+ * 4. LE CLAVIER RESTE, en second. La reconnaissance est capricieuse sur
+ *    iPhone et absente de quelques navigateurs : sans repli, l'écran
+ *    serait inutilisable pour une part des élèves.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { speak } from './speech';
+import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import {
   bilanDeSeance, euros, tourDeParole, ErreurParler,
   type Bilan, type Budget, type Fiche, type Tour,
 } from '../data/parler';
 
-/** mm:ss — le chronomètre de la séance. */
 function horloge(s: number): string {
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, '0')}`;
 }
 
+type Mode = 'voix' | 'clavier';
+
 export function ParlerSeance({
   fiche, debit, budget, exploitant, onFini,
 }: {
   fiche: Fiche;
-  /** La vitesse de la voix, réglée dans les Réglages. */
   debit: number;
   budget: Budget;
-  /** Affiche le coût réel sous le chronomètre. Pour vous seul. */
   exploitant: boolean;
   onFini: () => void;
 }) {
@@ -54,28 +62,35 @@ export function ParlerSeance({
   const [bilan, setBilan] = useState<Bilan | null>(null);
   const [tropCourt, setTropCourt] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+
+  const [mode, setMode] = useState<Mode>(ecouteDisponible ? 'voix' : 'clavier');
+  const [ecoutant, setEcoutant] = useState(false);
+  const [entendu, setEntendu] = useState('');
+  const session = useRef<Ecoute | null>(null);
   const fil = useRef<HTMLDivElement | null>(null);
 
-  /* Le chronomètre tourne tant que le bilan n'est pas demandé. */
   useEffect(() => {
     if (bilan) return;
     const t = setInterval(() => setSecondes((s) => s + 1), 1000);
     return () => clearInterval(t);
   }, [bilan]);
 
-  /* Le fil suit la dernière réplique, sans jamais déplacer la page. */
   useEffect(() => {
     const d = fil.current;
     if (d) d.scrollTop = d.scrollHeight;
-  }, [messages, enVol]);
+  }, [messages, enVol, entendu]);
 
-  const envoie = useCallback(async () => {
-    const texte = saisie.trim();
-    if (!texte || enVol) return;
+  /* La voix ne survit pas à la sortie de l'écran. */
+  useEffect(() => () => { tais(); session.current?.arrete(); }, []);
 
-    const suite: Tour[] = [...messages, { role: 'user', content: texte }];
+  const envoie = useCallback(async (texte: string) => {
+    const dit = texte.trim();
+    if (!dit || enVol) return;
+
+    const suite: Tour[] = [...messages, { role: 'user', content: dit }];
     setMessages(suite);
     setSaisie('');
+    setEntendu('');
     setEnVol(true);
     setErreur(null);
 
@@ -85,10 +100,6 @@ export function ParlerSeance({
       setB(r.budget);
       speak(r.texte, debit);
     } catch (e) {
-      /*
-       * Le tour de l'élève reste à l'écran : il a écrit, on ne lui efface
-       * pas son travail parce que le réseau a hoqueté.
-       */
       setErreur(
         e instanceof ErreurParler && e.quotaEpuise
           ? 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.'
@@ -97,9 +108,44 @@ export function ParlerSeance({
     } finally {
       setEnVol(false);
     }
-  }, [saisie, enVol, messages, fiche, secondes, debit]);
+  }, [enVol, messages, fiche, secondes, debit]);
+
+  /** Appuyer : on coupe la voix, on ouvre le micro. */
+  const parle = useCallback(() => {
+    if (enVol || ecoutant || b.fini) return;
+    tais();
+    setErreur(null);
+    setEntendu('');
+    setEcoutant(true);
+    session.current = ecoute({
+      onPartiel: setEntendu,
+      onFini: (texte) => {
+        setEcoutant(false);
+        session.current = null;
+        if (texte) void envoie(texte);
+        else setEntendu('');
+      },
+      onErreur: (raison) => {
+        setEcoutant(false);
+        session.current = null;
+        setErreur(
+          raison === 'not-allowed'
+            ? 'Le micro est refusé. Autorise-le dans les réglages du navigateur, ou passe au clavier.'
+            : 'Le micro n’a pas marché. Tu peux réessayer, ou passer au clavier.',
+        );
+        if (raison === 'indisponible' || raison === 'not-allowed') setMode('clavier');
+      },
+    });
+  }, [enVol, ecoutant, b.fini, envoie]);
+
+  /** Relâcher : on ferme le micro, `onFini` enverra. */
+  const relache = useCallback(() => {
+    session.current?.arrete();
+  }, []);
 
   const termine = useCallback(async () => {
+    tais();
+    session.current?.arrete();
     setEnVol(true);
     try {
       const r = await bilanDeSeance(messages, fiche, secondes);
@@ -188,10 +234,11 @@ export function ParlerSeance({
       )}
 
       <div className="seance-fil" ref={fil}>
-        {messages.length === 0 && (
+        {messages.length === 0 && !ecoutant && (
           <p className="hint">
-            Dis bonjour, ou lance un sujet. Écris en anglais — la réponse est
-            dite à voix haute.
+            {mode === 'voix'
+              ? 'Appuie sur le micro, dis bonjour en anglais, et relâche. La réponse se fait entendre.'
+              : 'Écris en anglais. La réponse est dite à voix haute.'}
           </p>
         )}
         {messages.map((m, i) => (
@@ -199,27 +246,75 @@ export function ParlerSeance({
             {m.content}
           </p>
         ))}
+        {ecoutant && (
+          <p className="seance-bulle moi encours">
+            {entendu || '…'}
+          </p>
+        )}
         {enVol && <p className="seance-bulle lui attente">…</p>}
       </div>
 
       {erreur && <p className="seance-erreur">{erreur}</p>}
 
-      <form
-        className="seance-saisie"
-        onSubmit={(e) => { e.preventDefault(); void envoie(); }}
-      >
-        <input
-          value={saisie}
-          onChange={(e) => setSaisie(e.target.value)}
-          placeholder="Write in English…"
-          autoComplete="off"
-          lang="en"
-          disabled={enVol || b.fini}
-        />
-        <button className="btn" type="submit" disabled={enVol || b.fini || !saisie.trim()}>
-          Envoyer
-        </button>
-      </form>
+      {mode === 'voix' ? (
+        <div className="seance-micro">
+          <button
+            className={ecoutant ? 'micro on' : 'micro'}
+            disabled={enVol || b.fini}
+            /*
+             * Appui maintenu, pointeur unifié : un seul jeu d'événements
+             * pour le doigt, la souris et le stylet. `onPointerLeave`
+             * ferme la session si le doigt glisse hors du bouton, sans
+             * quoi le micro resterait ouvert.
+             */
+            onPointerDown={parle}
+            onPointerUp={relache}
+            onPointerLeave={() => { if (ecoutant) relache(); }}
+            aria-pressed={ecoutant}
+          >
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
+            </svg>
+          </button>
+          <p className="seance-consigne">
+            {b.fini
+              ? 'Temps de parole épuisé pour aujourd’hui.'
+              : enVol
+                ? 'Il réfléchit…'
+                : ecoutant
+                  ? 'J’écoute — relâche quand tu as fini.'
+                  : 'Maintiens appuyé et parle'}
+          </p>
+          <button className="seance-bascule" onClick={() => setMode('clavier')}>
+            Écrire plutôt
+          </button>
+        </div>
+      ) : (
+        <>
+          <form
+            className="seance-saisie"
+            onSubmit={(e) => { e.preventDefault(); void envoie(saisie); }}
+          >
+            <input
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
+              placeholder="Write in English…"
+              autoComplete="off"
+              lang="en"
+              disabled={enVol || b.fini}
+            />
+            <button className="btn" type="submit" disabled={enVol || b.fini || !saisie.trim()}>
+              Envoyer
+            </button>
+          </form>
+          {ecouteDisponible && (
+            <button className="seance-bascule" onClick={() => setMode('voix')}>
+              Parler plutôt
+            </button>
+          )}
+        </>
+      )}
     </section>
   );
 }
