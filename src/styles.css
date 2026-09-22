@@ -21599,3 +21599,4519 @@ label.switch input {
   color: var(--ink-soft);
   font-style: italic;
 }
+/*
+ * Feuille de style unique — direction « La pioche ».
+ *
+ * Parti pris : le fond de l'application est un tapis bleu nuit, les
+ * visuels de dos sont les seuls objets lumineux, l'or de l'icône est
+ * réservé à l'action principale et aux compteurs. Un serif éditorial
+ * (Newsreader) porte les mots, les étiquettes passent en petites
+ * capitales monospace.
+ *
+ * Les noms de classes n'ont pas changé : cette feuille remplace la
+ * précédente sans toucher aux autres fichiers, sauf Study.tsx qui gagne
+ * l'écran de révision plein cadre.
+ *
+ * Police : @import fonctionne en ligne, mais pas hors connexion. Le
+ * repli Georgia est volontaire et propre. Pour un rendu identique hors
+ * ligne, déposer les .woff2 de Newsreader dans src/assets/fonts et
+ * remplacer cet @import par des règles @font-face.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&display=swap');
+
+:root {
+  /* Encres, sur fond sombre */
+  --ink: #fbfaf6;
+  --ink-soft: #c2cadb;
+  --grey: #8d97ad;
+
+  /* Fonds */
+  --paper: #0f1a2f;   /* le tapis */
+  --panel: #16233f;   /* les surfaces posées dessus */
+  --panel-hi: #1d2c48;
+
+  --rule: rgba(234, 230, 219, 0.14);
+  --rule-strong: rgba(234, 230, 219, 0.24);
+
+  --chalk: #f2b705;   /* l'or de l'icône */
+  --on-chalk: #16233f;
+  --good: #4fbf95;
+  --bad: #e0776d;
+
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --shell: 520px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #root { margin: 0; padding: 0; min-height: 100%; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overscroll-behavior: none;
+}
+
+.app { display: flex; flex-direction: column; min-height: 100dvh; }
+
+/* ---------- barre du haut ---------- */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; max-width: var(--shell); margin: 0 auto;
+  padding: calc(14px + env(safe-area-inset-top)) 18px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.topbar h1 {
+  font-family: var(--serif);
+  font-size: 22px; margin: 0; font-weight: 400; flex: 1;
+  letter-spacing: -0.2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.topbar .count {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--grey);
+}
+.iconbtn {
+  background: none; border: none; font-size: 22px; color: var(--ink);
+  padding: 0 4px 0 0; line-height: 1; font-family: inherit; cursor: pointer;
+}
+
+.screen {
+  flex: 1; width: 100%; max-width: var(--shell); margin: 0 auto;
+  padding: 0 18px calc(28px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column;
+}
+
+.lead { font-size: 15px; line-height: 1.55; color: var(--ink-soft); margin: 18px 0; }
+.hint { font-size: 12.5px; color: var(--grey); line-height: 1.5; margin: 0 0 8px; }
+
+/* ---------- boutons ---------- */
+.btn {
+  display: block; width: 100%; min-height: 52px; padding: 15px;
+  border: none; border-radius: 14px;
+  background: var(--chalk); color: var(--on-chalk);
+  font-size: 16px; font-weight: 650;
+  font-family: inherit; cursor: pointer; margin-bottom: 10px;
+}
+.btn:disabled { background: var(--rule); color: var(--grey); cursor: default; }
+.btn.ghost {
+  background: none; color: var(--ink); border: 1px solid var(--rule-strong);
+  font-weight: 500; font-size: 14.5px; min-height: 48px; padding: 12px;
+}
+.btn.danger { color: var(--bad); border-color: rgba(224, 119, 109, 0.4); }
+
+/* ---------- bibliothèque ---------- */
+.deckgrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 20px 16px; margin: 4px 0 22px;
+}
+.deckcard {
+  position: relative; display: block; background: none; border: none;
+  padding: 0 7px 7px 0; font-family: inherit; text-align: left;
+  color: var(--ink); cursor: pointer;
+}
+/* La pile : deux cartes décalées derrière celle du dessus. */
+.deckcard .stack { position: relative; display: block; width: 100%; }
+.deckcard .stack::before, .deckcard .stack::after {
+  content: ''; position: absolute; inset: 0; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--rule);
+}
+.deckcard .stack::before { transform: translate(7px, 7px); }
+.deckcard .stack::after { transform: translate(3.5px, 3.5px); }
+.deckcard .face {
+  position: relative; z-index: 1; background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 12px; padding: 9px; display: flex; flex-direction: column; overflow: hidden;
+}
+.deckcard .top { display: flex; align-items: flex-start; justify-content: space-between; line-height: 1; }
+.deckcard .corner {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.06em; color: var(--grey);
+}
+.deckcard .suit {
+  width: 11px; height: 11px; border: 1.5px solid var(--chalk);
+  transform: rotate(45deg); border-radius: 2px; opacity: 0.75;
+}
+.deckcard .back {
+  width: 100%; aspect-ratio: 620 / 874; margin: 7px 0 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.deckcard .back svg { display: block; height: 100%; width: auto; max-width: 100%; }
+.deckcard .back img {
+  display: block; height: 100%; width: 100%; object-fit: cover;
+  border-radius: 8px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.deckcard .name {
+  display: -webkit-box; font-size: 13px; font-weight: 600; line-height: 1.28;
+  color: var(--ink);
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.deckcard .foot {
+  margin-top: 6px; padding-top: 6px; display: flex; align-items: center; gap: 6px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+.deckcard .due {
+  margin-left: auto; background: var(--chalk); color: var(--on-chalk);
+  border-radius: 999px; padding: 2px 8px; font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px; letter-spacing: 0;
+}
+.deckcard .rest { margin-left: auto; color: var(--good); }
+.deckcard.add .stack::before, .deckcard.add .stack::after { display: none; }
+.deckcard.add .face {
+  border-style: dashed; background: none; align-items: center; justify-content: center;
+  text-align: center; color: var(--grey); gap: 8px; min-height: 250px;
+}
+.deckcard.add .plus { font-size: 26px; line-height: 1; color: var(--ink-soft); }
+
+/* ---------- listes et réglages ---------- */
+.rows {
+  display: flex; flex-direction: column; gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; margin-bottom: 18px;
+}
+.row {
+  background: var(--panel); border: none; width: 100%; text-align: left;
+  min-height: 50px; padding: 13px 15px;
+  display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--ink);
+  font-family: inherit; cursor: pointer;
+}
+.row.off { color: var(--grey); }
+.row .tick {
+  width: 19px; height: 19px; border: 1.5px solid var(--rule-strong); border-radius: 5px;
+  flex: none; display: grid; place-items: center; font-size: 12px; color: var(--on-chalk);
+}
+.row.on .tick { background: var(--chalk); border-color: var(--chalk); }
+.row .n { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--grey); }
+
+.stats {
+  display: flex; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  margin: 18px 0 22px;
+}
+.stat { flex: 1; padding: 16px 10px; text-align: center; border-right: 1px solid var(--rule); }
+.stat:last-child { border-right: none; }
+.stat b {
+  display: block; font-family: var(--serif); font-size: 30px; font-weight: 400;
+  line-height: 1.05; color: var(--chalk);
+}
+.stat:last-child b { color: var(--ink); }
+.stat span {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--grey);
+}
+
+.panelbox {
+  border: 1px solid var(--rule); border-radius: 12px; background: var(--panel);
+  margin-bottom: 18px; overflow: hidden;
+}
+.panelbox > summary {
+  padding: 15px; font-size: 15px; font-weight: 600; cursor: pointer;
+  list-style: none; display: flex; align-items: center;
+}
+.panelbox > summary::-webkit-details-marker { display: none; }
+.panelbox > summary::after { content: '+'; margin-left: auto; font-size: 19px; color: var(--chalk); font-weight: 400; }
+.panelbox[open] > summary::after { content: '\2013'; }
+.setting { padding: 15px; border-top: 1px solid var(--rule); }
+.setting > label { display: block; font-size: 14.5px; margin-bottom: 3px; }
+.setting .fl { display: flex; align-items: center; gap: 14px; }
+.setting input[type='range'] { flex: 1; accent-color: var(--chalk); }
+.setting .val {
+  font-family: var(--serif); font-size: 22px; font-weight: 400;
+  color: var(--chalk); min-width: 3em; text-align: right;
+}
+.switch { display: flex; align-items: center; gap: 10px; font-size: 14.5px; min-height: 28px; }
+.switch input { width: 19px; height: 19px; accent-color: var(--chalk); }
+
+input[type='text'], textarea {
+  width: 100%; font-family: inherit; font-size: 15px; color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 12px; padding: 12px;
+  background: rgba(234, 230, 219, 0.05);
+}
+input[type='text']::placeholder, textarea::placeholder { color: var(--grey); }
+textarea {
+  min-height: 210px; line-height: 1.5;
+  font-family: var(--mono); font-size: 13.5px;
+}
+.field { margin-bottom: 14px; }
+.field > label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+.error { color: var(--bad); font-size: 13.5px; margin: 10px 0; line-height: 1.45; }
+
+/* ---------- révision plein cadre ----------
+   Le visuel du paquet n'est plus enfermé dans une vignette : il occupe
+   tout l'écran, assombri, et le mot passe devant. C'est le mot qu'on
+   vient lire, pas l'image. */
+.studybg {
+  position: fixed; inset: 0; z-index: -1;
+  background-color: var(--paper);
+  background-size: cover; background-position: center;
+  pointer-events: none;
+}
+.studybg::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    rgba(9, 16, 30, 0.80) 0%,
+    rgba(9, 16, 30, 0.64) 45%,
+    rgba(9, 16, 30, 0.94) 100%);
+}
+
+.studytop { display: flex; align-items: center; gap: 12px; padding: 14px 0 0; }
+.progressbar {
+  flex: 1; height: 3px; background: rgba(234, 230, 219, 0.2);
+  border-radius: 2px; overflow: hidden;
+}
+.progressbar i { display: block; height: 100%; background: var(--chalk); transition: width 0.25s ease; }
+.studytop .pos {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-soft);
+}
+.studytop .stop {
+  width: 32px; height: 32px; flex: none; border: none; border-radius: 50%;
+  background: rgba(234, 230, 219, 0.12); color: var(--ink);
+  font-size: 15px; line-height: 1; font-family: inherit; cursor: pointer;
+}
+
+.studystage {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0; text-align: center; padding: 18px 6px;
+}
+.tag {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 999px; padding: 6px 13px;
+}
+.ask {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--chalk); margin: 34px 0 0;
+}
+.word {
+  font-family: var(--serif); font-weight: 400; color: var(--ink);
+  font-size: clamp(34px, 13vw, 52px); line-height: 1.06;
+  margin: 20px 0 0; max-width: 18ch; text-wrap: balance;
+}
+.wordsmall { font-size: 16px; color: var(--ink-soft); margin: 30px 0 0; }
+.ruleline { width: 26px; height: 1px; background: var(--rule-strong); margin: 20px 0; }
+.answer {
+  font-family: var(--serif); font-weight: 400; color: var(--chalk);
+  font-size: clamp(38px, 15vw, 60px); line-height: 1.02;
+  margin: 0; max-width: 16ch; text-wrap: balance;
+}
+.example {
+  font-family: var(--serif); font-style: italic; font-size: 16px; line-height: 1.5;
+  color: var(--ink-soft); margin: 24px 0 0; max-width: 26ch;
+}
+.speak {
+  margin: 26px 0 0; min-height: 44px; padding: 0 20px;
+  border: 1px solid var(--rule-strong); background: rgba(234, 230, 219, 0.06);
+  border-radius: 999px; font-size: 14px; color: var(--ink);
+  font-family: inherit; cursor: pointer;
+}
+.tap-hint { font-size: 12px; color: var(--grey); text-align: center; margin: 14px 0 0; }
+
+.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grade {
+  min-height: 56px; padding: 12px 8px; border-radius: 14px;
+  border: 1px solid var(--rule-strong); background: rgba(234, 230, 219, 0.05);
+  font-family: inherit; font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer;
+}
+.grade small { display: block; font-weight: 400; font-size: 11px; color: var(--grey); margin-top: 4px; }
+.grade.again { color: var(--bad); border-color: rgba(224, 119, 109, 0.5); background: rgba(224, 119, 109, 0.1); }
+.grade.easy { color: var(--good); border-color: rgba(79, 191, 149, 0.45); background: rgba(79, 191, 149, 0.1); }
+.reveal {
+  min-height: 56px; padding: 16px; border-radius: 16px;
+  background: var(--chalk); color: var(--on-chalk); border: none;
+  font-size: 16.5px; font-weight: 650; font-family: inherit; width: 100%; cursor: pointer;
+}
+.center { text-align: center; }
+.done { text-align: center; padding: 60px 0; }
+.done h2 { font-family: var(--serif); font-size: 30px; font-weight: 400; margin: 0 0 10px; }
+.done p { color: var(--ink-soft); font-size: 15px; margin: 0 0 26px; line-height: 1.55; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- compte ---------- */
+.account {
+  border-top: 1px solid var(--rule);
+  margin-top: 6px;
+  padding-top: 16px;
+}
+
+/* ---------- objectif du jour ---------- */
+.goal {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--chalk);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 15px;
+  margin-bottom: 12px;
+}
+.goal b { font-size: 15px; }
+.goal p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.setting.scope {
+  background: var(--panel-hi);
+  border-top: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ---------- rayons du catalogue ---------- */
+.rayon { margin-bottom: 8px; }
+.rayon h2 {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey);
+  margin: 4px 0 2px;
+}
+.rayon > .hint { margin: 0 0 12px; }
+
+/* ---------- page d'accueil ---------- */
+.welcome {
+  position: relative;
+  flex: 1;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0 0 auto 0;
+  width: 100%;
+  height: 62vh;
+  min-height: 380px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.welcome-head { margin-bottom: 18px; }
+.welcome-mark { width: 54px; height: 76px; display: block; margin: 0 0 18px; }
+.welcome-head h1 {
+  font-family: var(--serif);
+  font-size: 44px; font-weight: 400; margin: 0; letter-spacing: -0.5px; line-height: 1;
+}
+.welcome-sub {
+  font-family: var(--mono);
+  font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--chalk); margin: 14px 0 0;
+}
+
+.welcome-lead {
+  font-size: 16px; line-height: 1.6; color: var(--ink-soft);
+  margin: 18px 0 26px; text-wrap: pretty;
+}
+
+.welcome-actions { margin-top: auto; margin-bottom: 20px; }
+
+.btn.google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: #fbfaf6; color: #16233f;
+  border: none;
+  margin-bottom: 8px;
+}
+.btn.ghost.wide {
+  font-size: 15px; padding: 14px; margin-bottom: 8px;
+}
+
+.welcome-note {
+  font-size: 12.5px; line-height: 1.5; color: var(--grey);
+  margin: 0 0 18px; padding: 0 2px;
+}
+.welcome-note:last-child { margin-bottom: 0; }
+
+/* ---------- la méthode ---------- */
+.method {
+  border-top: 1px solid var(--rule);
+  overflow: hidden;
+}
+.method-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; min-height: 54px; padding: 15px 0; background: none; border: none;
+  font-family: inherit; font-size: 14.5px; font-weight: 500; color: var(--ink-soft);
+  cursor: pointer; text-align: left;
+}
+.method-toggle .chev {
+  font-size: 19px; color: var(--chalk); line-height: 1;
+}
+.method-body {
+  padding: 0 0 16px;
+  font-size: 14px; line-height: 1.65; color: var(--ink-soft);
+}
+.method-body p { margin: 0 0 13px; text-wrap: pretty; }
+.method-body strong { color: var(--ink); font-weight: 600; }
+.method-foot {
+  border-top: 1px solid var(--rule); padding-top: 12px;
+  margin-bottom: 0 !important; color: var(--ink);
+}
+.boxes { width: 100%; height: auto; margin: 2px 0 16px; }
+.boxes-caption {
+  font-size: 12px; color: var(--grey); margin: -8px 0 16px !important;
+  text-align: center;
+}
+
+.welcome-legal {
+  font-size: 11.5px; line-height: 1.5; color: var(--grey);
+  margin: 16px 0 0;
+}
+
+@media (min-width: 560px) {
+  .welcome { padding-top: 40px; }
+  .welcome-head h1 { font-size: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .method-body { animation: none; }
+}
+
+/* ---------- onglets collection / bibliothèque ---------- */
+.tabs {
+  display: flex; gap: 8px; margin: 16px 0 4px;
+}
+.tabs button {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: none; border: 1px solid var(--rule-strong); border-radius: 999px;
+  min-height: 40px; padding: 0 15px;
+  font-family: inherit; font-size: 13px; font-weight: 550;
+  color: var(--ink-soft); cursor: pointer;
+}
+.tabs button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+.tabcount {
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--grey);
+}
+.tabs button.on .tabcount { color: var(--on-chalk); opacity: 0.7; }
+
+/* ---------- catalogue ---------- */
+.catitem { display: flex; flex-direction: column; height: 100%; }
+.catitem .deckcard { width: 100%; flex: 1; }
+.catitem .minibtn { margin-top: auto; }
+.minibtn {
+  margin-top: 6px; width: calc(100% - 7px);
+  min-height: 40px; padding: 8px;
+  border-radius: 11px;
+  border: none; background: var(--chalk); color: var(--on-chalk);
+  font-family: inherit; font-size: 13px; font-weight: 650; cursor: pointer;
+}
+.minibtn.done {
+  background: none; border: 1px solid rgba(79, 191, 149, 0.4);
+  color: var(--good); font-weight: 600;
+}
+
+.empty {
+  border: 1px dashed var(--rule-strong); border-radius: 12px;
+  padding: 22px 18px; text-align: center; margin: 6px 0 20px;
+}
+.empty p { margin: 0 0 12px; color: var(--ink-soft); font-size: 14.5px; }
+.empty .btn { max-width: 260px; margin: 0 auto; }
+
+.iconbtn.home { font-size: 20px; padding: 0 0 0 4px; color: var(--chalk); }
+
+/* ---------- retournement de carte à l'ouverture d'un paquet ---------- */
+@keyframes carte-sortie {
+  from { transform: perspective(900px) rotateY(0deg); }
+  to   { transform: perspective(900px) rotateY(-88deg); opacity: 0.55; }
+}
+@keyframes carte-entree {
+  from { transform: perspective(900px) rotateY(88deg); opacity: 0.55; }
+  to   { transform: perspective(900px) rotateY(0deg); opacity: 1; }
+}
+
+.deckcard.flipping {
+  animation: carte-sortie 260ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.deckface {
+  display: flex; justify-content: center;
+  margin: 14px 0 6px;
+  animation: carte-entree 300ms cubic-bezier(0, 0, 0.2, 1) both;
+}
+.deckface .face {
+  position: relative;
+  width: 152px; aspect-ratio: 620 / 874;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 7px; padding: 14px 12px;
+  border: 1px solid var(--rule); border-radius: 12px;
+  background: var(--panel); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+.deckface b {
+  font-family: var(--serif);
+  font-size: 19px; font-weight: 400; line-height: 1.2; color: var(--ink);
+  text-wrap: balance;
+}
+.deckface .sub {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey); line-height: 1.4;
+}
+.deckface .corner {
+  position: absolute; top: 10px; left: 12px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+  color: var(--grey);
+}
+.deckface .suit {
+  position: absolute; bottom: 11px; right: 11px;
+  width: 11px; height: 11px; border: 1.5px solid var(--chalk);
+  transform: rotate(45deg); border-radius: 2px; opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deckcard.flipping, .deckface { animation: none; }
+}
+
+/* ---------- carte flottante d'ouverture ---------- */
+.zoomlayer {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.zoomholder { will-change: transform; }
+.zoomcard {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d; will-change: transform;
+}
+.zface {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border-radius: 14px; overflow: hidden;
+  background: var(--panel); border: 1px solid var(--rule);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center;
+}
+.zface img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.zface svg { height: 100%; width: auto; }
+.zrecto {
+  transform: rotateY(180deg);
+  flex-direction: column; gap: 10px; padding: 6% 8%; text-align: center;
+}
+.zrecto b {
+  font-family: var(--serif);
+  font-size: clamp(18px, 5.4vw, 32px); font-weight: 400; line-height: 1.2; color: var(--ink);
+}
+.zrecto .zsub {
+  font-family: var(--mono); font-size: clamp(9px, 2.4vw, 11px);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); line-height: 1.4;
+}
+.zrecto .corner {
+  position: absolute; top: 4%; left: 6%;
+  font-family: var(--mono); font-size: clamp(10px, 2.6vw, 13px);
+  letter-spacing: 0.06em; color: var(--grey);
+}
+.zrecto .suit {
+  position: absolute; bottom: 5%; right: 6%;
+  width: 14px; height: 14px; border: 1.5px solid var(--chalk);
+  transform: rotate(45deg); border-radius: 2px; opacity: 0.75;
+}
+
+[data-zoom] .deckface { visibility: hidden; }
+[data-zoom] .deckface, [data-zoom] .deckcard.flipping { animation: none !important; }
+[data-zoom] .deckcard.flipping .back { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zoomlayer { display: none; }
+}
+
+
+/* ================================================================
+   Chantier 2 — onglets du bas, écran « Aujourd'hui », écran Compte
+   ================================================================ */
+
+/* ---------- barre d'onglets ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; justify-content: center;
+  padding: 6px 12px calc(18px + env(safe-area-inset-bottom));
+  background: rgba(15, 26, 47, 0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--rule);
+}
+.tabbar button {
+  flex: 1; max-width: 160px; min-height: 46px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: none; border: none; font-family: inherit;
+  font-size: 12px; font-weight: 500; color: var(--grey); cursor: pointer;
+}
+.tabbar button i { width: 5px; height: 5px; border-radius: 50%; background: transparent; }
+.tabbar button.on { color: var(--chalk); font-weight: 650; }
+.tabbar button.on i { background: var(--chalk); }
+
+/* Les écrans d'onglet réservent la place de la barre ; les autres non,
+   car la révision se sert de toute la hauteur. */
+.app.tabbed .screen { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+
+/* Sans barre de titre, chaque écran d'onglet porte son propre titre. */
+.screen-title {
+  font-family: var(--serif); font-size: 32px; font-weight: 400;
+  letter-spacing: -0.3px; line-height: 1.1;
+  margin: calc(18px + env(safe-area-inset-top)) 0 0;
+}
+
+.rayon-label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey);
+  margin: 26px 0 10px;
+}
+
+/* Panneau de réglages déjà ouvert : l'onglet Compte n'a rien à replier. */
+.panelbox.open { background: var(--panel); }
+.panelbox.open > .setting:first-child { border-top: none; }
+
+/* ---------- aujourd'hui ---------- */
+.today { display: flex; flex-direction: column; }
+.today-date {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey);
+  margin: calc(20px + env(safe-area-inset-top)) 0 0;
+}
+.today-count { display: flex; align-items: flex-end; gap: 14px; margin: 22px 0 0; }
+.today-count b {
+  font-family: var(--serif); font-size: 86px; font-weight: 400;
+  line-height: 0.82; color: var(--ink);
+}
+.today-count span { font-size: 15px; line-height: 1.45; color: var(--ink-soft); padding-bottom: 6px; }
+.today-est { font-size: 13.5px; color: var(--grey); margin: 14px 0 0; }
+
+/* La pioche : le paquet le plus en retard, présenté comme un objet. */
+.pioche { display: flex; gap: 20px; align-items: flex-start; margin: 24px 0 18px; cursor: pointer; }
+.pioche-dos {
+  position: relative; flex: none;
+  width: 132px; aspect-ratio: 620 / 874;
+  display: flex; align-items: center; justify-content: center;
+}
+.pioche-dos::before, .pioche-dos::after {
+  content: ''; position: absolute; inset: 0; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--rule);
+}
+.pioche-dos::before { transform: translate(10px, 10px); }
+.pioche-dos::after { transform: translate(5px, 5px); }
+.pioche-dos img, .pioche-dos svg {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 12px; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+}
+.pioche-due {
+  position: absolute; z-index: 2; top: -10px; right: -12px;
+  min-width: 34px; height: 34px; padding: 0 7px;
+  border-radius: 999px; background: var(--chalk); color: var(--on-chalk);
+  font-size: 14px; font-weight: 700; line-height: 34px; text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+.pioche-txt { display: flex; flex-direction: column; padding-top: 20px; min-width: 0; }
+.pioche-txt .label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey);
+  margin-bottom: 10px;
+}
+.pioche-txt b {
+  font-family: var(--serif); font-size: 23px; font-weight: 400;
+  line-height: 1.2; color: var(--ink); text-wrap: balance;
+}
+.pioche-txt .sub {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey); margin-top: 10px;
+}
+
+/* Pastille de rappel dans une ligne de liste. */
+.row .due {
+  margin-left: auto; background: var(--chalk); color: var(--on-chalk);
+  border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 700;
+}
+
+/* ---------- mémoire, sept jours ---------- */
+.memoire { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.memoire .label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey);
+  margin: 0 0 14px;
+}
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 78px; }
+.bar { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.bar i { display: block; width: 100%; margin-top: auto; border-radius: 4px; background: rgba(242, 183, 5, 0.5); }
+.bar.now i { background: var(--chalk); }
+.bar em {
+  font-family: var(--mono); font-style: normal; font-size: 9.5px;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--grey);
+  margin-top: 8px;
+}
+
+
+/* ================================================================
+   Chantier 3 — série de jours, recherche, rappel quotidien
+   ================================================================ */
+
+/* ---------- série ---------- */
+.today-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.today-head .today-date { margin-bottom: 0; }
+.serie-count {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--chalk);
+  white-space: nowrap;
+}
+
+/* Sept traits : la semaine écoulée, aujourd'hui à droite. */
+.serie { display: flex; gap: 5px; margin: 12px 0 0; }
+.serie i {
+  flex: 1; height: 5px; border-radius: 3px;
+  background: rgba(234, 230, 219, 0.16);
+}
+.serie i.on { background: var(--chalk); }
+
+.serie-alerte {
+  font-size: 13.5px; line-height: 1.5; color: var(--chalk);
+  border-left: 2px solid var(--chalk); padding-left: 12px;
+  margin: 18px 0 0;
+}
+
+/* Le bloc de l'onglet Compte : le nombre porte tout. */
+.serie-bloc {
+  display: flex; align-items: flex-end; gap: 16px;
+  padding: 4px 0 18px; border-bottom: 1px solid var(--rule);
+}
+.serie-bloc b {
+  font-family: var(--serif); font-size: 56px; font-weight: 400;
+  line-height: 0.85; color: var(--chalk);
+}
+.serie-bloc > div { padding-bottom: 4px; }
+.serie-bloc p { margin: 0; font-size: 14px; color: var(--ink); }
+.serie-bloc .hint { margin: 5px 0 0; }
+
+/* ---------- rappel quotidien ---------- */
+.heures { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
+.heures button {
+  min-height: 40px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.heures button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+
+/* ---------- recherche ---------- */
+
+/* Faux champ sur l'onglet Paquets : il mène à l'écran de recherche plutôt
+   que d'ouvrir un clavier au milieu d'une grille de cartes. */
+.searchcue {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-height: 46px; margin: 16px 0 0; padding: 0 14px;
+  border: 1px solid var(--rule-strong); border-radius: 14px;
+  background: rgba(234, 230, 219, 0.05);
+  font-family: inherit; font-size: 14.5px; color: var(--grey);
+  text-align: left; cursor: pointer;
+}
+.loupe {
+  width: 13px; height: 13px; flex: none; border-radius: 50%;
+  border: 1.5px solid currentColor;
+  box-shadow: 3px 3px 0 -1.5px currentColor;
+}
+
+.searchfield { margin: 16px 0 18px; }
+
+.hits { display: flex; flex-direction: column; gap: 1px; }
+.hit {
+  display: flex; flex-direction: column; gap: 4px;
+  width: 100%; min-height: 56px; padding: 13px 2px;
+  background: none; border: none; border-bottom: 1px solid var(--rule);
+  font-family: inherit; text-align: left; cursor: pointer;
+}
+.hit-fr { font-size: 15px; color: var(--ink); }
+.hit-en { font-family: var(--serif); font-size: 18px; color: var(--chalk); line-height: 1.2; }
+.hit-meta {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey); margin-top: 2px;
+}
+
+
+/* ================================================================
+   Chantier 5 — trois onglets : travail, collection, catalogue
+   ================================================================ */
+
+/* Trois pastilles au lieu de deux : les libellés sont plus longs, la
+   police descend d'un cran et le rembourrage se resserre pour tenir sur
+   390 px sans jamais tronquer. */
+.tabs button { padding: 0 11px; font-size: 12px; white-space: nowrap; min-height: 38px; gap: 6px; }
+
+/* ---------- vignettes de paquet ---------- */
+.vign {
+  flex: none; display: block; object-fit: cover;
+  border-radius: 8px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.vign-draw {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-hi); border: 1px solid var(--rule);
+  box-shadow: none; overflow: hidden;
+}
+.vign-draw svg { height: 100%; width: auto; }
+.vign-wrap { position: relative; flex: none; display: block; }
+.vign-due {
+  position: absolute; z-index: 2; top: -7px; right: -7px;
+  min-width: 26px; height: 26px; padding: 0 5px;
+  border-radius: 999px; background: var(--chalk); color: var(--on-chalk);
+  font-size: 12px; font-weight: 700; line-height: 26px; text-align: center;
+}
+
+/* ---------- Mon travail ---------- */
+
+/* Le prix de l'engagement, annoncé avant qu'on s'engage. */
+.engage {
+  margin: 18px 0 0; padding: 14px 18px;
+  border: 1px solid rgba(242, 183, 5, 0.3); border-radius: 16px;
+  background: rgba(242, 183, 5, 0.06);
+}
+.engage .label {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--chalk); margin: 0;
+}
+.engage-n { display: flex; align-items: flex-end; gap: 12px; margin: 12px 0 0; }
+.engage-n b {
+  font-family: var(--serif); font-size: 52px; font-weight: 400;
+  line-height: 0.85; color: var(--ink);
+}
+.engage-n span { font-size: 14px; line-height: 1.4; color: var(--ink-soft); padding-bottom: 4px; }
+.engage .hint { margin: 11px 0 0; }
+
+.worklist { display: flex; flex-direction: column; gap: 10px; }
+.workrow { display: flex; align-items: center; gap: 12px; }
+.workrow-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+  text-align: left; color: var(--ink); cursor: pointer;
+}
+.workrow-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.workrow-txt b { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.workrow-txt small {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+.pausebtn {
+  flex: none; min-height: 44px; padding: 0 13px;
+  border-radius: 11px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: inherit; font-size: 12.5px; cursor: pointer;
+}
+
+/* Ligne cliquable de fin de section, façon réglages. */
+.rowlink {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; min-height: 48px; margin-top: 10px; padding: 0;
+  background: none; border: none; border-top: 1px solid var(--rule);
+  font-family: inherit; font-size: 14px; color: var(--ink-soft);
+  text-align: left; cursor: pointer;
+}
+.rowlink .chev { font-size: 17px; color: var(--chalk); line-height: 1; }
+
+/* ---------- Ma collection : les interrupteurs ---------- */
+.switchlist {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule);
+  border-radius: 14px; overflow: hidden;
+}
+.switchrow {
+  display: flex; align-items: center; gap: 13px;
+  background: var(--panel); padding: 11px 14px;
+}
+/* En pause : grisé et dépigmenté, mais jamais illisible — la progression
+   reste une information qu'on doit pouvoir lire. */
+.switchrow.off { opacity: 0.62; }
+.switchrow.off .vign { filter: grayscale(1); }
+.switchrow-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+  text-align: left; color: var(--ink); cursor: pointer;
+}
+.switchrow-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.switchrow-txt b { font-size: 14px; font-weight: 600; color: var(--ink); }
+.switchrow-txt small { font-size: 11.5px; color: var(--grey); }
+
+.switch {
+  flex: none; width: 46px; height: 28px; padding: 3px;
+  border: none; border-radius: 999px; background: rgba(234, 230, 219, 0.18);
+  display: flex; align-items: center; cursor: pointer;
+}
+.switch i {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--grey);
+  transition: margin-left 140ms ease, background 140ms ease;
+}
+.switch.on { background: var(--chalk); }
+.switch.on i { margin-left: 18px; background: var(--panel); }
+
+.rayon-label.on { color: var(--chalk); }
+
+/* ---------- Mon catalogue ---------- */
+.pricefilters, .rayonfilters { display: flex; flex-wrap: wrap; gap: 6px; }
+.pricefilters { margin: 16px 0 0; }
+.rayonfilters { margin: 7px 0 0; }
+.pricefilters button, .rayonfilters button {
+  min-height: 34px; padding: 0 11px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+}
+.pricefilters button span { color: var(--grey); }
+.pricefilters button.on, .rayonfilters button.on {
+  background: rgba(242, 183, 5, 0.14); border-color: var(--chalk); color: var(--ink);
+}
+.pricefilters button.on span { color: var(--grey); }
+
+.catlist { display: flex; flex-direction: column; gap: 11px; margin-bottom: 4px; }
+.catrow { display: flex; align-items: center; gap: 12px; }
+.catrow-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+  background: none; border: none; padding: 0; font-family: inherit;
+  text-align: left; color: var(--ink); cursor: pointer;
+}
+.catrow-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.catrow-txt b { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.catrow-txt small { font-size: 12px; color: var(--grey); }
+.catrow .minibtn { margin: 0; width: auto; flex: none; min-height: 44px; padding: 0 14px; }
+.ownedtag {
+  flex: none; min-height: 44px; padding: 0 12px;
+  border-radius: 11px; border: 1px solid rgba(79, 191, 149, 0.4);
+  color: var(--good); font-size: 12.5px; font-weight: 600;
+  display: flex; align-items: center;
+}
+
+/* Les grilles de cartes ne servent plus dans « Paquets » : les listes
+   laissent la place aux interrupteurs et aux prix. Les règles restent
+   pour la carte volante et l'écran d'un paquet. */
+
+
+/* ---------- La classe : de la CM2 à la Terminale ---------- */
+
+/* La classe déclarée est une identité, pas un filtre de plus : d'où une
+   barre pleine largeur en haut du catalogue, et non une puce noyée parmi
+   les tranches de prix. */
+.classbar {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; min-height: 48px; margin: 14px 0 0; padding: 0 14px;
+  border-radius: 13px; border: 1px solid rgba(242, 183, 5, 0.45);
+  background: rgba(242, 183, 5, 0.07);
+  font-family: inherit; color: var(--ink); text-align: left; cursor: pointer;
+}
+.classbar .label {
+  flex: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--grey);
+}
+.classbar b {
+  flex: 1; font-family: 'Newsreader', Georgia, serif;
+  font-size: 19px; font-weight: 400;
+}
+.classbar .chg { flex: none; font-size: 12.5px; font-weight: 600; color: var(--chalk); }
+
+.classpanel {
+  margin: 8px 0 0; padding: 12px 13px;
+  border: 1px solid var(--rule-strong); border-radius: 14px;
+}
+.classpanel .hint { margin: 0 0 10px; }
+.classrow {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 48px; padding: 0 12px; margin-bottom: 5px;
+  border-radius: 12px; border: 1px solid var(--rule-strong);
+  background: none; font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.classrow i {
+  flex: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--rule-strong);
+}
+.classrow span { flex: 1; font-size: 15px; }
+.classrow small { flex: none; font-size: 12px; color: var(--grey); }
+.classrow.on { border-color: var(--chalk); background: rgba(242, 183, 5, 0.1); }
+.classrow.on i { border: 5px solid var(--chalk); }
+.classrow.on span { font-weight: 650; }
+.classrow.on small { color: var(--chalk); font-weight: 600; }
+.classrow.plain { justify-content: center; border-style: dashed; margin-bottom: 0; }
+.classrow.plain span { flex: none; font-size: 13px; color: var(--grey); }
+
+/* Les puces de consultation. Elles cochent des planchers EXACTS : c'est le
+   seul endroit de l'application où plusieurs classes coexistent, et le
+   bandeau vert au-dessus est là pour que personne ne croie voir tout ce qui
+   lui conviendrait. */
+.classechips { display: flex; flex-wrap: wrap; gap: 6px; margin: 11px 0 0; }
+.classechips button {
+  min-height: 34px; padding: 0 11px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--grey);
+  font-family: inherit; font-size: 12px; cursor: pointer;
+}
+.classechips button.on {
+  background: rgba(79, 191, 149, 0.16);
+  border-color: var(--good); color: var(--ink); font-weight: 600;
+}
+
+/* Le vert est celui du « bon » de l'application, jamais celui d'une erreur :
+   ici il dit « vous n'êtes plus chez vous », pas « attention ». */
+.consultbox {
+  margin: 12px 0 0; padding: 13px 14px;
+  border: 1px solid rgba(79, 191, 149, 0.45); border-radius: 14px;
+  background: rgba(79, 191, 149, 0.08);
+}
+.consultbox .ttl { margin: 0; font-size: 13px; color: var(--ink); }
+.consultbox .hint { margin: 8px 0 0; }
+.consultbox .btn { margin-top: 11px; }
+
+/* « Pour plus tard » : grisé, jamais illisible. L'opacité s'arrête à .78 et
+   le sous-titre passe en clair — l'étiquette de classe est justement
+   l'information que cette section existe pour porter. */
+.catrow.later { opacity: 0.78; }
+.catrow.later .catrow-txt small { color: #c2cadb; }
+.minibtn.outline {
+  background: none; border: 1px solid var(--rule-strong); color: var(--ink);
+}
+.rayon h2.later-h { color: var(--grey); }
+
+
+/* ---------- Filtres repliés ---------- */
+/* Trois rangées de puces au-dessus de la liste annonçaient surtout « il y a
+   beaucoup à régler ici », alors que la plupart des visites ne règlent rien.
+   Le bouton porte l'état ; le panneau se déplie vers le bas et pousse la
+   liste, il ne la recouvre pas — on garde le contexte sous les yeux. */
+.filterbar { display: flex; align-items: center; gap: 9px; margin: 16px 0 0; }
+.filterbtn {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 38px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: none; color: var(--ink-soft);
+  font-family: inherit; font-size: 13px; cursor: pointer;
+}
+/* La pastille compte les critères actifs. Un filtre caché doit s'annoncer :
+   sans ce chiffre, on cherche dix minutes pourquoi un paquet manque. */
+.filterbtn b {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  display: grid; place-items: center; border-radius: 999px;
+  background: var(--chalk); color: var(--on-chalk);
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+}
+/* Le chevron est un trait plié, pas une icône à charger. */
+.filterbtn i {
+  flex: none; width: 7px; height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.22s ease;
+}
+.filterbtn.open { border-color: var(--chalk); color: var(--ink); }
+.filterbtn.open i { transform: translateY(1px) rotate(225deg); }
+.filterclear {
+  padding: 4px 2px; border: 0; background: none;
+  font-family: inherit; font-size: 12.5px; color: var(--grey);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+
+/* Le dépliage. `grid-template-rows` de 0fr à 1fr anime la hauteur réelle
+   sans avoir à la connaître : aucun max-height à deviner, donc rien qui
+   saute le jour où un rayon de plus s'ajoute. */
+.filterfold {
+  display: grid; grid-template-rows: 0fr; opacity: 0;
+  transition: grid-template-rows 0.26s ease, opacity 0.18s ease;
+}
+.filterfold > * { min-height: 0; overflow: hidden; }
+.filterfold.open { grid-template-rows: 1fr; opacity: 1; }
+
+.filterpanel .flabel {
+  margin: 13px 0 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--grey);
+}
+.filterpanel .flabel:first-child { margin-top: 12px; }
+.filterpanel .classechips,
+.filterpanel .pricefilters,
+.filterpanel .rayonfilters { margin: 0; }
+.filterpanel .classechips.fine { margin-top: 6px; opacity: 0.85; }
+
+/* Le mouvement est une commodité, pas le message. */
+@media (prefers-reduced-motion: reduce) {
+  .filterfold, .filterbtn i { transition: none; }
+}
+
+
+/* ---------- La classe en pastille ---------- */
+/* Elle quitte la ligne de texte pour le dos de carte : une étiquette se lit
+   d'un coup d'œil là où une énumération se lit mot à mot. Ce qui restait
+   sous le nom — « 127 mots · A2 · collège · dès la 6ème · gratuit » — disait
+   la classe trois fois et le prix deux ; le sujet du paquet s'y noyait. */
+.catrow .vign-wrap { display: block; }
+.classdot {
+  position: absolute; z-index: 2; left: 50%; bottom: -6px;
+  transform: translateX(-50%);
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--rule-strong);
+  font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.02em; color: var(--ink-soft); white-space: nowrap;
+}
+/* Dans « pour plus tard », la classe est justement ce qu'on vient lire :
+   elle passe en pleine encre au lieu de suivre le gris de la section. */
+.catrow.later .classdot { color: var(--ink); }
+
+/* Le titre monte d'un cran. Il doit gagner contre le bouton doré à sa
+   droite, qui a la couleur pour lui. */
+.catrow-txt b {
+  font-size: 16px; font-weight: 650; letter-spacing: -0.005em;
+}
+
+/* La note qui rend son « dès » à la pastille : dite une fois, en petit. */
+.hint.dotnote { margin: 14px 0 0; font-size: 11.5px; }
+.hint.dotnote b { font-weight: 600; color: var(--ink-soft); }
+
+/* ---------- « Pour plus tard », qui s'annonce ---------- */
+/* Le titre avait la taille d'un rayon et arrivait après une liste qui
+   semblait finie : on s'arrêtait de défiler avant de le voir. Un filet en
+   travers de la colonne et un compteur suffisent — la section reste discrète,
+   elle cesse juste d'être invisible. */
+.later-sec {
+  margin-top: 26px; padding-top: 20px;
+  border-top: 1px solid var(--rule-strong);
+}
+.later-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 2px;
+}
+.later-head h2.later-h { margin: 0; color: var(--ink-soft); }
+/* Le compteur est la moitié utile du dispositif : « 1 paquet » dit qu'il
+   reste quelque chose, ce qu'un titre seul ne dit pas. */
+.later-n {
+  flex: none; padding: 3px 9px; border-radius: 999px;
+  background: rgba(234, 230, 219, 0.07); border: 1px solid var(--rule);
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+.later-sec .hint { margin-top: 7px; }
+/* ==================================================================
+   Chantier 18 — l'anneau d'avancement
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* La bulle sort de la ligne : il faut que la ligne la laisse sortir. */
+.workrow { position: relative; overflow: visible; }
+
+.avanc-wrap { position: relative; flex: none; display: flex; }
+
+.avanc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #0f7c8a;
+  cursor: pointer;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+.avanc:focus-visible { outline: 2px solid #0f7c8a; outline-offset: 2px; }
+.avanc:active { transform: scale(.94); }
+/* Un paquet au complet change de teinte, jamais de forme : la comparaison
+   d'un paquet à l'autre doit rester possible d'un coup d'œil. */
+.avanc.plein { color: #17864f; }
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 46px;
+  height: 46px;
+  /* Le remplissage part du haut, comme une horloge. */
+  transform: rotate(-90deg);
+}
+.ring circle { fill: none; stroke-width: 3; }
+.ring-bg { stroke: currentColor; opacity: .15; }
+.ring-fg {
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition: stroke-dasharray .6s cubic-bezier(.3, .8, .3, 1);
+}
+
+.avanc-n {
+  position: relative;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.2px;
+}
+
+.avanc-bulle {
+  position: absolute;
+  right: -6px;
+  top: calc(100% + 8px);
+  z-index: 20;
+  width: min(274px, 74vw);
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #fff;
+  color: #3a3a3a;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .17), 0 0 0 1px rgba(0, 0, 0, .05);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  animation: avancIn .16s ease-out;
+}
+.avanc-bulle b { font-weight: 700; }
+.avanc-bulle em {
+  display: block;
+  margin-top: 5px;
+  font-style: normal;
+  opacity: .6;
+}
+
+@keyframes avancIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Ma collection : le chiffre sans l'anneau. La ligne porte déjà une
+   vignette, deux compteurs et un interrupteur — un anneau de plus la
+   ferait déborder sur les petits écrans. */
+.small-pct {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(15, 124, 138, .1);
+  color: #0f7c8a;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================
+   Chantier 19 — dos de carte illustrés
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Le dos illustré est un dos dessiné avec une image posée dessus. */
+.vign-illus { position: relative; }
+
+/*
+ * Le cadrage reprend celui du dessin : dans le repère 620 x 874, le sujet
+ * occupe 420 unités de large, centré. Soit 67,7 % de la largeur, à 16,1 %
+ * du bord gauche et 26 % du haut. Le sujet reste ainsi À L'INTÉRIEUR du
+ * cadre intérieur tracé par CardBack, quelle que soit la taille d'affichage.
+ *
+ * C'est une <img> HTML posée sur le SVG, et non un <image> dans le SVG :
+ * un href externe dans un SVG ne survit ni à la capture d'écran ni à
+ * l'export PDF — la carte y sortirait vide.
+ */
+.vign-illus-img {
+  position: absolute;
+  left: 16.1%;
+  top: 26%;
+  width: 67.7%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+}
+/* ==================================================================
+   Chantier 20 — la classe plancher partout
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * « Mon travail » : la pastille dépasse de six pixels sous la vignette, comme
+ * au catalogue. La ligne doit donc laisser sortir son contenu — sans quoi la
+ * pastille est coupée net et l'on croit la modification ratée.
+ *
+ * Les lignes de travail n'ont pas de fond propre : rien ne vient repeindre
+ * par-dessus ce qui dépasse. Le débordement est donc sans risque ici.
+ */
+.workrow,
+.workrow-main { overflow: visible; }
+
+/*
+ * La pastille passe devant le compteur de cartes dues. Ils ne se rencontrent
+ * jamais — l'un en haut à droite, l'autre en bas au centre — mais si l'écran
+ * devenait assez étroit pour les faire se toucher, mieux vaut perdre le
+ * chiffre des cartes dues, qui se relit ailleurs, que la classe.
+ */
+.workrow .classdot { z-index: 3; }
+
+/*
+ * « Ma collection » : la pastille reste À L'INTÉRIEUR du dos de carte au lieu
+ * de chevaucher son bord.
+ *
+ * Deux raisons, et la seconde est décisive. La vignette n'y fait que
+ * quarante-quatre pixels de large contre cinquante-quatre ailleurs : une
+ * pastille à cheval déborderait des deux côtés du dos et cesserait de se lire
+ * comme une étiquette posée dessus. Surtout, chaque ligne de collection porte
+ * son propre fond opaque : ce qui dépasse d'une ligne passe DERRIÈRE la
+ * suivante, qui est peinte après elle. Aucun `overflow` ni `z-index` n'y
+ * change quoi que ce soit — il faut ne pas dépasser.
+ */
+.switchrow .classdot {
+  bottom: 3px;
+  padding: 1px 5px;
+  font-size: 8.5px;
+  /* Le dos de carte est clair, la pastille aussi : il lui faut son filet. */
+  background: var(--panel);
+  border-color: var(--rule-strong);
+}
+/* ==================================================================
+   Chantier 22 — l'illustration suit la carte partout
+   À COLLER TEL QUEL À LA FIN DE src/styles.css.
+
+   ⚠ Retirez d'abord le bloc « Chantier 19 » : ses deux règles
+   (.vign-illus et .vign-illus-img) sont remplacées par celles-ci.
+   Les laisser ne casse rien, mais elles ne servent plus à rien.
+   ================================================================== */
+
+/*
+ * Les trois boîtes qui peuvent contenir un dos illustré. Le sujet est
+ * placé en pourcentages : il lui faut un parent positionné, sinon il se
+ * repère sur l'écran entier et s'en va n'importe où.
+ */
+.vign-draw, .zdos, .pioche-dos { position: relative; }
+
+/*
+ * Le cadrage reprend celui du dessin : dans le repère 620 x 874, le sujet
+ * occupe 420 unités de large, centré. Soit 67,7 % de la largeur, à 16,1 %
+ * du bord gauche et 26 % du haut — donc À L'INTÉRIEUR du cadre intérieur
+ * que trace CardBack, à toutes les tailles d'affichage.
+ *
+ * Les deux sélecteurs composés ne sont pas une redondance : `.zface img`
+ * et `.pioche-dos img` imposent déjà `width: 100%` et `object-fit: cover`
+ * à toute image de ces boîtes. Il faut une classe de plus qu'eux pour
+ * l'emporter, sinon le sujet est étiré bord à bord.
+ */
+.dos-illus-img,
+.zface .dos-illus-img,
+.pioche-dos .dos-illus-img {
+  position: absolute;
+  z-index: 2;
+  left: 16.1%;
+  top: 26%;
+  width: 67.7%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+/* ==================================================================
+   Chantier 24 — la liste d'« Aujourd'hui » prend la ligne de « Mon travail »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * La pastille du nombre de cartes à voir. Elle existait sous `.row .due` ;
+ * la ligne n'est plus une `.row`, il lui faut donc sa propre règle. Les
+ * valeurs sont celles de l'originale, au pixel près : c'est la même
+ * pastille, pas une nouvelle.
+ */
+.workrow > .due {
+  flex: none;
+  margin-left: auto;
+  background: var(--chalk);
+  color: var(--on-chalk);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/*
+ * La liste respire un peu plus qu'à « Mon travail » : ses lignes n'ont ni
+ * anneau ni bouton Pause à droite, donc rien pour tenir leur hauteur.
+ */
+.todaylist { gap: 12px; margin-bottom: 18px; }
+
+/* La pastille de classe doit passer devant la vignette, comme ailleurs. */
+.todaylist .classdot { z-index: 3; }
+.todaylist .workrow,
+.todaylist .workrow-main { overflow: visible; }
+/* ==================================================================
+   Chantier 26 — le paquet mis en avant (remplace le bloc du 25)
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Les anciennes règles .pioche* peuvent rester : plus rien ne les
+   appelle. .pioche-dos et .pioche-due, en revanche, servent encore —
+   la carte mise en avant les reprend.
+   ================================================================== */
+
+.avant {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0 22px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--rule-strong);
+  border-radius: 16px;
+}
+
+/* Le haut de la carte ouvre le paquet ; le bouton doré le fait réviser.
+   Deux gestes, deux destinations, jamais le même geste pour les deux. */
+.avant-haut {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.avant-vign-wrap { position: relative; flex: none; display: block; }
+
+.avant-vign {
+  position: relative;
+  display: block;
+  width: 96px;
+  aspect-ratio: 620 / 874;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--panel-hi);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+/*
+ * L'image PLEIN CADRE seulement — d'où le :not().
+ *
+ * `.avant-vign > img` attraperait aussi le sujet détouré des paquets
+ * illustrés et l'étirerait bord à bord, filet compris. C'est le même piège
+ * que `.zface img` et `.pioche-dos img` au chantier 22 ; il se referme
+ * sur toute nouvelle boîte qui croit n'avoir qu'une image.
+ */
+.avant-vign > img:not(.dos-illus-img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.avant-vign > svg { width: 100%; height: 100%; display: block; }
+.avant-vign .dos-illus-img {
+  position: absolute;
+  z-index: 2;
+  left: 16.1%;
+  top: 26%;
+  width: 67.7%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+/* La pastille du nombre de cartes dues, posée sur le coin du cadre. */
+.avant-vign-wrap > .pioche-due { top: -9px; right: -9px; min-width: 30px; height: 30px; }
+
+.avant-txt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+.avant-txt b {
+  font-family: var(--serif);
+  font-size: 21px; font-weight: 400; line-height: 1.15; color: var(--ink);
+}
+.avant-txt small {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+
+.avant-avanc { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.avant-anneau {
+  position: relative; flex: none;
+  width: 44px; height: 44px;
+  color: #0f7c8a;
+}
+.avant-anneau .ring { width: 44px; height: 44px; }
+.avant-pct { display: flex; flex-direction: column; gap: 2px; }
+.avant-pct b { font-family: inherit; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.avant-pct small {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+
+/*
+ * Les cinq tas.
+ *
+ * La barre se lit de gauche à droite comme le trajet d'un mot : ce qui
+ * reste à découvrir, ce qui résiste, ce qui monte, ce qui est acquis.
+ * Son bord droit qui avance est la seule chose à surveiller.
+ */
+.statbar {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  margin-top: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(234, 230, 219, 0.08);
+}
+.statbar i { display: block; height: 100%; }
+
+.statlist { display: flex; flex-direction: column; gap: 7px; margin-top: 14px; }
+.statline { display: flex; align-items: center; gap: 9px; }
+.statline i { flex: none; width: 9px; height: 9px; border-radius: 2px; }
+.statline span { flex: 1; min-width: 0; font-size: 13px; color: var(--ink-soft); }
+.statline b {
+  font-family: var(--mono); font-size: 12px; font-weight: 400;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+
+.st-decouvrir { background: rgba(234, 230, 219, 0.20); }
+.st-reprendre { background: var(--bad); }
+.st-cours { background: var(--chalk); }
+.st-presque { background: #8fd0ae; }
+.st-acquis { background: var(--good); }
+
+/* Le bouton doré et son repli, dans la carte. */
+.avant .btn { margin: 18px 0 0; }
+.avant .btn.ghost { margin: 8px 0 0; min-height: 44px; font-size: 13.5px; }
+/* ==================================================================
+   Chantier 28 — les titres de rayon
+   À COLLER TEL QUEL À LA FIN DE src/styles.css.
+
+   Deux sélecteurs seulement. Ils remplacent, par cascade, les règles
+   existantes de `.rayon h2` et `.rayon-label` : pas besoin de retirer
+   les anciennes, mais si vous préférez le faire, ce sont les deux
+   blocs à supprimer et rien d'autre.
+   ================================================================== */
+
+/*
+ * Le nom du rayon en Newsreader, pas en petites capitales mono.
+ *
+ * À 9,5 pixels, gris, espacé et en capitales, le titre de rayon avait la
+ * taille d'une note de bas de page pour un rôle de panneau indicateur :
+ * c'est lui qui dit où l'on est dans une liste de trente paquets. Dans une
+ * page où les noms de paquets font 14,5 pixels en gras, un titre de section
+ * plus petit et plus pâle que ce qu'il titre ne hiérarchise rien — il
+ * s'excuse.
+ *
+ * Il passe donc au caractère des titres, à 18 pixels, en ivoire, sur un
+ * filet qui ouvre la section. La graisse ne bouge pas : dans ce système
+ * c'est la taille qui hiérarchise, jamais le gras.
+ */
+.rayon h2,
+.rayon-label {
+  margin: 0 0 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--rule);
+
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.2;
+
+  /* Les trois annulations sont nécessaires : les anciennes règles les
+     posaient, et la cascade ne les défait pas toute seule. */
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+
+/* Un rayon qui suit une liste a besoin d'air au-dessus ; le premier de la
+   page n'en a pas besoin, son titre d'écran le lui donne déjà. */
+.rayon + .rayon h2,
+.rayon-label + .switchlist ~ .rayon-label {
+  margin-top: 24px;
+}
+
+/*
+ * « En pause » se dit en encre douce.
+ *
+ * C'est le seul écart entre les deux libellés de la collection : même
+ * caractère, même taille, une encre d'un cran en retrait. Un titre de
+ * section grisé reste un titre ; le mettre en petit ou en capitales, non.
+ */
+.rayon-label:not(.on) {
+  color: var(--ink-soft);
+}
+
+/*
+ * Le compte, s'il est présent dans le libellé.
+ *
+ * Il reste en mono : c'est un chiffre, il se lit en colonne d'un rayon à
+ * l'autre et ne doit pas peser autant que le nom. Enveloppez-le d'un
+ * `<b class="rayon-n">` — « En jeu <b class="rayon-n">4</b> » — plutôt que
+ * de le coller au texte avec un tiret.
+ */
+.rayon h2,
+.rayon-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.rayon-n {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--grey);
+}
+/* ==================================================================
+   Chantier 29 — le compte sur les puces de rayon
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Une seule règle. Les puces de rayon portent maintenant un compte,
+   comme les tranches de prix le faisaient déjà ; elles ont donc besoin
+   du même petit chiffre en retrait.
+
+   Si `.pricefilters button span` existe chez vous avec d'autres
+   valeurs, ce sont CELLES-LÀ qu'il faut reprendre ici — deux comptes
+   dessinés différemment dans le même panneau se remarquent tout de
+   suite. Le plus simple est alors d'ajouter `.rayonfilters button span`
+   au sélecteur existant plutôt que de coller ce bloc.
+   ================================================================== */
+
+.rayonfilters button span,
+.pricefilters button span {
+  margin-left: 5px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+/* ==================================================================
+   Chantier 31 — la classe revient sur la carte mise en avant
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * La pastille de classe sur le grand cadre.
+ *
+ * `.classdot` était réglée pour la vignette de 54 px de la liste. Sur le
+ * cadre de 96 px de la carte mise en avant, la même pastille paraît
+ * minuscule et se perd contre le filet du dos ; d'où un cran de plus, et
+ * seulement là.
+ *
+ * Elle reste SŒUR du cadre et non fille : le cadre masque ce qui dépasse de
+ * lui — c'est ce qui tient l'illustration dans le filet — et une pastille
+ * posée à cheval sur son bord y serait rognée. C'était déjà la leçon du
+ * chantier 26 pour `.pioche-due`.
+ */
+.avant-vign-wrap > .classdot-lg {
+  position: absolute;
+  z-index: 3;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--rule-strong);
+
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/*
+ * Les deux pastilles ne se croisent jamais : le nombre de cartes dues est
+ * accroché au coin supérieur droit, la classe au bord inférieur, centrée.
+ * Rien à arbitrer entre elles, donc rien à masquer.
+ */
+/* ==================================================================
+   Chantier 34 — quatre onglets, et l'écran « Mes progrès »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   La barre du bas passe à quatre entrées, icône + étiquette.
+
+   L'étiquette reste : quatre pictogrammes muets se devinent au premier
+   usage et s'oublient au dixième, et c'est le vocabulaire de
+   l'application qui se perdrait avec eux. L'icône porte le repérage,
+   le mot porte le nom.
+   ------------------------------------------------------------------ */
+.tabbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 56px;
+  padding: 9px 2px 10px;
+  line-height: 1.1;
+}
+
+.tabbar button svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Quatre étiquettes sur une largeur de téléphone : un cran plus petit,
+   jamais tronqué. « Mes progrès » est la plus longue et elle passe. */
+.tabbar button span {
+  font-size: 10.5px;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------
+   Mes progrès — la tête
+   ------------------------------------------------------------------ */
+.prog-tete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+/* Le mot AU-DESSUS du chiffre : on lit ce qu'on compte avant de lire
+   combien. Sur le côté, il se perdait à hauteur de pied de chiffre. */
+.prog-grand { display: flex; flex-direction: column; gap: 2px; }
+.prog-grand .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.prog-grand b {
+  font-family: var(--serif);
+  font-size: 62px;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.prog-anneau {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 58px;
+  height: 58px;
+  color: var(--good, #4fbf95);
+}
+.prog-anneau .ring { width: 58px; height: 58px; }
+.prog-anneau b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------
+   Les trois compteurs
+   ------------------------------------------------------------------ */
+.prog-compteurs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 20px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.prog-compteurs span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 13px 10px;
+  background: var(--panel);
+}
+.prog-compteurs b {
+  font-family: var(--serif);
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.prog-compteurs small { font-size: 10.5px; line-height: 1.3; color: var(--ink-dim, #8d97ad); }
+
+/* ------------------------------------------------------------------
+   Le calendrier
+
+   Un vrai mois daté, lundi en tête. La grille de cases anonymes qu'on
+   voyait ailleurs ne dit pas QUAND : elle demande de compter à rebours
+   pour situer un trou, ce que personne ne fait.
+   ------------------------------------------------------------------ */
+.prog-moisbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 12px;
+}
+.prog-moisbar b {
+  flex: 1;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.btn-rond {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: none;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.btn-rond:disabled {
+  border-color: var(--rule);
+  color: var(--ink-dim, #8d97ad);
+  opacity: 0.45;
+  cursor: default;
+}
+.btn-rond:not(:disabled):hover { border-color: var(--chalk); color: var(--chalk); }
+
+.prog-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.prog-cal-head {
+  text-align: center;
+  padding-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim, #8d97ad);
+}
+.prog-jour {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 9px;
+  background: rgba(234, 230, 219, 0.06);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim, #8d97ad);
+}
+/* Jour travaillé : c'est la seule chose que le calendrier affirme. */
+.prog-jour.on {
+  background: var(--chalk);
+  color: var(--panel);
+  font-weight: 700;
+}
+/* Hors période — avant le début, ou pas encore arrivé. Présent, discret. */
+.prog-jour.hors { background: none; color: rgba(141, 151, 173, 0.45); }
+.prog-jour.vide { background: none; }
+.prog-jour.now { box-shadow: 0 0 0 1.5px var(--ink); }
+
+/* ------------------------------------------------------------------
+   La courbe des mots acquis
+
+   Chaque point porte son chiffre : une courbe sans nombres se lit comme
+   une humeur, et on ne peut pas la citer.
+   ------------------------------------------------------------------ */
+.prog-courbe {
+  position: relative;
+  height: 132px;
+  border-bottom: 1px solid var(--rule);
+}
+.prog-courbe svg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100px;
+  display: block;
+}
+.prog-courbe .aire { fill: var(--good, #4fbf95); opacity: 0.14; }
+.prog-courbe .trait {
+  fill: none;
+  stroke: var(--good, #4fbf95);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.prog-courbe-n {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.prog-courbe-axe {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.prog-courbe-axe small {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim, #8d97ad);
+}
+
+/* ------------------------------------------------------------------
+   Le détail par paquet
+
+   Le vert fonce avec l'avancement : la teinte redit la longueur. Un
+   trait court en vert profond se lirait de loin comme une réussite ;
+   le dégradé interdit ce contresens. Il est calculé dans Progress.tsx,
+   la barre ne porte ici que sa forme.
+   ------------------------------------------------------------------ */
+.prog-liste { display: flex; flex-direction: column; gap: 13px; }
+.prog-ligne { display: flex; flex-direction: column; gap: 6px; }
+.prog-ligne-haut { display: flex; align-items: baseline; gap: 10px; }
+.prog-ligne-haut b {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prog-ligne-haut small {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.prog-barre {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(234, 230, 219, 0.08);
+  overflow: hidden;
+}
+.prog-barre i { display: block; height: 100%; border-radius: 999px; }
+
+.prog-pied {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+/* ------------------------------------------------------------------
+   « Ma classe » dans les Réglages
+
+   Le panneau existe déjà (chantier 16) ; il n'était qu'ouvert par un
+   bouton. Ici il est posé à plat, sans dépliage : un réglage qui se
+   cache derrière un clic se règle une fois puis s'oublie.
+   ------------------------------------------------------------------ */
+.classpanel.plain { margin-top: 0; }
+.classpanel.plain .hint { margin: 0 0 8px; }
+/* ==================================================================
+   Chantier 35 — l'icône « Aujourd'hui » en image
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Seule icône en couleur de la barre : elle ne peut pas prendre la
+   couleur de l'onglet actif comme les traits des trois autres. C'est donc
+   l'opacité qui porte l'état — éteinte au repos, pleine quand on y est.
+   Rien d'autre ne la distingue : même gabarit de 24, même place. */
+.tabbar button .tabicon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.tabbar button.on .tabicon {
+  opacity: 1;
+}
+/* ==================================================================
+   Chantier 35 — l'icône « Aujourd'hui » en image
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Seule icône en couleur de la barre : elle ne peut pas prendre la
+   couleur de l'onglet actif comme les traits des trois autres. C'est donc
+   l'opacité qui porte l'état — éteinte au repos, pleine quand on y est.
+   Rien d'autre ne la distingue : même gabarit de 24, même place. */
+.tabbar button .tabicon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.tabbar button.on .tabicon {
+  opacity: 1;
+}
+/* ==================================================================
+   Chantier 35 — les icônes d'onglet en image
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Les icônes en couleur ne peuvent pas prendre la couleur de l'onglet
+   actif comme les traits de « Mes progrès ». C'est donc l'opacité qui
+   porte l'état — éteinte au repos, pleine quand on y est. Rien d'autre ne
+   les distingue : même carré de 24, même place.
+
+   `contain` : « Réglages » est un dessin large et bas ; il se pose au
+   centre du carré au lieu d'être étiré pour le remplir. */
+.tabbar button .tabicon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.tabbar button.on .tabicon {
+  opacity: 1;
+}
+/* ==================================================================
+   Chantier 35 — les icônes d'onglet en image
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* Les quatre icônes sont des images en couleur : aucune ne peut prendre la
+   couleur de l'onglet actif. C'est donc l'opacité qui porte l'état —
+   éteinte au repos, pleine quand on y est. Rien d'autre ne les distingue :
+   même carré de 24, même place.
+
+   `contain` : « Réglages » est un dessin large et bas ; il se pose au
+   centre du carré au lieu d'être étiré pour le remplir. */
+.tabbar button .tabicon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.45;
+  transition: opacity 0.15s ease;
+}
+
+.tabbar button.on .tabicon {
+  opacity: 1;
+}
+/* ==================================================================
+   Chantier 36 — le fond bleu ciel, et « Ma classe » derrière un bouton
+
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer : ce
+   bloc ne fait que redéfinir, et il passe en dernier.
+
+   Le parti pris s'inverse. Le tapis n'est plus le bleu nuit mais un
+   bleu de ciel pâle ; l'encre devient le bleu nuit, les surfaces
+   posées dessus deviennent blanches. L'or de l'icône ne bouge pas : il
+   garde sa place d'accent, avec une nuance — un or clair sur du blanc
+   ne se lit pas, alors là où l'or servait de TEXTE il passe à un or
+   profond (`--chalk-ink`). En aplat, il reste l'or.
+
+   Trois choses ne s'inversent pas, et c'est voulu :
+   — l'écran de révision, posé sur une photo assombrie : son encre reste
+     claire, sinon le mot disparaîtrait dans l'image ;
+   — les ombres, qui s'allègent : sur fond clair, une ombre à 40 % de
+     noir fait une tache ;
+   — les aplats translucides, qui étaient des voiles de blanc sur le
+     sombre et deviennent des voiles d'encre sur le clair.
+   ================================================================== */
+
+:root {
+  /* Encres, sur fond clair */
+  --ink: #16233f;
+  --ink-soft: #3d4f73;
+  --grey: #6b7896;
+  /* Le calendrier de « Mes progrès » lisait cette variable avec un repli
+     clair, invisible ici. Elle existe maintenant. */
+  --ink-dim: #6b7896;
+
+  /* Fonds */
+  --paper: #eaf1fb;   /* le tapis */
+  --panel: #ffffff;   /* les surfaces posées dessus */
+  --panel-hi: #dbe6f6;
+
+  --rule: rgba(22, 35, 63, 0.12);
+  --rule-strong: rgba(22, 35, 63, 0.22);
+
+  /* L'or reste l'or en aplat ; en texte, il s'assombrit pour se lire. */
+  --chalk: #f2b705;
+  --chalk-ink: #8a6300;
+  --on-chalk: #16233f;
+
+  /* Le vert et le rouge étaient réglés pour le fond sombre. */
+  --good: #1f7a5c;
+  --bad: #b6453a;
+
+  /* Les voiles : de l'encre diluée, là où c'était du blanc dilué. */
+  --voile: rgba(22, 35, 63, 0.05);
+  --voile-2: rgba(22, 35, 63, 0.10);
+  --voile-3: rgba(22, 35, 63, 0.16);
+}
+
+/* ---------- l'or qui servait de texte ---------- */
+.stat b,
+.panelbox > summary::after,
+.setting .val,
+.method-toggle .chev,
+.iconbtn.home,
+.tabbar button.on,
+.serie-count,
+.serie-alerte,
+.serie-bloc b,
+.hit-en,
+.engage .label,
+.rowlink .chev,
+.rayon-label.on,
+.welcome-sub,
+.classrow.on small { color: var(--chalk-ink); }
+
+/* ---------- les voiles ---------- */
+input[type='text'], textarea { background: var(--voile); }
+.searchcue { background: var(--voile); }
+.serie i { background: var(--voile-2); }
+.switch { background: var(--voile-3); }
+.prog-jour { background: var(--voile); }
+.prog-barre { background: var(--voile-2); }
+.prog-compteurs b { color: var(--ink); }
+
+/* Jour travaillé : l'or en aplat, l'encre dessus — et non le blanc du
+   panneau, qui sur de l'or ne se lirait plus. */
+.prog-jour.on { color: var(--on-chalk); }
+.prog-jour.hors { color: var(--grey); opacity: 0.55; }
+
+/* ---------- la barre d'onglets ---------- */
+.tabbar { background: rgba(255, 255, 255, 0.92); }
+
+/* ---------- les ombres ---------- */
+.deckcard .back img { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+.vign { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+.pioche-img { box-shadow: 0 8px 20px rgba(22, 35, 63, 0.18); }
+.pioche-due { box-shadow: 0 3px 8px rgba(22, 35, 63, 0.22); }
+
+/* ---------- le bouton Google, blanc sur blanc ---------- */
+.btn.google { border: 1px solid var(--rule-strong); }
+
+/* ==================================================================
+   L'écran de révision garde son encre claire
+
+   Il est posé sur la photo du paquet, assombrie par un dégradé : c'est
+   le seul endroit de l'application où le fond reste sombre. Son encre
+   ne suit donc pas le thème, et l'or y reste l'or clair.
+   ================================================================== */
+.progressbar { background: rgba(234, 230, 219, 0.2); }
+.studytop .pos { color: #c2cadb; }
+.studytop .stop { background: rgba(234, 230, 219, 0.12); color: #fbfaf6; }
+.studystage .tag { color: #fbfaf6; border-color: rgba(234, 230, 219, 0.24); }
+.ask { color: var(--chalk); }
+.word { color: #fbfaf6; }
+.wordsmall { color: #c2cadb; }
+.ruleline { background: rgba(234, 230, 219, 0.24); }
+.answer { color: var(--chalk); }
+.example { color: #c2cadb; }
+.speak {
+  background: rgba(234, 230, 219, 0.06);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+.tap-hint { color: #8d97ad; }
+.grade {
+  background: rgba(234, 230, 219, 0.05);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+.grade small { color: #8d97ad; }
+
+/* ==================================================================
+   « Ma classe » : la ligne, et la feuille qu'elle ouvre
+
+   Sept rangées dépliées prenaient un demi-écran pour un réglage qu'on
+   fait une fois par année scolaire. La ligne dit la classe déclarée —
+   c'est ce qu'on vient vérifier neuf fois sur dix — et la liste ne
+   s'ouvre que si on la touche.
+   ================================================================== */
+.classbtn {
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; min-height: 64px; padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.classbtn:hover { background: var(--panel-hi); }
+.classbtn:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.classbtn img { display: block; flex: none; }
+.classbtn > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.classbtn b { font-size: 14.5px; font-weight: 600; }
+.classbtn small { font-size: 12px; color: var(--grey); line-height: 1.35; }
+/* La classe déclarée, en or profond : c'est la valeur du réglage, pas
+   son intitulé, et elle doit se lire d'un coup d'œil. */
+.classbtn em {
+  flex: none; font-style: normal; font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+}
+.classbtn i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* La feuille. Elle monte du bas et laisse voir le fond : le choix est
+   une parenthèse dans les réglages, pas un autre écran. */
+.sheet-fond {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(22, 35, 63, 0.32);
+  animation: sheet-fondu 0.18s ease;
+}
+.sheet {
+  width: 100%; max-width: var(--shell);
+  max-height: 88dvh; overflow-y: auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(22, 35, 63, 0.18);
+  animation: sheet-monte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet-poignee {
+  display: block; width: 40px; height: 4px; margin: 0 auto 12px;
+  border-radius: 999px; background: var(--rule-strong);
+}
+.sheet h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 400;
+  margin: 0 0 8px;
+}
+.sheet .hint { margin: 0 0 14px; }
+.sheet .classrow:last-child { margin-bottom: 0; }
+
+@keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   Chantier 37 — deux thèmes, et « Ma classe » derrière un bouton
+
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer : ce
+   bloc ne fait que redéfinir, et il passe en dernier.
+
+   Le bleu nuit reste le thème par défaut : tout ce qui suit est écrit
+   sous `[data-theme="clair"]`, et ne s'applique que si l'appareil a
+   choisi le clair. Un seul attribut sur <html> fait basculer toute
+   l'application, parce que la palette tient dans les variables du haut
+   de la feuille. `src/ui/theme.ts` pose cet attribut.
+
+   Le thème clair inverse le parti pris : le tapis devient un bleu de
+   ciel pâle, l'encre devient le bleu nuit, les surfaces posées dessus
+   deviennent blanches. L'or de l'icône garde sa place d'accent, avec
+   une nuance — un or clair sur du blanc ne se lit pas, alors là où l'or
+   servait de TEXTE il passe à un or profond (`--chalk-ink`). En aplat,
+   il reste l'or. En thème sombre, `--chalk-ink` vaut l'or : les mêmes
+   règles servent les deux thèmes sans se contredire.
+
+   Trois choses ne s'inversent pas, et c'est voulu :
+   — l'écran de révision, posé sur une photo assombrie : son encre reste
+     claire dans les deux thèmes, sinon le mot disparaîtrait dans
+     l'image ;
+   — les ombres, qui s'allègent : sur fond clair, une ombre à 40 % de
+     noir fait une tache ;
+   — les aplats translucides, qui étaient des voiles de blanc sur le
+     sombre et deviennent des voiles d'encre sur le clair.
+   ================================================================== */
+
+/* L'or en texte : en thème sombre, c'est l'or lui-même. Déclaré ici pour
+   que les règles communes aux deux thèmes puissent s'y référer. */
+:root {
+  --chalk-ink: var(--chalk);
+  --voile: rgba(234, 230, 219, 0.05);
+  --voile-2: rgba(234, 230, 219, 0.10);
+  --voile-3: rgba(234, 230, 219, 0.18);
+}
+
+[data-theme='clair'] {
+  /* Encres, sur fond clair */
+  --ink: #16233f;
+  --ink-soft: #3d4f73;
+  --grey: #6b7896;
+  /* Le calendrier de « Mes progrès » lisait cette variable avec un repli
+     clair, invisible ici. Elle existe maintenant. */
+  --ink-dim: #6b7896;
+
+  /* Fonds */
+  --paper: #eaf1fb;   /* le tapis */
+  --panel: #ffffff;   /* les surfaces posées dessus */
+  --panel-hi: #dbe6f6;
+
+  --rule: rgba(22, 35, 63, 0.12);
+  --rule-strong: rgba(22, 35, 63, 0.22);
+
+  /* L'or reste l'or en aplat ; en texte, il s'assombrit pour se lire. */
+  --chalk: #f2b705;
+  --chalk-ink: #8a6300;
+  --on-chalk: #16233f;
+
+  /* Le vert et le rouge étaient réglés pour le fond sombre. */
+  --good: #1f7a5c;
+  --bad: #b6453a;
+
+  /* Les voiles : de l'encre diluée, là où c'était du blanc dilué. */
+  --voile: rgba(22, 35, 63, 0.05);
+  --voile-2: rgba(22, 35, 63, 0.10);
+  --voile-3: rgba(22, 35, 63, 0.16);
+}
+
+/* ---------- l'or qui servait de texte ---------- */
+[data-theme='clair'] .stat b,
+[data-theme='clair'] .panelbox > summary::after,
+[data-theme='clair'] .setting .val,
+[data-theme='clair'] .method-toggle .chev,
+[data-theme='clair'] .iconbtn.home,
+[data-theme='clair'] .tabbar button.on,
+[data-theme='clair'] .serie-count,
+[data-theme='clair'] .serie-alerte,
+[data-theme='clair'] .serie-bloc b,
+[data-theme='clair'] .hit-en,
+[data-theme='clair'] .engage .label,
+[data-theme='clair'] .rowlink .chev,
+[data-theme='clair'] .rayon-label.on,
+[data-theme='clair'] .welcome-sub,
+[data-theme='clair'] .classrow.on small { color: var(--chalk-ink); }
+
+/* ---------- les voiles ---------- */
+[data-theme='clair'] input[type='text'],
+[data-theme='clair'] textarea { background: var(--voile); }
+[data-theme='clair'] .searchcue { background: var(--voile); }
+[data-theme='clair'] .serie i { background: var(--voile-2); }
+[data-theme='clair'] .switch { background: var(--voile-3); }
+[data-theme='clair'] .prog-jour { background: var(--voile); }
+[data-theme='clair'] .prog-barre { background: var(--voile-2); }
+[data-theme='clair'] .prog-compteurs b { color: var(--ink); }
+
+/* Jour travaillé : l'or en aplat, l'encre dessus — et non le blanc du
+   panneau, qui sur de l'or ne se lirait plus. */
+[data-theme='clair'] .prog-jour.on { color: var(--on-chalk); }
+[data-theme='clair'] .prog-jour.hors { color: var(--grey); opacity: 0.55; }
+
+/* ---------- la barre d'onglets ---------- */
+[data-theme='clair'] .tabbar { background: rgba(255, 255, 255, 0.92); }
+
+/* ---------- les ombres ---------- */
+[data-theme='clair'] .deckcard .back img { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .vign { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .pioche-img { box-shadow: 0 8px 20px rgba(22, 35, 63, 0.18); }
+[data-theme='clair'] .pioche-due { box-shadow: 0 3px 8px rgba(22, 35, 63, 0.22); }
+
+/* ---------- le bouton Google, blanc sur blanc ---------- */
+[data-theme='clair'] .btn.google { border: 1px solid var(--rule-strong); }
+
+/* ==================================================================
+   L'écran de révision garde son encre claire
+
+   Il est posé sur la photo du paquet, assombrie par un dégradé : c'est
+   le seul endroit de l'application qui reste sombre dans les deux
+   thèmes. Son encre ne suit donc pas le thème clair, et l'or y reste
+   l'or clair.
+   ================================================================== */
+[data-theme='clair'] .progressbar { background: rgba(234, 230, 219, 0.2); }
+[data-theme='clair'] .studytop .pos { color: #c2cadb; }
+[data-theme='clair'] .studytop .stop { background: rgba(234, 230, 219, 0.12); color: #fbfaf6; }
+[data-theme='clair'] .studystage .tag { color: #fbfaf6; border-color: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .ask { color: var(--chalk); }
+[data-theme='clair'] .word { color: #fbfaf6; }
+[data-theme='clair'] .wordsmall { color: #c2cadb; }
+[data-theme='clair'] .ruleline { background: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .answer { color: var(--chalk); }
+[data-theme='clair'] .example { color: #c2cadb; }
+[data-theme='clair'] .speak {
+  background: rgba(234, 230, 219, 0.06);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .tap-hint { color: #8d97ad; }
+[data-theme='clair'] .grade {
+  background: rgba(234, 230, 219, 0.05);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .grade small { color: #8d97ad; }
+
+/* ==================================================================
+   Le choix d'apparence
+
+   Trois pastilles sur une ligne, comme les heures du rappel : le
+   vocabulaire de l'écran existe déjà, rien à inventer.
+   ================================================================== */
+.themechoix { display: flex; gap: 7px; margin-bottom: 8px; }
+.themechoix button {
+  flex: 1; min-height: 40px; padding: 0 6px;
+  border: 1px solid var(--rule-strong); border-radius: 12px;
+  background: none; font-family: inherit; font-size: 13.5px;
+  color: var(--ink-soft); cursor: pointer;
+}
+.themechoix button:hover { background: var(--voile); }
+.themechoix button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.themechoix button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+
+/* ==================================================================
+   « Ma classe » : la ligne, et la feuille qu'elle ouvre
+
+   Sept rangées dépliées prenaient un demi-écran pour un réglage qu'on
+   fait une fois par année scolaire. La ligne dit la classe déclarée —
+   c'est ce qu'on vient vérifier neuf fois sur dix — et la liste ne
+   s'ouvre que si on la touche.
+   ================================================================== */
+.classbtn {
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; min-height: 64px; padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.classbtn:hover { background: var(--panel-hi); }
+.classbtn:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.classbtn img { display: block; flex: none; }
+.classbtn > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.classbtn b { font-size: 14.5px; font-weight: 600; }
+.classbtn small { font-size: 12px; color: var(--grey); line-height: 1.35; }
+/* La classe déclarée, en or profond : c'est la valeur du réglage, pas
+   son intitulé, et elle doit se lire d'un coup d'œil. */
+.classbtn em {
+  flex: none; font-style: normal; font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+}
+.classbtn i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* La feuille. Elle monte du bas et laisse voir le fond : le choix est
+   une parenthèse dans les réglages, pas un autre écran. */
+.sheet-fond {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(9, 16, 30, 0.44);
+  animation: sheet-fondu 0.18s ease;
+}
+.sheet {
+  width: 100%; max-width: var(--shell);
+  max-height: 88dvh; overflow-y: auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(9, 16, 30, 0.28);
+  animation: sheet-monte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet-poignee {
+  display: block; width: 40px; height: 4px; margin: 0 auto 12px;
+  border-radius: 999px; background: var(--rule-strong);
+}
+.sheet h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 400;
+  margin: 0 0 8px;
+}
+.sheet .hint { margin: 0 0 14px; }
+.sheet .classrow:last-child { margin-bottom: 0; }
+
+@keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   Chantier 38 — deux thèmes qui basculent vraiment, et l'interrupteur
+   de « Me rappeler de réviser » réparé
+
+   À COLLER TEL QUEL À LA FIN DE src/styles.css, À LA PLACE des blocs
+   des chantiers 36 et 37. Si le bloc du chantier 36 est resté dans la
+   feuille, il impose sa palette claire au `:root` et le thème sombre
+   ne peut plus revenir : c'est la panne « l'apparence ne change pas ».
+
+   Ce bloc ne compte plus sur le `:root` d'origine pour le sombre : les
+   deux thèmes sont écrits, chacun sous son attribut. Il ne reste donc
+   plus rien d'implicite, et un vieux bloc oublié plus haut dans la
+   feuille ne peut plus l'emporter. `src/ui/theme.ts` pose l'attribut
+   sur <html> ; la palette tenant dans les variables, un seul attribut
+   fait basculer toute l'application.
+
+   Le thème clair inverse le parti pris : le tapis devient un bleu de
+   ciel pâle, l'encre devient le bleu nuit, les surfaces posées dessus
+   deviennent blanches. L'or de l'icône garde sa place d'accent, avec
+   une nuance — un or clair sur du blanc ne se lit pas, alors là où l'or
+   servait de TEXTE il passe à un or profond (`--chalk-ink`). En aplat,
+   il reste l'or. En thème sombre, `--chalk-ink` vaut l'or : les mêmes
+   règles servent les deux thèmes sans se contredire.
+
+   Trois choses ne s'inversent pas, et c'est voulu :
+   — l'écran de révision, posé sur une photo assombrie : son encre reste
+     claire dans les deux thèmes, sinon le mot disparaîtrait dans
+     l'image ;
+   — les ombres, qui s'allègent : sur fond clair, une ombre à 40 % de
+     noir fait une tache ;
+   — les aplats translucides, qui étaient des voiles de blanc sur le
+     sombre et deviennent des voiles d'encre sur le clair.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le thème sombre, écrit noir sur blanc
+
+   C'était jusqu'ici le `:root` du haut de la feuille, donc l'implicite.
+   Il est réaffirmé ici sous son attribut : c'est ce qui garantit qu'il
+   revienne, quoi qu'il y ait au-dessus.
+   ------------------------------------------------------------------ */
+:root,
+[data-theme='sombre'] {
+  --ink: #fbfaf6;
+  --ink-soft: #c2cadb;
+  --grey: #8d97ad;
+  --ink-dim: #8d97ad;
+
+  --paper: #0f1a2f;
+  --panel: #16233f;
+  --panel-hi: #1d2c48;
+
+  --rule: rgba(234, 230, 219, 0.14);
+  --rule-strong: rgba(234, 230, 219, 0.24);
+
+  --chalk: #f2b705;
+  /* L'or en texte : sur le sombre, c'est l'or lui-même. */
+  --chalk-ink: #f2b705;
+  --on-chalk: #16233f;
+  --good: #4fbf95;
+  --bad: #e0776d;
+
+  --voile: rgba(234, 230, 219, 0.05);
+  --voile-2: rgba(234, 230, 219, 0.10);
+  --voile-3: rgba(234, 230, 219, 0.18);
+}
+
+/* Et ce que le sombre doit reprendre au clair, pour le cas où un bloc
+   du chantier 36 traîne encore au-dessus. */
+[data-theme='sombre'] .tabbar { background: rgba(15, 26, 47, 0.92); }
+[data-theme='sombre'] .btn.google { border: none; }
+
+[data-theme='clair'] {
+  /* Encres, sur fond clair */
+  --ink: #16233f;
+  --ink-soft: #3d4f73;
+  --grey: #6b7896;
+  /* Le calendrier de « Mes progrès » lisait cette variable avec un repli
+     clair, invisible ici. Elle existe maintenant. */
+  --ink-dim: #6b7896;
+
+  /* Fonds */
+  --paper: #eaf1fb;   /* le tapis */
+  --panel: #ffffff;   /* les surfaces posées dessus */
+  --panel-hi: #dbe6f6;
+
+  --rule: rgba(22, 35, 63, 0.12);
+  --rule-strong: rgba(22, 35, 63, 0.22);
+
+  /* L'or reste l'or en aplat ; en texte, il s'assombrit pour se lire. */
+  --chalk: #f2b705;
+  --chalk-ink: #8a6300;
+  --on-chalk: #16233f;
+
+  /* Le vert et le rouge étaient réglés pour le fond sombre. */
+  --good: #1f7a5c;
+  --bad: #b6453a;
+
+  /* Les voiles : de l'encre diluée, là où c'était du blanc dilué. */
+  --voile: rgba(22, 35, 63, 0.05);
+  --voile-2: rgba(22, 35, 63, 0.10);
+  --voile-3: rgba(22, 35, 63, 0.16);
+}
+
+/* ---------- l'or qui servait de texte ---------- */
+[data-theme='clair'] .stat b,
+[data-theme='clair'] .panelbox > summary::after,
+[data-theme='clair'] .setting .val,
+[data-theme='clair'] .method-toggle .chev,
+[data-theme='clair'] .iconbtn.home,
+[data-theme='clair'] .tabbar button.on,
+[data-theme='clair'] .serie-count,
+[data-theme='clair'] .serie-alerte,
+[data-theme='clair'] .serie-bloc b,
+[data-theme='clair'] .hit-en,
+[data-theme='clair'] .engage .label,
+[data-theme='clair'] .rowlink .chev,
+[data-theme='clair'] .rayon-label.on,
+[data-theme='clair'] .welcome-sub,
+[data-theme='clair'] .classrow.on small { color: var(--chalk-ink); }
+
+/* ---------- les voiles ---------- */
+[data-theme='clair'] input[type='text'],
+[data-theme='clair'] textarea { background: var(--voile); }
+[data-theme='clair'] .searchcue { background: var(--voile); }
+[data-theme='clair'] .serie i { background: var(--voile-2); }
+[data-theme='clair'] button.switch { background: var(--voile-3); }
+[data-theme='clair'] .prog-jour { background: var(--voile); }
+[data-theme='clair'] .prog-barre { background: var(--voile-2); }
+[data-theme='clair'] .prog-compteurs b { color: var(--ink); }
+
+/* Jour travaillé : l'or en aplat, l'encre dessus — et non le blanc du
+   panneau, qui sur de l'or ne se lirait plus. */
+[data-theme='clair'] .prog-jour.on { color: var(--on-chalk); }
+[data-theme='clair'] .prog-jour.hors { color: var(--grey); opacity: 0.55; }
+
+/* ---------- la barre d'onglets ---------- */
+[data-theme='clair'] .tabbar { background: rgba(255, 255, 255, 0.92); }
+
+/* ---------- les ombres ---------- */
+[data-theme='clair'] .deckcard .back img { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .vign { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .pioche-img { box-shadow: 0 8px 20px rgba(22, 35, 63, 0.18); }
+[data-theme='clair'] .pioche-due { box-shadow: 0 3px 8px rgba(22, 35, 63, 0.22); }
+
+/* ---------- le bouton Google, blanc sur blanc ---------- */
+[data-theme='clair'] .btn.google { border: 1px solid var(--rule-strong); }
+
+/* ==================================================================
+   L'écran de révision garde son encre claire
+
+   Il est posé sur la photo du paquet, assombrie par un dégradé : c'est
+   le seul endroit de l'application qui reste sombre dans les deux
+   thèmes. Son encre ne suit donc pas le thème clair, et l'or y reste
+   l'or clair.
+   ================================================================== */
+[data-theme='clair'] .progressbar { background: rgba(234, 230, 219, 0.2); }
+[data-theme='clair'] .studytop .pos { color: #c2cadb; }
+[data-theme='clair'] .studytop .stop { background: rgba(234, 230, 219, 0.12); color: #fbfaf6; }
+[data-theme='clair'] .studystage .tag { color: #fbfaf6; border-color: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .ask { color: var(--chalk); }
+[data-theme='clair'] .word { color: #fbfaf6; }
+[data-theme='clair'] .wordsmall { color: #c2cadb; }
+[data-theme='clair'] .ruleline { background: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .answer { color: var(--chalk); }
+[data-theme='clair'] .example { color: #c2cadb; }
+[data-theme='clair'] .speak {
+  background: rgba(234, 230, 219, 0.06);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .tap-hint { color: #8d97ad; }
+[data-theme='clair'] .grade {
+  background: rgba(234, 230, 219, 0.05);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .grade small { color: #8d97ad; }
+
+/* ==================================================================
+   L'interrupteur de « Me rappeler de réviser »
+
+   `.switch` désignait deux choses dans la feuille : la pastille de 46
+   sur 28 des rangées de paquets (un <button>), et la ligne « case à
+   cocher + libellé » des réglages (un <label>). La pastille étant
+   déclarée en dernier, elle gagnait aussi sur le <label> : le libellé
+   se retrouvait écrasé dans 46 pixels de large, par-dessus le texte
+   d'explication. C'est le bug de la capture.
+
+   `label.switch` est plus précis que `.switch` : la ligne reprend sa
+   forme sans que la pastille perde la sienne, et sans toucher au
+   composant `Toggle`.
+   ================================================================== */
+label.switch {
+  display: flex; align-items: center; gap: 10px;
+  width: auto; height: auto; min-height: 28px; padding: 0;
+  background: none; border: none; border-radius: 0;
+  font-size: 14.5px; color: var(--ink); cursor: pointer;
+}
+label.switch input {
+  flex: none; width: 19px; height: 19px; margin: 0;
+  accent-color: var(--chalk);
+}
+
+/* ==================================================================
+   Le choix d'apparence
+
+   Trois pastilles sur une ligne, comme les heures du rappel : le
+   vocabulaire de l'écran existe déjà, rien à inventer.
+   ================================================================== */
+.themechoix { display: flex; gap: 7px; margin-bottom: 8px; }
+.themechoix button {
+  flex: 1; min-height: 40px; padding: 0 6px;
+  border: 1px solid var(--rule-strong); border-radius: 12px;
+  background: none; font-family: inherit; font-size: 13.5px;
+  color: var(--ink-soft); cursor: pointer;
+}
+.themechoix button:hover { background: var(--voile); }
+.themechoix button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.themechoix button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+
+/* ==================================================================
+   « Ma classe » : la ligne, et la feuille qu'elle ouvre
+
+   Sept rangées dépliées prenaient un demi-écran pour un réglage qu'on
+   fait une fois par année scolaire. La ligne dit la classe déclarée —
+   c'est ce qu'on vient vérifier neuf fois sur dix — et la liste ne
+   s'ouvre que si on la touche.
+   ================================================================== */
+.classbtn {
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; min-height: 64px; padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.classbtn:hover { background: var(--panel-hi); }
+.classbtn:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.classbtn img { display: block; flex: none; }
+.classbtn > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.classbtn b { font-size: 14.5px; font-weight: 600; }
+.classbtn small { font-size: 12px; color: var(--grey); line-height: 1.35; }
+/* La classe déclarée, en or profond : c'est la valeur du réglage, pas
+   son intitulé, et elle doit se lire d'un coup d'œil. */
+.classbtn em {
+  flex: none; font-style: normal; font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+}
+.classbtn i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* La feuille. Elle monte du bas et laisse voir le fond : le choix est
+   une parenthèse dans les réglages, pas un autre écran. */
+.sheet-fond {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(9, 16, 30, 0.44);
+  animation: sheet-fondu 0.18s ease;
+}
+.sheet {
+  width: 100%; max-width: var(--shell);
+  max-height: 88dvh; overflow-y: auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(9, 16, 30, 0.28);
+  animation: sheet-monte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet-poignee {
+  display: block; width: 40px; height: 4px; margin: 0 auto 12px;
+  border-radius: 999px; background: var(--rule-strong);
+}
+.sheet h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 400;
+  margin: 0 0 8px;
+}
+.sheet .hint { margin: 0 0 14px; }
+.sheet .classrow:last-child { margin-bottom: 0; }
+
+@keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   Chantier 39 — les Réglages en six lignes, les deux thèmes, et
+   l'interrupteur de « Me rappeler de réviser » réparé
+
+   À COLLER TEL QUEL À LA FIN DE src/styles.css, À LA PLACE des blocs
+   des chantiers 36, 37 et 38. Si le bloc du chantier 36 est resté dans la
+   feuille, il impose sa palette claire au `:root` et le thème sombre
+   ne peut plus revenir : c'est la panne « l'apparence ne change pas ».
+
+   Ce bloc ne compte plus sur le `:root` d'origine pour le sombre : les
+   deux thèmes sont écrits, chacun sous son attribut. Il ne reste donc
+   plus rien d'implicite, et un vieux bloc oublié plus haut dans la
+   feuille ne peut plus l'emporter. `src/ui/theme.ts` pose l'attribut
+   sur <html> ; la palette tenant dans les variables, un seul attribut
+   fait basculer toute l'application.
+
+   Le thème clair inverse le parti pris : le tapis devient un bleu de
+   ciel pâle, l'encre devient le bleu nuit, les surfaces posées dessus
+   deviennent blanches. L'or de l'icône garde sa place d'accent, avec
+   une nuance — un or clair sur du blanc ne se lit pas, alors là où l'or
+   servait de TEXTE il passe à un or profond (`--chalk-ink`). En aplat,
+   il reste l'or. En thème sombre, `--chalk-ink` vaut l'or : les mêmes
+   règles servent les deux thèmes sans se contredire.
+
+   Trois choses ne s'inversent pas, et c'est voulu :
+   — l'écran de révision, posé sur une photo assombrie : son encre reste
+     claire dans les deux thèmes, sinon le mot disparaîtrait dans
+     l'image ;
+   — les ombres, qui s'allègent : sur fond clair, une ombre à 40 % de
+     noir fait une tache ;
+   — les aplats translucides, qui étaient des voiles de blanc sur le
+     sombre et deviennent des voiles d'encre sur le clair.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le thème sombre, écrit noir sur blanc
+
+   C'était jusqu'ici le `:root` du haut de la feuille, donc l'implicite.
+   Il est réaffirmé ici sous son attribut : c'est ce qui garantit qu'il
+   revienne, quoi qu'il y ait au-dessus.
+   ------------------------------------------------------------------ */
+:root,
+[data-theme='sombre'] {
+  --ink: #fbfaf6;
+  --ink-soft: #c2cadb;
+  --grey: #8d97ad;
+  --ink-dim: #8d97ad;
+
+  --paper: #0f1a2f;
+  --panel: #16233f;
+  --panel-hi: #1d2c48;
+
+  --rule: rgba(234, 230, 219, 0.14);
+  --rule-strong: rgba(234, 230, 219, 0.24);
+
+  --chalk: #f2b705;
+  /* L'or en texte : sur le sombre, c'est l'or lui-même. */
+  --chalk-ink: #f2b705;
+  --on-chalk: #16233f;
+  --good: #4fbf95;
+  --bad: #e0776d;
+
+  --voile: rgba(234, 230, 219, 0.05);
+  --voile-2: rgba(234, 230, 219, 0.10);
+  --voile-3: rgba(234, 230, 219, 0.18);
+}
+
+/* Et ce que le sombre doit reprendre au clair, pour le cas où un bloc
+   du chantier 36 traîne encore au-dessus. */
+[data-theme='sombre'] .tabbar { background: rgba(15, 26, 47, 0.92); }
+[data-theme='sombre'] .btn.google { border: none; }
+
+[data-theme='clair'] {
+  /* Encres, sur fond clair */
+  --ink: #16233f;
+  --ink-soft: #3d4f73;
+  --grey: #6b7896;
+  /* Le calendrier de « Mes progrès » lisait cette variable avec un repli
+     clair, invisible ici. Elle existe maintenant. */
+  --ink-dim: #6b7896;
+
+  /* Fonds */
+  --paper: #eaf1fb;   /* le tapis */
+  --panel: #ffffff;   /* les surfaces posées dessus */
+  --panel-hi: #dbe6f6;
+
+  --rule: rgba(22, 35, 63, 0.12);
+  --rule-strong: rgba(22, 35, 63, 0.22);
+
+  /* L'or reste l'or en aplat ; en texte, il s'assombrit pour se lire. */
+  --chalk: #f2b705;
+  --chalk-ink: #8a6300;
+  --on-chalk: #16233f;
+
+  /* Le vert et le rouge étaient réglés pour le fond sombre. */
+  --good: #1f7a5c;
+  --bad: #b6453a;
+
+  /* Les voiles : de l'encre diluée, là où c'était du blanc dilué. */
+  --voile: rgba(22, 35, 63, 0.05);
+  --voile-2: rgba(22, 35, 63, 0.10);
+  --voile-3: rgba(22, 35, 63, 0.16);
+}
+
+/* ---------- l'or qui servait de texte ---------- */
+[data-theme='clair'] .stat b,
+[data-theme='clair'] .panelbox > summary::after,
+[data-theme='clair'] .setting .val,
+[data-theme='clair'] .method-toggle .chev,
+[data-theme='clair'] .iconbtn.home,
+[data-theme='clair'] .tabbar button.on,
+[data-theme='clair'] .serie-count,
+[data-theme='clair'] .serie-alerte,
+[data-theme='clair'] .serie-bloc b,
+[data-theme='clair'] .hit-en,
+[data-theme='clair'] .engage .label,
+[data-theme='clair'] .rowlink .chev,
+[data-theme='clair'] .rayon-label.on,
+[data-theme='clair'] .welcome-sub,
+[data-theme='clair'] .classrow.on small { color: var(--chalk-ink); }
+
+/* ---------- les voiles ---------- */
+[data-theme='clair'] input[type='text'],
+[data-theme='clair'] textarea { background: var(--voile); }
+[data-theme='clair'] .searchcue { background: var(--voile); }
+[data-theme='clair'] .serie i { background: var(--voile-2); }
+[data-theme='clair'] button.switch { background: var(--voile-3); }
+[data-theme='clair'] .prog-jour { background: var(--voile); }
+[data-theme='clair'] .prog-barre { background: var(--voile-2); }
+[data-theme='clair'] .prog-compteurs b { color: var(--ink); }
+
+/* Jour travaillé : l'or en aplat, l'encre dessus — et non le blanc du
+   panneau, qui sur de l'or ne se lirait plus. */
+[data-theme='clair'] .prog-jour.on { color: var(--on-chalk); }
+[data-theme='clair'] .prog-jour.hors { color: var(--grey); opacity: 0.55; }
+
+/* ---------- la barre d'onglets ---------- */
+[data-theme='clair'] .tabbar { background: rgba(255, 255, 255, 0.92); }
+
+/* ---------- les ombres ---------- */
+[data-theme='clair'] .deckcard .back img { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .vign { box-shadow: 0 4px 12px rgba(22, 35, 63, 0.16); }
+[data-theme='clair'] .pioche-img { box-shadow: 0 8px 20px rgba(22, 35, 63, 0.18); }
+[data-theme='clair'] .pioche-due { box-shadow: 0 3px 8px rgba(22, 35, 63, 0.22); }
+
+/* ---------- le bouton Google, blanc sur blanc ---------- */
+[data-theme='clair'] .btn.google { border: 1px solid var(--rule-strong); }
+
+/* ==================================================================
+   L'écran de révision garde son encre claire
+
+   Il est posé sur la photo du paquet, assombrie par un dégradé : c'est
+   le seul endroit de l'application qui reste sombre dans les deux
+   thèmes. Son encre ne suit donc pas le thème clair, et l'or y reste
+   l'or clair.
+   ================================================================== */
+[data-theme='clair'] .progressbar { background: rgba(234, 230, 219, 0.2); }
+[data-theme='clair'] .studytop .pos { color: #c2cadb; }
+[data-theme='clair'] .studytop .stop { background: rgba(234, 230, 219, 0.12); color: #fbfaf6; }
+[data-theme='clair'] .studystage .tag { color: #fbfaf6; border-color: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .ask { color: var(--chalk); }
+[data-theme='clair'] .word { color: #fbfaf6; }
+[data-theme='clair'] .wordsmall { color: #c2cadb; }
+[data-theme='clair'] .ruleline { background: rgba(234, 230, 219, 0.24); }
+[data-theme='clair'] .answer { color: var(--chalk); }
+[data-theme='clair'] .example { color: #c2cadb; }
+[data-theme='clair'] .speak {
+  background: rgba(234, 230, 219, 0.06);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .tap-hint { color: #8d97ad; }
+[data-theme='clair'] .grade {
+  background: rgba(234, 230, 219, 0.05);
+  border-color: rgba(234, 230, 219, 0.24);
+  color: #fbfaf6;
+}
+[data-theme='clair'] .grade small { color: #8d97ad; }
+
+/* ==================================================================
+   L'interrupteur de « Me rappeler de réviser »
+
+   `.switch` désignait deux choses dans la feuille : la pastille de 46
+   sur 28 des rangées de paquets (un <button>), et la ligne « case à
+   cocher + libellé » des réglages (un <label>). La pastille étant
+   déclarée en dernier, elle gagnait aussi sur le <label> : le libellé
+   se retrouvait écrasé dans 46 pixels de large, par-dessus le texte
+   d'explication. C'est le bug de la capture.
+
+   `label.switch` est plus précis que `.switch` : la ligne reprend sa
+   forme sans que la pastille perde la sienne, et sans toucher au
+   composant `Toggle`.
+   ================================================================== */
+label.switch {
+  display: flex; align-items: center; gap: 10px;
+  width: auto; height: auto; min-height: 28px; padding: 0;
+  background: none; border: none; border-radius: 0;
+  font-size: 14.5px; color: var(--ink); cursor: pointer;
+}
+label.switch input {
+  flex: none; width: 19px; height: 19px; margin: 0;
+  accent-color: var(--chalk);
+}
+
+/* ==================================================================
+   Le choix d'apparence
+
+   Trois pastilles sur une ligne, comme les heures du rappel : le
+   vocabulaire de l'écran existe déjà, rien à inventer.
+   ================================================================== */
+.themechoix { display: flex; gap: 7px; margin-bottom: 8px; }
+.themechoix button {
+  flex: 1; min-height: 40px; padding: 0 6px;
+  border: 1px solid var(--rule-strong); border-radius: 12px;
+  background: none; font-family: inherit; font-size: 13.5px;
+  color: var(--ink-soft); cursor: pointer;
+}
+.themechoix button:hover { background: var(--voile); }
+.themechoix button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.themechoix button.on {
+  background: var(--chalk); border-color: var(--chalk);
+  color: var(--on-chalk); font-weight: 650;
+}
+
+/* ==================================================================
+   Les six lignes, et les tiroirs qu'elles ouvrent
+
+   Un réglage déplié coûte un demi-écran à quelque chose qu'on fait une
+   fois. La ligne dit son nom et SA VALEUR — c'est ce qu'on vient
+   vérifier neuf fois sur dix — et le détail ne s'ouvre que si on la
+   touche.
+   ================================================================== */
+.reglist { display: flex; flex-direction: column; gap: 10px; }
+
+.reglig {
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; min-height: 64px; padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.reglig:hover { background: var(--panel-hi); }
+.reglig:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.reglig img { display: block; flex: none; }
+/* Le carré d'attente, pour les lignes dont l'icône n'est pas encore
+   arrivée : il tient la place au pixel, et se voit assez pour dire
+   qu'il manque quelque chose. */
+.reglig-attente {
+  flex: none; width: 34px; height: 34px; border-radius: 8px;
+  border: 1px dashed var(--rule-strong);
+}
+.reglig > span { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.reglig b { font-size: 14.5px; font-weight: 600; }
+.reglig small { font-size: 12px; color: var(--grey); line-height: 1.35; }
+/* La valeur du réglage, en or profond : c'est ce qu'on vient lire, et
+   non l'intitulé. Elle ne se plie jamais sur deux lignes. */
+.reglig em {
+  flex: none; font-style: normal; font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+  white-space: nowrap;
+}
+.reglig i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* La feuille. Elle monte du bas et laisse voir le fond : le choix est
+   une parenthèse dans les réglages, pas un autre écran. */
+.sheet-fond {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(9, 16, 30, 0.44);
+  animation: sheet-fondu 0.18s ease;
+}
+.sheet {
+  width: 100%; max-width: var(--shell);
+  max-height: 88dvh; overflow-y: auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -12px 40px rgba(9, 16, 30, 0.28);
+  animation: sheet-monte 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* La poignée ferme le tiroir : c'est le geste qu'on tente d'instinct.
+   Sa cible fait 40 sur 22 — le trait n'en montre que 4. */
+.sheet-poignee {
+  display: block; width: 40px; height: 22px; padding: 9px 0; margin: 0 auto 8px;
+  border: none; background: none; cursor: pointer;
+}
+.sheet-poignee::before {
+  content: ''; display: block; height: 4px;
+  border-radius: 999px; background: var(--rule-strong);
+}
+.sheet-poignee:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.sheet h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 400;
+  margin: 0 0 8px;
+}
+.sheet .hint { margin: 0 0 14px; }
+.sheet .classrow:last-child { margin-bottom: 0; }
+
+/* Les contrôles déménagés dans les tiroirs. Ils gardent leur forme ; ce
+   sont leurs marges de bloc qui n'ont plus lieu d'être ici. */
+.sheet .setting { padding: 0; border-top: none; }
+.sheet .themechoix { margin-bottom: 12px; }
+.sheet .btn { margin-top: 8px; }
+.sheet .account { margin: 0; }
+
+@keyframes sheet-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-monte { from { transform: translateY(14%); } to { transform: none; } }
+/* ==================================================================
+   CHANTIER 41 — les icônes des Réglages, et le tiroir de la charge
+
+   À COLLER À LA FIN de src/styles.css, APRÈS le bloc du chantier 39.
+   Il ne le remplace pas : il ne fait que corriger une taille et
+   ajouter le tiroir.
+   ================================================================== */
+
+/* Le carré d'attente suit les icônes, qui passent à 40 pixels. La
+   ligne, elle, ne bouge pas : elle fait 64 de haut, dont 40 utiles
+   entre ses marges de 12, et c'est son texte sur deux lignes qui
+   fixait déjà cette hauteur. L'icône y flottait. */
+.reglig-attente { width: 40px; height: 40px; }
+
+/* ==================================================================
+   Le tiroir « Charge de travail »
+
+   Trois curseurs de même forme empilés, chacun avec son libellé
+   au-dessus et sa valeur en gros à droite : rien ne disait lequel des
+   trois nombres compte, ni ce que les trois fabriquent ensemble.
+
+   Le tiroir s'ouvre maintenant sur la phrase de la journée réglée,
+   puis le temps qu'elle demande, puis les trois curseurs en une ligne
+   chacun. Les réglages, leurs bornes et leur effet n'ont pas changé.
+   ================================================================== */
+.chargephrase {
+  margin: 0 0 9px; padding: 14px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  font-family: var(--serif); font-size: 16.5px; line-height: 1.55;
+  color: var(--ink); text-wrap: pretty;
+}
+/* Les trois nombres en or : ce sont eux qu'on vient lire. Le serif ne
+   passe pas en gras pour autant — la couleur suffit. */
+.chargephrase b {
+  font-weight: 400; font-variant-numeric: tabular-nums;
+  color: var(--chalk-ink);
+}
+
+/* Le temps annoncé. En gris et au-dessous : une estimation, pas une
+   promesse. */
+.chargetemps {
+  margin: 0 0 18px;
+  font-size: 12.5px; line-height: 1.5; color: var(--grey);
+}
+
+.chargelist { display: flex; flex-direction: column; gap: 14px; }
+
+/* Nom, rail, valeur, sur une ligne. Le <label> entier fait 44 pixels
+   de haut : toute la ligne est une cible, pas seulement le rail. */
+.chargeligne {
+  display: flex; align-items: center; gap: 12px;
+  min-height: 44px; cursor: pointer;
+}
+.chargeligne > span {
+  flex: none; width: 104px;
+  font-size: 12.5px; line-height: 1.3; color: var(--ink-soft);
+}
+.chargeligne input[type='range'] {
+  flex: 1; min-width: 0; accent-color: var(--chalk);
+}
+.chargeligne input[type='range']:focus-visible {
+  outline: 2px solid var(--chalk); outline-offset: 3px;
+}
+.chargeligne b {
+  flex: none; width: 40px; text-align: right;
+  font-size: 14px; font-weight: 650;
+  font-variant-numeric: tabular-nums; color: var(--chalk-ink);
+}
+
+/* L'explication tombe en fin de tiroir, séparée par un filet, au lieu
+   de s'intercaler entre un nom et sa commande. `.sheet` est nécessaire
+   pour passer devant `.sheet .hint` du chantier 39. */
+.sheet .chargenote {
+  margin: 18px 0 0; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+/* ==================================================================
+   CHANTIER 42 — « Mes progrès » prend la forme des Réglages
+
+   À COLLER À LA FIN de src/styles.css, APRÈS les blocs des chantiers
+   39 et 41. Il ne les remplace pas : les trois encarts réutilisent
+   `.reglist` et `.reglig` du chantier 39, et les tiroirs réutilisent
+   `.sheet`. Les blocs de l'ancien écran — `.prog-tete`,
+   `.prog-compteurs`, `.prog-cal`, `.prog-courbe`, `.prog-liste` — sont
+   ceux du chantier 34, inchangés : ils ont seulement déménagé dans les
+   tiroirs, et n'ont besoin ici que de quelques marges.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   L'encart des mots
+
+   Les deux autres lignes cachent leur détail ; celle-ci garde son
+   nombre à l'écran. On vient regarder cet onglet, pas y agir : faire
+   payer un geste à la seule chose qu'on venait voir serait absurde.
+   ------------------------------------------------------------------ */
+.progmots {
+  display: flex; align-items: flex-start; gap: 13px;
+  width: 100%; padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  font-family: inherit; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.progmots:hover { background: var(--panel-hi); }
+.progmots:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.progmots img { display: block; flex: none; }
+.progmots > span { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.progmots-nom { font-size: 14.5px; font-weight: 600; }
+
+/* Le nombre et son mot sur la même ligne de base : « 312 acquis » se
+   lit d'un trait, alors que le mot posé dessous se lirait comme une
+   étiquette de plus. */
+.progmots-ligne { display: flex; align-items: baseline; gap: 6px; }
+.progmots-ligne b {
+  font-family: var(--serif); font-size: 40px; font-weight: 400;
+  line-height: 1; letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.progmots-ligne small { font-size: 13px; font-weight: 600; color: var(--grey); }
+.progmots > span > small { font-size: 12px; line-height: 1.35; color: var(--grey); }
+.progmots > .progring { align-self: center; }
+.progmots i { flex: none; font-style: normal; font-size: 18px; color: var(--grey); }
+
+/* ------------------------------------------------------------------
+   L'anneau, à deux tailles
+
+   Le même dessin qu'au chantier 34, mais dimensionné par le composant
+   (58 dans l'encart, 54 dans le tiroir) au lieu d'être figé dans la
+   feuille. Au centre : le pourcentage, un chiffre — « En bonne voie »
+   ne tient pas dans 58 pixels. Le mot se lit dans le tiroir, à côté.
+   ------------------------------------------------------------------ */
+.progring {
+  position: relative; flex: none; display: block;
+  color: var(--good, #4fbf95);
+}
+.progring .ring { width: 100%; height: 100%; }
+.progring b {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+
+/* ------------------------------------------------------------------
+   Les blocs d'avant, dans les tiroirs
+
+   Ils perdent leurs marges d'écran : un tiroir a déjà les siennes.
+   ------------------------------------------------------------------ */
+.progmots-etat { display: flex; align-items: center; gap: 9px; flex: none; }
+.progmots-etat small {
+  max-width: 9ch; font-size: 12.5px; line-height: 1.3; color: var(--ink-soft);
+}
+.sheet .prog-tete { margin-top: 0; }
+/* 62 pixels de chiffre tenaient dans un écran ; dans un tiroir qui
+   porte aussi une courbe, 46 suffisent. */
+.sheet .prog-grand b { font-size: 46px; }
+.sheet .prog-compteurs { margin-top: 0; }
+.sheet .rayon-label { margin: 18px 0 8px; }
+.sheet .prog-liste { margin-top: 0; }
+.sheet .prog-pied { margin-bottom: 0; }
+/* ==================================================================
+   CHANTIER 44 — correctif d'affichage de l'anneau
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 42.
+
+   Le pourcentage au centre de l'anneau ne doit jamais se plier : à
+   l'étroit, il vaut mieux qu'il dépasse en largeur — ce qui n'arrive
+   plus, « 100 % » étant le plus long — que de casser sur deux lignes
+   et de déformer la ligne entière.
+   ================================================================== */
+.progring b { white-space: nowrap; font-size: 11.5px; }
+
+/* `.progmots-etat` du chantier 42 ne sert plus : le tiroir n'affiche
+   plus le palier à côté de l'anneau. La règle peut rester, elle ne
+   s'applique à rien. */
+/* ==================================================================
+   CHANTIER 45 — les transitions d'écran (option 8b)
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 44.
+
+   Une seule idée : l'écran qui arrive s'avance vers vous, celui qu'on
+   quitte s'éloigne. C'est déjà le vocabulaire de l'application — la
+   carte qui se retourne et vole quand on ouvre un paquet. La
+   navigation entière parle maintenant la même langue.
+
+   Il n'y a qu'une animation d'ENTRÉE, jamais de sortie : garder l'écran
+   quittant monté pendant 300 ms coûterait deux écrans vivants, leurs
+   calculs et leurs états à geler. À cette durée, l'œil ne suit de toute
+   façon que ce qui arrive.
+   ================================================================== */
+
+/* Avancer : le nouvel écran monte du fond, légèrement réduit. */
+@keyframes ecran-avance {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+/* Revenir : il vient de devant, légèrement agrandi — le mouvement
+   inverse, qui se lit comme « je remonte d'où je venais ». */
+@keyframes ecran-recule {
+  from { opacity: 0; transform: scale(1.05); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 300 ms : en dessous de 180 la transition ne se voit qu'à moitié,
+   au-dessus de 320 elle fait attendre. La courbe part vite et finit
+   lentement — c'est ce qui donne l'impression du poids. */
+.screen.ecran-avance { animation: ecran-avance 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.screen.ecran-recule { animation: ecran-recule 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* Pendant l'animation, l'écran est un repère pour ses enfants en
+   `position: fixed`. La feuille de fin remet `transform: none`, donc
+   plus aucun repère détourné une fois l'animation terminée — et la
+   révision, dont le fond est fixe, n'est pas animée du tout
+   (voir `anime` dans App.tsx). */
+.screen.ecran-avance, .screen.ecran-recule { will-change: transform, opacity; }
+
+/* Le mouvement est une commodité, pas le message. */
+@media (prefers-reduced-motion: reduce) {
+  .screen.ecran-avance, .screen.ecran-recule { animation: none; }
+}
+/* ==================================================================
+   CHANTIER 46 — le tiroir qui dépassait sous le bas de l'écran
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 42.
+   Deux propriétés corrigées, rien d'autre : ni le dessin du tiroir, ni
+   son contenu, ni les lignes des Réglages.
+   ================================================================== */
+
+/*
+ * `inset: 0` place le bas du voile au bas du « layout viewport » — et sur
+ * iPhone, ce repère ignore la barre d'outils du navigateur : il s'arrête
+ * plus bas que ce qu'on voit. Le tiroir, collé à ce bas-là, passait donc
+ * sous la barre de Safari, d'une cinquantaine de pixels. Sur un
+ * ordinateur, où il n'y a pas de barre basse, le défaut ne se voyait pas
+ * — d'où un tiroir juste à la maquette et coupé sur le téléphone.
+ *
+ * `100dvh` est la hauteur RÉELLEMENT visible, et elle suit les barres
+ * quand elles se replient au défilement. Le voile s'arrête maintenant
+ * où l'écran s'arrête, et le tiroir avec lui.
+ *
+ * `100vh` reste écrit au-dessus comme repli : un navigateur qui ne
+ * connaîtrait pas `dvh` ignore la seconde ligne et retrouve le
+ * comportement d'avant, jamais une page cassée.
+ */
+.sheet-fond {
+  inset: 0 0 auto 0;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/*
+ * Une marge basse plancher de 30 pixels. La barre d'outils de Safari
+ * n'est pas une « zone sûre » au sens du système : `env(safe-area-inset-bottom)`
+ * vaut zéro sur un iPhone en navigation normale, et le dernier bouton du
+ * tiroir se retrouvait à raser le bord. Le plancher ne s'ajoute pas à
+ * l'encoche, il la remplace quand elle est plus petite.
+ *
+ * `overscroll-behavior` empêche le défilement d'un tiroir long de se
+ * propager à l'écran derrière lui : sur iPhone, c'est ce qui faisait
+ * réapparaître les barres du navigateur au milieu d'un réglage, et donc
+ * bouger le tiroir sous le doigt.
+ */
+.sheet {
+  padding-bottom: max(calc(22px + env(safe-area-inset-bottom)), 30px);
+  overscroll-behavior: contain;
+}
+/* ==================================================================
+   CHANTIER 49 — le tiroir rogné par la barre d'onglets
+
+   À COLLER À LA FIN de src/styles.css, après le bloc du chantier 46.
+   Deux lignes, et le vrai correctif est dans \`tiroir.tsx\`.
+   ================================================================== */
+
+/*
+ * \`will-change\` prévient le navigateur qu'un élément va bouger, pour
+ * qu'il prépare son affichage. Je l'avais posé sur \`.screen\` au
+ * chantier 45 pour les transitions — et il a un effet de bord que je
+ * n'ai pas vu : il fait de l'écran un REPÈRE pour ses enfants fixes, et
+ * un calque à part. Le voile du tiroir, enfant de l'écran, s'est donc
+ * mis à se caler sur la hauteur de la liste défilante au lieu de celle
+ * du téléphone ; et la barre d'onglets, restée à la racine, est passée
+ * devant lui malgré son rang supérieur. D'où le tiroir coupé net au
+ * bord de la barre.
+ *
+ * Le tiroir est désormais posé à la racine du document (voir
+ * \`tiroir.tsx\`), ce qui suffirait. On retire quand même la promesse :
+ * elle ne gagnait rien — une animation de 300 ms est de toute façon
+ * préparée par le navigateur — et elle laisserait le même piège tendu
+ * pour le prochain élément fixe qu'un écran contiendra.
+ */
+.screen.ecran-avance,
+.screen.ecran-recule { will-change: auto; }
+/* ==================================================================
+   Chantier 51 — les deux périmètres de « Mes mots »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/*
+ * Deux blocs de même anatomie dans un seul tiroir : c'est le filet qui
+ * dit qu'ils se comparent, pas un titre. Le premier bloc ne porte pas de
+ * marge haute — le tiroir en a déjà une sous son titre.
+ */
+.prog-perim + .prog-perim {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.prog-perim .rayon-label { margin-top: 0; }
+.prog-perim .prog-tete { margin-top: 2px; }
+.prog-perim .statbar { margin-top: 16px; }
+.prog-perim .hint { margin-bottom: 0; }
+
+/* Les notes de lecture du tiroir : plus basses que le bloc qu'elles
+   commentent, et le gras y sert à pointer un mot, pas à crier. */
+.prog-perim-note { margin-top: 16px; }
+.prog-perim-note b { font-weight: 650; color: var(--ink-soft); }
+
+/* « En pause » dans la liste des paquets. L'étiquette vient AVANT le
+   compteur, qui reste collé à droite : on lit d'abord le nom, puis l'état,
+   puis le chiffre. */
+.prog-ligne-haut em {
+  flex: none;
+  margin-right: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+/* ==================================================================
+   Chantier 62 — la courbe des quatre paliers
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le sélecteur jour / semaine / mois
+
+   C'est le `.themechoix` des Réglages, tel quel : trois pastilles à
+   filet, l'or en aplat sur celle qui est active. Rien de nouveau à
+   dessiner — le vocabulaire existe, et un second sélecteur inventé
+   pour l'occasion aurait donné deux grammaires pour un même geste.
+   Seules les marges changent, parce qu'ici il vit sous un titre de
+   rayon et au-dessus d'un tracé.
+   ------------------------------------------------------------------ */
+.prog-grain { margin-top: 2px; margin-bottom: 14px; }
+
+/* ------------------------------------------------------------------
+   Les quatre tracés
+
+   Les couleurs sont celles des statuts, et ce n'est pas un hasard :
+   la barre empilée du même tiroir emploie les mêmes. Une ligne verte
+   dans la courbe et un segment vert dans la barre doivent parler du
+   même tas, sinon les deux se contredisent sous les yeux.
+
+   Le nom des classes se déduit de celui des statuts (st-x → tr-x),
+   ce qui évite une seconde table à tenir à jour : `Progress.tsx` fait
+   la substitution, `engine/mastery.ts` reste la seule liste.
+   ------------------------------------------------------------------ */
+.prog-courbe .tr {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.prog-courbe .tr-reprendre { stroke: var(--bad); }
+.prog-courbe .tr-cours { stroke: var(--chalk); }
+.prog-courbe .tr-presque { stroke: #8fd0ae; }
+/*
+ * « Acquis » est plus épaisse que les trois autres. C'est la ligne qu'on
+ * vient chercher : à épaisseur égale, quatre traits de même poids font
+ * un écheveau où l'œil n'a pas de point d'entrée.
+ */
+.prog-courbe .tr-acquis { stroke: var(--good); stroke-width: 2.6; }
+
+/*
+ * La valeur du dernier point, posée contre le bord droit.
+ *
+ * `.prog-courbe-n` existe déjà et centre son texte sur le point ; au
+ * bord droit, la moitié dépasserait du cadre. Ce modificateur le fait
+ * finir sur le bord au lieu de l'enjamber.
+ */
+.prog-courbe-n.fin { transform: translateX(-100%); }
+
+/*
+ * Le cadre vide des premiers jours.
+ *
+ * Un tracé a besoin de deux points ; avec un seul, il n'y a rien à
+ * dessiner. Plutôt que de masquer le cadre — ce qui ferait croire que
+ * la fonction n'existe pas — on le garde et on écrit dedans pourquoi
+ * il est vide. Le filet du bas et celui de gauche suffisent à dire
+ * qu'un graphique va venir là.
+ */
+.prog-courbe.attente { border-left: 1px solid var(--rule); }
+.prog-courbe.attente p {
+  position: absolute;
+  left: 12px;
+  right: 4px;
+  bottom: 14px;
+  margin: 0;
+}
+
+/* ==================================================================
+   Correction — « À découvrir » était invisible en thème clair
+
+   `.st-decouvrir` vaut `rgba(234, 230, 219, 0.20)` : du blanc dilué,
+   juste sur le bleu nuit, et qu'aucune règle ne redéfinissait pour le
+   fond clair. Sur du blanc, le segment des mots jamais vus ne se
+   voyait pas — le tas le plus gros d'un paquet neuf était donc le seul
+   qu'on ne pouvait pas lire. Même défaut sur la piste de `.prog-barre`.
+
+   Ce n'est pas lié à la courbe ; c'est le chantier qui l'a mis au
+   jour, en regardant la barre des statuts sur fond clair.
+   ================================================================== */
+[data-theme='clair'] .st-decouvrir { background: rgba(22, 35, 63, 0.13); }
+[data-theme='clair'] .prog-barre { background: rgba(22, 35, 63, 0.09); }
+/* ==================================================================
+   Chantier 63 — « Mes mots » devient un écran
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   Le retour, dans l'écran
+
+   L'écran « Mes mots » vit dans l'onglet « Mes progrès » : la barre du
+   haut d'`App.tsx` ne s'affiche pas pour les écrans d'onglet, et la
+   faire apparaître aurait demandé de toucher à `App.tsx` — donc de
+   redéployer la navigation entière pour un chevron. Le chevron est donc
+   posé dans l'écran, à la place exacte où la barre du haut l'aurait mis,
+   avec la même taille et la même couleur.
+
+   44 px de haut : c'est la cible minimale du pouce, et la seule mesure
+   qui compte pour un bouton de retour — on le manque souvent.
+   ------------------------------------------------------------------ */
+.sousecran-retour {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  margin: 0 0 2px;
+  padding: 0 10px 0 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.sousecran-retour span { font-size: 20px; line-height: 1; }
+.sousecran-retour:hover { color: var(--ink); }
+.sousecran-retour:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+/* Le titre suit le chevron de près : deux lignes, un seul objet. */
+.sousecran-retour + .screen-title { margin-top: 0; }
+
+/* ------------------------------------------------------------------
+   L'entrée dans l'écran
+
+   La même animation que les écrans d'`App.tsx` (chantier 45) : le
+   nouveau contenu monte du fond, légèrement réduit. Il s'agit du même
+   geste — on entre dans quelque chose — et deux mouvements différents
+   pour un même geste se remarqueraient.
+
+   Aucun tiroir ne vit dans cet écran, donc la transformation ne peut
+   pas détourner le repère d'un `position: fixed` — c'était le défaut
+   corrigé au chantier 49.
+   ------------------------------------------------------------------ */
+.sousecran { animation: ecran-avance 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sousecran { animation: none; }
+}
+
+/* ------------------------------------------------------------------
+   Les deux volets
+
+   C'est le `.themechoix` des Réglages, comme le sélecteur de grain
+   qu'il surplombe : deux pastilles à filet, l'or en aplat sur l'active.
+   Seules les marges changent — il vit sous un titre d'écran et non dans
+   une liste de réglages.
+   ------------------------------------------------------------------ */
+.prog-volets { margin: 6px 0 22px; }
+
+/* ------------------------------------------------------------------
+   Le tracé des paliers, à sa vraie hauteur
+
+   100 px de tracé dans le tiroir faisaient un écheveau : quatre lignes
+   dont les écarts se comptaient en pixels. 196 px les séparent — le
+   jaune qui plafonne pendant que le vert monte se voit sans qu'on ait à
+   le chercher. C'est la raison principale du chantier.
+
+   `MesMots.tsx` connaît cette valeur (`H_TRACE`) : la valeur du dernier
+   point est posée en pixels depuis le bas, et le repère du SVG fait 100
+   de haut. Les deux doivent dire la même chose.
+   ------------------------------------------------------------------ */
+.prog-courbe.haute { height: 210px; }
+.prog-courbe.haute svg { height: 196px; }
+
+/* Le cadre d'attente des premiers jours garde la hauteur du tracé :
+   voir tout de suite la place que la courbe prendra vaut mieux qu'un
+   cadre étroit qui grandirait un matin sans qu'on sache pourquoi. */
+.prog-courbe.attente.haute p { bottom: auto; top: 50%; transform: translateY(-50%); }
+/* ==================================================================
+   Chantier 64 — « Mon calendrier » devient un écran
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Le chevron de retour (`.sousecran-retour`) et l'animation d'entrée
+   (`.sousecran`) sont ceux du chantier 63 : le calendrier les réutilise
+   tels quels. Deux écrans frères doivent entrer de la même façon.
+   ================================================================== */
+
+/* ------------------------------------------------------------------
+   La grille, à la taille d'un écran
+
+   Dans le tiroir, les cases faisaient une quarantaine de pixels et leur
+   chiffre 11,5 px : c'était la place disponible. Sur un écran entier, la
+   grille prend toute la largeur — les cases grandissent d'elles-mêmes
+   (elles sont carrées par `aspect-ratio`), et le chiffre doit suivre,
+   sans quoi il flotte au milieu d'un carré trop grand pour lui.
+   ------------------------------------------------------------------ */
+.sousecran .prog-cal { gap: 5px; }
+.sousecran .prog-jour { font-size: 13px; border-radius: 11px; }
+
+/* Les trois compteurs suivent le titre de près : ils en sont le résumé. */
+.sousecran .prog-compteurs { margin-top: 4px; }
+
+/* La barre du mois respire un peu plus que dans le tiroir : c'est le
+   gouvernail de l'écran, et on y revient à chaque mois feuilleté. */
+.sousecran .prog-moisbar { margin: 24px 0 14px; }
+
+/* ------------------------------------------------------------------
+   « Revenir à ce mois-ci »
+
+   Onze clics séparent janvier de décembre. Le raccourci n'apparaît que
+   lorsqu'on est effectivement parti, et il se présente comme un lien —
+   un bouton plein en ferait une action importante, alors que ce n'est
+   qu'une commodité de navigation.
+   ------------------------------------------------------------------ */
+.cal-revenir {
+  display: block;
+  min-height: 44px;
+  margin: 2px 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--chalk);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.cal-revenir:hover { color: var(--chalk-ink, var(--chalk)); }
+.cal-revenir:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+/* ---------- chantier 68 : l'ouverture de l'application ----------
+   Remplace le bloc « chantier 67 » de styles.css : supprimez-le en entier
+   et collez ceci. Ce bloc ne décrit plus que la mise en place et les
+   couleurs — ce qui bouge est commandé par Lancement.tsx. */
+
+.lancement {
+  position: fixed;
+  inset: 0;
+  z-index: 120; /* au-dessus des onglets (40), de la carte en vol (60), des tiroirs */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Le marine du logo, donc celui de l'écran système d'Android : aucune
+     coupure entre l'icône qu'on touche et l'écran qui s'ouvre. */
+  background: #0f253c;
+  opacity: 1;
+  transition: opacity 0.45s ease;
+}
+.lancement.sort {
+  opacity: 0;
+}
+
+.lancement-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+}
+
+/* L'écart entre les deux profils — 11 % de la largeur — est celui du logo :
+   c'est lui qui fait qu'ils se font face au lieu de se toucher. */
+.lancement-profils {
+  position: relative;
+  width: min(74vw, 300px);
+  aspect-ratio: 252 / 172;
+}
+.lancement-g,
+.lancement-d {
+  position: absolute;
+  top: 0;
+  width: 44.4%;
+}
+.lancement-g { left: 0; }
+.lancement-d { right: 0; }
+
+/* L'or et le crème sont écrits en clair, pas pris dans var(--chalk) et
+   var(--ink) : cet écran précède le thème de l'application, et son fond
+   est marine même en thème clair. */
+.lancement-trait {
+  width: 48%;
+  max-width: 140px;
+  height: 1px;
+  background: #f2b705;
+  transform-origin: center;
+}
+
+/* Hauteur fixe et ligne insécable : sans elles, le nom passe de deux lignes
+   à une quand l'interlettrage se resserre, et toute la colonne centrée
+   sursaute juste avant qu'il apparaisse. */
+.lancement-nom {
+  margin: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: var(--serif, Georgia, 'Times New Roman', serif);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: #eae6db;
+}
+/* ==================================================================
+   CHANTIER 90 — le premier pas guidé
+   À COLLER TEL QUEL À LA FIN DE src/styles.css. Rien à retirer.
+
+   Aucune couleur en dur : tout vient des variables du haut de la
+   feuille, pour que le guidage suive le thème clair comme le sombre.
+   Les boutons de jugement de l'étape 4 réemploient `.grades / .grade`
+   de la révision — mêmes formes, mêmes cibles, rien à réapprendre.
+   ================================================================== */
+
+.guide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(14px + env(safe-area-inset-top));
+}
+
+/* ---------- l'en-tête : où l'on en est, et la sortie ---------- */
+
+.guide-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 34px;
+}
+.guide-pas {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--grey);
+}
+.guide-skip {
+  background: none; border: none; padding: 8px 0;
+  font-family: inherit; font-size: 13px; color: var(--grey); cursor: pointer;
+}
+.guide-skip:hover { color: var(--ink); }
+
+/* ---------- le texte ---------- */
+
+.guide-titre {
+  font-family: var(--serif); font-weight: 400; font-size: 27px;
+  line-height: 1.15; letter-spacing: -0.2px;
+  margin: 16px 0 0;
+}
+.guide-texte {
+  font-size: 13.5px; line-height: 1.6; color: var(--ink-soft);
+  margin: 11px 0 0;
+}
+/* La phrase qui porte la méthode : elle se lit avant d'être lue. */
+.guide-regle {
+  font-family: var(--serif); font-size: 17px; line-height: 1.32;
+  color: var(--ink); margin: 16px 0 0;
+}
+.guide-note {
+  font-size: 12px; line-height: 1.5; color: var(--grey); margin: 12px 0 0;
+}
+.guide-kicker {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--grey);
+}
+
+/* Le pied pousse l'action en bas d'écran, jamais sous la ligne de flottaison. */
+.guide-pied { margin-top: auto; padding-top: 20px; }
+.guide-pied .btn { width: 100%; }
+
+/* ---------- étape 1 : la frise des rappels ---------- */
+
+.guide-frise {
+  margin: 18px 0 0; padding: 14px 14px 12px;
+  background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+/* `currentColor` : la frise prend l'encre du thème, l'or reste à l'or. */
+.frise { display: block; width: 100%; height: auto; margin: 10px 0 0; color: var(--ink-soft); }
+
+/* ---------- étape 2 : la classe ---------- */
+
+.guide-classes {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0 0;
+}
+.guide-classes button {
+  min-height: 52px; padding: 0 12px;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 14px;
+  font-family: var(--serif); font-size: 19px; cursor: pointer;
+}
+.guide-classes button:hover { border-color: var(--rule-strong); }
+.guide-classes button.on {
+  border-color: var(--chalk); color: var(--chalk);
+}
+
+/* ---------- étape 3 : le paquet ---------- */
+
+.guide-paquets { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 0; }
+.guide-paquets button {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  padding: 11px 13px; background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 16px;
+  font-family: inherit; cursor: pointer;
+}
+.guide-paquets button:hover { border-color: var(--rule-strong); }
+.guide-paquets button:disabled { opacity: 0.5; cursor: default; }
+.guide-paquets .dos { flex: none; width: 54px; height: 76px; }
+.guide-paquets .dos img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  border-radius: 8px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+}
+.guide-paquets .dos-vide {
+  display: block; width: 100%; height: 100%;
+  border-radius: 8px; border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+}
+.guide-paquets .quoi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.guide-paquets .quoi b { font-size: 15px; font-weight: 600; }
+.guide-paquets .meta {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--grey);
+}
+.guide-paquets .dit {
+  font-size: 12px; line-height: 1.4; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- étape 4 : les cinq cartes ---------- */
+
+.guide-consigne { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: 18px 0 0; }
+.guide-carte {
+  flex: 1; margin: 16px 0 0; padding: 26px 18px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 20px;
+}
+.guide-carte .recto {
+  font-family: var(--serif); font-size: 34px; line-height: 1.15; margin: 0;
+}
+.guide-carte .verso {
+  font-family: var(--serif); font-size: 25px; line-height: 1.2; margin: 0;
+  color: var(--chalk);
+}
+.guide-carte .exemple {
+  font-size: 12.5px; line-height: 1.5; font-style: italic; color: var(--grey); margin: 0;
+}
+.guide-grades { margin-top: 14px; }
+
+/* ---------- étape 5 : les échéances ---------- */
+
+.guide-echeances {
+  list-style: none; margin: 18px 0 0; padding: 0;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 16px;
+  overflow: hidden;
+}
+.guide-echeances li {
+  display: flex; align-items: center; gap: 10px; padding: 9px 13px;
+  border-top: 1px solid var(--rule);
+}
+.guide-echeances li:first-child { border-top: none; }
+.guide-echeances .mot { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.guide-echeances .mot b { font-size: 14px; font-weight: 600; }
+.guide-echeances .mot small { font-size: 11px; color: var(--grey); }
+.guide-echeances .juge {
+  flex: none; font-size: 10px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--grey);
+}
+.guide-echeances .quand {
+  flex: none; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  text-align: right; color: var(--ink);
+}
+/* ==================================================================
+   CHANTIER 94 — les jugements lisibles, et le bouton « Écouter »
+   À COLLER TEL QUEL À LA FIN DE src/styles.css, après le bloc du
+   chantier 90. Rien à retirer.
+   ================================================================== */
+
+/* ---------- les quatre jugements du guidage ----------
+
+   Ils réemployaient `.grade` de la révision, dont l'encre est prévue
+   pour le fond plein cadre d'une session : posée sur le panneau clair
+   du guidage, elle devenait presque blanche sur presque blanc.
+
+   L'encre est donc écrite ici, franche, pour les deux thèmes — et
+   « À revoir » comme « Facile » gardent leur couleur, en version
+   assez sombre pour se lire. */
+
+.guide-grades .grade {
+  color: #eae6db;
+  background: rgba(234, 230, 219, 0.07);
+  border-color: rgba(234, 230, 219, 0.3);
+}
+.guide-grades .grade small { color: rgba(234, 230, 219, 0.66); }
+.guide-grades .grade.again {
+  color: #f0a79d; border-color: rgba(224, 119, 109, 0.55);
+  background: rgba(224, 119, 109, 0.14);
+}
+.guide-grades .grade.easy {
+  color: #86dcb6; border-color: rgba(79, 191, 149, 0.5);
+  background: rgba(79, 191, 149, 0.14);
+}
+
+[data-theme='clair'] .guide-grades .grade {
+  color: #16233f;
+  background: #ffffff;
+  border-color: rgba(22, 35, 63, 0.18);
+}
+[data-theme='clair'] .guide-grades .grade small { color: #5c6884; }
+[data-theme='clair'] .guide-grades .grade.again {
+  color: #9c3226; border-color: rgba(156, 50, 38, 0.32);
+  background: rgba(224, 119, 109, 0.09);
+}
+[data-theme='clair'] .guide-grades .grade.easy {
+  color: #0d6b4e; border-color: rgba(13, 107, 78, 0.3);
+  background: rgba(79, 191, 149, 0.1);
+}
+
+/* ---------- « Écouter », dans la carte du galop d'essai ----------
+
+   Le bouton de la révision vit sur un fond photographique et prend
+   26 pixels de marge haute ; dans la carte du guidage il suit le mot
+   de près, et se cadre sur le panneau. */
+
+.guide-carte .guide-speak {
+  margin: 4px 0 0;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+  background: var(--panel-hi);
+}
+[data-theme='clair'] .guide-carte .guide-speak {
+  color: #16233f;
+  border-color: rgba(22, 35, 63, 0.18);
+  background: #ffffff;
+}
+
+
+/* ==================================================================
+   CHANTIER 103 — L'ONGLET « PARLER »
+
+   Rien n'est repris aux quatre autres onglets : la barre est un flex dont
+   les boutons valent `flex: 1`, un cinquième s'y range sans qu'une seule
+   ligne change. Les libellés tiennent — cinq onglets sur 375 px font 75 px
+   chacun, et « Aujourd'hui » à 10,5 px en mesure 58.
+
+   Seule précaution : un garde-fou pour les très petits écrans, où cinq
+   étiquettes commencent à se serrer.
+   ------------------------------------------------------------------ */
+.tabbar button span { white-space: nowrap; }
+
+@media (max-width: 340px) {
+  .tabbar button span { font-size: 9.5px; letter-spacing: -0.2px; }
+}
+
+/* L'écran lui-même : trois cartes posées sur le tapis, comme partout
+   ailleurs. Les couleurs viennent des variables, donc le thème clair et le
+   thème sombre sont servis tous les deux sans un bloc de plus. */
+.parler {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.parler-carte {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  padding: 15px 16px;
+}
+
+.parler-tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.parler-kicker {
+  margin: 0 0 11px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.parler-note,
+.parler-compte {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-style: normal;
+  color: var(--grey);
+}
+
+.parler-compte {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+/* Le nombre de minutes : la seule grande figure de l'écran. En chiffres
+   tabulaires pour ne pas sautiller quand il passe de 10 à 9. */
+.parler-min {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0 0 10px;
+}
+
+.parler-min b {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.parler-min span {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.parler-jauge {
+  display: flex;
+  height: 9px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--voile-2);
+}
+
+.parler-jauge i {
+  display: block;
+  height: 100%;
+  background: var(--good);
+}
+
+/* Les mots acquis : le vert des cartes pleines, celui de `st-acquis`.
+   Même couleur, même sens — ce sont les mêmes mots. */
+.parler-mots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.parler-mot {
+  padding: 5px 10px;
+  border-radius: 9px;
+  background: var(--voile);
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--good);
+}
+
+.parler-mot.plus {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--grey);
+}
+
+/* Le niveau, en tête de la carte des thèmes et non en pied : c'est la règle
+   du jeu, elle se lit avant de choisir. En lecture seule — la classe se
+   règle dans les Réglages, et nulle part ailleurs. */
+.parler-niveau {
+  margin: 0 0 12px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--serif);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--grey);
+}
+
+.parler-niveau b {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.parler-lien {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--serif);
+  font-size: 12.5px;
+  color: var(--chalk-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* Les thèmes : des pastilles à filet, l'or en aplat sur les retenues —
+   exactement le `.themechoix` des Réglages, en corbeille au lieu d'une
+   ligne. Aucun geste nouveau n'est inventé.
+
+   38 px de haut : sous les 44 px d'une cible isolée, mais ce sont des
+   pastilles serrées côte à côte, comme les thèmes d'un paquet. */
+.parler-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.parler-themes button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 11px;
+  background: none;
+  font-family: var(--serif);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.parler-themes button.on {
+  border-color: var(--chalk);
+  background: var(--chalk);
+  color: var(--on-chalk);
+  font-weight: 600;
+}
+
+/* Le dixième thème atteint : les autres s'éteignent plutôt que de
+   disparaître. On voit ce qu'on ne peut plus prendre, et pourquoi. */
+.parler-themes button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.parler-go {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.parler-pied {
+  margin-top: 0;
+}
+
+
+/* ==================================================================
+   CHANTIER 104 — LA SÉANCE DE PAROLE
+
+   Le banc d'essai : un fil de répliques, un champ de saisie, un
+   chronomètre. Rien de tout cela n'imite une application de messagerie —
+   les bulles sont sobres, sans queue ni horaire, parce qu'on ne relit pas
+   une conversation orale, on la traverse.
+   ------------------------------------------------------------------ */
+.seance {
+  /* La séance occupe la hauteur disponible : le fil défile, la saisie
+     reste en bas, la tête reste en haut. Sans cela le champ de saisie
+     descend sous la barre d'onglets au bout de dix répliques. */
+  min-height: calc(100vh - 210px);
+  display: flex;
+  flex-direction: column;
+}
+
+.seance-tete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+
+.seance-chrono {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.seance-reste {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--grey);
+}
+
+.seance-stop {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  background: none;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.seance-stop:disabled { opacity: 0.45; cursor: default; }
+
+.seance-meta {
+  margin: 0 0 12px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--grey);
+}
+
+/* Le coût réel : monospace, discret, et jamais vu par l'élève — trois
+   tapes sur « remis à zéro à minuit » l'allument. C'est volontairement une
+   commande que personne ne trouve par hasard. */
+.seance-exploitant {
+  margin: 11px 0 0;
+  padding: 9px 11px;
+  background: var(--voile);
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--chalk-ink);
+}
+
+.seance-fil {
+  flex: 1;
+  min-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.seance-bulle {
+  max-width: 82%;
+  margin: 0;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* L'élève à droite, à l'or : c'est lui qui travaille, sa parole se voit. */
+.seance-bulle.moi {
+  align-self: flex-end;
+  background: var(--chalk);
+  color: var(--on-chalk);
+}
+
+.seance-bulle.lui {
+  align-self: flex-start;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+}
+
+.seance-bulle.attente { color: var(--grey); letter-spacing: 3px; }
+
+.seance-erreur {
+  margin: 8px 0 0;
+  font-family: var(--serif);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--bad);
+}
+
+.seance-saisie {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+/* Le champ n'emprunte aucune classe existante : il est seul de son espèce
+   dans l'application, et une classe partagée aurait fini par le tirer
+   ailleurs. 16 px de corps — en dessous, iOS zoome à la mise au point. */
+.seance-saisie input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 12px;
+  background: var(--panel);
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.seance-saisie input:disabled { opacity: 0.5; }
+
+.seance-saisie .btn { flex: none; }
+
+/* Le compte rendu : la phrase fautive barrée, la phrase juste en vert
+   au-dessus de l'explication. C'est la JUSTE qu'on relit, pas l'erreur —
+   d'où l'ordre, qui n'est pas celui d'un devoir corrigé. */
+.seance-corr {
+  padding: 13px 0 0;
+  margin-top: 13px;
+  border-top: 1px solid var(--rule);
+}
+
+.seance-corr.premiere {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+.seance-faux {
+  margin: 0 0 5px;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  color: var(--bad);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--bad) 50%, transparent);
+}
+
+.seance-juste {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--good);
+}
+
+.seance-pourquoi {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.seance-mots {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.seance-mot {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+}
+
+.seance-mot b {
+  flex: none;
+  font-family: var(--serif);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.seance-mot small {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--grey);
+}
+
+
+/* ==================================================================
+   CHANTIER 105 — LE MICRO
+
+   Un bouton, gros, rond, au centre. Il dit qui a la parole — c'est tout ce
+   qu'un élève doit comprendre, et il le comprend en une seconde.
+
+   88 px : bien au-delà des 44 px d'une cible de doigt, parce qu'on appuie
+   dessus en parlant, sans regarder.
+   ------------------------------------------------------------------ */
+.seance-micro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 4px;
+}
+
+.seance-micro .micro {
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--chalk);
+  color: var(--on-chalk);
+  cursor: pointer;
+  /* Aucune sélection ni menu contextuel sous un appui maintenu : sur
+     téléphone, un appui long sur un bouton déclenche sinon la loupe de
+     sélection, et le micro s'ouvre sur un geste parasite. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.seance-micro .micro:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* À l'écoute : le bouton grandit un peu et respire. Le halo est la seule
+   animation de l'application — ici elle dit un état, pas un ornement. */
+.seance-micro .micro.on {
+  background: var(--good);
+  color: #fff;
+  transform: scale(1.06);
+  animation: micro-souffle 1.6s ease-in-out infinite;
+}
+
+@keyframes micro-souffle {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 14px color-mix(in srgb, var(--good) 0%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seance-micro .micro.on { animation: none; }
+}
+
+.seance-consigne {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 13.5px;
+  color: var(--grey);
+  text-align: center;
+}
+
+/* Le repli clavier : présent, discret, jamais mis en avant. */
+.seance-bascule {
+  margin: 4px auto 0;
+  display: block;
+  padding: 6px 2px;
+  border: none;
+  background: none;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--chalk-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* La phrase en cours de reconnaissance : la bulle de l'élève, en attente
+   de confirmation. Le pointillé dit « pas encore parti ». */
+.seance-bulle.encours {
+  background: none;
+  border: 1px dashed var(--rule-strong);
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* Le message brut du service, sous l'erreur lisible. Monospace, petit,
+   sélectionnable : c'est une pièce de diagnostic, pas une phrase. */
+.seance-detail {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--grey);
+  word-break: break-word;
+  user-select: text;
+}
