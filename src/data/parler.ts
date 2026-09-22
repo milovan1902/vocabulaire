@@ -123,6 +123,12 @@ export async function budgetParler(): Promise<Budget | null> {
  * L'historique complet de la SÉANCE est envoyé à chaque tour — c'est ainsi
  * que le modèle se souvient de la phrase d'avant. Il ne s'accumule pas d'un
  * jour sur l'autre : chaque séance repart de zéro.
+ *
+ * CHANTIER 106 — `secondes` est l'ÉCART depuis le tour précédent, et non
+ * le temps écoulé depuis le début de la séance. Le serveur additionne les
+ * écarts du jour pour connaître le temps réellement parlé ; additionner
+ * des totaux donnait des heures, et c'est pour cela que le compteur ne
+ * bougeait pas.
  */
 export async function tourDeParole(
   messages: Tour[], fiche: Fiche, secondes: number,
@@ -130,15 +136,124 @@ export async function tourDeParole(
   return appelle('/api/parler', { messages, fiche, secondes });
 }
 
-/** Le compte rendu, une fois la séance finie. Un appel, pas un par tour. */
+/**
+ * Le compte rendu, une fois la séance finie. Un appel, pas un par tour.
+ *
+ * `secondes` reste l'écart depuis le dernier tour ; `totalSecondes` est la
+ * durée entière de la séance, qui part avec l'archive.
+ */
 export async function bilanDeSeance(
-  messages: Tour[], fiche: Fiche, secondes: number,
+  messages: Tour[], fiche: Fiche, secondes: number, totalSecondes: number,
 ): Promise<{ bilan: Bilan; trop_court?: boolean }> {
-  return appelle('/api/parler-bilan', { messages, fiche, secondes });
+  return appelle('/api/parler-bilan', { messages, fiche, secondes, totalSecondes });
 }
 
 /** « 0,19 € », « 12 centimes ». Toujours lisible, jamais scientifique. */
 export function euros(centimes: number): string {
   if (centimes < 1) return `${centimes.toFixed(2).replace('.', ',')} centime`;
   return `${(centimes / 100).toFixed(2).replace('.', ',')} €`;
+}
+
+
+/* ------------------------------------------------------------------
+   CHANTIER 106 — LES CONVERSATIONS GARDÉES
+
+   « Où puis-je retrouver la synthèse de mon échange ? » — nulle part,
+   jusqu'ici : le compte rendu s'affichait une fois et mourait avec
+   l'écran. Il est désormais rangé sous le compte de l'élève, avec la
+   transcription entière.
+
+   ÉCRITURE : la fonction Cloudflare, clé de service, comme la
+   consommation. LECTURE : le téléphone, directement, à travers la RLS de
+   Supabase — chacun ses lignes. Pas de route de plus à écrire pour lire
+   ce qu'une politique de sécurité sait déjà filtrer.
+   ------------------------------------------------------------------ */
+
+export interface SeanceGardee {
+  id: number;
+  /** Quand la séance s'est terminée. */
+  finieLe: string;
+  secondes: number;
+  repliques: number;
+  themes: string[];
+  classe: string | null;
+  transcription: Tour[];
+  corrections: Array<{ dit: string; juste: string; pourquoi: string }>;
+  mots: Array<{ en: string; fr: string }>;
+}
+
+interface LigneSeance {
+  id: number;
+  finie_le: string;
+  secondes: number | null;
+  repliques: number | null;
+  themes: string[] | null;
+  classe: string | null;
+  transcription: Tour[] | null;
+  corrections: SeanceGardee['corrections'] | null;
+  mots: SeanceGardee['mots'] | null;
+}
+
+/**
+ * Les conversations gardées, la plus récente d'abord.
+ *
+ * Soixante au plus : au-delà, il faudrait paginer, et personne n'a encore
+ * soixante conversations. Renvoie une liste vide sans compte, plutôt que
+ * de lever — l'écran doit pouvoir dire « connecte-toi » sans traiter cela
+ * comme une panne.
+ */
+export async function mesSeances(): Promise<SeanceGardee[]> {
+  const { data: session } = await supabase.auth.getSession();
+  if (!session.session) return [];
+
+  const { data, error } = await supabase
+    .from('parler_seance')
+    .select('id,finie_le,secondes,repliques,themes,classe,transcription,corrections,mots')
+    .order('finie_le', { ascending: false })
+    .limit(60);
+
+  if (error) throw new ErreurParler(error.message);
+
+  return ((data ?? []) as LigneSeance[]).map((l) => ({
+    id: l.id,
+    finieLe: l.finie_le,
+    secondes: l.secondes ?? 0,
+    repliques: l.repliques ?? 0,
+    themes: l.themes ?? [],
+    classe: l.classe,
+    transcription: l.transcription ?? [],
+    corrections: l.corrections ?? [],
+    mots: l.mots ?? [],
+  }));
+}
+
+/**
+ * Effacer une conversation.
+ *
+ * C'est la parole d'un enfant, enregistrée : elle doit pouvoir partir sur
+ * un geste, sans demander la permission à personne. La politique de
+ * suppression de la table n'autorise que le propriétaire de la ligne.
+ */
+export async function oublieSeance(id: number): Promise<void> {
+  const { error } = await supabase.from('parler_seance').delete().eq('id', id);
+  if (error) throw new ErreurParler(error.message);
+}
+
+/** « 7 min 20 s » — la durée d'une séance, telle qu'on la lit. */
+export function duree(secondes: number): string {
+  const m = Math.floor(secondes / 60);
+  const s = secondes % 60;
+  if (!m) return `${s} s`;
+  return s ? `${m} min ${String(s).padStart(2, '0')} s` : `${m} min`;
+}
+
+/** « mardi 22 septembre, 17 h 57 » — la date d'une conversation. */
+export function quand(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const jour = d.toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  });
+  const heure = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  return `${jour}, ${heure.replace(':', ' h ')}`;
 }
