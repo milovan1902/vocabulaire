@@ -20,7 +20,7 @@
 import {
   appelleClaude, consommationDuJour, json, minutesRestantes, modeleParler,
   noteConsommation, PLAFOND_CENTIMES_JOUR, promptSysteme, utilisateur,
-  type Contexte, type Fiche,
+  type Consommation, type Contexte, type Fiche,
 } from './_parler-commun';
 
 /** Ce que l'écran reçoit. Aucun jeton ne figure ici : ce n'est pas son sujet. */
@@ -41,12 +41,16 @@ interface Requete {
   fiche: Fiche;
   /** L'historique de la séance, le dernier tour de l'élève inclus. */
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
-  /** Secondes écoulées depuis le début de la séance, pour le relevé. */
+  /**
+   * CHANTIER 106 — secondes écoulées DEPUIS LE TOUR PRÉCÉDENT, et non
+   * depuis le début de la séance. C'est ce qui rend la somme du jour
+   * égale au temps réellement parlé, donc le compteur honnête.
+   */
   secondes?: number;
 }
 
-function budgetDe(c: { ponderes: number; coutCentimes: number; appels: number }): Budget {
-  const minutes = minutesRestantes(c.ponderes);
+function budgetDe(c: Consommation): Budget {
+  const minutes = minutesRestantes(c.ponderes, c.secondes);
   return {
     minutes,
     fini: minutes <= 0 || c.coutCentimes >= PLAFOND_CENTIMES_JOUR,
@@ -59,8 +63,13 @@ export const onRequestGet = async ({ request, env }: Contexte): Promise<Response
   const userId = await utilisateur(request, env);
   if (!userId) return json({ erreur: 'compte requis' }, 401);
 
-  const c = await consommationDuJour(userId, env);
-  return json(budgetDe(c));
+  try {
+    const c = await consommationDuJour(userId, env);
+    return json(budgetDe(c));
+  } catch {
+    /* La jauge s'affiche en panne plutôt qu'en plein. */
+    return json({ erreur: 'budget illisible' }, 503);
+  }
 };
 
 export const onRequestPost = async ({ request, env }: Contexte): Promise<Response> => {
@@ -91,8 +100,16 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
    */
   const messages = corps.messages.slice(-40);
 
-  const avant = await consommationDuJour(userId, env);
-  const budgetAvant = budgetDe(avant);
+  let budgetAvant: Budget;
+  try {
+    budgetAvant = budgetDe(await consommationDuJour(userId, env));
+  } catch {
+    /*
+     * Quota illisible : on refuse. Laisser passer l'appel serait ouvrir
+     * le robinet pendant exactement la panne où l'on ne compte plus rien.
+     */
+    return json({ erreur: 'le budget n’a pas pu être vérifié' }, 503);
+  }
   if (budgetAvant.fini) {
     return json({ erreur: 'quota du jour épuisé', budget: budgetAvant }, 429);
   }
@@ -124,6 +141,15 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
 
   await noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env);
 
-  const apres = await consommationDuJour(userId, env);
-  return json({ texte: resultat.texte, budget: budgetDe(apres) });
+  /*
+   * La relecture du quota peut échouer après un appel réussi. Le tour de
+   * parole, lui, a bien eu lieu : on le rend avec le budget d'avant
+   * plutôt que de transformer une réponse en panne.
+   */
+  try {
+    const apres = await consommationDuJour(userId, env);
+    return json({ texte: resultat.texte, budget: budgetDe(apres) });
+  } catch {
+    return json({ texte: resultat.texte, budget: budgetAvant });
+  }
 };
