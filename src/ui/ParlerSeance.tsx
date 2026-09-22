@@ -66,6 +66,7 @@ export function ParlerSeance({
   const [bilan, setBilan] = useState<Bilan | null>(null);
   const [tropCourt, setTropCourt] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [detail, setDetail] = useState<string | null>(null);
 
   const [mode, setMode] = useState<Mode>(ecouteDisponible ? 'voix' : 'clavier');
   const [ecoutant, setEcoutant] = useState(false);
@@ -97,6 +98,7 @@ export function ParlerSeance({
     setEntendu('');
     setEnVol(true);
     setErreur(null);
+    setDetail(null);
 
     try {
       const r = await tourDeParole(suite, fiche, secondes);
@@ -109,6 +111,8 @@ export function ParlerSeance({
           ? 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.'
           : 'La conversation ne répond pas. Réessaie dans un instant.',
       );
+      /* Le message brut du service, pour que la panne soit diagnosticable. */
+      setDetail(e instanceof ErreurParler ? e.detail ?? null : String(e));
     } finally {
       setEnVol(false);
     }
@@ -259,6 +263,7 @@ export function ParlerSeance({
       </div>
 
       {erreur && <p className="seance-erreur">{erreur}</p>}
+      {detail && <p className="seance-detail">{detail}</p>}
 
       {mode === 'voix' ? (
         <div className="seance-micro">
