@@ -3,6 +3,7 @@
  *
  * CHANTIER 103 — LE CINQUIÈME ONGLET
  * CHANTIER 104 — LA JAUGE DIT LA VÉRITÉ
+ * CHANTIER 106 — ET LES CONVERSATIONS SE RETROUVENT
  *
  * Trois cartes, dans l'ordre des questions qu'on se pose :
  *
@@ -35,6 +36,7 @@ import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
 import { budgetParler, euros, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
+import { ParlerHistorique } from './ParlerHistorique';
 
 /** Les thèmes proposés. Au plus dix retenus. */
 const THEMES = [
@@ -99,6 +101,7 @@ export function Parler({
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
   const [enSeance, setEnSeance] = useState(false);
+  const [historique, setHistorique] = useState(false);
 
   const [exploitant, setExploitant] = useState(
     () => localStorage.getItem(CLE_EXPLOITANT) === '1',
@@ -159,6 +162,10 @@ export function Parler({
     mots: mots.map((m) => ({ en: m.en, fr: m.fr })),
     themes: choisis,
   }), [classe, mots, choisis]);
+
+  if (historique) {
+    return <ParlerHistorique onRetour={() => setHistorique(false)} />;
+  }
 
   if (enSeance && budget) {
     return (
@@ -253,6 +260,26 @@ export function Parler({
         )}
       </div>
 
+      {/*
+        * CHANTIER 106 — la porte de l'archive. Elle est ici, sous les
+        * mots de la semaine, et non dans les Réglages : on y va pour
+        * relire une correction, c'est-à-dire pour travailler, pas pour
+        * administrer quoi que ce soit.
+        */}
+      {etat !== 'anonyme' && (
+        <div className="parler-carte">
+          <p className="parler-kicker">Tes conversations</p>
+          <p className="hint">
+            Chaque séance terminée est gardée en entier : ce que tu as dit,
+            et le compte rendu. C’est en les relisant à quelques jours
+            d’écart qu’on voit ce qui a bougé.
+          </p>
+          <button className="parler-histo-go" onClick={() => setHistorique(true)}>
+            Relire mes conversations
+          </button>
+        </div>
+      )}
+
       <div className="parler-carte">
         <div className="parler-tete">
           <p className="parler-kicker">De quoi parle-t-on ?</p>
@@ -314,9 +341,8 @@ export function Parler({
         </p>
       ) : (
         <p className="hint parler-pied">
-          Pour l’instant on écrit et la réponse est dite à voix haute. Le micro
-          vient au chantier suivant, et il ne remplacera que le champ de
-          saisie.
+          Appuie sur le micro et parle. Le clavier reste disponible pendant
+          la séance, en second.
         </p>
       )}
     </section>
