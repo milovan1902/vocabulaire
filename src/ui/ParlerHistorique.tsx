@@ -24,15 +24,23 @@
  *
  * ON PEUT EFFACER. C'est la parole d'un enfant, enregistrée : elle doit
  * pouvoir partir sur un geste. Une confirmation, pas deux.
+ *
+ * CHANTIER 110 — les mots d'une conversation passée peuvent encore partir
+ * en cartes. Ceux déjà versés apparaissent grisés : pas de doublon.
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
   duree, ErreurParler, mesSeances, oublieSeance, quand, type SeanceGardee,
 } from '../data/parler';
+import { ReprendreMots } from './ReprendreMots';
 
 type Etat = 'charge' | 'pret' | 'panne';
 
-export function ParlerHistorique({ onRetour }: { onRetour: () => void }) {
+export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
+  onRetour: () => void;
+  enJeu: string[];
+  onReprise: () => Promise<void>;
+}) {
   const [seances, setSeances] = useState<SeanceGardee[]>([]);
   const [etat, setEtat] = useState<Etat>('charge');
   const [ouverte, setOuverte] = useState<SeanceGardee | null>(null);
@@ -89,19 +97,12 @@ export function ParlerHistorique({ onRetour }: { onRetour: () => void }) {
           )}
         </div>
 
-        {ouverte.mots.length > 0 && (
-          <div className="parler-carte">
-            <p className="parler-kicker">Mots rencontrés</p>
-            <div className="seance-mots">
-              {ouverte.mots.map((m) => (
-                <span key={m.en} className="seance-mot">
-                  <b>{m.en}</b>
-                  <small>{m.fr}</small>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        <ReprendreMots
+          mots={ouverte.mots}
+          enJeu={enJeu}
+          quand={ouverte.finieLe}
+          onReprise={onReprise}
+        />
 
         <div className="parler-carte">
           <p className="parler-kicker">Ce que tu as dit</p>
