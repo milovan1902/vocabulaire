@@ -98,7 +98,20 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
    * rien à remettre à zéro chaque mois. Ce qui traverse les séances, c'est
    * la fiche d'élève, de taille fixe.
    */
-  const messages = corps.messages.slice(-40);
+  /*
+   * CHANTIER 111 — CHAQUE MESSAGE EST BORNÉ, lui aussi. Un tour d'élève
+   * dépasse rarement trois cents caractères ; un micro qui bégaie
+   * (« yes yes I yes I play… ») ou une poche restée ouverte peut en
+   * envoyer des milliers, et on les repaie à chaque tour suivant puisque
+   * l'historique est relu. Au-delà de 800 caractères, on garde la FIN :
+   * c'est la phrase la plus complète.
+   */
+  const MAX_CAR = 800;
+  const messages = corps.messages.slice(-40).map((m) =>
+    typeof m.content === 'string' && m.content.length > MAX_CAR
+      ? { ...m, content: m.content.slice(-MAX_CAR) }
+      : m,
+  );
 
   let budgetAvant: Budget;
   try {
