@@ -47,6 +47,7 @@ import fabriquer4eFin from '../assets/packs/4e-fabriquer.png';
 import temps4eFin from '../assets/packs/4e-temps.png';
 import siAlors4eFin from '../assets/packs/4e-si-alors.png';
 import prendre4eFin from '../assets/packs/4e-prendre.png';
+import repriseOral from '../assets/packs/reprise-oral.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -596,6 +597,14 @@ const ILLUSTRATIONS: Record<string, string> = {
   '4e-fin-phrases': prendre4eFin,
   'prendre-la-parole-4e': prendre4eFin,
   'prendre-la-parole': prendre4eFin,
+
+  /*
+   * CHANTIER 113 — « Reprise des fautes à l'oral ». Le même dessin que
+   * l'onglet Parler : le paquet dit d'où viennent ses cartes. Papier gris
+   * (`GRIS` dans deckPaper.ts), rayon « Autre », sans classe.
+   */
+  'reprise-oral': repriseOral,
+  'reprise-des-fautes-a-l-oral': repriseOral,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
