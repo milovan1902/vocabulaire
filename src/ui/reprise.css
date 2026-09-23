@@ -1,0 +1,79 @@
+/* CHANTIER 110 — la carte « Tu veux les revoir ? » et les écrans Parler du guide.
+   Tout passe par les variables du thème : clair et sombre suivent seuls. */
+
+.reprise-liste { display: flex; flex-direction: column; margin: 12px 0 14px; }
+.reprise-ligne {
+  position: relative;
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+}
+.reprise-ligne:first-child { border-top: none; padding-top: 4px; }
+.reprise-ligne input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.reprise-case {
+  flex: none; width: 22px; height: 22px; margin-top: 1px;
+  border: 1.5px solid var(--rule-strong); border-radius: 6px;
+  background: transparent;
+  display: grid; place-items: center;
+  transition: background .15s, border-color .15s;
+}
+.reprise-ligne input:checked + .reprise-case {
+  background: var(--chalk); border-color: var(--chalk);
+}
+.reprise-ligne input:checked + .reprise-case::after {
+  content: ''; width: 10px; height: 5px; margin-top: -3px;
+  border-left: 2px solid var(--on-chalk); border-bottom: 2px solid var(--on-chalk);
+  transform: rotate(-45deg);
+}
+.reprise-ligne input:focus-visible + .reprise-case { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.reprise-ligne.grise { cursor: default; opacity: .55; }
+.reprise-mot { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.reprise-mot b { font-size: 16px; font-weight: 500; color: var(--ink); }
+.reprise-mot small { font-size: 13px; color: var(--grey); }
+.reprise-note { font-style: normal; font-size: 12px; line-height: 1.4; margin-top: 3px; color: var(--ink-soft); }
+.reprise-note.ramene { color: var(--good); }
+.reprise-go { width: 100%; }
+.reprise-fait { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: var(--good); }
+
+/* ---- le guide : les écrans « Parler » ---- */
+.guide-exemple {
+  margin: 16px 0 0; padding: 14px 16px;
+  background: var(--panel); border-radius: 16px;
+}
+.guide-exemple .guide-kicker { display: block; margin-bottom: 10px; }
+.guide-fictif {
+  float: right; padding: 2px 7px; border-radius: 7px;
+  background: var(--voile, rgba(22, 35, 63, .06));
+  font: 400 10.5px/1.4 ui-monospace, Menlo, monospace; color: var(--grey);
+}
+.guide-barre {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  margin: 0 -16px -14px; border-radius: 0 0 16px 16px; overflow: hidden;
+  background: #16233f;
+}
+.guide-barre span {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 0 12px;
+  font: 9px/1 ui-monospace, Menlo, monospace; color: #8d97ad;
+}
+.guide-barre span.on { color: #f2b705; box-shadow: inset 0 3px 0 #f2b705; }
+.guide-barre img { width: 22px; height: 22px; opacity: .6; }
+.guide-barre span.on img { opacity: 1; }
+.guide-faits { display: flex; flex-direction: column; margin: 12px 0 0; }
+.guide-faits p {
+  display: flex; gap: 12px; align-items: baseline; margin: 0; padding: 10px 0;
+  border-top: 1px solid var(--rule); font-size: 13.5px; line-height: 1.45; color: var(--ink-soft);
+}
+.guide-faits p:first-child { border-top: none; }
+.guide-faits b { flex: none; width: 62px; font-size: 19px; font-weight: 400; color: var(--ink); }
+.guide-fil { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 0; }
+.guide-fil .seance-bulle u { text-decoration-color: var(--good); text-underline-offset: 3px; }
+.guide-regles { display: flex; flex-direction: column; margin: 10px 0 0; }
+.guide-regles p {
+  margin: 0; padding: 9px 0; border-top: 1px solid var(--rule);
+  font-size: 13px; line-height: 1.5; color: var(--ink-soft);
+}
+.guide-regles p:first-child { border-top: none; padding-top: 0; }
+.guide-regles b { color: var(--ink); font-weight: 500; }
+.guide-pied.double { display: flex; flex-direction: column; gap: 8px; }
