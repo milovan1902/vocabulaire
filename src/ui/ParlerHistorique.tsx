@@ -27,7 +27,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
-  duree, mesSeances, oublieSeance, quand, type SeanceGardee,
+  duree, ErreurParler, mesSeances, oublieSeance, quand, type SeanceGardee,
 } from '../data/parler';
 
 type Etat = 'charge' | 'pret' | 'panne';
@@ -37,13 +37,16 @@ export function ParlerHistorique({ onRetour }: { onRetour: () => void }) {
   const [etat, setEtat] = useState<Etat>('charge');
   const [ouverte, setOuverte] = useState<SeanceGardee | null>(null);
   const [aEffacer, setAEffacer] = useState<number | null>(null);
+  const [pourquoi, setPourquoi] = useState<string | null>(null);
 
   const lit = useCallback(async () => {
     setEtat('charge');
     try {
       setSeances(await mesSeances());
       setEtat('pret');
-    } catch {
+      setPourquoi(null);
+    } catch (e) {
+      setPourquoi(e instanceof ErreurParler ? e.detail ?? e.message : String(e));
       setEtat('panne');
     }
   }, []);
@@ -149,10 +152,13 @@ export function ParlerHistorique({ onRetour }: { onRetour: () => void }) {
       {etat === 'charge' ? (
         <p className="hint">Lecture de tes conversations…</p>
       ) : etat === 'panne' ? (
-        <p className="hint">
-          Tes conversations ne sont pas joignables pour l’instant.{' '}
-          <button className="parler-lien" onClick={() => void lit()}>Réessayer</button>
-        </p>
+        <>
+          <p className="hint">
+            Tes conversations ne sont pas joignables pour l’instant.{' '}
+            <button className="parler-lien" onClick={() => void lit()}>Réessayer</button>
+          </p>
+          {pourquoi && <p className="seance-detail">{pourquoi}</p>}
+        </>
       ) : seances.length === 0 ? (
         <div className="parler-carte">
           <p className="hint">
