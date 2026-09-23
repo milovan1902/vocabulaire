@@ -51,13 +51,15 @@ const CYCLES: Array<{ id: string; label: string; classes: Classe[] }> = [
  */
 type Filtres = {
   consult: Classe[];
+  /** CHANTIER 108 — la puce « Sans catégorie », cochable avec les classes. */
+  sc: boolean;
   rayon: string | null;
   /** Catalogue seulement : dans la collection tout est déjà payé. */
   tranche: number | null;
   ouvert: boolean;
 };
 
-const FILTRES_VIDES: Filtres = { consult: [], rayon: null, tranche: null, ouvert: false };
+const FILTRES_VIDES: Filtres = { consult: [], sc: false, rayon: null, tranche: null, ouvert: false };
 
 /**
  * Le nombre de CRITÈRES en vigueur, pas de puces.
@@ -70,7 +72,7 @@ const FILTRES_VIDES: Filtres = { consult: [], rayon: null, tranche: null, ouvert
  * de quoi on cherche pendant dix minutes pourquoi un paquet manque.
  */
 function nbCriteres(f: Filtres): number {
-  return (f.consult.length > 0 ? 1 : 0)
+  return (f.consult.length > 0 || f.sc ? 1 : 0)
     + (f.tranche !== null ? 1 : 0)
     + (f.rayon !== null ? 1 : 0);
 }
@@ -87,8 +89,16 @@ function comptesParClasse(lot: DeckSummary[]): Map<Classe, number> {
 
 /** Le lot réduit aux planchers cochés. Rien de coché = tout le lot. */
 function socleDe(lot: DeckSummary[], f: Filtres): DeckSummary[] {
-  if (f.consult.length === 0) return lot;
-  return lot.filter((s) => !!s.deck.classeFrom && f.consult.includes(s.deck.classeFrom));
+  if (f.consult.length === 0 && !f.sc) return lot;
+  return lot.filter((s) =>
+    (!!s.deck.classeFrom && f.consult.includes(s.deck.classeFrom))
+    || (f.sc && !!s.deck.sansCategorie));
+}
+
+/** CHANTIER 108 — la pastille : la classe plancher, ou « SC ». */
+function pastille(d: Deck): string | null {
+  if (d.classeFrom) return d.classeFrom;
+  return d.sansCategorie ? 'SC' : null;
 }
 
 /** Le socle réduit par les critères restants. */
@@ -142,6 +152,7 @@ function PanneauFiltres({
   }
 
   const n = nbCriteres(f);
+  const nbSC = lot.filter((s) => !!s.deck.sansCategorie).length;
 
   function basculerConsultation(c: Classe) {
     onChange({
@@ -211,6 +222,14 @@ function PanneauFiltres({
                 </button>
               );
             })}
+            {(nbSC > 0 || f.sc) && (
+              <button
+                className={f.sc ? 'on' : ''}
+                onClick={() => onChange({ ...f, sc: !f.sc })}
+              >
+                Sans catégorie · {nbSC}
+              </button>
+            )}
           </div>
 
           {cyclesOuverts.length > 0 && (
@@ -588,8 +607,8 @@ export function Library({
               <button className="workrow-main" onClick={(e) => ouvrir(e, s)}>
                 <span className="vign-wrap">
                   {vignette(s, 54, 76)}
-                  {s.deck.classeFrom && (
-                    <span className="classdot">{s.deck.classeFrom}</span>
+                  {pastille(s.deck) && (
+                    <span className="classdot">{pastille(s.deck)}</span>
                   )}
                   {s.due > 0 && <span className="vign-due">{s.due}</span>}
                 </span>
@@ -644,8 +663,8 @@ export function Library({
             */}
           <span className="vign-wrap">
             {vignette(s, 44, 62)}
-            {s.deck.classeFrom && (
-              <span className="classdot">{s.deck.classeFrom}</span>
+            {pastille(s.deck) && (
+              <span className="classdot">{pastille(s.deck)}</span>
             )}
           </span>
           <span className="switchrow-txt">
@@ -788,8 +807,8 @@ export function Library({
             */}
           <span className="vign-wrap">
             {vignette(s, 54, 76)}
-            {s.deck.classeFrom && (
-              <span className="classdot">{s.deck.classeFrom}</span>
+            {pastille(s.deck) && (
+              <span className="classdot">{pastille(s.deck)}</span>
             )}
           </span>
           <span className="catrow-txt">
@@ -823,7 +842,11 @@ export function Library({
   function vueCatalogue() {
     const tous = charge?.summaries ?? [];
     const maClasse = settings.classe;
-    const enConsultation = fCatalogue.consult.length > 0;
+    const enConsultation = fCatalogue.consult.length > 0 || fCatalogue.sc;
+    const consultes = [
+      ...fCatalogue.consult.map((c) => CLASSE_LABELS[c]),
+      ...(fCatalogue.sc ? ['Sans catégorie'] : []),
+    ];
 
     /*
      * Ce que chaque classe ouvre. Le compte est cumulatif, puisque le
@@ -879,7 +902,7 @@ export function Library({
                 className={`classrow${maClasse === c ? ' on' : ''}`}
                 onClick={() => {
                   onSettings({ ...settings, classe: c });
-                  setFCatalogue((f) => ({ ...f, consult: [] }));
+                  setFCatalogue((f) => ({ ...f, consult: [], sc: false }));
                   setChoixClasse(false);
                 }}
               >
@@ -892,7 +915,7 @@ export function Library({
               className="classrow plain"
               onClick={() => {
                 onSettings({ ...settings, classe: null });
-                setFCatalogue((f) => ({ ...f, consult: [] }));
+                setFCatalogue((f) => ({ ...f, consult: [], sc: false }));
                 setChoixClasse(false);
               }}
             >
@@ -904,7 +927,7 @@ export function Library({
         {enConsultation && (
           <div className="consultbox">
             <p className="ttl">
-              Vous consultez {fCatalogue.consult.map((c) => CLASSE_LABELS[c]).join(', ')}
+              Vous consultez {consultes.join(', ')}
             </p>
             <p className="hint">
               Ce sont les paquets dont le plancher tombe dans ce que vous avez
@@ -913,7 +936,7 @@ export function Library({
             </p>
             <button
               className="btn ghost"
-              onClick={() => setFCatalogue((f) => ({ ...f, consult: [] }))}
+              onClick={() => setFCatalogue((f) => ({ ...f, consult: [], sc: false }))}
             >
               {maClasse ? `Revenir à ma classe — ${CLASSE_LABELS[maClasse]}` : 'Revenir au catalogue'}
             </button>
