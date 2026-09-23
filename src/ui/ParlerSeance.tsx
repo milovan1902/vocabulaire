@@ -25,9 +25,14 @@
  * 4. LE COMPTE RENDU DISPARAISSAIT. Il est maintenant gardé, et l'écran
  *    le dit — la phrase de fin n'est pas décorative, c'est la réponse à
  *    « où est-ce que je le retrouve ? ».
+ *
+ * CHANTIER 110 — LES MOTS QUI ONT COINCÉ PEUVENT PARTIR EN CARTES.
+ * La carte « Mots rencontrés » devient « Tu veux les revoir ? » : une case
+ * par mot, et la règle de `data/reprise.ts` (jamais de doublon).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { parle } from './speech';
+import { ReprendreMots } from './ReprendreMots';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import {
   bilanDeSeance, euros, tourDeParole, ErreurParler,
@@ -42,9 +47,11 @@ function horloge(s: number): string {
 type Mode = 'voix' | 'clavier';
 
 export function ParlerSeance({
-  fiche, debit, budget, exploitant, onFini,
+  fiche, debit, budget, exploitant, onFini, enJeu, onReprise,
 }: {
   fiche: Fiche;
+  enJeu: string[];
+  onReprise: () => Promise<void>;
   debit: number;
   budget: Budget;
   exploitant: boolean;
@@ -205,23 +212,7 @@ export function ParlerSeance({
           )}
         </div>
 
-        {bilan.mots.length > 0 && (
-          <div className="parler-carte">
-            <p className="parler-kicker">Mots rencontrés</p>
-            <div className="seance-mots">
-              {bilan.mots.map((m) => (
-                <span key={m.en} className="seance-mot">
-                  <b>{m.en}</b>
-                  <small>{m.fr}</small>
-                </span>
-              ))}
-            </div>
-            <p className="hint">
-              Les verser dans un paquet à toi viendra au chantier suivant.
-              En attendant, ils sont là, notés.
-            </p>
-          </div>
-        )}
+        <ReprendreMots mots={bilan.mots} enJeu={enJeu} onReprise={onReprise} />
 
         {/*
           * La phrase la plus utile de l'écran : elle répond à la question
