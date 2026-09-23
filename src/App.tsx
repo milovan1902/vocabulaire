@@ -19,6 +19,7 @@ import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
 import { Onboarding } from './ui/Onboarding';
+import { REPRISE_ID } from './data/reprise';
 import { loadSummaries } from './ui/deckSummary';
 import { scheduleReminder } from './ui/reminder';
 
@@ -601,6 +602,17 @@ export default function App() {
             active={store.active}
             settings={store.common}
             onReglages={() => setView({ name: 'account' })}
+            /*
+             * CHANTIER 110 — le paquet de reprise vient d'être rempli : on
+             * l'obtient et on le met en jeu, sinon ses cartes attendraient
+             * dans la collection sans jamais passer dans la journée.
+             */
+            onReprise={async () => {
+              await store.refreshAll();
+              await store.addDeck(REPRISE_ID);
+              await store.setActive(REPRISE_ID, true);
+              await store.refreshAll();
+            }}
           />
         )}
 
