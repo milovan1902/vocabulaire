@@ -142,7 +142,12 @@ export interface Usage {
   jetonsIn: number;
   jetonsCache: number;
   jetonsOut: number;
+  /** Part de jetonsIn écrite en cache : facturée 1,25× au lieu de 1×. */
+  jetonsEcriture?: number;
 }
+
+/** Écrire en cache coûte un quart de plus qu'une entrée ordinaire. */
+const SURCOUT_ECRITURE = 0.25;
 
 export interface Consommation extends Usage {
   /** Jetons pondérés, tels que le quota les compte. */
@@ -177,7 +182,8 @@ export function ponderes(u: Usage): number {
 export function coutCentimes(modele: string, u: Usage): number {
   const p = PRIX[modele] ?? PRIX_MAX;
   const dollars =
-    ((u.jetonsIn + u.jetonsCache * PART_CACHE) * p.in + u.jetonsOut * p.out) / 1_000_000;
+    ((u.jetonsIn + (u.jetonsEcriture ?? 0) * SURCOUT_ECRITURE + u.jetonsCache * PART_CACHE) * p.in
+      + u.jetonsOut * p.out) / 1_000_000;
   return dollars * TAUX_EUR * 100;
 }
 
@@ -448,6 +454,8 @@ export async function appelleClaude(
   systeme: string,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
   maxJetons: number,
+  /** Faux pour un appel unique (bilan) : écrire un cache jamais relu coûte 25 % de plus. */
+  cacheHistorique = true,
 ): Promise<{ texte: string; usage: Usage }> {
   const entetes: Record<string, string> = {
     'x-api-key': env.ANTHROPIC_API_KEY,
@@ -470,8 +478,10 @@ export async function appelleClaude(
        * coûte le dixième. C'est la seule optimisation de coût du chantier,
        * et elle divise la facture d'entrée par deux ou trois.
        */
-      system: [{ type: 'text', text: systeme, cache_control: { type: 'ephemeral' } }],
-      messages,
+      system: [cacheHistorique
+        ? { type: 'text', text: systeme, cache_control: { type: 'ephemeral' } }
+        : { type: 'text', text: systeme }],
+      messages: cacheHistorique ? avecCacheHistorique(messages) : messages,
     }),
   });
 
@@ -504,8 +514,35 @@ export async function appelleClaude(
       jetonsIn: (u.input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0),
       jetonsCache: u.cache_read_input_tokens ?? 0,
       jetonsOut: u.output_tokens ?? 0,
+      jetonsEcriture: u.cache_creation_input_tokens ?? 0,
     },
   };
+}
+
+/**
+ * LE CACHE DE L'HISTORIQUE.
+ *
+ * Le prompt seul en cache ne suffisait pas : c'est l'historique, renvoyé
+ * à chaque tour, qui fait les deux tiers de la facture. On pose un second
+ * marqueur sur le DERNIER message : consignes + historique jusque-là sont
+ * mis en cache, et le tour suivant les relit au dixième du prix. Seuls les
+ * nouveaux messages sont payés plein tarif.
+ *
+ * Effet de bord utile : si le prompt fait moins de 1 024 jetons (minimum
+ * de Sonnet), il n'était jamais caché ; avec l'historique, le seuil est
+ * franchi dès les premiers tours.
+ *
+ * Le cache vit 5 minutes, relancé à chaque lecture. Aucun effet sur les
+ * réponses : le modèle lit exactement le même texte.
+ */
+function avecCacheHistorique(
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>,
+): Array<{ role: 'user' | 'assistant'; content: string | Array<Record<string, unknown>> }> {
+  if (messages.length === 0) return messages;
+  const dernier = messages.length - 1;
+  return messages.map((m, i) => i === dernier
+    ? { role: m.role, content: [{ type: 'text', text: m.content, cache_control: { type: 'ephemeral' } }] }
+    : m);
 }
 
 
