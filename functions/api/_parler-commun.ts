@@ -68,7 +68,17 @@ export interface Contexte {
 }
 
 const PARLER_DEFAUT = 'claude-sonnet-4-5';
-const BILAN_DEFAUT = 'claude-opus-4-1';
+const BILAN_DEFAUT = 'claude-sonnet-4-5';
+
+/**
+ * Plafond de gamme : Sonnet 4.5 au plus. Une variable d'environnement qui
+ * nommerait un autre modèle (Opus, faute de frappe) est ignorée.
+ */
+const MODELES_AUTORISES = new Set(['claude-sonnet-4-5', 'claude-haiku-4-5']);
+
+function borne(demande: string | undefined, defaut: string): string {
+  return demande && MODELES_AUTORISES.has(demande) ? demande : defaut;
+}
 
 /**
  * Le prix par million de jetons, en dollars.
@@ -79,12 +89,12 @@ const BILAN_DEFAUT = 'claude-opus-4-1';
  * pessimiste, jamais une facture surprise.
  */
 const PRIX: Record<string, { in: number; out: number }> = {
-  'claude-sonnet-4-5': { in: 2, out: 10 },
-  'claude-opus-4-1': { in: 5, out: 25 },
+  'claude-sonnet-4-5': { in: 3, out: 15 },
+  'claude-opus-4-1': { in: 15, out: 75 },
   'claude-haiku-4-5': { in: 1, out: 5 },
 };
 
-const PRIX_MAX = { in: 5, out: 25 };
+const PRIX_MAX = { in: 15, out: 75 };
 
 /** Un jeton relu en cache coûte le dixième d'un jeton d'entrée. */
 const PART_CACHE = 0.1;
@@ -144,11 +154,11 @@ export interface Consommation extends Usage {
 }
 
 export function modeleParler(env: Env): string {
-  return env.MODELE_PARLER || PARLER_DEFAUT;
+  return borne(env.MODELE_PARLER, PARLER_DEFAUT);
 }
 
 export function modeleBilan(env: Env): string {
-  return env.MODELE_BILAN || BILAN_DEFAUT;
+  return borne(env.MODELE_BILAN, BILAN_DEFAUT);
 }
 
 /**
