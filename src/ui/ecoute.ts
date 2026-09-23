@@ -4,6 +4,10 @@
  * CHANTIER 105 — LE MICRO.
  * CHANTIER 106 — LE MICRO QUI NE COUPE PLUS LA PAROLE.
  * CHANTIER 111 — LE MICRO QUI NE BÉGAIE PLUS.
+ * CHANTIER 112 — LE FRANÇAIS, SUR DEMANDE. Le navigateur n'écoute qu'UNE
+ *   langue à la fois : réglé sur l'anglais, il transforme le français en
+ *   bouillie. L'élève choisit « Dire en français » pour un tour ; ce tour
+ *   s'écoute en français, puis le micro revient à l'anglais.
  *
  * LE BÉGAIEMENT (111). Sur Android, en mode continu, Chrome ne complète
  * pas un résultat : il en ajoute un NOUVEAU à chaque mot, qui contient
@@ -100,12 +104,14 @@ export interface Ecoute {
 }
 
 export function ecoute(
-  { onPartiel, onFini, onErreur, silence = SILENCE_DEFAUT }: {
+  { onPartiel, onFini, onErreur, silence = SILENCE_DEFAUT, langue = 'en-US' }: {
     onPartiel: (texte: string) => void;
     onFini: (texte: string) => void;
     onErreur: (raison: string) => void;
     /** Le silence qui clôt le tour. Par défaut `SILENCE_DEFAUT`. */
     silence?: number;
+    /** 'en-US' par défaut ; 'fr-FR' pour un tour dit en français. */
+    langue?: 'en-US' | 'fr-FR';
   },
 ): Ecoute {
   const C = constructeur();
@@ -115,7 +121,7 @@ export function ecoute(
   }
 
   const r = new C();
-  r.lang = 'en-US';
+  r.lang = langue;
   /*
    * EN CONTINU, désormais. La fin du tour n'appartient plus au navigateur :
    * elle appartient au minuteur de silence ci-dessous. C'est le cœur du
@@ -222,7 +228,7 @@ export function ecoute(
 
 /** Forme de comparaison : minuscules, sans ponctuation ni espaces doubles. */
 function norme(t: string): string {
-  return t.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return t.toLowerCase().replace(/[^a-z0-9à-ÿœ' ]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /**
