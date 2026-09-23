@@ -17,6 +17,16 @@
  * et les fait dire par la voix qui convient. La synthèse du navigateur
  * enchaîne les énoncés dans l'ordre où on les lui donne : il n'y a rien à
  * orchestrer, juste à ne pas tout envoyer d'un coup dans la mauvaise voix.
+ *
+ * CHANTIER 112 — L'ANGLAIS ENTRE GUILLEMETS, ET PLUS D'ASTÉRISQUES.
+ *   - Dans une correction (« Petite précision : on dit "my children win" »),
+ *     la phrase est française, mais l'exemple cité est anglais. Il était
+ *     lu par la voix française, avec l'accent. Tout passage entre
+ *     guillemets est maintenant jugé À PART, et dit par la voix anglaise
+ *     s'il est anglais.
+ *   - Le modèle met parfois un mot en gras (**who**). La voix lisait
+ *     « astérisque ». `nettoie()` retire toute mise en forme avant de
+ *     parler, et avant d'afficher.
  */
 let cached: SpeechSynthesisVoice[] = [];
 
@@ -134,6 +144,58 @@ function estFrancais(passage: string): boolean {
   return fr > en;
 }
 
+/**
+ * Retire la mise en forme que le modèle glisse parfois : gras, italique,
+ * code, titres, puces. Exporté : l'écran l'emploie aussi pour l'affichage.
+ */
+export function nettoie(texte: string): string {
+  return texte
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/(^|[\s(«"“])\*([^*\n]+)\*(?=[\s).,!?;:»"”]|$)/g, '$1$2')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^\s*#+\s*/gm, '')
+    .replace(/^\s*[-*•]\s+/gm, '')
+    .replace(/[*`#]/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+
+const CITATION = /["“«]\s*([^"”»]+?)\s*["”»]/g;
+
+/**
+ * Une citation est jugée seule, sans les accents de la phrase autour :
+ * « my children win » n'a aucun mot-outil français, elle part en anglais.
+ * Dans une correction, ce qu'on cite est presque toujours de l'anglais.
+ */
+function langueCitation(c: string): Passage['langue'] {
+  if (ACCENTS.test(c)) return 'fr-FR';
+  const mots = c.toLowerCase().match(/[a-zà-ÿ']+/g) ?? [];
+  let fr = 0;
+  for (const m of mots) if (MOTS_FR.has(m) && !MOTS_EN.has(m)) fr += 1;
+  return fr > mots.length / 2 ? 'fr-FR' : 'en-US';
+}
+
+/**
+ * Coupe une phrase française autour de ses citations. Les guillemets
+ * eux-mêmes ne sont pas prononcés.
+ */
+function autourDesCitations(p: string): Passage[] {
+  const out: Passage[] = [];
+  let dernier = 0;
+  let m: RegExpExecArray | null;
+  CITATION.lastIndex = 0;
+  while ((m = CITATION.exec(p))) {
+    const avant = p.slice(dernier, m.index).trim();
+    if (avant) out.push({ texte: avant, langue: 'fr-FR' });
+    out.push({ texte: m[1], langue: langueCitation(m[1]) });
+    dernier = m.index + m[0].length;
+  }
+  const fin = p.slice(dernier).trim();
+  if (fin) out.push({ texte: fin, langue: 'fr-FR' });
+  return out.length ? out : [{ texte: p, langue: 'fr-FR' }];
+}
+
 /** Découpe en phrases, en gardant la ponctuation avec la phrase. */
 function phrases(texte: string): string[] {
   return (texte.match(/[^.!?…]+[.!?…]*\s*/g) ?? [texte])
@@ -153,11 +215,15 @@ export interface Passage {
  */
 export function passages(texte: string): Passage[] {
   const out: Passage[] = [];
-  for (const p of phrases(texte)) {
-    const langue: Passage['langue'] = estFrancais(p) ? 'fr-FR' : 'en-US';
+  const pousse = ({ texte: t, langue }: Passage) => {
     const dernier = out[out.length - 1];
-    if (dernier && dernier.langue === langue) dernier.texte += ` ${p}`;
-    else out.push({ texte: p, langue });
+    if (dernier && dernier.langue === langue) dernier.texte += ` ${t}`;
+    else out.push({ texte: t, langue });
+  };
+  for (const p of phrases(nettoie(texte))) {
+    if (!estFrancais(p)) { pousse({ texte: p, langue: 'en-US' }); continue; }
+    /* Une phrase française peut citer de l'anglais : on la découpe. */
+    for (const x of autourDesCitations(p)) pousse(x);
   }
   return out;
 }
