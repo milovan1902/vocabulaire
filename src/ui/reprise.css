@@ -77,3 +77,22 @@
 .guide-regles p:first-child { border-top: none; padding-top: 0; }
 .guide-regles b { color: var(--ink); font-weight: 500; }
 .guide-pied.double { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---- CHANTIER 112 ---- */
+
+/* Le champ clavier : .btn est en pleine largeur partout dans l'application,
+   ce qui écrasait le champ à côté de lui. Ici, le bouton prend sa taille. */
+.seance-saisie .seance-envoyer { width: auto; padding: 0 18px; min-height: 46px; }
+.seance-saisie input { flex: 1 1 auto; }
+
+/* « Dire en français » : discret, mais on voit tout de suite qu'il est actif. */
+.seance-langue {
+  margin: 6px auto 0; display: block;
+  min-height: 40px; padding: 8px 16px;
+  border: 1px solid var(--rule-strong); border-radius: 20px;
+  background: transparent;
+  font: inherit; font-size: 14px; color: var(--ink-soft);
+  cursor: pointer;
+}
+.seance-langue.on { border-color: var(--chalk); color: var(--ink); background: var(--panel); }
+.seance-micro .micro.fr { box-shadow: 0 0 0 4px var(--chalk); }
