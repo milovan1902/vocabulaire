@@ -66,9 +66,9 @@ export const onRequestGet = async ({ request, env }: Contexte): Promise<Response
   try {
     const c = await consommationDuJour(userId, env);
     return json(budgetDe(c));
-  } catch {
-    /* La jauge s'affiche en panne plutôt qu'en plein. */
-    return json({ erreur: 'budget illisible' }, 503);
+  } catch (e) {
+    /* La jauge s'affiche en panne plutôt qu'en plein — et elle dit pourquoi. */
+    return json({ erreur: 'budget illisible', detail: String(e) }, 503);
   }
 };
 
@@ -103,12 +103,12 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   let budgetAvant: Budget;
   try {
     budgetAvant = budgetDe(await consommationDuJour(userId, env));
-  } catch {
+  } catch (e) {
     /*
      * Quota illisible : on refuse. Laisser passer l'appel serait ouvrir
      * le robinet pendant exactement la panne où l'on ne compte plus rien.
      */
-    return json({ erreur: 'le budget n’a pas pu être vérifié' }, 503);
+    return json({ erreur: 'le budget n’a pas pu être vérifié', detail: String(e) }, 503);
   }
   if (budgetAvant.fini) {
     return json({ erreur: 'quota du jour épuisé', budget: budgetAvant }, 429);
