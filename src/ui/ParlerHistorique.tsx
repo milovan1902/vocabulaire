@@ -33,6 +33,7 @@ import {
   duree, ErreurParler, mesSeances, oublieSeance, quand, type SeanceGardee,
 } from '../data/parler';
 import { ReprendreMots } from './ReprendreMots';
+import { nettoie } from './speech';
 
 type Etat = 'charge' | 'pret' | 'panne';
 
@@ -115,7 +116,7 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
                   key={i}
                   className={t.role === 'user' ? 'seance-bulle moi' : 'seance-bulle lui'}
                 >
-                  {t.content}
+                  {t.role === 'user' ? t.content : nettoie(t.content)}
                 </p>
               ))}
             </div>
