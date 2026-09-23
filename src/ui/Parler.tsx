@@ -34,7 +34,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
-import { budgetParler, euros, type Budget, type Fiche } from '../data/parler';
+import { budgetParler, euros, ErreurParler, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { ParlerHistorique } from './ParlerHistorique';
 
@@ -100,6 +100,8 @@ export function Parler({
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
+  /** Le motif brut de la panne. Petit, monospace, sélectionnable. */
+  const [pourquoi, setPourquoi] = useState<string | null>(null);
   const [enSeance, setEnSeance] = useState(false);
   const [historique, setHistorique] = useState(false);
 
@@ -115,7 +117,11 @@ export function Parler({
       if (!b) { setEtat('anonyme'); return; }
       setBudget(b);
       setEtat('pret');
-    } catch {
+      setPourquoi(null);
+    } catch (e) {
+      setPourquoi(
+        e instanceof ErreurParler ? e.detail ?? e.message : String(e),
+      );
       setEtat('panne');
     }
   }, []);
@@ -202,12 +208,15 @@ export function Parler({
             Réglages.
           </p>
         ) : etat === 'panne' ? (
-          <p className="hint">
-            Ton budget n’est pas joignable pour l’instant.{' '}
-            <button className="parler-lien" onClick={() => void litBudget()}>
-              Réessayer
-            </button>
-          </p>
+          <>
+            <p className="hint">
+              Ton budget n’est pas joignable pour l’instant.{' '}
+              <button className="parler-lien" onClick={() => void litBudget()}>
+                Réessayer
+              </button>
+            </p>
+            {pourquoi && <p className="seance-detail">{pourquoi}</p>}
+          </>
         ) : (
           <>
             <p className="parler-min">
