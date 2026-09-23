@@ -18,6 +18,10 @@
  * LA SORTIE EST DU JSON, et c'est ce qui rend le bilan utilisable : les
  * mots retenus peuvent alors partir en cartes, et les erreurs incrémenter
  * la fiche d'élève. Un bilan en prose serait joli et mort.
+ *
+ * CHANTIER 110 — la consigne des mots change : on veut ceux qui ont POSÉ
+ * PROBLÈME, puisqu'ils peuvent maintenant partir en cartes dans le paquet
+ * « Reprise des fautes à l'oral ». Le reste du fichier est inchangé.
  */
 import {
   appelleClaude, consommationDuJour, json, minutesRestantes, modeleBilan,
@@ -54,10 +58,14 @@ telle qu'il l'a dite. « juste » est la même phrase corrigée. « pourquoi »
 explique en FRANÇAIS, en une phrase de moins de vingt mots, sans jargon
 grammatical inutile.
 
-mots — CINQ au maximum : des mots ou expressions que l'élève a RENCONTRÉS
-dans la conversation sans les maîtriser, et qui valent d'être appris. Jamais
-un mot qu'il a déjà employé juste, jamais un mot de la liste qu'il connaît
-déjà. « en » est la forme anglaise, « fr » la traduction française courte.
+mots — CINQ au maximum : les mots ou expressions qui ont POSÉ PROBLÈME à
+l'élève. Ce sont, par ordre de priorité : ceux qu'il a cherchés ou dits en
+français faute de les trouver ; ceux qu'il a mal employés ou mal formés ;
+ceux qu'il a rencontrés sans les comprendre. Jamais un mot qu'il a employé
+juste. Un mot de sa liste peut y figurer s'il l'a raté : c'est justement
+ce qu'on veut savoir. « en » est la forme anglaise de base, telle qu'on
+l'écrirait sur une carte (« a crowd », « to cheer »), « fr » la traduction
+française courte.
 
 Si la conversation est trop courte pour dire quelque chose d'honnête, rends
 des listes vides. Un bilan inventé est pire que pas de bilan.`;
