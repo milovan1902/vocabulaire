@@ -26,12 +26,16 @@
  *    le dit — la phrase de fin n'est pas décorative, c'est la réponse à
  *    « où est-ce que je le retrouve ? ».
  *
+ * CHANTIER 112 — « Dire en français » : un tour écouté en français ; la
+ * mise en forme du modèle (**gras**) n'est plus affichée ; le champ
+ * clavier n'est plus écrasé par son bouton.
+ *
  * CHANTIER 110 — LES MOTS QUI ONT COINCÉ PEUVENT PARTIR EN CARTES.
  * La carte « Mots rencontrés » devient « Tu veux les revoir ? » : une case
  * par mot, et la règle de `data/reprise.ts` (jamais de doublon).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { parle } from './speech';
+import { parle, nettoie } from './speech';
 import { ReprendreMots } from './ReprendreMots';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import {
@@ -70,6 +74,8 @@ export function ParlerSeance({
   const [mode, setMode] = useState<Mode>(ecouteDisponible ? 'voix' : 'clavier');
   const [ecoutant, setEcoutant] = useState(false);
   const [entendu, setEntendu] = useState('');
+  /** Le prochain tour s'écoute en français. Revient à l'anglais après. */
+  const [enFrancais, setEnFrancais] = useState(false);
   const session = useRef<Ecoute | null>(null);
   const fil = useRef<HTMLDivElement | null>(null);
 
@@ -144,15 +150,18 @@ export function ParlerSeance({
     setEntendu('');
     setEcoutant(true);
     session.current = ecoute({
+      langue: enFrancais ? 'fr-FR' : 'en-US',
       onPartiel: setEntendu,
       onFini: (texte) => {
         setEcoutant(false);
+        setEnFrancais(false);
         session.current = null;
         if (texte) void envoie(texte);
         else setEntendu('');
       },
       onErreur: (raison) => {
         setEcoutant(false);
+        setEnFrancais(false);
         session.current = null;
         setErreur(
           raison === 'not-allowed'
@@ -162,7 +171,7 @@ export function ParlerSeance({
         if (raison === 'indisponible' || raison === 'not-allowed') setMode('clavier');
       },
     });
-  }, [enVol, ecoutant, b.fini, envoie]);
+  }, [enVol, ecoutant, b.fini, envoie, enFrancais]);
 
   const relache = useCallback(() => {
     session.current?.arrete();
@@ -265,7 +274,7 @@ export function ParlerSeance({
         )}
         {messages.map((m, i) => (
           <p key={i} className={m.role === 'user' ? 'seance-bulle moi' : 'seance-bulle lui'}>
-            {m.content}
+            {m.role === 'user' ? m.content : nettoie(m.content)}
           </p>
         ))}
         {ecoutant && (
@@ -282,7 +291,7 @@ export function ParlerSeance({
       {mode === 'voix' ? (
         <div className="seance-micro">
           <button
-            className={ecoutant ? 'micro on' : 'micro'}
+            className={`${ecoutant ? 'micro on' : 'micro'}${enFrancais ? ' fr' : ''}`}
             disabled={enVol || b.fini}
             onClick={() => { if (ecoutant) relache(); else parleTour(); }}
             aria-pressed={ecoutant}
@@ -298,9 +307,23 @@ export function ParlerSeance({
               : enVol
                 ? 'Il réfléchit…'
                 : ecoutant
-                  ? 'J’écoute — appuie pour envoyer tout de suite'
-                  : 'Appuie et parle'}
+                  ? (enFrancais
+                    ? 'J’écoute en français — appuie pour envoyer'
+                    : 'J’écoute — appuie pour envoyer tout de suite')
+                  : enFrancais
+                    ? 'Appuie et parle en français'
+                    : 'Appuie et parle'}
           </p>
+          {!ecoutant && !b.fini && (
+            <button
+              className={`seance-langue${enFrancais ? ' on' : ''}`}
+              onClick={() => setEnFrancais((v) => !v)}
+              disabled={enVol}
+              aria-pressed={enFrancais}
+            >
+              {enFrancais ? 'Revenir à l’anglais' : 'Dire en français'}
+            </button>
+          )}
           <button className="seance-bascule" onClick={() => setMode('clavier')}>
             Écrire plutôt
           </button>
@@ -314,12 +337,11 @@ export function ParlerSeance({
             <input
               value={saisie}
               onChange={(e) => setSaisie(e.target.value)}
-              placeholder="Write in English…"
+              placeholder="Écris ici…"
               autoComplete="off"
-              lang="en"
               disabled={enVol || b.fini}
             />
-            <button className="btn" type="submit" disabled={enVol || b.fini || !saisie.trim()}>
+            <button className="btn seance-envoyer" type="submit" disabled={enVol || b.fini || !saisie.trim()}>
               Envoyer
             </button>
           </form>
