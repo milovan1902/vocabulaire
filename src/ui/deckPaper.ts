@@ -32,6 +32,14 @@ export type Papier = {
 export const IVOIRE: Papier = { ink: '#5b5347', mid: '#c0b79f', pale: '#f4f1ea' };
 
 /**
+ * CHANTIER 113 — le gris du paquet « Reprise des fautes à l'oral ».
+ * Hors de la ROUE : aucun paquet du catalogue ne doit tomber dessus par
+ * hachage. Un gris froid, légèrement bleuté pour s'accorder au bleu nuit
+ * du dessin ; le filet reste franc, comme sur les autres papiers.
+ */
+export const GRIS: Papier = { ink: '#4a4f57', mid: '#a9aeb6', pale: '#eceef1' };
+
+/**
  * Les sept teintes, dans l'ordre de la liste.
  *
  * Toutes tirées vers le parchemin et posées sur le même palier de clarté :
@@ -471,6 +479,7 @@ export function papierExplicite(
   name: string,
   categoryId?: string | null,
 ): Papier | null {
+  if (id === 'reprise-oral') return GRIS;
   if (id in PAR_ID) return ROUE[PAR_ID[id]];
   const cle = normaliser(name);
   if (cle in PAR_NOM) return ROUE[PAR_NOM[cle]];
