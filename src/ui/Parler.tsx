@@ -84,7 +84,7 @@ function themesRetenus(): string[] {
 type Etat = 'charge' | 'pret' | 'anonyme' | 'panne';
 
 export function Parler({
-  decks, active, settings, onReglages,
+  decks, active, settings, onReglages, onReprise,
 }: {
   decks: Deck[];
   /** Paquets en jeu : le vocabulaire dont la conversation peut se servir. */
@@ -92,6 +92,8 @@ export function Parler({
   settings: Settings;
   /** Aller régler sa classe. Le niveau ne se change pas depuis ici. */
   onReglages: () => void;
+  /** CHANTIER 110 — obtenir et mettre en jeu le paquet de reprise. */
+  onReprise: () => Promise<void>;
 }) {
   const [choisis, setChoisis] = useState<string[]>(themesRetenus);
   const [mots, setMots] = useState<MotRecent[]>([]);
@@ -170,7 +172,11 @@ export function Parler({
   }), [classe, mots, choisis]);
 
   if (historique) {
-    return <ParlerHistorique onRetour={() => setHistorique(false)} />;
+    return <ParlerHistorique
+        onRetour={() => setHistorique(false)}
+        enJeu={active}
+        onReprise={onReprise}
+      />;
   }
 
   if (enSeance && budget) {
@@ -181,6 +187,8 @@ export function Parler({
         budget={budget}
         exploitant={exploitant}
         onFini={() => { setEnSeance(false); void litBudget(); }}
+        enJeu={active}
+        onReprise={onReprise}
       />
     );
   }
