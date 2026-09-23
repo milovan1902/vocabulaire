@@ -212,7 +212,12 @@ export async function mesSeances(): Promise<SeanceGardee[]> {
     .order('finie_le', { ascending: false })
     .limit(60);
 
-  if (error) throw new ErreurParler(error.message);
+  /*
+   * CHANTIER 107 — le message de PostgREST est conservé tel quel dans
+   * `detail`. « relation "public.parler_seance" does not exist » veut dire
+   * que le SQL du 106 n'a pas été passé ; aucune autre phrase ne le dit.
+   */
+  if (error) throw new ErreurParler('archive illisible', false, error.message);
 
   return ((data ?? []) as LigneSeance[]).map((l) => ({
     id: l.id,
@@ -236,7 +241,7 @@ export async function mesSeances(): Promise<SeanceGardee[]> {
  */
 export async function oublieSeance(id: number): Promise<void> {
   const { error } = await supabase.from('parler_seance').delete().eq('id', id);
-  if (error) throw new ErreurParler(error.message);
+  if (error) throw new ErreurParler('effacement impossible', false, error.message);
 }
 
 /** « 7 min 20 s » — la durée d'une séance, telle qu'on la lit. */
