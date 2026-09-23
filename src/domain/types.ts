@@ -138,6 +138,14 @@ export interface Deck {
    * Colonne Supabase correspondante : `grade_from`.
    */
   classeFrom?: Classe | null;
+  /**
+   * CHANTIER 108 — paquet « sans catégorie » (grade_from = 'SC').
+   * Il n'a pas de plancher (classeFrom reste null, il convient à tout le
+   * monde) mais porte la pastille « SC » et répond au filtre du même nom.
+   * 'SC' n'entre PAS dans CLASSES : ce n'est pas une classe qu'un élève
+   * peut déclarer, et l'ordre de ce tableau sert de comparaison.
+   */
+  sansCategorie?: boolean;
   /** Un paquet fourni avec l'application ne peut pas être supprimé. */
   builtin: boolean;
   /**
