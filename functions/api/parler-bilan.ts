@@ -130,6 +130,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
       `${promptSysteme(corps.fiche)}\n\n---\n\n${CONSIGNE}`,
       [{ role: 'user', content: transcription }],
       900,
+      false,
     );
   } catch (e) {
     return json({ erreur: 'le bilan n’a pas pu être établi', detail: String(e) }, 502);
