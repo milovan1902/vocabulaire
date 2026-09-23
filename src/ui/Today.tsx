@@ -176,7 +176,7 @@ export function Today({
               h={76}
               categoryId={r.deck.categoryId}
             />
-            {r.deck.classeFrom && <span className="classdot">{r.deck.classeFrom}</span>}
+            {(r.deck.classeFrom || r.deck.sansCategorie) && <span className="classdot">{r.deck.classeFrom ?? 'SC'}</span>}
           </span>
           <span className="workrow-txt">
             <b>{r.deck.name}</b>
@@ -226,8 +226,8 @@ export function Today({
               * regarde le plus. Les deux pastilles tiennent ensemble — l'une
               * au coin haut, l'autre au bord bas.
               */}
-            {r.deck.classeFrom && (
-              <span className="classdot classdot-lg">{r.deck.classeFrom}</span>
+            {(r.deck.classeFrom || r.deck.sansCategorie) && (
+              <span className="classdot classdot-lg">{r.deck.classeFrom ?? 'SC'}</span>
             )}
             <span className="pioche-due">{r.due}</span>
           </span>
