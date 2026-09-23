@@ -264,7 +264,17 @@ export async function consommationDuJour(userId: string, env: Env): Promise<Cons
    * traite comme un quota épuisé, jamais comme un quota neuf.
    */
   if (!r.ok) {
-    throw new Error(`lecture du quota impossible (${r.status})`);
+    /*
+     * CHANTIER 107 — LE MOTIF REMONTE JUSQU'À L'ÉCRAN.
+     *
+     * « Budget non joignable » ne se répare pas : une table absente, une
+     * clé de service périmée et une politique d'accès mal posée donnent
+     * exactement la même phrase. Le corps renvoyé par PostgREST, lui,
+     * nomme la panne en un mot — il coûte deux lignes à faire suivre et
+     * il économise une soirée.
+     */
+    const dit = await r.text().catch(() => '');
+    throw new Error(`lecture du quota impossible (${r.status}) ${dit.slice(0, 200)}`);
   }
 
   const vide: Consommation = {
