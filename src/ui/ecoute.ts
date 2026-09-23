@@ -3,6 +3,20 @@
  *
  * CHANTIER 105 — LE MICRO.
  * CHANTIER 106 — LE MICRO QUI NE COUPE PLUS LA PAROLE.
+ * CHANTIER 111 — LE MICRO QUI NE BÉGAIE PLUS.
+ *
+ * LE BÉGAIEMENT (111). Sur Android, en mode continu, Chrome ne complète
+ * pas un résultat : il en ajoute un NOUVEAU à chaque mot, qui contient
+ * toute la phrase depuis le début, et le marque souvent « définitif ».
+ * On recevait donc « yes », « yes I », « yes I play »… et on les mettait
+ * bout à bout : « yes yes I yes I play ». Le texte gonflé partait tel quel
+ * au modèle, et coûtait des jetons à chaque tour, puisque l'historique
+ * est relu.
+ *
+ * Désormais, à chaque événement, on RECALCULE le texte de la session à
+ * partir de tous ses résultats, et un résultat qui reprend le précédent
+ * le REMPLACE au lieu de s'y ajouter. Sur ordinateur, où les résultats
+ * sont de vrais morceaux successifs, rien ne change : ils s'enchaînent.
  *
  * CE QUI N'ALLAIT PAS. La reconnaissance était ouverte en mode
  * `continuous = false`. Ce réglage laisse le NAVIGATEUR décider quand
@@ -111,9 +125,9 @@ export function ecoute(
   r.interimResults = true;
   r.maxAlternatives = 1;
 
-  /** Ce qui est définitivement reconnu, cumulé à travers les relances. */
+  /** Le texte des sessions précédentes (avant une relance automatique). */
   let acquis = '';
-  /** Ce qui est encore en cours de reconnaissance, remplacé à chaque tour. */
+  /** Le texte de la session en cours, recalculé à chaque événement. */
   let partiel = '';
   let clos = false;
   /** Vrai quand la fermeture vient de nous — sinon on relance. */
@@ -142,14 +156,16 @@ export function ecoute(
   };
 
   r.onresult = (e) => {
-    let enCours = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const res = e.results[i];
-      const t = res[0]?.transcript ?? '';
-      if (res.isFinal) acquis += ` ${t}`;
-      else enCours += t;
+    /*
+     * Toute la session, depuis le premier résultat, et non depuis
+     * `resultIndex` : c'est la seule lecture juste sur Android comme
+     * sur ordinateur.
+     */
+    const morceaux: string[] = [];
+    for (let i = 0; i < e.results.length; i++) {
+      morceaux.push(e.results[i][0]?.transcript ?? '');
     }
-    partiel = enCours;
+    partiel = fusionne(morceaux);
     dernierSon = Date.now();
     onPartiel(texteEntendu());
   };
@@ -178,6 +194,9 @@ export function ecoute(
      * refuse de tenir, mieux vaut rendre ce qu'on a que boucler.
      */
     if (relances >= 20 || Date.now() - debut > TOUR_MAX) { termine(); return; }
+    /* La session se ferme : son texte passe dans l'acquis, la suivante repart à vide. */
+    acquis = fusionne([acquis, partiel]);
+    partiel = '';
     relances += 1;
     try { r.start(); } catch { termine(); }
   };
@@ -199,6 +218,43 @@ export function ecoute(
   }
 
   return { arrete: referme };
+}
+
+/** Forme de comparaison : minuscules, sans ponctuation ni espaces doubles. */
+function norme(t: string): string {
+  return t.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Assemble des résultats successifs sans jamais répéter.
+ *   - un morceau qui REPREND ce qu'on a (« yes I » puis « yes I play »)
+ *     le remplace ;
+ *   - un morceau déjà contenu dans ce qu'on a est ignoré ;
+ *   - un morceau qui chevauche la fin (« I play » puis « play inside »)
+ *     n'ajoute que la partie nouvelle ;
+ *   - sinon, il s'ajoute à la suite.
+ */
+export function fusionne(morceaux: string[]): string {
+  let texte = '';
+  for (const brut of morceaux) {
+    const m = brut.replace(/\s+/g, ' ').trim();
+    if (!m) continue;
+    const a = norme(texte);
+    const b = norme(m);
+    if (!a) { texte = m; continue; }
+    if (b.startsWith(a)) { texte = m; continue; }
+    if (a.includes(b)) continue;
+    const motsA = a.split(' ');
+    const motsB = m.split(' ');
+    const motsBn = b.split(' ');
+    let recouvre = 0;
+    for (let k = Math.min(motsA.length, motsBn.length); k > 0; k--) {
+      if (motsA.slice(-k).join(' ') === motsBn.slice(0, k).join(' ')) { recouvre = k; break; }
+    }
+    const reste = motsB.slice(recouvre).join(' ');
+    if (reste) texte = `${texte} ${reste}`;
+  }
+  return texte.trim();
 }
 
 /** Coupe la voix de synthèse. L'élève qui parle passe avant. */
