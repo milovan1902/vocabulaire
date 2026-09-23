@@ -134,6 +134,7 @@ export async function pullCatalog(): Promise<number> {
        * qu'aucun d'eux n'avait changé.
        */
       classeFrom: readClasse((row as Record<string, unknown>).grade_from),
+      sansCategorie: (row as Record<string, unknown>).grade_from === 'SC',
       builtin: true,
       priceCents: row.price_cents ?? 0,
       hasImage: existing?.hasImage ?? false,
