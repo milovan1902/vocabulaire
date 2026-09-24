@@ -28,12 +28,25 @@
  *
  * En relecture : la méthode, les progrès et les trois écrans « Parler ».
  * La classe et le paquet sont déjà réglés, on ne les redemande pas.
+ *
+ * CHANTIER 112 — LES CINQ CARTES REVIENNENT, ET LES DOS SONT DESSINÉS.
+ *
+ * Neuf étapes : « cinq cartes » et « échéances » reprennent leur place
+ * après le paquet, telles qu'au chantier 94 (voix, clavier, relecture qui
+ * cherche un paquet lisible). En relecture : méthode, cartes, échéances,
+ * puis progrès et Parler.
+ *
+ * Les dos des paquets proposés passent par `DeckVign`, comme sur
+ * « Aujourd'hui » : parchemin et illustration. `imageFor` seul ne
+ * connaissait que trois paquets et laissait les autres vides.
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Card, Classe, Deck, Grade, Progress } from '../domain/types';
 import { CLASSES, CLASSE_LABELS, classeConvient, classeRank } from '../domain/types';
 import { STATUTS } from '../engine/mastery';
-import { imageFor } from './deckImages';
+import { emptyProgress, isNew, previewIntervals } from '../engine/scheduler';
+import { speak } from './speech';
+import { DeckVign } from './components';
 import { Anneau } from './MesMots';
 import { REPRISE_NOM } from '../data/reprise';
 import './reprise.css';
@@ -45,9 +58,21 @@ type PaquetCharge = {
   image: string | null;
 };
 
-const ETAPES = ['methode', 'classe', 'paquet', 'progres', 'parler', 'mots', 'bilan'] as const;
+const ETAPES = ['methode', 'classe', 'paquet', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'] as const;
 type Etape = (typeof ETAPES)[number];
-const RELECTURE: readonly Etape[] = ['methode', 'progres', 'parler', 'mots', 'bilan'];
+const RELECTURE: readonly Etape[] = ['methode', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'];
+
+/** Cinq : assez pour sentir la répétition, trop peu pour ressembler à du travail. */
+const CARTES_DESSAI = 5;
+
+const JUGEMENTS: Array<{ key: Grade; label: string; className: string }> = [
+  { key: 'again', label: 'À revoir', className: 'grade again' },
+  { key: 'hard', label: 'Difficile', className: 'grade' },
+  { key: 'good', label: 'Correct', className: 'grade' },
+  { key: 'easy', label: 'Facile', className: 'grade easy' },
+];
+
+type Resultat = { card: Card; grade: Grade; due: number };
 
 /*
  * Les relevés fictifs de l'étape 4 : huit semaines, les quatre tas tracés
@@ -70,17 +95,17 @@ function trace(v: readonly number[]): string {
 }
 
 export function Onboarding({
-  decks, classe, onClasse, onChoisir, onFini,
-  relecture = false, enJeu = [],
+  decks, classe, onClasse, onChoisir, loadDeck, onGrade, onFini,
+  relecture = false, enJeu = [], debit = 1,
 }: {
   decks: Deck[];
   classe: Classe | null;
   onClasse: (c: Classe | null) => void;
   /** Obtient le paquet ET le met en jeu : sans cela, la journée reste à zéro. */
   onChoisir: (id: string) => Promise<void>;
-  /** Plus employé depuis le chantier 110. Gardé pour ne pas toucher App. */
+  /** Charge le paquet des cinq cartes. */
   loadDeck?: (id: string) => Promise<PaquetCharge>;
-  /** Plus employé depuis le chantier 110. */
+  /** Enregistre un jugement des cinq cartes, comme en révision. */
   onGrade?: (deckId: string, p: Progress, g: Grade, wasNew: boolean) => Promise<Progress>;
   onFini: (vers: 'today' | 'library' | 'account' | 'parler') => void;
   relecture?: boolean;
@@ -89,8 +114,14 @@ export function Onboarding({
 }) {
   const [etape, setEtape] = useState<Etape>('methode');
   const [enCours, setEnCours] = useState(false);
+  const [charge, setCharge] = useState<PaquetCharge | null>(null);
+  const [index, setIndex] = useState(0);
+  const [montre, setMontre] = useState(false);
+  const [resultats, setResultats] = useState<Resultat[]>([]);
+  /* La relecture n'a trouvé aucun paquet lisible : on repasse par le choix. */
+  const [secours, setSecours] = useState(false);
 
-  const relu = relecture && enJeu.length > 0;
+  const relu = relecture && enJeu.length > 0 && !secours;
   const parcours = relu ? RELECTURE : ETAPES;
   const rang = parcours.indexOf(etape) + 1;
   const suivante = useCallback(() => {
@@ -107,15 +138,97 @@ export function Onboarding({
       .slice(0, 3);
   }, [decks, classe]);
 
+  const demarrer = useCallback((c: PaquetCharge) => {
+    setCharge({ ...c, progress: c.progress ?? {} });
+    setIndex(0);
+    setMontre(false);
+    setResultats([]);
+    setEtape('cartes');
+  }, []);
+
   const choisirPaquet = useCallback(async (id: string) => {
     setEnCours(true);
     try {
       await onChoisir(id);
+      const c = loadDeck ? await loadDeck(id) : null;
+      if (c && c.cards?.length) demarrer(c);
+      else setEtape('progres');
+    } catch {
+      setEtape('progres');
     } finally {
       setEnCours(false);
     }
-    setEtape('progres');
-  }, [onChoisir]);
+  }, [onChoisir, loadDeck, demarrer]);
+
+  /* Relecture : le premier paquet en jeu qui a des cartes à montrer. */
+  const reprendre = useCallback(async () => {
+    setEnCours(true);
+    for (const id of enJeu) {
+      try {
+        const c = loadDeck ? await loadDeck(id) : null;
+        if (c && c.deck && c.cards?.length) {
+          setEnCours(false);
+          demarrer(c);
+          return;
+        }
+      } catch {
+        /* Paquet illisible : on passe au suivant. */
+      }
+    }
+    setEnCours(false);
+    setSecours(true);
+    setEtape('paquet');
+  }, [enJeu, loadDeck, demarrer]);
+
+  /*
+   * Premier lancement : les premières cartes du paquet. Relecture : les
+   * mots jamais vus, puis les plus proches de leur échéance — jamais un
+   * mot révisé ce matin, qu'une réponse de démonstration repousserait.
+   */
+  const jeu = useMemo(() => {
+    const cartes = charge?.cards ?? [];
+    if (cartes.length === 0) return [];
+    const vu = charge?.progress ?? {};
+    if (!relu) return cartes.slice(0, CARTES_DESSAI);
+    const jamais = cartes.filter((c) => !vu[c.id]);
+    const vues = cartes.filter((c) => vu[c.id]).sort((a, b) => vu[a.id].due - vu[b.id].due);
+    return [...jamais, ...vues].slice(0, CARTES_DESSAI);
+  }, [charge, relu]);
+  const carte = jeu[index];
+
+  const progression = useMemo(
+    () => (carte ? charge?.progress[carte.id] ?? emptyProgress(carte.id) : null),
+    [carte, charge],
+  );
+  const apercus = useMemo(() => (progression ? previewIntervals(progression) : null), [progression]);
+
+  const dire = useCallback(() => { if (carte) speak(carte.en, debit); }, [carte, debit]);
+  const motAnglais = carte?.en;
+  useEffect(() => {
+    if (etape !== 'cartes' || !montre || !motAnglais) return;
+    speak(motAnglais, debit);
+  }, [etape, montre, motAnglais, debit]);
+
+  const juger = useCallback(async (g: Grade) => {
+    if (!charge || !carte || !progression || !onGrade) return;
+    const apres = await onGrade(charge.deck.id, progression, g, isNew(progression));
+    charge.progress[apres.cardId] = apres;
+    setResultats((r) => [...r, { card: carte, grade: g, due: apres.due }]);
+    setMontre(false);
+    if (index + 1 >= jeu.length) setEtape('echeances');
+    else setIndex(index + 1);
+  }, [charge, carte, progression, onGrade, index, jeu.length]);
+
+  /* Clavier, comme en révision : espace révèle, 1 à 4 jugent. */
+  useEffect(() => {
+    if (etape !== 'cartes') return undefined;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === ' ') { e.preventDefault(); setMontre(true); return; }
+      if (montre && ['1', '2', '3', '4'].includes(e.key)) void juger(JUGEMENTS[Number(e.key) - 1].key);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [etape, montre, juger]);
 
   const classeDite = classe ? CLASSE_LABELS[classe] : null;
   const lignes = STATUTS.filter((s) => s.cle !== 'decouvrir');
@@ -123,7 +236,10 @@ export function Onboarding({
   return (
     <div className="guide">
       <div className="guide-head">
-        <span className="guide-pas">Étape {rang} sur {parcours.length}</span>
+        <span className="guide-pas">
+          Étape {rang} sur {parcours.length}
+          {etape === 'cartes' && jeu.length > 0 && ` · carte ${index + 1} sur ${jeu.length}`}
+        </span>
         {etape !== 'bilan' && (
           <button className="guide-skip" onClick={() => onFini(relu ? 'account' : 'library')}>
             {relu ? 'Fermer' : 'Plus tard'}
@@ -158,7 +274,13 @@ export function Onboarding({
             </p>
           </div>
           <div className="guide-pied">
-            <button className="btn" onClick={suivante}>{relu ? 'Continuer' : 'Commencer'}</button>
+            <button
+              className="btn"
+              disabled={enCours}
+              onClick={() => { if (relu) void reprendre(); else suivante(); }}
+            >
+              {relu ? 'Refaire cinq cartes' : 'Commencer'}
+            </button>
           </div>
         </>
       )}
@@ -198,11 +320,10 @@ export function Onboarding({
           </p>
           <div className="guide-paquets">
             {propositions.map((d) => {
-              const img = imageFor(d.id, null);
               return (
                 <button key={d.id} disabled={enCours} onClick={() => void choisirPaquet(d.id)}>
                   <span className="dos" aria-hidden="true">
-                    {img ? <img src={img} alt="" /> : <span className="dos-vide" />}
+                    <DeckVign id={d.id} name={d.name} image={null} w={54} h={76} categoryId={d.categoryId} />
                   </span>
                   <span className="quoi">
                     <b>{d.name}</b>
@@ -217,6 +338,96 @@ export function Onboarding({
             })}
           </div>
           {enCours && <p className="guide-note">Préparation du paquet…</p>}
+        </>
+      )}
+
+      {etape === 'cartes' && carte && (
+        <>
+          <p className="guide-consigne">
+            {montre
+              ? 'Le mot anglais vient d’être prononcé — « Écouter » le répète. Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'
+              : 'Cherchez la réponse dans votre tête, puis vérifiez. L’application dira le mot anglais à voix haute.'}
+          </p>
+          <div className="guide-carte" onClick={() => { if (!montre) setMontre(true); }}>
+            <span className="guide-kicker">{charge?.deck?.name ?? ''}</span>
+            <p className="recto">{carte.fr}</p>
+            {montre && (
+              <>
+                <span className="ruleline" aria-hidden="true" />
+                <p className="verso">{carte.en}</p>
+                {carte.example && <p className="exemple">{carte.example}</p>}
+                <button className="speak guide-speak" onClick={(e) => { e.stopPropagation(); dire(); }}>
+                  Écouter
+                </button>
+              </>
+            )}
+          </div>
+          {!montre ? (
+            <div className="guide-pied">
+              <button className="btn" onClick={() => setMontre(true)}>Voir la réponse</button>
+            </div>
+          ) : (
+            <div className="grades guide-grades">
+              {JUGEMENTS.map((j) => (
+                <button key={j.key} className={j.className} onClick={() => void juger(j.key)}>
+                  {j.label}
+                  <small>{apercus?.[j.key]}</small>
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {etape === 'cartes' && !carte && (
+        <>
+          <h2 className="guide-titre">Aucune carte à montrer.</h2>
+          <p className="guide-texte">
+            Le paquet n’a pas pu être lu sur cet appareil : ses cartes ne sont
+            peut-être pas encore descendues. Choisissez-en un autre, ou continuez.
+          </p>
+          <div className="guide-pied">
+            <button className="btn" onClick={() => { setSecours(true); setEtape('paquet'); }}>
+              Choisir un paquet
+            </button>
+          </div>
+          <div className="guide-pied">
+            <button className="btn ghost wide" onClick={() => setEtape('progres')}>Continuer</button>
+          </div>
+        </>
+      )}
+
+      {etape === 'echeances' && (
+        <>
+          <h2 className="guide-titre">Vos {resultats.length} mots ont chacun leur rendez-vous.</h2>
+          <p className="guide-texte">
+            Calculé sur vos réponses, pas sur un calendrier : plus un mot vous a coûté,
+            plus il revient tôt.
+          </p>
+          <ul className="guide-echeances">
+            {resultats.map((r, i) => (
+              <li key={`${r.card.id}-${i}`}>
+                <span className="mot">
+                  <b>{r.card.en}</b>
+                  <small>{r.card.fr}</small>
+                </span>
+                <small className="juge">{JUGEMENTS.find((j) => j.key === r.grade)?.label}</small>
+                <b className="quand">{quand(r.due)}</b>
+              </li>
+            ))}
+          </ul>
+          <p className="guide-note">
+            À chaque rappel réussi, ces écarts doubleront presque. C’est là que le mot
+            passe en mémoire profonde — et vous n’avez rien à calculer.
+          </p>
+          <p className="guide-note">
+            Deux mots jugés pareils peuvent revenir à des dates différentes : chaque
+            mot garde sa propre histoire, et l’application décale légèrement les
+            échéances au hasard pour ne pas vous coller cinquante rappels le même matin.
+          </p>
+          <div className="guide-pied">
+            <button className="btn" onClick={() => setEtape('progres')}>Continuer</button>
+          </div>
         </>
       )}
 
@@ -399,6 +610,19 @@ export function Onboarding({
       )}
     </div>
   );
+}
+
+/** Quand un mot revient, en clair : « demain », « dans 3 jours ». */
+function quand(due: number, maintenant = Date.now()): string {
+  const min = Math.round((due - maintenant) / 60000);
+  if (min < 10) return 'dans la séance';
+  if (min < 60) return `dans ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 20) return `dans ${h} h`;
+  const j = Math.max(1, Math.round(h / 24));
+  if (j === 1) return 'demain';
+  if (j < 31) return `dans ${j} jours`;
+  return `dans ${Math.round(j / 30)} mois`;
 }
 
 /** Les échéances d'un même mot, dessinées à l'échelle. */
