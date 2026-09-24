@@ -108,7 +108,10 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
         <div className="parler-carte">
           <p className="parler-kicker">Ce que tu as dit</p>
           {ouverte.transcription.length === 0 ? (
-            <p className="hint">La transcription n’a pas été gardée pour cette séance.</p>
+            <p className="hint">
+              Le texte complet est effacé au bout de 90 jours. Le compte rendu,
+              lui, reste.
+            </p>
           ) : (
             <div className="histo-fil">
               {ouverte.transcription.map((t, i) => (
@@ -166,7 +169,8 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
           <p className="hint">
             Rien encore. Chaque conversation terminée se range ici, avec sa
             transcription et son compte rendu — c’est en les relisant à
-            quelques jours d’écart qu’on voit ce qui a bougé.
+            quelques jours d’écart qu’on voit ce qui a bougé. Le texte
+            complet est gardé 90 jours, le compte rendu reste.
           </p>
         </div>
       ) : (
