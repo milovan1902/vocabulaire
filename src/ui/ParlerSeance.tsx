@@ -151,6 +151,8 @@ export function ParlerSeance({
     setEcoutant(true);
     session.current = ecoute({
       langue: enFrancais ? 'fr-FR' : 'en-US',
+      /* CHANTIER 115 — plus de coupure au silence : l'élève appuie pour envoyer. */
+      manuel: true,
       onPartiel: setEntendu,
       onFini: (texte) => {
         setEcoutant(false);
@@ -268,7 +270,7 @@ export function ParlerSeance({
         {messages.length === 0 && !ecoutant && (
           <p className="hint">
             {mode === 'voix'
-              ? 'Appuie sur le micro et dis bonjour en anglais. Prends ton temps : le micro attend trois secondes de silence avant d’envoyer.'
+              ? 'Appuie sur le micro et dis bonjour en anglais. Prends tout ton temps : rien ne part tant que tu n’as pas appuyé une seconde fois.'
               : 'Écris en anglais. La réponse est dite à voix haute.'}
           </p>
         )}
@@ -308,8 +310,8 @@ export function ParlerSeance({
                 ? 'Il réfléchit…'
                 : ecoutant
                   ? (enFrancais
-                    ? 'J’écoute en français — appuie pour envoyer'
-                    : 'J’écoute — appuie pour envoyer tout de suite')
+                    ? 'J’écoute en français — appuie quand tu as fini'
+                    : 'J’écoute — appuie quand tu as fini')
                   : enFrancais
                     ? 'Appuie et parle en français'
                     : 'Appuie et parle'}
