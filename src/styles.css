@@ -30787,3 +30787,14 @@ label.switch input {
    ================================================================== */
 html, body { overflow-x: clip; }
 .app { overflow-x: clip; }
+/* CHANTIER 112 — le chiffre au-dessus de chaque barre des sept jours,
+   et le dos dessiné des paquets du guide. À COLLER À LA FIN de src/styles.css. */
+.bars { height: 100px; }
+.bar .bar-n {
+  margin-top: auto;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--grey); height: 14px; line-height: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.bar .bar-n + i { margin-top: 2px; max-height: calc(100% - 34px); }
+.guide-paquets .dos .vign { position: relative; }
