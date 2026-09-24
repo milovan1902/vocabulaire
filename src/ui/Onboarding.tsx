@@ -319,6 +319,11 @@ export function Onboarding({
             Les mots que tu viens de mémoriser reviennent dans la conversation,
             en situation, sans qu’on te les annonce.
           </p>
+          <p className="guide-texte">
+            Si tu fais une faute, une voix en français te corrige. Et si tu
+            bloques, un bouton te permet de poser ta question en français,
+            sans quitter la conversation.
+          </p>
 
           <div className="guide-exemple">
             <span className="guide-kicker">Tes mots de la semaine</span>
@@ -346,7 +351,7 @@ export function Onboarding({
           <h2 className="guide-titre">À la fin, tu choisis ce que tu retravailles.</h2>
           <p className="guide-texte">
             Après chaque conversation, un bilan court : tes phrases corrigées,
-            et jusqu’à cinq mots qui t’ont posé problème. Tu coches ceux que
+            chacune avec l’explication de la faute, et jusqu’à cinq mots qui t’ont posé problème. Tu coches ceux que
             tu veux revoir.
           </p>
 
@@ -354,6 +359,9 @@ export function Onboarding({
             <span className="guide-kicker">Ce qui a coincé</span>
             <p className="seance-faux">I am agree with you.</p>
             <p className="seance-juste">I agree with you.</p>
+            <p className="guide-note">
+              En anglais, « agree » est déjà un verbe : pas besoin de « am ».
+            </p>
           </div>
 
           <div className="guide-exemple">
