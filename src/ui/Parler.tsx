@@ -29,6 +29,12 @@
  * l'appareil, qui n'a pas à traverser la synchronisation. Le temps
  * consommé, lui, est passé côté serveur au chantier 104 : c'est de
  * l'argent, ça ne se garde pas dans le téléphone.
+ *
+ * CHANTIER 113 — LA VITESSE DE LA VOIX, RÉGLÉE AVANT DE PARLER.
+ * De 60 % à 100 % de la vitesse normale, par pas de 5. Gardée dans
+ * `localStorage`, comme les thèmes : c'est une préférence d'appareil.
+ * Elle ne concerne que la conversation ; les cartes gardent le débit
+ * des Réglages.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
@@ -50,6 +56,15 @@ const MAX_THEMES = 10;
 const CLE_THEMES = 'vocab:parler-themes';
 /** La vue exploitant : trois tapes sur « remis à zéro à minuit ». */
 const CLE_EXPLOITANT = 'vocab:parler-exploitant';
+const CLE_VITESSE = 'vocab:parler-vitesse';
+const VITESSE_MIN = 60;
+const VITESSE_MAX = 100;
+
+function vitesseRetenue(): number {
+  const n = Number(localStorage.getItem(CLE_VITESSE));
+  if (!Number.isFinite(n) || n === 0) return VITESSE_MAX;
+  return Math.min(VITESSE_MAX, Math.max(VITESSE_MIN, Math.round(n)));
+}
 
 /**
  * Ce que l'IA s'autorise, par classe.
@@ -96,6 +111,11 @@ export function Parler({
   onReprise: () => Promise<void>;
 }) {
   const [choisis, setChoisis] = useState<string[]>(themesRetenus);
+  const [vitesse, setVitesse] = useState<number>(vitesseRetenue);
+  const changeVitesse = (v: number) => {
+    setVitesse(v);
+    localStorage.setItem(CLE_VITESSE, String(v));
+  };
   const [mots, setMots] = useState<MotRecent[]>([]);
   const [totalMots, setTotalMots] = useState(0);
   const [chargeMots, setChargeMots] = useState(true);
@@ -183,7 +203,7 @@ export function Parler({
     return (
       <ParlerSeance
         fiche={fiche}
-        debit={settings.speechRate}
+        debit={vitesse / 100}
         budget={budget}
         exploitant={exploitant}
         onFini={() => { setEnSeance(false); void litBudget(); }}
@@ -332,6 +352,33 @@ export function Parler({
             );
           })}
         </div>
+      </div>
+
+      <div className="parler-carte">
+        <div className="parler-tete">
+          <p className="parler-kicker">Vitesse de la voix</p>
+          <em className="parler-compte">{vitesse} %</em>
+        </div>
+        <div className="parler-vitesse">
+          <span aria-hidden="true">Lente</span>
+          <input
+            type="range"
+            min={VITESSE_MIN}
+            max={VITESSE_MAX}
+            step={5}
+            value={vitesse}
+            aria-label="Vitesse de la voix de l’IA"
+            onChange={(e) => changeVitesse(Number(e.target.value))}
+          />
+          <span aria-hidden="true">Normale</span>
+        </div>
+        <p className="hint">
+          {vitesse < 80
+            ? 'L’IA parlera lentement : pratique pour bien suivre au début.'
+            : vitesse < 100
+              ? 'Un peu plus lent que la normale.'
+              : 'Vitesse normale, comme une vraie conversation.'}
+        </p>
       </div>
 
       <button
