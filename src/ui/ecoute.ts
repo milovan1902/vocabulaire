@@ -4,6 +4,9 @@
  * CHANTIER 105 — LE MICRO.
  * CHANTIER 106 — LE MICRO QUI NE COUPE PLUS LA PAROLE.
  * CHANTIER 111 — LE MICRO QUI NE BÉGAIE PLUS.
+ * CHANTIER 115 — C'EST L'ÉLÈVE QUI ENVOIE. Option `manuel` : aucun
+ *   silence ne ferme plus le tour. Un appui ouvre le micro, un second
+ *   appui l'arrête et envoie. Seul garde-fou : trois minutes de parole.
  * CHANTIER 112 — LE FRANÇAIS, SUR DEMANDE. Le navigateur n'écoute qu'UNE
  *   langue à la fois : réglé sur l'anglais, il transforme le français en
  *   bouillie. L'élève choisit « Dire en français » pour un tour ; ce tour
@@ -97,6 +100,8 @@ const ATTENTE_MAX = 15_000;
 
 /** Un tour de parole ne dure pas deux minutes. Au-delà, c'est un oubli. */
 const TOUR_MAX = 120_000;
+/** En mode manuel, l'élève décide ; on coupe seulement un micro oublié. */
+const TOUR_MAX_MANUEL = 180_000;
 
 export interface Ecoute {
   /** Coupe l'écoute et rend ce qui a été entendu jusque-là. */
@@ -104,7 +109,7 @@ export interface Ecoute {
 }
 
 export function ecoute(
-  { onPartiel, onFini, onErreur, silence = SILENCE_DEFAUT, langue = 'en-US' }: {
+  { onPartiel, onFini, onErreur, silence = SILENCE_DEFAUT, langue = 'en-US', manuel = false }: {
     onPartiel: (texte: string) => void;
     onFini: (texte: string) => void;
     onErreur: (raison: string) => void;
@@ -112,6 +117,8 @@ export function ecoute(
     silence?: number;
     /** 'en-US' par défaut ; 'fr-FR' pour un tour dit en français. */
     langue?: 'en-US' | 'fr-FR';
+    /** Vrai : seul `arrete()` ferme le tour, jamais un silence. */
+    manuel?: boolean;
   },
 ): Ecoute {
   const C = constructeur();
@@ -141,6 +148,9 @@ export function ecoute(
   let relances = 0;
 
   const debut = Date.now();
+  const tourMax = manuel ? TOUR_MAX_MANUEL : TOUR_MAX;
+  /* En manuel, chaque pause un peu longue fait couper le moteur : on relance plus souvent. */
+  const relancesMax = manuel ? 80 : 20;
   let dernierSon = Date.now();
   let minuteur: ReturnType<typeof setInterval> | null = null;
 
@@ -199,7 +209,7 @@ export function ecoute(
      * l'élève ne voit rien. Les relances sont comptées — si le moteur
      * refuse de tenir, mieux vaut rendre ce qu'on a que boucler.
      */
-    if (relances >= 20 || Date.now() - debut > TOUR_MAX) { termine(); return; }
+    if (relances >= relancesMax || Date.now() - debut > tourMax) { termine(); return; }
     /* La session se ferme : son texte passe dans l'acquis, la suivante repart à vide. */
     acquis = fusionne([acquis, partiel]);
     partiel = '';
@@ -212,9 +222,9 @@ export function ecoute(
     const attente = Date.now() - dernierSon;
     const entendu = texteEntendu().length > 0;
 
-    if (entendu && attente > silence) { referme(); return; }
-    if (!entendu && Date.now() - debut > ATTENTE_MAX) { referme(); return; }
-    if (Date.now() - debut > TOUR_MAX) referme();
+    if (!manuel && entendu && attente > silence) { referme(); return; }
+    if (!manuel && !entendu && Date.now() - debut > ATTENTE_MAX) { referme(); return; }
+    if (Date.now() - debut > tourMax) referme();
   }, 250);
 
   try {
