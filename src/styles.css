@@ -30809,3 +30809,13 @@ html, body { overflow-x: clip; }
 .guide-consigne { font-size: 15px; }
 /* « Terminale » ne chevauche plus le texte : la colonne s'élargit au besoin. */
 .guide-faits b { width: auto; min-width: 62px; }
+/* CHANTIER 116 — le bandeau de la conversation reste en haut de l'écran.
+   À COLLER À LA FIN de src/styles.css.
+   `sticky` fonctionne parce que la livraison 111 a mis `overflow-x: clip`
+   (et non `hidden`) : `hidden` aurait bloqué le collage. */
+.seance-tete {
+  position: sticky;
+  top: calc(8px + env(safe-area-inset-top));
+  z-index: 30;
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.35);
+}
