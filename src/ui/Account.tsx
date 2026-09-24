@@ -167,6 +167,20 @@ export function Account({
   const [tiroir, setTiroir] = useState<Tiroirs>(null);
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
 
+  /*
+   * CHANTIER 114 — bornes resserrées : nouveaux mots 0 à 20, révisions
+   * 20 à 100, cartes par passage 10 à 100. Un réglage enregistré avant,
+   * hors de ces bornes, y est ramené une fois.
+   */
+  useEffect(() => {
+    const n = Math.min(20, Math.max(0, settings.newPerDay));
+    const r = Math.min(100, Math.max(20, settings.reviewsPerDay));
+    const c = Math.min(100, Math.max(10, settings.cardsPerSession));
+    if (n !== settings.newPerDay || r !== settings.reviewsPerDay || c !== settings.cardsPerSession) {
+      onSettings({ ...settings, newPerDay: n, reviewsPerDay: r, cardsPerSession: c });
+    }
+  }, [settings, onSettings]);
+
   // L'autorisation peut avoir été changée dans les réglages du navigateur
   // pendant que l'application était ouverte.
   useEffect(() => { setAutorisation(permission()); }, []);
@@ -435,17 +449,17 @@ export function Account({
           <div className="chargelist">
             <Curseur
               label="Nouveaux mots"
-              min={0} max={60} step={5} value={settings.newPerDay}
+              min={0} max={20} step={1} value={settings.newPerDay}
               onChange={(v) => onSettings({ ...settings, newPerDay: v })}
             />
             <Curseur
               label="Révisions max."
-              min={20} max={200} step={10} value={settings.reviewsPerDay}
+              min={20} max={100} step={5} value={settings.reviewsPerDay}
               onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
             />
             <Curseur
               label="Cartes / passage"
-              min={10} max={60} step={5} value={settings.cardsPerSession}
+              min={10} max={100} step={5} value={settings.cardsPerSession}
               onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
             />
           </div>
