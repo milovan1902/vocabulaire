@@ -379,7 +379,7 @@ export function Today({
         <div className="memoire">
           <p className="label">Les sept prochains jours</p>
           <div className="bars">
-            {dueByDay.map((brut, i) => {
+            {dueByDay.map((_, i) => {
               /*
                * CHANTIER 112 — aujourd'hui compte ce que la séance montrera (le
                * chiffre du haut), pas tous les mots jamais vus. Et l'échelle est
