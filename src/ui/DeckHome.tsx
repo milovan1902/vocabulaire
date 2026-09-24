@@ -164,19 +164,19 @@ export function DeckHome({
         <Slider
           label="Nouveaux mots par jour"
           hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
-          min={0} max={60} step={5} value={settings.newPerDay}
+          min={0} max={20} step={1} value={settings.newPerDay}
           onChange={(v) => change({ newPerDay: v })}
         />
         <Slider
           label="Révisions maximum par jour"
           hint="Plafond des mots déjà vus. Le surplus est reporté au lendemain."
-          min={20} max={200} step={10} value={settings.reviewsPerDay}
+          min={20} max={100} step={5} value={settings.reviewsPerDay}
           onChange={(v) => change({ reviewsPerDay: v })}
         />
         <Slider
           label="Cartes par session"
           hint="Pour découper la journée en plusieurs passages courts."
-          min={10} max={60} step={5} value={settings.cardsPerSession}
+          min={10} max={100} step={5} value={settings.cardsPerSession}
           onChange={(v) => change({ cardsPerSession: v })}
         />
         <Slider
