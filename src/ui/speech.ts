@@ -27,6 +27,18 @@
  *   - Le modèle met parfois un mot en gras (**who**). La voix lisait
  *     « astérisque ». `nettoie()` retire toute mise en forme avant de
  *     parler, et avant d'afficher.
+ *
+ * CHANTIER 117 — UNE VOIX FRANÇAISE MOINS ROBOTIQUE, ET PLUS DE « POINT ».
+ *   - On prenait la PREMIÈRE voix française de la liste : souvent la voix
+ *     locale de base, la plus métallique. Les voix sont maintenant classées
+ *     et la meilleure passe devant (« Natural », « Online », « Neural »,
+ *     « Google », « Premium »…). Même classement pour l'anglais.
+ *   - Le français ne suit plus le curseur de vitesse de la conversation :
+ *     c'est la langue de l'élève, et une synthèse ralentie à 60 % sonne
+ *     mécanique. Il est dit à 0,95, toujours.
+ *   - « Tu peux dire "I went". » laissait un passage fait du seul « . »
+ *     après la citation, que la voix française lisait « point ». Un
+ *     passage sans lettre ni chiffre n'est plus jamais prononcé.
  */
 let cached: SpeechSynthesisVoice[] = [];
 
@@ -72,11 +84,35 @@ if (typeof window !== 'undefined') {
   window.addEventListener('keydown', deverrouiller, opts);
 }
 
+/**
+ * Le rang d'une voix : plus il est haut, plus elle sonne naturelle.
+ * Les voix « en ligne » (Edge, Chrome) et les voix améliorées (Apple)
+ * sont des voix neuronales ; les voix locales de base sont celles qui
+ * font robot.
+ */
+function rang(v: SpeechSynthesisVoice, exact: string): number {
+  const n = v.name.toLowerCase();
+  let r = 0;
+  if (/natural|neural|naturelle/.test(n)) r += 50;
+  if (/online|en ligne|network/.test(n)) r += 30;
+  if (/premium|enhanced|améliorée|siri/.test(n)) r += 30;
+  if (/google/.test(n)) r += 20;
+  if (!v.localService) r += 10;
+  if (v.lang?.replace('_', '-') === exact) r += 5;
+  if (/compact|espeak/.test(n)) r -= 40;
+  return r;
+}
+
 /** La meilleure voix disponible pour une langue. */
 function voix(prefixe: string, exact: string): SpeechSynthesisVoice | undefined {
-  const list = voices();
-  return list.find((v) => v.lang === exact)
-    ?? list.find((v) => v.lang?.replace('_', '-').startsWith(prefixe));
+  return voices()
+    .filter((v) => v.lang?.replace('_', '-').toLowerCase().startsWith(prefixe))
+    .sort((a, b) => rang(b, exact) - rang(a, exact))[0];
+}
+
+/** Un passage sans lettre ni chiffre (« . », « ! ») ne se prononce pas. */
+function prononcable(t: string): boolean {
+  return /[\p{L}\p{N}]/u.test(t);
 }
 
 function enonce(texte: string, langue: string, rate: number): void {
@@ -187,12 +223,12 @@ function autourDesCitations(p: string): Passage[] {
   CITATION.lastIndex = 0;
   while ((m = CITATION.exec(p))) {
     const avant = p.slice(dernier, m.index).trim();
-    if (avant) out.push({ texte: avant, langue: 'fr-FR' });
+    if (prononcable(avant)) out.push({ texte: avant, langue: 'fr-FR' });
     out.push({ texte: m[1], langue: langueCitation(m[1]) });
     dernier = m.index + m[0].length;
   }
   const fin = p.slice(dernier).trim();
-  if (fin) out.push({ texte: fin, langue: 'fr-FR' });
+  if (prononcable(fin)) out.push({ texte: fin, langue: 'fr-FR' });
   return out.length ? out : [{ texte: p, langue: 'fr-FR' }];
 }
 
@@ -216,6 +252,7 @@ export interface Passage {
 export function passages(texte: string): Passage[] {
   const out: Passage[] = [];
   const pousse = ({ texte: t, langue }: Passage) => {
+    if (!prononcable(t)) return;
     const dernier = out[out.length - 1];
     if (dernier && dernier.langue === langue) dernier.texte += ` ${t}`;
     else out.push({ texte: t, langue });
@@ -231,16 +268,17 @@ export function passages(texte: string): Passage[] {
 /**
  * Dit une réplique qui peut mêler les deux langues.
  *
- * Le français est prononcé un peu moins vite que l'anglais : c'est une
- * correction, elle doit s'entendre. Un dixième suffit — au-delà, on a
- * l'air de parler à un enfant.
+ * Le français est dit à vitesse fixe (0,95) : il ne suit pas le curseur,
+ * qui sert à comprendre l'anglais.
  */
+const DEBIT_FR = 0.95;
+
 export function parle(texte: string, rate: number): void {
   if (typeof speechSynthesis === 'undefined') return;
   try {
     speechSynthesis.cancel();
     for (const p of passages(texte)) {
-      enonce(p.texte, p.langue, p.langue === 'fr-FR' ? rate * 0.9 : rate);
+      enonce(p.texte, p.langue, p.langue === 'fr-FR' ? DEBIT_FR : rate);
     }
   } catch {
     // Une voix absente ne doit jamais interrompre la conversation.
