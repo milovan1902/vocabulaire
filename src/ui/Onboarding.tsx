@@ -58,9 +58,9 @@ type PaquetCharge = {
   image: string | null;
 };
 
-const ETAPES = ['methode', 'classe', 'paquet', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'] as const;
+const ETAPES = ['methode', 'paquets', 'classe', 'paquet', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'] as const;
 type Etape = (typeof ETAPES)[number];
-const RELECTURE: readonly Etape[] = ['methode', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'];
+const RELECTURE: readonly Etape[] = ['methode', 'paquets', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'];
 
 /** Cinq : assez pour sentir la répétition, trop peu pour ressembler à du travail. */
 const CARTES_DESSAI = 5;
@@ -137,6 +137,12 @@ export function Onboarding({
       .sort((a, b) => classeRank(b.classeFrom) - classeRank(a.classeFrom))
       .slice(0, 3);
   }, [decks, classe]);
+
+  /* CHANTIER 119 — les trois dos de l'étape « paquets ». */
+  const pile = useMemo(() => {
+    const enCoursDeJeu = decks.filter((d) => enJeu.includes(d.id));
+    return (enCoursDeJeu.length ? enCoursDeJeu : propositions.length ? propositions : decks).slice(0, 3);
+  }, [decks, enJeu, propositions]);
 
   const demarrer = useCallback((c: PaquetCharge) => {
     setCharge({ ...c, progress: c.progress ?? {} });
@@ -259,10 +265,10 @@ export function Onboarding({
             Un mot revu juste avant l’oubli se grave plus profond qu’un mot relu dix fois.
           </p>
           <p className="guide-texte">
-            Cette méthode est fondée sur le rappel, qui, à intervalles intelligents,
-            permettra de fixer le souvenir. C’est votre progression qui définira
-            l’espacement des répétitions. Ainsi, vous obtiendrez les meilleurs
-            résultats basés sur le fonctionnement de la mémoire.
+            L’effort du rappel est ce qui fixe le souvenir : chaque fois que vous
+            retrouvez un mot de vous-même, sa trace se renforce et l’échéance suivante
+            s’éloigne. C’est la répétition espacée, l’un des résultats les plus solides
+            de la psychologie de la mémoire.
           </p>
           <div className="guide-frise">
             <p className="guide-kicker">Les rappels d’un même mot</p>
@@ -274,12 +280,60 @@ export function Onboarding({
             </p>
           </div>
           <div className="guide-pied">
+            <button className="btn" onClick={suivante}>
+              {relu ? 'Continuer' : 'Commencer'}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/*
+        * CHANTIER 119 — CE QU'EST UN PAQUET, AVANT LA PREMIÈRE CARTE.
+        * On passait de la méthode à une carte sans avoir dit que
+        * l'application travaille par paquets. Trois vrais dos empilés
+        * (ceux en jeu en relecture, sinon les premiers du catalogue),
+        * une carte retournée, et ce qu'une carte peut porter.
+        */}
+      {etape === 'paquets' && (
+        <>
+          <h2 className="guide-titre">On révise avec des paquets de cartes.</h2>
+          <p className="guide-texte">
+            Chaque paquet couvre un sujet du programme, à ton niveau. Tu peux le
+            jouer en entier, ou thème par thème.
+          </p>
+          <div className="guide-pile" aria-hidden="true">
+            <span className="guide-pile-dos">
+              {pile.map((d, i) => (
+                <span key={d.id} className={`guide-pile-un n${pile.length - 1 - i}`}>
+                  <DeckVign id={d.id} name={d.name} image={null} w={82} h={116} categoryId={d.categoryId} />
+                </span>
+              ))}
+            </span>
+            <svg className="guide-pile-fleche" viewBox="0 0 40 20">
+              <path d="M2 10 H34 M27 4 L34 10 L27 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="guide-pile-carte">
+              <b>la maison</b>
+              <i />
+              <em>the house</em>
+            </span>
+          </div>
+          <div className="guide-exemple guide-contenu">
+            <span className="guide-kicker">Une carte, c’est</span>
+            <p><b>un mot</b><span>la maison → <em>the house</em></span></p>
+            <p><b>ou une phrase</b><span>Je suis allé à la plage. → <em>I went to the beach.</em></span></p>
+          </div>
+          <p className="guide-texte">
+            Tu lis le français, tu cherches l’anglais dans ta tête, puis tu
+            retournes la carte.
+          </p>
+          <div className="guide-pied">
             <button
               className="btn"
               disabled={enCours}
               onClick={() => { if (relu) void reprendre(); else suivante(); }}
             >
-              Prêt ?
+              {relu ? 'Refaire cinq cartes' : 'Continuer'}
             </button>
           </div>
         </>
@@ -345,8 +399,8 @@ export function Onboarding({
         <>
           <p className="guide-consigne">
             {montre
-              ? 'Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'
-              : 'Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'}
+              ? 'Le mot anglais vient d’être prononcé — « Écouter » le répète. Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'
+              : 'Cherchez la réponse dans votre tête, puis vérifiez. L’application dira le mot anglais à voix haute.'}
           </p>
           <div className="guide-carte" onClick={() => { if (!montre) setMontre(true); }}>
             <span className="guide-kicker">{charge?.deck?.name ?? ''}</span>
@@ -401,7 +455,8 @@ export function Onboarding({
         <>
           <h2 className="guide-titre">Vos {resultats.length} mots ont chacun leur rendez-vous.</h2>
           <p className="guide-texte">
-            Plus un mot a été difficile à trouver, plus il reviendra tôt.
+            Calculé sur vos réponses, pas sur un calendrier : plus un mot vous a coûté,
+            plus il revient tôt.
           </p>
           <ul className="guide-echeances">
             {resultats.map((r, i) => (
@@ -422,7 +477,7 @@ export function Onboarding({
           <p className="guide-note">
             Deux mots jugés pareils peuvent revenir à des dates différentes : chaque
             mot garde sa propre histoire, et l’application décale légèrement les
-            échéances au hasard pour ne pas vous proposer trop de rappels le même jour.
+            échéances au hasard pour ne pas vous coller cinquante rappels le même matin.
           </p>
           <div className="guide-pied">
             <button className="btn" onClick={() => setEtape('progres')}>Continuer</button>
@@ -434,9 +489,8 @@ export function Onboarding({
         <>
           <h2 className="guide-titre">Tu verras tes mots avancer.</h2>
           <p className="guide-texte">
-            Chaque carte « mot » sera répertoriée dans 5 tas : « À découvrir », puis
-            quatre autres, représentés ci-dessous dans un graphique montrant votre
-            progression.
+            Chaque mot passe par cinq tas, d’« À découvrir » à « Acquis ».
+            L’onglet « Mes progrès » suit leur évolution, jour après jour.
           </p>
 
           <div className="guide-exemple">
@@ -489,7 +543,7 @@ export function Onboarding({
       {etape === 'parler' && (
         <>
           <p className="guide-kicker">Et maintenant, à l’oral</p>
-          <h2 className="guide-titre">Tu vas pouvoir utiliser les mots appris pour échanger à l’oral.</h2>
+          <h2 className="guide-titre">Les mots appris, tu vas les dire.</h2>
           <p className="guide-texte">
             L’onglet « Parler » ouvre une vraie conversation en anglais, à voix
             haute, avec une IA qui parle à ton niveau. Pas de note, pas de
