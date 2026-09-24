@@ -30771,3 +30771,19 @@ label.switch input {
   color: var(--ink);
   cursor: pointer;
 }
+/* ==================================================================
+   CHANTIER 111 — la barre d'onglets qui tressaillait en revenant
+
+   À COLLER À LA FIN de src/styles.css.
+
+   En « recule », l'écran entrant part de scale(1.05) : il déborde de
+   5 % à gauche et à droite pendant 300 ms. Ce débord créait une
+   largeur de page horizontale ; le navigateur mobile réajustait la
+   vue, et la barre fixe du bas bougeait avec elle.
+
+   Deux gardes : la page ne peut plus déborder en largeur, et l'écran
+   agrandi est rogné par son conteneur. `clip` (et non `hidden`) ne crée
+   pas de zone de défilement : le défilement vertical reste intact.
+   ================================================================== */
+html, body { overflow-x: clip; }
+.app { overflow-x: clip; }
