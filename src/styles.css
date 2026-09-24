@@ -30798,3 +30798,9 @@ html, body { overflow-x: clip; }
 }
 .bar .bar-n + i { margin-top: 2px; max-height: calc(100% - 34px); }
 .guide-paquets .dos .vign { position: relative; }
+/* CHANTIER 113 — le curseur de vitesse de la voix, onglet Parler.
+   À COLLER À LA FIN de src/styles.css. */
+.parler-vitesse { display: flex; align-items: center; gap: 12px; margin: 10px 0 6px; }
+.parler-vitesse span { font-size: 12.5px; color: var(--ink-soft); flex: none; }
+.parler-vitesse input[type='range'] { flex: 1; min-width: 0; accent-color: var(--chalk); }
+.parler-vitesse input[type='range']:focus-visible { outline: 2px solid var(--chalk); outline-offset: 3px; }
