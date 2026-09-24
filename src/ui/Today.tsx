@@ -379,13 +379,23 @@ export function Today({
         <div className="memoire">
           <p className="label">Les sept prochains jours</p>
           <div className="bars">
-            {dueByDay.map((n, i) => {
-              const max = Math.max(...dueByDay, 1);
+            {dueByDay.map((brut, i) => {
+              /*
+               * CHANTIER 112 — aujourd'hui compte ce que la séance montrera (le
+               * chiffre du haut), pas tous les mots jamais vus. Et l'échelle est
+               * en racine carrée : 80 contre 5 écrasait les six autres jours en
+               * traits plats. L'ordre des barres reste juste, le chiffre au-dessus
+               * donne la valeur exacte.
+               */
+              const jours = dueByDay.map((v, k) => (k === 0 ? Math.min(v, total) : v));
+              const n = jours[i];
+              const max = Math.sqrt(Math.max(...jours, 1));
               const jour = new Date();
               jour.setDate(jour.getDate() + i);
               return (
                 <span key={i} className={`bar${i === 0 ? ' now' : ''}`}>
-                  <i style={{ height: `${Math.max(3, (100 * n) / max)}%` }} />
+                  <b className="bar-n">{n > 0 ? n : ''}</b>
+                  <i style={{ height: `${n > 0 ? Math.max(6, (100 * Math.sqrt(n)) / max) : 3}%` }} />
                   <em>{JOURS[jour.getDay()]}</em>
                 </span>
               );
