@@ -303,6 +303,25 @@ const PAR_NOM: Record<string, number> = {
   'si alors 4e': 1,
   'prendre la parole 4e': 0,
   'prendre la parole': 0,
+
+  /*
+   * CHANTIER 122 — les cinq paquets de DÉBUT de troisième, en second
+   * recours. `PAR_ID` répond le premier.
+   *
+   * « passer l oral 3e » est la forme normalisée de « Passer l’oral —
+   * 3e » : l'apostrophe typographique et le tiret tombent dans
+   * `normaliser`, comme les points de suspension au chantier 97.
+   */
+  'le monde en debat 3e': 2,
+  'le monde en debat': 2,
+  'les verbes pour argumenter 3e': 2,
+  'les verbes pour argumenter': 2,
+  'tournures avancees 3e': 1,
+  'tournures avancees': 1,
+  'passif et discours rapporte 3e': 1,
+  'passif et discours rapporte': 1,
+  'passer l oral 3e': 0,
+  'passer l oral': 0,
 };
 /**
  * À remplir si l'identifiant est le repère le plus sûr chez vous.
@@ -416,6 +435,29 @@ const PAR_ID: Record<string, number> = {
   '4e-fin-temps': 1,       // sauge
   '4e-fin-modaux': 1,      // sauge
   '4e-fin-phrases': 0,     // bleu ardoise
+
+  /*
+   * CHANTIER 122 — LES CINQ PAQUETS DE DÉBUT DE TROISIÈME
+   *
+   * Même règle : le papier dit le rayon. Choix du propriétaire, fait en
+   * connaissance de cause.
+   *
+   *    Le monde en débat — 3e              miel      (Vocabulaire de base)
+   *    Les verbes pour argumenter — 3e     miel      (Vocabulaire de base)
+   *    Tournures avancées — 3e             sauge     (Grammaire)
+   *    Passif et discours rapporté — 3e    sauge     (Grammaire)
+   *    Passer l'oral — 3e                  ardoise   (Phrases toutes faites)
+   *
+   * Le miel porte maintenant DIX cartes dans « Vocabulaire de base ».
+   * Le terracotta, libre, a été proposé pour les verbes et écarté : il
+   * aurait été différent sans dire un autre rayon. La sortie reste
+   * l'illustration.
+   */
+  '3e-vocabulaire': 2, // miel
+  '3e-verbes': 2,      // miel
+  '3e-grammaire': 1,   // sauge
+  '3e-passif': 1,      // sauge
+  '3e-phrases': 0,     // bleu ardoise
 };
 
 /** Minuscules, sans accent ni ponctuation : la clé de correspondance. */
