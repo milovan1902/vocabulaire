@@ -30,6 +30,9 @@
  * Tous les chiffres viennent du même endroit (`progressStats`) et le
  * calendrier comme les compteurs lisent la même liste de dates
  * (`streak.days`). C'est ce qui rend impossible qu'ils se contredisent.
+ *
+ * CHANTIER 121 — une ligne « Oral » ouvre l'écran des statistiques de
+ * parole (`MaParole.tsx`), comme « Mes mots » et « Mon calendrier ».
  */
 import { useEffect, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
@@ -40,12 +43,13 @@ import {
 } from './progressStats';
 import { Anneau, MesMots } from './MesMots';
 import { MonCalendrier } from './MonCalendrier';
+import { MaParole } from './MaParole';
 import { Ligne, Tiroir } from './tiroir';
 
 const nb = (n: number) => n.toLocaleString('fr-FR');
 
 /** Quel écran de détail est ouvert, à la place de la table des matières. */
-type Sous = null | 'mots' | 'calendrier';
+type Sous = null | 'mots' | 'calendrier' | 'parole';
 
 /**
  * Le vert d'une barre d'avancement : clair au départ, profond à l'arrivée.
@@ -97,6 +101,9 @@ export function Progress({
   if (sous === 'calendrier') {
     return <MonCalendrier streak={streak} onRetour={() => setSous(null)} />;
   }
+  if (sous === 'parole') {
+    return <MaParole onRetour={() => setSous(null)} />;
+  }
 
   const serieJours = liveStreak(streak);
 
@@ -142,6 +149,13 @@ export function Progress({
           sous="La série, et les jours travaillés."
           valeur={serieDite}
           onClick={() => setSous('calendrier')}
+        />
+        <Ligne
+          icone="/tab-parler.png"
+          titre="Oral"
+          sous="Temps de parole, fautes, aisance."
+          valeur=""
+          onClick={() => setSous('parole')}
         />
         {/* Même icône que l'onglet « Paquets » : c'est la même chose
             qu'on désigne, et deux dessins pour un objet se paieraient. */}
