@@ -30861,3 +30861,51 @@ html, body { overflow-x: clip; }
   .guide-pile-un.n1 { left: 22px; }
   .guide-pile-carte { width: 100px; }
 }
+/* CHANTIER 115 — présentation. À COLLER À LA FIN de src/styles.css. */
+/* Consigne des cartes test, un peu plus grande. */
+.guide-consigne { font-size: 15px; }
+/* « Terminale » ne chevauche plus le texte : la colonne s'élargit au besoin. */
+.guide-faits b { width: auto; min-width: 62px; }
+
+/* CHANTIER 119 — l'étape « On révise avec des paquets de cartes ».
+   À COLLER À LA FIN de src/styles.css. */
+.guide-pile {
+  position: relative; height: 150px; margin: 16px 0 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.guide-pile-dos { position: relative; flex: none; width: 150px; height: 140px; }
+.guide-pile-un {
+  position: absolute; top: 10px; left: 0; width: 82px; height: 116px;
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.35);
+}
+.guide-pile-un .vign { width: 82px; height: 116px; position: relative; }
+.guide-pile-un.n2 { left: 4px;  transform: rotate(-9deg); }
+.guide-pile-un.n1 { left: 30px; transform: rotate(-3deg); top: 4px; }
+.guide-pile-un.n0 { left: 58px; transform: rotate(3deg); top: 0; }
+.guide-pile-fleche { flex: none; width: 34px; color: var(--grey); }
+.guide-pile-carte {
+  flex: none; width: 112px; height: 144px; box-sizing: border-box; padding: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 10px;
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.4); text-align: center;
+}
+.guide-pile-carte b { font-family: var(--serif); font-size: 19px; font-weight: 500; color: var(--ink); line-height: 1.15; }
+.guide-pile-carte i { width: 40px; height: 1px; background: var(--rule); }
+.guide-pile-carte em { font-family: var(--serif); font-size: 17px; color: var(--ink-soft); line-height: 1.15; }
+
+.guide-contenu p {
+  display: flex; gap: 12px; align-items: baseline;
+  margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--rule);
+  font-size: 13.5px; line-height: 1.4; color: var(--ink-soft);
+}
+.guide-contenu .guide-kicker + p { border-top: none; padding-top: 0; }
+.guide-contenu p b { flex: none; width: 64px; font-weight: 500; color: var(--ink); font-size: 13px; }
+.guide-contenu p em { font-style: italic; }
+
+@media (max-width: 360px) {
+  .guide-pile-dos { width: 128px; }
+  .guide-pile-un.n0 { left: 44px; }
+  .guide-pile-un.n1 { left: 22px; }
+  .guide-pile-carte { width: 100px; }
+}
