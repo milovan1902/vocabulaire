@@ -30909,3 +30909,58 @@ html, body { overflow-x: clip; }
   .guide-pile-un.n1 { left: 22px; }
   .guide-pile-carte { width: 100px; }
 }
+/* CHANTIER 121 — l'écran « Oral » (Mes progrès). À COLLER À LA FIN de src/styles.css. */
+.parole-intro { margin: 0 0 14px; }
+.parole-carte {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 16px;
+  padding: 16px; margin: 0 0 12px;
+}
+.parole-kicker {
+  margin: 0; font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--grey);
+}
+.parole-chiffre { margin: 8px 0 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+.parole-chiffre b {
+  font-family: var(--serif); font-size: 34px; font-weight: 500; line-height: 1;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.parole-chiffre span { font-size: 14px; color: var(--ink-soft); }
+.parole-chiffre span.mieux { color: #1f7a55; }
+.parole-note { margin: 10px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+
+.parole-mois {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+  height: 118px; margin-top: 14px;
+}
+.parole-mois span { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; min-width: 0; }
+.parole-mois small { font-family: var(--mono); font-size: 10px; color: var(--grey); height: 12px; line-height: 12px; }
+.parole-mois i { width: 100%; max-height: calc(100% - 34px); background: var(--rule); border-radius: 4px 4px 0 0; }
+.parole-mois em { font-family: var(--mono); font-size: 10px; font-style: normal; color: var(--grey); height: 12px; line-height: 12px; }
+.parole-mois .now i { background: var(--chalk); }
+.parole-mois .now small, .parole-mois .now em { color: var(--ink); }
+
+.parole-courbe { display: block; width: 100%; height: 90px; margin-top: 12px; }
+.parole-courbe line { stroke: var(--rule); stroke-width: 1; }
+.parole-courbe polyline { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+.parole-courbe circle { fill: var(--panel); stroke: var(--ink); stroke-width: 1.5; }
+.parole-courbe circle.now { fill: var(--chalk); stroke: none; }
+.parole-axe { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-family: var(--mono); font-size: 10px; color: var(--grey); }
+
+.parole-fautes { display: flex; flex-direction: column; margin-top: 6px; }
+.parole-fautes button {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+  padding: 10px 0; border: none; border-bottom: 1px solid var(--rule);
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.parole-fautes button:last-child { border-bottom: none; }
+.parole-faute { flex: 1; min-width: 0; font-family: var(--serif); font-size: 14.5px; line-height: 1.35; color: var(--ink); }
+.parole-faute s { color: #9a4a3a; }
+.parole-fautes b { flex: none; font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink); }
+.parole-fautes small { flex-basis: 100%; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+.parole-fautes button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+.parole-jauge { position: relative; height: 8px; margin: 16px 0 4px; border-radius: 4px; background: var(--rule); }
+.parole-jauge i { position: absolute; top: 0; }
+.parole-jauge .rempli { left: 0; bottom: 0; border-radius: 4px; background: var(--grey); opacity: .35; }
+.parole-jauge .depart { top: -4px; width: 2px; height: 16px; margin-left: -1px; background: var(--grey); }
+.parole-jauge .now { top: -5px; width: 10px; height: 18px; margin-left: -5px; border-radius: 3px; background: var(--chalk); }
