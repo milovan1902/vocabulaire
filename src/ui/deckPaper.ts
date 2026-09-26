@@ -324,6 +324,21 @@ const PAR_NOM: Record<string, number> = {
   'passer l oral': 0,
 
   /*
+   * CHANTIER 125 — les cinq paquets de DÉBUT de seconde, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'les axes du programme 2nde': 2,
+  'les axes du programme': 2,
+  'analyser un document 2nde': 2,
+  'analyser un document': 2,
+  'les tournures du lycee 2nde': 1,
+  'les tournures du lycee': 1,
+  'les expressions imagees 2nde': 4,
+  'les expressions imagees': 4,
+  'debattre 2nde': 0,
+  'debattre': 0,
+
+  /*
    * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
    * recours. `PAR_ID` répond le premier.
    */
@@ -473,6 +488,25 @@ const PAR_ID: Record<string, number> = {
   '3e-grammaire': 1,   // sauge
   '3e-passif': 1,      // sauge
   '3e-phrases': 0,     // bleu ardoise
+
+  /*
+   * CHANTIER 125 — LES CINQ PAQUETS DE DÉBUT DE SECONDE
+   *
+   *    Les axes du programme — 2nde     miel        (Vocabulaire de base)
+   *    Analyser un document — 2nde      miel        (Vocabulaire de base)
+   *    Les tournures du lycée — 2nde    sauge       (Grammaire)
+   *    Les expressions imagées — 2nde   terracotta  (Pièges et nuances)
+   *    Débattre — 2nde                  ardoise     (Phrases toutes faites)
+   *
+   * Les expressions vont aux « Pièges » : une image ne se traduit pas mot
+   * à mot. Terracotta épinglé ici, comme les erreurs de fin de 3e, et non
+   * dans `PAR_RAYON`, pour ne pas repeindre « Collocations ».
+   */
+  '2de-vocabulaire': 2,  // miel
+  '2de-document': 2,     // miel
+  '2de-grammaire': 1,    // sauge
+  '2de-expressions': 4,  // terracotta
+  '2de-debat': 0,        // bleu ardoise
 
   /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
