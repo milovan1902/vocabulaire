@@ -48,6 +48,11 @@ import temps4eFin from '../assets/packs/4e-temps.png';
 import siAlors4eFin from '../assets/packs/4e-si-alors.png';
 import prendre4eFin from '../assets/packs/4e-prendre.png';
 import repriseOral from '../assets/packs/reprise-oral.png';
+import monde3e from '../assets/packs/3e-monde-debat.png';
+import verbes3e from '../assets/packs/3e-verbes-argumenter.png';
+import tournures3e from '../assets/packs/3e-tournures.png';
+import passif3e from '../assets/packs/3e-passif-discours.png';
+import oral3e from '../assets/packs/3e-passer-oral.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -605,6 +610,45 @@ const ILLUSTRATIONS: Record<string, string> = {
    */
   'reprise-oral': repriseOral,
   'reprise-des-fautes-a-l-oral': repriseOral,
+
+  /*
+   * CHANTIER 123 — LES CINQ DOS DE DÉBUT DE TROISIÈME
+   *
+   * Vos cinq planches, reprises telles quelles : aucun sujet redessiné,
+   * aucune couleur du dessin touchée. Les parchemins sont ceux de la
+   * livraison 122 (`deckPaper.ts`, inchangé ici) : miel, miel, sauge,
+   * sauge, ardoise.
+   *
+   * LE DAMIER ÉTAIT CUIT DANS LES CINQ FICHIERS — de vrais pixels, comme
+   * aux chantiers 75 et 102. Il est retiré par diffusion depuis les
+   * bords : les blancs INTÉRIEURS (bulles, pages) sont enclos par le
+   * trait et gardent leur blanc. Chaque sujet est ensuite recadré à sa
+   * boîte, centré et remis en 1024 x 1024 transparent.
+   *
+   * Deux dessins sortent de la famille bleue des trois autres, validé
+   * tel quel sur la maquette : « Le monde en débat » (globe et bulles
+   * multicolores — la carte la plus dense du rayon miel) et « Les
+   * verbes pour argumenter » (rouage-bulle noir et beige).
+   */
+  '3e-vocabulaire': monde3e,
+  'le-monde-en-debat-3e': monde3e,
+  'le-monde-en-debat': monde3e,
+
+  '3e-verbes': verbes3e,
+  'les-verbes-pour-argumenter-3e': verbes3e,
+  'les-verbes-pour-argumenter': verbes3e,
+
+  '3e-grammaire': tournures3e,
+  'tournures-avancees-3e': tournures3e,
+  'tournures-avancees': tournures3e,
+
+  '3e-passif': passif3e,
+  'passif-et-discours-rapporte-3e': passif3e,
+  'passif-et-discours-rapporte': passif3e,
+
+  '3e-phrases': oral3e,
+  'passer-l-oral-3e': oral3e,
+  'passer-l-oral': oral3e,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
