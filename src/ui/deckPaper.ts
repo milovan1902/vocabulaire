@@ -322,6 +322,21 @@ const PAR_NOM: Record<string, number> = {
   'passif et discours rapporte': 1,
   'passer l oral 3e': 0,
   'passer l oral': 0,
+
+  /*
+   * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'd ici et d ailleurs 3e': 2,
+  'd ici et d ailleurs': 2,
+  'les erreurs a ne plus faire 3e': 4,
+  'les erreurs a ne plus faire': 4,
+  'tous les temps en revue 3e': 1,
+  'tous les temps en revue': 1,
+  'rediger au brevet 3e': 0,
+  'rediger au brevet': 0,
+  'le jour de l oral 3e': 0,
+  'le jour de l oral': 0,
 };
 /**
  * À remplir si l'identifiant est le repère le plus sûr chez vous.
@@ -458,6 +473,27 @@ const PAR_ID: Record<string, number> = {
   '3e-grammaire': 1,   // sauge
   '3e-passif': 1,      // sauge
   '3e-phrases': 0,     // bleu ardoise
+
+  /*
+   * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
+   *
+   *    D'ici et d'ailleurs — 3e            miel        (Vocabulaire de base)
+   *    Les erreurs à ne plus faire — 3e    terracotta  (Pièges et nuances)
+   *    Tous les temps en revue — 3e        sauge       (Grammaire)
+   *    Rédiger au brevet — 3e              ardoise     (Phrases toutes faites)
+   *    Le jour de l'oral — 3e              ardoise     (Phrases toutes faites)
+   *
+   * Les erreurs fréquentes vont au rayon « Pièges », choix du
+   * propriétaire : le terracotta y dit bien un autre rayon, et sépare ce
+   * paquet de la sauge des temps. Épinglé ICI et non dans `PAR_RAYON` :
+   * « Pièges » reste sans teinte imposée, pour ne pas repeindre
+   * « Collocations », qui y vit déjà.
+   */
+  '3e-fin-vocabulaire': 2, // miel
+  '3e-fin-erreurs': 4,     // terracotta
+  '3e-fin-temps': 1,       // sauge
+  '3e-fin-ecrit': 0,       // bleu ardoise
+  '3e-fin-oral': 0,        // bleu ardoise
 };
 
 /** Minuscules, sans accent ni ponctuation : la clé de correspondance. */
