@@ -53,6 +53,16 @@ import verbes3e from '../assets/packs/3e-verbes-argumenter.png';
 import tournures3e from '../assets/packs/3e-tournures.png';
 import passif3e from '../assets/packs/3e-passif-discours.png';
 import oral3e from '../assets/packs/3e-passer-oral.png';
+import ailleurs3eFin from '../assets/packs/3e-fin-vocabulaire.png';
+import erreurs3eFin from '../assets/packs/3e-fin-erreurs.png';
+import temps3eFin from '../assets/packs/3e-fin-temps.png';
+import ecrit3eFin from '../assets/packs/3e-fin-ecrit.png';
+import oral3eFin from '../assets/packs/3e-fin-oral.png';
+import axes2de from '../assets/packs/2de-vocabulaire.png';
+import document2de from '../assets/packs/2de-document.png';
+import tournures2de from '../assets/packs/2de-grammaire.png';
+import expressions2de from '../assets/packs/2de-expressions.png';
+import debat2de from '../assets/packs/2de-debat.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -649,6 +659,72 @@ const ILLUSTRATIONS: Record<string, string> = {
   '3e-phrases': oral3e,
   'passer-l-oral-3e': oral3e,
   'passer-l-oral': oral3e,
+
+  /*
+   * CHANTIER 126 — LES DOS DES DIX DERNIERS PAQUETS
+   *
+   * Fin de 3e (livraison 124) et début de 2nde (livraison 125). Vos dix
+   * planches, reprises telles quelles, sujets et couleurs du dessin
+   * intacts. Les parchemins restent ceux de `deckPaper.ts`, inchangé :
+   *
+   *    D'ici et d'ailleurs          miel        Les axes du programme      miel
+   *    Les erreurs à ne plus faire  terracotta  Analyser un document       miel
+   *    Tous les temps en revue      sauge       Les tournures du lycée     sauge
+   *    Rédiger au brevet            ardoise     Les expressions imagées    terracotta
+   *    Le jour de l'oral            ardoise     Débattre                   ardoise
+   *
+   * FONDS RETIRÉS. Damier cuit ou blanc plein selon les fichiers, de vrais
+   * pixels dans les deux cas (voir chantiers 75, 102, 123). Deux méthodes :
+   *   - dessins pleins (erreurs, brevet, oral, axes, document, débattre) :
+   *     diffusion depuis les bords, les blancs INTÉRIEURS enclos par le
+   *     trait gardent leur blanc ;
+   *   - dessins au trait (ailleurs, temps, tournures, expressions) : le
+   *     damier passe aussi entre les traits, donc tout le gris neutre part,
+   *     partout. Les petits parchemins de « Tous les temps en revue »,
+   *     blancs dans l'original, prennent ainsi la sauge du papier — validé
+   *     sur la maquette.
+   * Sur « Rédiger au brevet », la tuile blanche arrondie part avec le fond.
+   * Chaque sujet est recadré à sa boîte, centré, remis en 1024 x 1024.
+   */
+  '3e-fin-vocabulaire': ailleurs3eFin,
+  'd-ici-et-d-ailleurs-3e': ailleurs3eFin,
+  'd-ici-et-d-ailleurs': ailleurs3eFin,
+
+  '3e-fin-erreurs': erreurs3eFin,
+  'les-erreurs-a-ne-plus-faire-3e': erreurs3eFin,
+  'les-erreurs-a-ne-plus-faire': erreurs3eFin,
+
+  '3e-fin-temps': temps3eFin,
+  'tous-les-temps-en-revue-3e': temps3eFin,
+  'tous-les-temps-en-revue': temps3eFin,
+
+  '3e-fin-ecrit': ecrit3eFin,
+  'rediger-au-brevet-3e': ecrit3eFin,
+  'rediger-au-brevet': ecrit3eFin,
+
+  '3e-fin-oral': oral3eFin,
+  'le-jour-de-l-oral-3e': oral3eFin,
+  'le-jour-de-l-oral': oral3eFin,
+
+  '2de-vocabulaire': axes2de,
+  'les-axes-du-programme-2nde': axes2de,
+  'les-axes-du-programme': axes2de,
+
+  '2de-document': document2de,
+  'analyser-un-document-2nde': document2de,
+  'analyser-un-document': document2de,
+
+  '2de-grammaire': tournures2de,
+  'les-tournures-du-lycee-2nde': tournures2de,
+  'les-tournures-du-lycee': tournures2de,
+
+  '2de-expressions': expressions2de,
+  'les-expressions-imagees-2nde': expressions2de,
+  'les-expressions-imagees': expressions2de,
+
+  '2de-debat': debat2de,
+  'debattre-2nde': debat2de,
+  'debattre': debat2de,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
