@@ -68,6 +68,11 @@ import grammaireFin2de from '../assets/packs/2de-fin-grammaire.png';
 import nuancesFin2de from '../assets/packs/2de-fin-nuances.png';
 import prepositionsFin2de from '../assets/packs/2de-fin-prepositions.png';
 import ecritFin2de from '../assets/packs/2de-fin-ecrit.png';
+import axes1re from '../assets/packs/1re-vocabulaire.png';
+import chiffres1re from '../assets/packs/1re-chiffres.png';
+import tournures1re from '../assets/packs/1re-grammaire.png';
+import collocations1re from '../assets/packs/1re-collocations.png';
+import synthese1re from '../assets/packs/1re-synthese.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -769,6 +774,45 @@ const ILLUSTRATIONS: Record<string, string> = {
   '2de-fin-ecrit': ecritFin2de,
   'commenter-un-texte-2nde': ecritFin2de,
   'commenter-un-texte': ecritFin2de,
+
+  /*
+   * CHANTIER 130 — LES DOS DES CINQ PAQUETS DE DÉBUT DE PREMIÈRE
+   *
+   * Parchemins de la livraison 129, inchangés (`deckPaper.ts` non touché) :
+   *    Les grands axes            miel        Chiffres et tendances      miel
+   *    Les tournures B2           sauge       Les mots qui vont ensemble terracotta
+   *    La synthèse de documents   ardoise
+   *
+   * Fonds retirés, trois cas :
+   *   - damier clair (axes, chiffres, mots) : chaque plage claire est
+   *     jugée à part ; celle qui porte le gris du damier part, le blanc
+   *     pur enclos reste (lettres de « Words together ») ;
+   *   - « Les tournures B2 », crayonné : le damier passait dans la feuille
+   *     et les ombres. Alpha tiré de la luminance, trait remis en
+   *     graphite ; la feuille laisse voir la sauge ;
+   *   - « La synthèse de documents », damier SOMBRE : tout gris neutre
+   *     foncé part, les traits colorés restent.
+   * Validé sur la maquette.
+   */
+  '1re-vocabulaire': axes1re,
+  'les-grands-axes-1ere': axes1re,
+  'les-grands-axes': axes1re,
+
+  '1re-chiffres': chiffres1re,
+  'chiffres-et-tendances-1ere': chiffres1re,
+  'chiffres-et-tendances': chiffres1re,
+
+  '1re-grammaire': tournures1re,
+  'les-tournures-b2-1ere': tournures1re,
+  'les-tournures-b2': tournures1re,
+
+  '1re-collocations': collocations1re,
+  'les-mots-qui-vont-ensemble-1ere': collocations1re,
+  'les-mots-qui-vont-ensemble': collocations1re,
+
+  '1re-synthese': synthese1re,
+  'la-synthese-de-documents-1ere': synthese1re,
+  'la-synthese-de-documents': synthese1re,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
