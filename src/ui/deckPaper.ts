@@ -339,6 +339,21 @@ const PAR_NOM: Record<string, number> = {
   'debattre': 0,
 
   /*
+   * CHANTIER 127 — les cinq paquets de FIN de seconde, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'les axes en profondeur 2nde': 2,
+  'les axes en profondeur': 2,
+  'la grammaire a reviser 2nde': 1,
+  'la grammaire a reviser': 1,
+  'le mot plus juste 2nde': 4,
+  'le mot plus juste': 4,
+  'verbes et prepositions 2nde': 4,
+  'verbes et prepositions': 4,
+  'commenter un texte 2nde': 0,
+  'commenter un texte': 0,
+
+  /*
    * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
    * recours. `PAR_ID` répond le premier.
    */
@@ -507,6 +522,25 @@ const PAR_ID: Record<string, number> = {
   '2de-grammaire': 1,    // sauge
   '2de-expressions': 4,  // terracotta
   '2de-debat': 0,        // bleu ardoise
+
+  /*
+   * CHANTIER 127 — LES CINQ PAQUETS DE FIN DE SECONDE
+   *
+   *    Les axes en profondeur — 2nde   miel        (Vocabulaire de base)
+   *    La grammaire à réviser — 2nde   sauge       (Grammaire)
+   *    Le mot plus juste — 2nde        terracotta  (Pièges et nuances)
+   *    Verbes et prépositions — 2nde   terracotta  (Pièges et nuances)
+   *    Commenter un texte — 2nde       ardoise     (Phrases toutes faites)
+   *
+   * Deux terracottas, choix validé : les prépositions sont des pièges
+   * (depend on, enter sans préposition), comme « Collocations ».
+   * Épinglés ici, pas dans `PAR_RAYON`.
+   */
+  '2de-fin-vocabulaire': 2,  // miel
+  '2de-fin-grammaire': 1,    // sauge
+  '2de-fin-nuances': 4,      // terracotta
+  '2de-fin-prepositions': 4, // terracotta
+  '2de-fin-ecrit': 0,        // bleu ardoise
 
   /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
