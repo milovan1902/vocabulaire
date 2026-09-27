@@ -63,6 +63,11 @@ import document2de from '../assets/packs/2de-document.png';
 import tournures2de from '../assets/packs/2de-grammaire.png';
 import expressions2de from '../assets/packs/2de-expressions.png';
 import debat2de from '../assets/packs/2de-debat.png';
+import axesFin2de from '../assets/packs/2de-fin-vocabulaire.png';
+import grammaireFin2de from '../assets/packs/2de-fin-grammaire.png';
+import nuancesFin2de from '../assets/packs/2de-fin-nuances.png';
+import prepositionsFin2de from '../assets/packs/2de-fin-prepositions.png';
+import ecritFin2de from '../assets/packs/2de-fin-ecrit.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -725,6 +730,45 @@ const ILLUSTRATIONS: Record<string, string> = {
   '2de-debat': debat2de,
   'debattre-2nde': debat2de,
   'debattre': debat2de,
+
+  /*
+   * CHANTIER 128 — LES DOS DES CINQ PAQUETS DE FIN DE SECONDE
+   *
+   * Parchemins de la livraison 127, inchangés (`deckPaper.ts` non touché) :
+   *    Les axes en profondeur   miel        La grammaire à réviser   sauge
+   *    Le mot plus juste        terracotta  Verbes et prépositions   terracotta
+   *    Commenter un texte       ardoise
+   *
+   * Fonds retirés comme au chantier 126 (diffusion depuis les bords pour
+   * les dessins pleins, retrait global pour « Verbes et prépositions »).
+   * La tuile blanche de « La grammaire à réviser » fait partie du dessin :
+   * gardée.
+   *
+   * « LE MOT PLUS JUSTE » — seule planche retouchée. Blanc sur damier
+   * SOMBRE : posé tel quel sur un terracotta pâle (#f7eae4), le blanc
+   * disparaissait. Le damier (gris 80 à 127) part ; le bleu nuit reste ;
+   * le blanc passe à l'encre du papier terracotta (#6d4231). Validé sur
+   * la maquette.
+   */
+  '2de-fin-vocabulaire': axesFin2de,
+  'les-axes-en-profondeur-2nde': axesFin2de,
+  'les-axes-en-profondeur': axesFin2de,
+
+  '2de-fin-grammaire': grammaireFin2de,
+  'la-grammaire-a-reviser-2nde': grammaireFin2de,
+  'la-grammaire-a-reviser': grammaireFin2de,
+
+  '2de-fin-nuances': nuancesFin2de,
+  'le-mot-plus-juste-2nde': nuancesFin2de,
+  'le-mot-plus-juste': nuancesFin2de,
+
+  '2de-fin-prepositions': prepositionsFin2de,
+  'verbes-et-prepositions-2nde': prepositionsFin2de,
+  'verbes-et-prepositions': prepositionsFin2de,
+
+  '2de-fin-ecrit': ecritFin2de,
+  'commenter-un-texte-2nde': ecritFin2de,
+  'commenter-un-texte': ecritFin2de,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
