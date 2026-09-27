@@ -354,6 +354,21 @@ const PAR_NOM: Record<string, number> = {
   'commenter un texte': 0,
 
   /*
+   * CHANTIER 129 — les cinq paquets de DÉBUT de première, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'les grands axes 1ere': 2,
+  'les grands axes': 2,
+  'chiffres et tendances 1ere': 2,
+  'chiffres et tendances': 2,
+  'les tournures b2 1ere': 1,
+  'les tournures b2': 1,
+  'les mots qui vont ensemble 1ere': 4,
+  'les mots qui vont ensemble': 4,
+  'la synthese de documents 1ere': 0,
+  'la synthese de documents': 0,
+
+  /*
    * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
    * recours. `PAR_ID` répond le premier.
    */
@@ -541,6 +556,25 @@ const PAR_ID: Record<string, number> = {
   '2de-fin-nuances': 4,      // terracotta
   '2de-fin-prepositions': 4, // terracotta
   '2de-fin-ecrit': 0,        // bleu ardoise
+
+  /*
+   * CHANTIER 129 — LES CINQ PAQUETS DE DÉBUT DE PREMIÈRE
+   *
+   *    Les grands axes — 1ère             miel        (Vocabulaire de base)
+   *    Chiffres et tendances — 1ère       miel        (Vocabulaire de base)
+   *    Les tournures B2 — 1ère            sauge       (Grammaire)
+   *    Les mots qui vont ensemble — 1ère  terracotta  (Pièges et nuances)
+   *    La synthèse de documents — 1ère    ardoise     (Phrases toutes faites)
+   *
+   * Les collocations vont aux « Pièges », à côté de « Collocations » :
+   * le mot à mot s'y trompe (raise awareness, meet a challenge).
+   * Épinglé ici, pas dans `PAR_RAYON`.
+   */
+  '1re-vocabulaire': 2,   // miel
+  '1re-chiffres': 2,      // miel
+  '1re-grammaire': 1,     // sauge
+  '1re-collocations': 4,  // terracotta
+  '1re-synthese': 0,      // bleu ardoise
 
   /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
