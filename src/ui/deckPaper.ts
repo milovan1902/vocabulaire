@@ -369,6 +369,21 @@ const PAR_NOM: Record<string, number> = {
   'la synthese de documents': 0,
 
   /*
+   * CHANTIER 131 — les cinq paquets de FIN de première, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'les axes en debat 1ere': 2,
+  'les axes en debat': 2,
+  'les familles de mots 1ere': 2,
+  'les familles de mots': 2,
+  'les adjectifs pour juger 1ere': 4,
+  'les adjectifs pour juger': 4,
+  'les pieges de grammaire 1ere': 1,
+  'les pieges de grammaire': 1,
+  'rediger un essai 1ere': 0,
+  'rediger un essai': 0,
+
+  /*
    * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
    * recours. `PAR_ID` répond le premier.
    */
@@ -575,6 +590,25 @@ const PAR_ID: Record<string, number> = {
   '1re-grammaire': 1,     // sauge
   '1re-collocations': 4,  // terracotta
   '1re-synthese': 0,      // bleu ardoise
+
+  /*
+   * CHANTIER 131 — LES CINQ PAQUETS DE FIN DE PREMIÈRE
+   *
+   *    Les axes en débat — 1ère          miel        (Vocabulaire de base)
+   *    Les familles de mots — 1ère       miel        (Vocabulaire de base)
+   *    Les adjectifs pour juger — 1ère   terracotta  (Pièges et nuances)
+   *    Les pièges de grammaire — 1ère    sauge       (Grammaire)
+   *    Rédiger un essai — 1ère           ardoise     (Phrases toutes faites)
+   *
+   * « Les pièges de grammaire » reste en sauge malgré son nom : c'est de
+   * la grammaire pure. Les adjectifs, eux, sont en terracotta (nuances,
+   * faux amis). Choix validé par le propriétaire.
+   */
+  '1re-fin-vocabulaire': 2, // miel
+  '1re-fin-familles': 2,    // miel
+  '1re-fin-adjectifs': 4,   // terracotta
+  '1re-fin-grammaire': 1,   // sauge
+  '1re-fin-essai': 0,       // bleu ardoise
 
   /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
