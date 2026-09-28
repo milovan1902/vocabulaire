@@ -73,6 +73,11 @@ import chiffres1re from '../assets/packs/1re-chiffres.png';
 import tournures1re from '../assets/packs/1re-grammaire.png';
 import collocations1re from '../assets/packs/1re-collocations.png';
 import synthese1re from '../assets/packs/1re-synthese.png';
+import axesFin1re from '../assets/packs/1re-fin-vocabulaire.png';
+import famillesFin1re from '../assets/packs/1re-fin-familles.png';
+import adjectifsFin1re from '../assets/packs/1re-fin-adjectifs.png';
+import grammaireFin1re from '../assets/packs/1re-fin-grammaire.png';
+import essaiFin1re from '../assets/packs/1re-fin-essai.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -813,6 +818,46 @@ const ILLUSTRATIONS: Record<string, string> = {
   '1re-synthese': synthese1re,
   'la-synthese-de-documents-1ere': synthese1re,
   'la-synthese-de-documents': synthese1re,
+
+  /*
+   * CHANTIER 132 — LES DOS DES CINQ PAQUETS DE FIN DE PREMIÈRE
+   *
+   * Parchemins de la livraison 131, inchangés (`deckPaper.ts` non touché) :
+   *    Les axes en débat          miel        Les familles de mots     miel
+   *    Les adjectifs pour juger   terracotta  Les pièges de grammaire  sauge
+   *    Rédiger un essai           ardoise
+   *
+   * Fonds retirés comme au chantier 130 (chaque plage claire jugée à
+   * part : celle qui porte le gris du damier part, le blanc enclos reste).
+   *   - « Les adjectifs pour juger » : balance blanche sur damier SOMBRE,
+   *     passée à l'encre du papier terracotta (#6d4231), comme « Le mot
+   *     plus juste » (chantier 128).
+   *   - « Rédiger un essai » : le damier remplissait la feuille ; elle
+   *     laisse voir l'ardoise.
+   *   - « Les pièges de grammaire » : fond blanc retiré, feuille blanche
+   *     et disque vert gardés.
+   *   - « Les axes en débat » : violet d'origine gardé sur le miel.
+   * Validé sur la maquette.
+   */
+  '1re-fin-vocabulaire': axesFin1re,
+  'les-axes-en-debat-1ere': axesFin1re,
+  'les-axes-en-debat': axesFin1re,
+
+  '1re-fin-familles': famillesFin1re,
+  'les-familles-de-mots-1ere': famillesFin1re,
+  'les-familles-de-mots': famillesFin1re,
+
+  '1re-fin-adjectifs': adjectifsFin1re,
+  'les-adjectifs-pour-juger-1ere': adjectifsFin1re,
+  'les-adjectifs-pour-juger': adjectifsFin1re,
+
+  '1re-fin-grammaire': grammaireFin1re,
+  'les-pieges-de-grammaire-1ere': grammaireFin1re,
+  'les-pieges-de-grammaire': grammaireFin1re,
+
+  '1re-fin-essai': essaiFin1re,
+  'rediger-un-essai-1ere': essaiFin1re,
+  'rediger-un-essai': essaiFin1re,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
