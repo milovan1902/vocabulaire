@@ -83,6 +83,11 @@ import verbesTle from '../assets/packs/tle-verbes.png';
 import tournuresTle from '../assets/packs/tle-grammaire.png';
 import imagesTle from '../assets/packs/tle-images.png';
 import oralTle from '../assets/packs/tle-oral.png';
+import actualiteFinTle from '../assets/packs/tle-fin-actualite.png';
+import etudesFinTle from '../assets/packs/tle-fin-etudes.png';
+import fauxAmisFinTle from '../assets/packs/tle-fin-faux-amis.png';
+import grammaireFinTle from '../assets/packs/tle-fin-grammaire.png';
+import epreuveFinTle from '../assets/packs/tle-fin-epreuve.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -900,6 +905,41 @@ const ILLUSTRATIONS: Record<string, string> = {
   'tle-oral': oralTle,
   'l-oral-du-bac-term': oralTle,
   'l-oral-du-bac': oralTle,
+
+  /*
+   * CHANTIER 136 — LES DOS DES CINQ PAQUETS DE FIN DE TERMINALE
+   *
+   * Parchemins de la livraison 135, inchangés (`deckPaper.ts` non touché) :
+   *    L'actualité du monde     miel        Les études supérieures   miel
+   *    Les faux amis avancés    terracotta  Révisions de grammaire   sauge
+   *    Réussir l'épreuve        ardoise
+   *
+   * Fonds retirés (damier clair ou sombre selon le fichier).
+   *   - « L'actualité du monde » : le « WORLD NEWS » blanc du bas passe à
+   *     l'encre du miel (#6b5320) ; globe et journal intacts.
+   *   - « Réussir l'épreuve » : le halo vert fluo avait capté le damier
+   *     sombre. Halo recalculé puis lissé, coche et disque intacts.
+   * Validé sur la maquette.
+   */
+  'tle-fin-actualite': actualiteFinTle,
+  'l-actualite-du-monde-term': actualiteFinTle,
+  'l-actualite-du-monde': actualiteFinTle,
+
+  'tle-fin-etudes': etudesFinTle,
+  'les-etudes-superieures-term': etudesFinTle,
+  'les-etudes-superieures': etudesFinTle,
+
+  'tle-fin-faux-amis': fauxAmisFinTle,
+  'les-faux-amis-avances-term': fauxAmisFinTle,
+  'les-faux-amis-avances': fauxAmisFinTle,
+
+  'tle-fin-grammaire': grammaireFinTle,
+  'revisions-de-grammaire-term': grammaireFinTle,
+  'revisions-de-grammaire': grammaireFinTle,
+
+  'tle-fin-epreuve': epreuveFinTle,
+  'reussir-l-epreuve-term': epreuveFinTle,
+  'reussir-l-epreuve': epreuveFinTle,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
