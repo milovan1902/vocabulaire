@@ -78,6 +78,11 @@ import famillesFin1re from '../assets/packs/1re-fin-familles.png';
 import adjectifsFin1re from '../assets/packs/1re-fin-adjectifs.png';
 import grammaireFin1re from '../assets/packs/1re-fin-grammaire.png';
 import essaiFin1re from '../assets/packs/1re-fin-essai.png';
+import notionsTle from '../assets/packs/tle-notions.png';
+import verbesTle from '../assets/packs/tle-verbes.png';
+import tournuresTle from '../assets/packs/tle-grammaire.png';
+import imagesTle from '../assets/packs/tle-images.png';
+import oralTle from '../assets/packs/tle-oral.png';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -858,6 +863,43 @@ const ILLUSTRATIONS: Record<string, string> = {
   '1re-fin-essai': essaiFin1re,
   'rediger-un-essai-1ere': essaiFin1re,
   'rediger-un-essai': essaiFin1re,
+
+  /*
+   * CHANTIER 134 — LES DOS DES CINQ PAQUETS DE DÉBUT DE TERMINALE
+   *
+   * Parchemins de la livraison 133, inchangés (`deckPaper.ts` non touché) :
+   *    Les grandes notions          miel        Les verbes du débat   miel
+   *    Tournures de haut niveau     sauge       L'oral du bac         ardoise
+   *    Les images qui argumentent   terracotta
+   *
+   * Fonds retirés (damier clair, damier sombre ou blanc selon le fichier).
+   *   - « Les grandes notions » : trait doré très clair sur damier sombre,
+   *     foncé vers un bronze olive pour tenir sur le miel.
+   *   - « Les verbes du débat » : autocollant, liseré blanc gardé.
+   *   - « Les images qui argumentent » : bulle et balance passées en PRUNE
+   *     à la demande du propriétaire. Les valeurs claires et foncées sont
+   *     gardées, la teinte est remplacée par une gamme prune (#3a1a33 à
+   *     #e8d2e0).
+   */
+  'tle-notions': notionsTle,
+  'les-grandes-notions-term': notionsTle,
+  'les-grandes-notions': notionsTle,
+
+  'tle-verbes': verbesTle,
+  'les-verbes-du-debat-term': verbesTle,
+  'les-verbes-du-debat': verbesTle,
+
+  'tle-grammaire': tournuresTle,
+  'tournures-de-haut-niveau-term': tournuresTle,
+  'tournures-de-haut-niveau': tournuresTle,
+
+  'tle-images': imagesTle,
+  'les-images-qui-argumentent-term': imagesTle,
+  'les-images-qui-argumentent': imagesTle,
+
+  'tle-oral': oralTle,
+  'l-oral-du-bac-term': oralTle,
+  'l-oral-du-bac': oralTle,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
