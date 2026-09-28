@@ -384,6 +384,21 @@ const PAR_NOM: Record<string, number> = {
   'rediger un essai': 0,
 
   /*
+   * CHANTIER 133 — les cinq paquets de DÉBUT de terminale, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'les grandes notions term': 2,
+  'les grandes notions': 2,
+  'les verbes du debat term': 2,
+  'les verbes du debat': 2,
+  'tournures de haut niveau term': 1,
+  'tournures de haut niveau': 1,
+  'les images qui argumentent term': 4,
+  'les images qui argumentent': 4,
+  'l oral du bac term': 0,
+  'l oral du bac': 0,
+
+  /*
    * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
    * recours. `PAR_ID` répond le premier.
    */
@@ -609,6 +624,25 @@ const PAR_ID: Record<string, number> = {
   '1re-fin-adjectifs': 4,   // terracotta
   '1re-fin-grammaire': 1,   // sauge
   '1re-fin-essai': 0,       // bleu ardoise
+
+  /*
+   * CHANTIER 133 — LES CINQ PAQUETS DE DÉBUT DE TERMINALE
+   *
+   *    Les grandes notions — Term          miel        (Vocabulaire de base)
+   *    Les verbes du débat — Term          miel        (Vocabulaire de base)
+   *    Tournures de haut niveau — Term     sauge       (Grammaire)
+   *    Les images qui argumentent — Term   terracotta  (Pièges et nuances)
+   *    L'oral du bac — Term                ardoise     (Phrases toutes faites)
+   *
+   * Les images vont aux « Pièges », comme les expressions imagées de
+   * seconde : elles ne se traduisent pas mot à mot. Épinglé ici, pas
+   * dans `PAR_RAYON`.
+   */
+  'tle-notions': 2,    // miel
+  'tle-verbes': 2,     // miel
+  'tle-grammaire': 1,  // sauge
+  'tle-images': 4,     // terracotta
+  'tle-oral': 0,       // bleu ardoise
 
   /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
