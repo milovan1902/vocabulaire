@@ -399,6 +399,21 @@ const PAR_NOM: Record<string, number> = {
   'l oral du bac': 0,
 
   /*
+   * CHANTIER 135 — les cinq paquets de FIN de terminale, en second
+   * recours. `PAR_ID` répond le premier.
+   */
+  'l actualite du monde term': 2,
+  'l actualite du monde': 2,
+  'les etudes superieures term': 2,
+  'les etudes superieures': 2,
+  'les faux amis avances term': 4,
+  'les faux amis avances': 4,
+  'revisions de grammaire term': 1,
+  'revisions de grammaire': 1,
+  'reussir l epreuve term': 0,
+  'reussir l epreuve': 0,
+
+  /*
    * CHANTIER 124 — les cinq paquets de FIN de troisième, en second
    * recours. `PAR_ID` répond le premier.
    */
@@ -643,6 +658,24 @@ const PAR_ID: Record<string, number> = {
   'tle-grammaire': 1,  // sauge
   'tle-images': 4,     // terracotta
   'tle-oral': 0,       // bleu ardoise
+
+  /*
+   * CHANTIER 135 — LES CINQ PAQUETS DE FIN DE TERMINALE
+   *
+   *    L'actualité du monde — Term      miel        (Vocabulaire de base)
+   *    Les études supérieures — Term    miel        (Vocabulaire de base)
+   *    Les faux amis avancés — Term     terracotta  (Pièges et nuances)
+   *    Révisions de grammaire — Term    sauge       (Grammaire)
+   *    Réussir l'épreuve — Term         ardoise     (Phrases toutes faites)
+   *
+   * Terracotta épinglé ici, pas dans `PAR_RAYON`, comme les autres
+   * paquets « Pièges » depuis le chantier 124.
+   */
+  'tle-fin-actualite': 2,  // miel
+  'tle-fin-etudes': 2,     // miel
+  'tle-fin-faux-amis': 4,  // terracotta
+  'tle-fin-grammaire': 1,  // sauge
+  'tle-fin-epreuve': 0,    // bleu ardoise
 
   /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
