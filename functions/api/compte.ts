@@ -26,7 +26,7 @@
 import { json, utilisateur, type Contexte } from './_parler-commun';
 
 /** Les tables qui portent une colonne `user_id`. À compléter si une table s'ajoute. */
-const TABLES = ['progress', 'user_settings', 'parler_usage', 'parler_seance'];
+const TABLES = ['progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement'];
 
 export const onRequestDelete = async ({ request, env }: Contexte): Promise<Response> => {
   const userId = await utilisateur(request, env);
