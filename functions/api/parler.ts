@@ -22,6 +22,7 @@ import {
   noteConsommation, PLAFOND_CENTIMES_JOUR, promptSysteme, utilisateur,
   type Consommation, type Contexte, type Fiche,
 } from './_parler-commun';
+import { voixOuverte } from './_parler-commun';
 
 /** Ce que l'écran reçoit. Aucun jeton ne figure ici : ce n'est pas son sujet. */
 interface Budget {
@@ -81,6 +82,11 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     corps = (await request.json()) as Requete;
   } catch {
     return json({ erreur: 'corps illisible' }, 400);
+  }
+
+  /* CHANTIER 139 — pas de conversation avant la 4e, même par appel direct. */
+  if (!voixOuverte(corps.fiche?.classe)) {
+    return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
   }
 
   if (!Array.isArray(corps.messages) || corps.messages.length === 0) {
