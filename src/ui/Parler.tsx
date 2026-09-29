@@ -40,7 +40,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
-import { budgetParler, euros, ErreurParler, type Budget, type Fiche } from '../data/parler';
+import { quandDit, finDit, budgetParler, euros, ErreurParler, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { ParlerHistorique } from './ParlerHistorique';
 
@@ -256,7 +256,7 @@ export function Parler({
 
   const autres = Math.max(0, totalMots - mots.length);
   const minutes = budget?.minutes ?? 0;
-  const part = etat === 'pret' ? (100 * minutes) / 10 : 0;
+  const part = etat === 'pret' ? (100 * minutes) / (budget?.max ?? 10) : 0;
 
   return (
     <section className="parler" aria-label="Parler anglais">
@@ -295,7 +295,7 @@ export function Parler({
             <p className="parler-min">
               <b>{minutes}</b>
               <span>
-                minute{minutes > 1 ? 's' : ''} disponible{minutes > 1 ? 's' : ''} aujourd’hui
+                minute{minutes > 1 ? 's' : ''} disponible{minutes > 1 ? 's' : ''} {quandDit(budget)}
               </span>
             </p>
             <span className="parler-jauge" aria-hidden="true">
@@ -303,12 +303,12 @@ export function Parler({
             </span>
             <p className="hint">
               {budget?.appels === 0
-                ? 'Tu n’as encore rien utilisé aujourd’hui.'
-                : `${budget?.appels} échange${(budget?.appels ?? 0) > 1 ? 's' : ''} aujourd’hui.`}
+                ? `Tu n’as encore rien utilisé ${quandDit(budget)}.`
+                : `${budget?.appels} échange${(budget?.appels ?? 0) > 1 ? 's' : ''} ${quandDit(budget)}.`}
             </p>
             {exploitant && (
               <p className="seance-exploitant">
-                Vue exploitant · {euros(budget?.coutJour ?? 0)} dépensés aujourd’hui
+                Vue exploitant · {euros(budget?.coutJour ?? 0)} dépensés {quandDit(budget)}
                 sur ce compte. Trois tapes sur la mention de droite pour masquer.
               </p>
             )}
@@ -445,9 +445,7 @@ export function Parler({
           au bout de deux phrases.
         </p>
       ) : budget?.fini ? (
-        <p className="hint parler-pied">
-          Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.
-        </p>
+        <p className="hint parler-pied">{finDit(budget)}</p>
       ) : (
         <p className="hint parler-pied">
           Appuie sur le micro et parle. Le clavier reste disponible pendant
