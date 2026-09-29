@@ -8,9 +8,12 @@
  */
 import { useState } from "react";
 import type { Auth } from "./useAuth";
+import { useAccordCompte } from "./accordParental";
 
 export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
   const [openMethod, setOpenMethod] = useState(false);
+  // CHANTIER 141 — accord parental avant « Continuer avec Google ».
+  const accord = useAccordCompte();
 
   return (
     <div className="welcome">
@@ -43,7 +46,12 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
           </>
         ) : (
           <>
-            <button className="btn google" onClick={() => void auth.signIn()}>
+            {accord.caseAccord}
+            <button
+              className="btn google"
+              disabled={!accord.pret}
+              onClick={() => void auth.signIn()}
+            >
               <GoogleMark />
               Continuer avec Google
             </button>
