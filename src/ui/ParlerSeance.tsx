@@ -39,7 +39,7 @@ import { parle, nettoie } from './speech';
 import { ReprendreMots } from './ReprendreMots';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import {
-  bilanDeSeance, euros, tourDeParole, ErreurParler, signaleReponse,
+  bilanDeSeance, euros, tourDeParole, ErreurParler, signaleReponse, quandDit, finDit,
   type Bilan, type Budget, type Fiche, type Motif, type Tour,
 } from '../data/parler';
 
@@ -175,10 +175,11 @@ export function ParlerSeance({
     } catch (e) {
       setErreur(
         e instanceof ErreurParler && e.quotaEpuise
-          ? 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.'
+          ? finDit(e.budget)
           : 'La conversation ne répond pas. Réessaie dans un instant.',
       );
       setDetail(e instanceof ErreurParler ? e.detail ?? null : String(e));
+      if (e instanceof ErreurParler && e.budget) setB(e.budget);
     } finally {
       setEnVol(false);
     }
@@ -280,7 +281,7 @@ export function ParlerSeance({
 
         {exploitant && (
           <p className="seance-exploitant">
-            Vue exploitant · {euros(b.coutJour)} aujourd’hui, {b.appels} appels.
+            Vue exploitant · {euros(b.coutJour)} {quandDit(b)}, {b.appels} appels.
           </p>
         )}
 
@@ -295,7 +296,7 @@ export function ParlerSeance({
       <div className="seance-tete">
         <b className="seance-chrono">{horloge(secondes)}</b>
         <span className="seance-reste">
-          reste {b.minutes} min aujourd’hui
+          reste {b.minutes} min {quandDit(b)}
         </span>
         <button className="seance-stop" onClick={() => void termine()} disabled={enVol}>
           Terminer
@@ -304,7 +305,7 @@ export function ParlerSeance({
 
       {exploitant && (
         <p className="seance-exploitant">
-          Vue exploitant · {euros(b.coutJour)} aujourd’hui, {b.appels} appels.
+          Vue exploitant · {euros(b.coutJour)} {quandDit(b)}, {b.appels} appels.
         </p>
       )}
 
@@ -352,7 +353,7 @@ export function ParlerSeance({
           </button>
           <p className="seance-consigne">
             {b.fini
-              ? 'Temps de parole épuisé pour aujourd’hui.'
+              ? (b.pause ? 'Parler fait une pause.' : `Temps de parole épuisé ${quandDit(b)}.`)
               : enVol
                 ? 'Il réfléchit…'
                 : ecoutant
