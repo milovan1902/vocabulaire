@@ -53,6 +53,13 @@ export interface Env {
    */
   MODELE_PARLER?: string;
   MODELE_BILAN?: string;
+  /**
+   * CHANTIER 144 — adresses e-mail qui gardent 10 minutes par jour
+   * (exploitant, testeurs). Séparées par des virgules. Facultatif.
+   */
+  PARLER_ILLIMITE?: string;
+  /** CHANTIER 144 — plafond mensuel de toute l'app, en euros. 150 par défaut. */
+  PARLER_PLAFOND_MOIS_EUROS?: string;
 }
 
 /**
@@ -138,6 +145,123 @@ export const SECONDES_JOUR = 600;
  */
 export const PLAFOND_CENTIMES_JOUR = 45;
 
+/**
+ * CHANTIER 144 — DEUX FORMULES, UN PLAFOND GLOBAL
+ *
+ * Gratuit (tout le monde) : 5 minutes par SEMAINE, 20 centimes au plus,
+ * remis à zéro le lundi (UTC).
+ * Illimité (adresses de PARLER_ILLIMITE) : l'ancienne règle, 10 minutes
+ * par jour, 45 centimes au plus.
+ *
+ * Au-dessus des deux, un plafond MENSUEL pour toute l'application
+ * (150 € par défaut). Atteint, Parler se met en pause pour les comptes
+ * gratuits jusqu'au 1er du mois suivant. Les comptes illimités passent
+ * quand même : c'est l'exploitant qui teste.
+ */
+export interface Quota {
+  illimite: boolean;
+  periode: 'jour' | 'semaine';
+  /** Premier jour compté, AAAA-MM-JJ. */
+  depuis: string;
+  secondes: number;
+  jetons: number;
+  centimes: number;
+  /** Ce que la jauge affiche quand rien n'est consommé. */
+  minutes: number;
+}
+
+const ILLIMITE = { periode: 'jour' as const, secondes: SECONDES_JOUR, jetons: JETONS_JOUR, centimes: PLAFOND_CENTIMES_JOUR, minutes: 10 };
+const GRATUIT = { periode: 'semaine' as const, secondes: 300, jetons: 16_500, centimes: 20, minutes: 5 };
+
+/** Le lundi de la semaine en cours, en UTC. */
+export function lundiUtc(): string {
+  const d = new Date();
+  const j = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - j);
+  return d.toISOString().slice(0, 10);
+}
+
+export function premierDuMoisUtc(): string {
+  return new Date().toISOString().slice(0, 8) + '01';
+}
+
+export function estIllimite(email: string | null, env: Env): boolean {
+  if (!email || !env.PARLER_ILLIMITE) return false;
+  const liste = env.PARLER_ILLIMITE.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return liste.includes(email.trim().toLowerCase());
+}
+
+export function quotaDe(email: string | null, env: Env): Quota {
+  const illimite = estIllimite(email, env);
+  const q = illimite ? ILLIMITE : GRATUIT;
+  return { illimite, ...q, depuis: q.periode === 'jour' ? jourUtc() : lundiUtc() };
+}
+
+export function plafondMoisCentimes(env: Env): number {
+  const e = Number(env.PARLER_PLAFOND_MOIS_EUROS);
+  return (Number.isFinite(e) && e > 0 ? e : 150) * 100;
+}
+
+/**
+ * Ce que TOUTE l'application a dépensé depuis le 1er du mois, en centimes.
+ * Calculé par Supabase (fonction `parler_depense_depuis`) : additionner des
+ * dizaines de milliers de lignes ici dépasserait la limite de lecture.
+ * Lecture ratée = on lève, comme pour le quota individuel.
+ */
+export async function depenseDuMois(env: Env): Promise<number> {
+  const r = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/parler_depense_depuis`, {
+    method: 'POST',
+    headers: {
+      apikey: env.SUPABASE_SERVICE_KEY,
+      authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ debut: premierDuMoisUtc() }),
+  });
+  if (!r.ok) {
+    const dit = await r.text().catch(() => '');
+    throw new Error(`lecture de la dépense du mois impossible (${r.status}) ${dit.slice(0, 200)}`);
+  }
+  return Number(await r.json()) || 0;
+}
+
+/** Ce que l'écran reçoit. Aucun jeton ne figure ici : ce n'est pas son sujet. */
+export interface Budget {
+  minutes: number;
+  /** CHANTIER 144 — le maximum de la jauge : 5 (gratuit) ou 10 (illimité). */
+  max: number;
+  periode: 'jour' | 'semaine';
+  /** Plafond mensuel de l'app atteint : Parler en pause jusqu'au 1er. */
+  pause: boolean;
+  /** Vrai quand le quota du jour est épuisé. */
+  fini: boolean;
+  /**
+   * Coût réel, pour la vue exploitant. En centimes d'euro, deux décimales.
+   * L'écran ne le montre qu'à vous, derrière un drapeau local.
+   */
+  coutJour: number;
+  appels: number;
+}
+
+export function budgetDe(c: Consommation, q: Quota, pause = false): Budget {
+  const minutes = pause ? 0 : minutesRestantes(c.ponderes, c.secondes, q);
+  return {
+    minutes,
+    max: q.minutes,
+    periode: q.periode,
+    pause,
+    fini: pause || minutes <= 0 || c.coutCentimes >= q.centimes,
+    coutJour: Number(c.coutCentimes.toFixed(2)),
+    appels: c.appels,
+  };
+}
+
+/** Vrai si le plafond mensuel est atteint ET que le compte y est soumis. */
+export async function enPause(q: Quota, env: Env): Promise<boolean> {
+  if (q.illimite) return false;
+  return (await depenseDuMois(env)) >= plafondMoisCentimes(env);
+}
+
 export interface Usage {
   jetonsIn: number;
   jetonsCache: number;
@@ -201,13 +325,18 @@ export function coutCentimes(modele: string, u: Usage): number {
  *   restantes » alors que la conversation marche encore est le même
  *   mensonge, dans l'autre sens.
  */
-export function minutesRestantes(ponderesDuJour: number, secondesDuJour = 0): number {
-  const partJetons = 1 - ponderesDuJour / JETONS_JOUR;
-  const partTemps = 1 - secondesDuJour / SECONDES_JOUR;
+export function minutesRestantes(
+  ponderesDuJour: number,
+  secondesDuJour = 0,
+  q: { jetons: number; secondes: number; minutes: number } = ILLIMITE,
+): number {
+  const partJetons = 1 - ponderesDuJour / q.jetons;
+  const partTemps = 1 - secondesDuJour / q.secondes;
   const part = Math.min(partJetons, partTemps);
+  const max = q.minutes;
   if (part <= 0) return 0;
-  if (part >= 1) return 10;
-  return Math.min(9, Math.max(1, Math.round(part * 10)));
+  if (part >= 1) return max;
+  return Math.min(max - 1, Math.max(1, Math.round(part * max)));
 }
 
 export function json(corps: unknown, status = 200): Response {
@@ -229,6 +358,13 @@ export function json(corps: unknown, status = 200): Response {
  * personne.
  */
 export async function utilisateur(request: Request, env: Env): Promise<string | null> {
+  return (await utilisateurEtEmail(request, env))?.id ?? null;
+}
+
+/** CHANTIER 144 — même vérification, avec l'e-mail pour choisir la formule. */
+export async function utilisateurEtEmail(
+  request: Request, env: Env,
+): Promise<{ id: string; email: string | null } | null> {
   const entete = request.headers.get('authorization');
   if (!entete?.startsWith('Bearer ')) return null;
 
@@ -239,8 +375,8 @@ export async function utilisateur(request: Request, env: Env): Promise<string | 
     },
   });
   if (!r.ok) return null;
-  const u = (await r.json()) as { id?: string };
-  return u.id ?? null;
+  const u = (await r.json()) as { id?: string; email?: string };
+  return u.id ? { id: u.id, email: u.email ?? null } : null;
 }
 
 /** Le jour courant en UTC, comme la colonne `jour` de la table. */
@@ -256,9 +392,14 @@ export function jourUtc(): string {
  * maintenir de l'autre côté.
  */
 export async function consommationDuJour(userId: string, env: Env): Promise<Consommation> {
+  return consommationDepuis(userId, jourUtc(), env);
+}
+
+/** CHANTIER 144 — la consommation depuis une date : le jour, ou le lundi. */
+export async function consommationDepuis(userId: string, depuis: string, env: Env): Promise<Consommation> {
   const url = `${env.SUPABASE_URL}/rest/v1/parler_usage`
     + `?select=jetons_in,jetons_cache,jetons_out,cout_centimes,secondes`
-    + `&user_id=eq.${userId}&jour=eq.${jourUtc()}`;
+    + `&user_id=eq.${userId}&jour=gte.${depuis}`;
 
   const r = await fetch(url, {
     headers: {
