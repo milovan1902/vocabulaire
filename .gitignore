@@ -1,0 +1,16 @@
+# Dépendances installées par npm install
+node_modules/
+
+# Résultat de npm run build (Cloudflare le refait lui-même)
+dist/
+dev-dist/
+
+# Fichiers locaux
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
