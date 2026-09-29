@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import Lancement from './ui/Lancement';
+import { FiletErreur } from './ui/FiletErreur';
 import { installeSuiviErreurs, signaleErreur } from './data/erreurs';
 import './styles.css';
 
@@ -13,10 +14,14 @@ createRoot(document.getElementById('root')!, {
   onCaughtError: (e) => signaleErreur(e, 'react-rattrapee'),
 }).render(
   <StrictMode>
-    {/* Posé à côté de l'application, pas autour : App.tsx a trois sorties
-        possibles (chargement, accueil, onglets) et l'ouverture doit couvrir
-        les trois sans qu'aucune ne la connaisse. */}
-    <Lancement />
-    <App />
+    {/* CHANTIER 146 — le filet enveloppe tout : une erreur de rendu affiche
+        « Recharger » au lieu d'un écran blanc. */}
+    <FiletErreur>
+      {/* Posé à côté de l'application, pas autour : App.tsx a trois sorties
+          possibles (chargement, accueil, onglets) et l'ouverture doit couvrir
+          les trois sans qu'aucune ne la connaisse. */}
+      <Lancement />
+      <App />
+    </FiletErreur>
   </StrictMode>,
 );
