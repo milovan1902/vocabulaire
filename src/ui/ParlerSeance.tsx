@@ -39,9 +39,51 @@ import { parle, nettoie } from './speech';
 import { ReprendreMots } from './ReprendreMots';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import {
-  bilanDeSeance, euros, tourDeParole, ErreurParler,
-  type Bilan, type Budget, type Fiche, type Tour,
+  bilanDeSeance, euros, tourDeParole, ErreurParler, signaleReponse,
+  type Bilan, type Budget, type Fiche, type Motif, type Tour,
 } from '../data/parler';
+
+/*
+ * CHANTIER 142 — « Signaler » sous chaque réponse de l'IA.
+ * Un geste pour ouvrir, un pour choisir le motif : c'est envoyé.
+ */
+const MOTIFS: Array<[Motif, string]> = [
+  ['inapproprie', 'Pas pour mon âge'],
+  ['blessant', 'Blessant ou gênant'],
+  ['faux', 'Faux ou bizarre'],
+  ['autre', 'Autre chose'],
+];
+
+function Signaler({ reponse, avant, classe }: { reponse: string; avant: Tour[]; classe: string | null }) {
+  const [etat, setEtat] = useState<'repos' | 'choix' | 'envoi' | 'fait' | 'echec'>('repos');
+  const petit = { background: 'none', border: 0, padding: '4px 0', font: 'inherit', fontSize: 13, color: 'inherit', opacity: 0.7, textDecoration: 'underline', cursor: 'pointer', minHeight: 32 } as const;
+
+  async function envoie(m: Motif) {
+    setEtat('envoi');
+    try { await signaleReponse(reponse, avant, m, classe); setEtat('fait'); }
+    catch { setEtat('echec'); }
+  }
+
+  if (etat === 'fait') return <p className="hint" style={{ margin: '2px 0 8px', fontSize: 13 }}>Merci, c’est signalé. Nous allons le relire.</p>;
+  if (etat === 'repos' || etat === 'echec') {
+    return (
+      <div style={{ margin: '0 0 8px', fontSize: 13 }}>
+        <button style={petit} onClick={() => setEtat('choix')}>Signaler cette réponse</button>
+        {etat === 'echec' && <span style={{ color: 'var(--bad)', marginLeft: 8 }}>Pas envoyé, réessaie.</span>}
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '0 0 10px' }}>
+      {MOTIFS.map(([m, dit]) => (
+        <button key={m} className="btn ghost" style={{ width: 'auto', minHeight: 40, padding: '6px 12px', fontSize: 14, margin: 0 }} disabled={etat === 'envoi'} onClick={() => void envoie(m)}>
+          {dit}
+        </button>
+      ))}
+      <button style={petit} disabled={etat === 'envoi'} onClick={() => setEtat('repos')}>Annuler</button>
+    </div>
+  );
+}
 
 function horloge(s: number): string {
   const m = Math.floor(s / 60);
@@ -275,9 +317,14 @@ export function ParlerSeance({
           </p>
         )}
         {messages.map((m, i) => (
-          <p key={i} className={m.role === 'user' ? 'seance-bulle moi' : 'seance-bulle lui'}>
-            {m.role === 'user' ? m.content : nettoie(m.content)}
-          </p>
+          m.role === 'user' ? (
+            <p key={i} className="seance-bulle moi">{m.content}</p>
+          ) : (
+            <div key={i}>
+              <p className="seance-bulle lui">{nettoie(m.content)}</p>
+              <Signaler reponse={m.content} avant={messages.slice(0, i)} classe={fiche.classe} />
+            </div>
+          )
         ))}
         {ecoutant && (
           <p className="seance-bulle moi encours">
