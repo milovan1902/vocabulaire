@@ -321,5 +321,10 @@ export interface SeedDeck {
   description?: string;
   level?: Level;
   classeFrom?: Classe;
+  /**
+   * CHANTIER 140 — rangé dans « Sans catégorie », comme un paquet Supabase
+   * dont grade_from = 'SC'. Pas de plancher : il convient à tout le monde.
+   */
+  sansCategorie?: boolean;
   cards: Array<{ en: string; fr: string; theme: string; example?: string }>;
 }
