@@ -331,6 +331,19 @@ export function Account({
         Les premiers pas : la méthode en une page, puis cinq cartes du paquet
         en jeu. Ces cartes comptent comme une vraie révision.
       </p>
+      {/*
+        CHANTIER 138 — la politique de confidentialité, accessible depuis
+        l'application : Google Play l'exige. Un vrai lien, ouvert dans un
+        nouvel onglet, pour que l'élève ne quitte pas sa séance.
+      */}
+      <a
+        className="btn ghost"
+        href="/confidentialite.html"
+        target="_blank"
+        rel="noopener"
+      >
+        Politique de confidentialité
+      </a>
 
       {tiroir === 'connexion' && (
         <Tiroir titre="Connexion" onFermer={() => setTiroir(null)}>
