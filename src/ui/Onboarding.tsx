@@ -582,7 +582,9 @@ export function Onboarding({
           </div>
 
           <div className="guide-exemple guide-faits">
-            <p><b>5 min</b>de parole par semaine, remises à zéro le lundi. Dès la 4e.</p>
+            <p><b>5 min</b>de parole gratuites par semaine, remises à zéro le lundi. Dès la 4e.</p>
+            {/* CHANTIER 150 — information neutre, sans incitation (politique Familles). */}
+            <p><b>10 min</b>par jour avec la formule payante, bientôt disponible.</p>
             <p>
               <b>{classeDite ?? 'Classe'}</b>
               {classeDite
