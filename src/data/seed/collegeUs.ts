@@ -6,6 +6,8 @@ export const collegeUs: SeedDeck = {
   id: "college-us",
   name: "Langage collège américain",
   description: "Le vocabulaire d'un lycée américain, trié par thème.",
+  // CHANTIER 140 — rangé dans « Sans catégorie » (pastille SC).
+  sansCategorie: true,
   cards: [
     // — Consignes en classe —
     { en: "Open your books", fr: "Ouvrez vos livres", theme: "Consignes en classe" },
