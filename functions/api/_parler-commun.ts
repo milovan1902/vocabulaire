@@ -623,3 +623,18 @@ export async function noteSeance(
      */
   }
 }
+
+/**
+ * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
+ *
+ * Avant 13 ans, l'abonnement donne les cartes, pas la conversation. La
+ * classe est celle que l'élève a déclarée : le serveur n'en sait pas
+ * plus. Ce contrôle n'est donc pas une vérification d'âge. Il garantit
+ * seulement que l'écran verrouillé ne se contourne pas par un appel
+ * direct à l'API. Une classe absente vaut refus.
+ */
+export const CLASSES_VOIX: readonly string[] = ['4e', '3e', '2de', '1re', 'Tle'];
+
+export function voixOuverte(classe: string | null | undefined): boolean {
+  return !!classe && CLASSES_VOIX.includes(classe);
+}
