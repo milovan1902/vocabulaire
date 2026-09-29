@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import profilGauche from '../assets/profil-gauche.png';
-import profilDroit from '../assets/profil-droit.png';
+import profilGauche from '../assets/profil-gauche.webp';
+import profilDroit from '../assets/profil-droit.webp';
 
 /*
  * L'ouverture de l'application.

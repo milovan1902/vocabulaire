@@ -39,6 +39,26 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,webp}'],
         /*
+         * CHANTIER 149 — LE PREMIER CHARGEMENT NE TÉLÉCHARGE PLUS TOUS LES DOS.
+         *
+         * Les images de `src/assets` (dos des paquets, profils de l'ouverture)
+         * ne sont plus pré-chargées à l'installation : elles se chargent quand
+         * un écran les affiche, puis restent en cache (règle ci-dessous). Les
+         * icônes de `public/` (onglets, réglages) restent pré-chargées :
+         * elles pèsent peu et servent sur tous les écrans.
+         */
+        globIgnores: ['**/assets/*.{png,webp,jpg,jpeg}'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/assets\/[^/]+\.(png|webp|jpe?g)$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-paquets',
+              expiration: { maxEntries: 150, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
+        /*
          * CHANTIER 104 — /api/ N'EST PAS DE L'APPLICATION.
          *
          * En mode `generateSW`, le service worker répond à toute NAVIGATION
