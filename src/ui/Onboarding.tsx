@@ -42,6 +42,10 @@
  *
  * CHANTIER 120 — la nouvelle étape 2 « paquets » (chantier 119) posée sur
  * les textes du chantier 115, sans en perdre un seul.
+ *
+ * CHANTIER 148 — les dix étapes restent. Vouvoiement partout ; « Passer »
+ * plus visible ; mention « dès la 4e » sur les écrans Parler pour les plus
+ * jeunes, à qui Parler est fermé.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Card, Classe, Deck, Grade, Progress } from '../domain/types';
@@ -243,6 +247,8 @@ export function Onboarding({
   }, [etape, montre, juger]);
 
   const classeDite = classe ? CLASSE_LABELS[classe] : null;
+  /* CHANTIER 148 — Parler s'ouvre en 4e : les plus jeunes voient les écrans, avec cette mention. */
+  const avantQuatrieme = !!classe && !['4e', '3e', '2de', '1re', 'Tle'].includes(classe);
   const lignes = STATUTS.filter((s) => s.cle !== 'decouvrir');
 
   return (
@@ -253,8 +259,12 @@ export function Onboarding({
           {etape === 'cartes' && jeu.length > 0 && ` · carte ${index + 1} sur ${jeu.length}`}
         </span>
         {etape !== 'bilan' && (
-          <button className="guide-skip" onClick={() => onFini(relu ? 'account' : 'library')}>
-            {relu ? 'Fermer' : 'Plus tard'}
+          <button
+            className="guide-skip"
+            style={{ minHeight: 44, padding: '0 14px', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}
+            onClick={() => onFini(relu ? 'account' : 'library')}
+          >
+            {relu ? 'Fermer' : 'Passer, je découvrirai seul'}
           </button>
         )}
       </div>
@@ -302,8 +312,8 @@ export function Onboarding({
         <>
           <h2 className="guide-titre">On révise avec des paquets de cartes.</h2>
           <p className="guide-texte">
-            Chaque paquet couvre un sujet du programme, à ton niveau. Tu peux le
-            jouer en entier, ou thème par thème.
+            Chaque paquet couvre un sujet du programme, à votre niveau. Vous pouvez
+            le jouer en entier, ou thème par thème.
           </p>
           <div className="guide-pile" aria-hidden="true">
             <span className="guide-pile-dos">
@@ -328,8 +338,8 @@ export function Onboarding({
             <p><b>ou une phrase</b><span>Je suis allé à la plage. → <em>I went to the beach.</em></span></p>
           </div>
           <p className="guide-texte">
-            Tu lis le français, tu cherches l’anglais dans ta tête, puis tu
-            retournes la carte.
+            Vous lisez le français, vous cherchez l’anglais dans votre tête, puis
+            vous retournez la carte.
           </p>
           <div className="guide-pied">
             <button
@@ -345,7 +355,7 @@ export function Onboarding({
 
       {etape === 'classe' && (
         <>
-          <h2 className="guide-titre">Tu es en quelle classe&nbsp;?</h2>
+          <h2 className="guide-titre">Vous êtes en quelle classe&nbsp;?</h2>
           <p className="guide-texte">
             Elle range le catalogue, et rien d’autre : tous les paquets restent
             accessibles. Cela se change à tout moment dans les réglages.
@@ -490,7 +500,7 @@ export function Onboarding({
 
       {etape === 'progres' && (
         <>
-          <h2 className="guide-titre">Tu verras tes mots avancer.</h2>
+          <h2 className="guide-titre">Vous verrez vos mots avancer.</h2>
           <p className="guide-texte">
             Chaque carte « mot » sera répertoriée dans 5 tas : « À découvrir », puis
             quatre autres, représentés ci-dessous dans un graphique montrant votre
@@ -547,10 +557,16 @@ export function Onboarding({
       {etape === 'parler' && (
         <>
           <p className="guide-kicker">Et maintenant, à l’oral</p>
-          <h2 className="guide-titre">Tu vas pouvoir utiliser les mots appris pour échanger à l’oral.</h2>
+          {avantQuatrieme && (
+            <p className="guide-regle">
+              Parler s’ouvrira quand vous serez en 4e. D’ici là, chaque carte révisée
+              vous prépare à cette conversation.
+            </p>
+          )}
+          <h2 className="guide-titre">Vous allez pouvoir utiliser les mots appris pour échanger à l’oral.</h2>
           <p className="guide-texte">
             L’onglet « Parler » ouvre une vraie conversation en anglais, à voix
-            haute, avec une IA qui parle à ton niveau. Pas de note, pas de
+            haute, avec une IA qui parle à votre niveau. Pas de note, pas de
             chrono : on discute.
           </p>
 
@@ -566,11 +582,11 @@ export function Onboarding({
           </div>
 
           <div className="guide-exemple guide-faits">
-            <p><b>5 min</b>de parole par semaine, remises à zéro le lundi.</p>
+            <p><b>5 min</b>de parole par semaine, remises à zéro le lundi. Dès la 4e.</p>
             <p>
               <b>{classeDite ?? 'Classe'}</b>
               {classeDite
-                ? 'ta classe fixe les temps et la longueur des phrases.'
+                ? 'votre classe fixe les temps et la longueur des phrases.'
                 : 'déclarée dans les Réglages, elle fixe les temps employés.'}
             </p>
           </div>
@@ -583,19 +599,19 @@ export function Onboarding({
 
       {etape === 'mots' && (
         <>
-          <h2 className="guide-titre">Tu choisis le sujet. L’IA glisse tes mots.</h2>
+          <h2 className="guide-titre">Vous choisissez le sujet. L’IA glisse vos mots.</h2>
           <p className="guide-texte">
-            Les mots que tu viens de mémoriser reviennent dans la conversation,
-            en situation, sans qu’on te les annonce.
+            Les mots que vous venez de mémoriser reviennent dans la conversation,
+            en situation, sans qu’on vous les annonce.
           </p>
           <p className="guide-texte">
-            Si tu fais une faute, une voix en français te corrige. Et si tu
-            bloques, un bouton te permet de poser ta question en français,
-            sans quitter la conversation.
+            Si vous faites une faute, une voix en français vous corrige. Et si
+            vous bloquez, un bouton vous permet de poser votre question en
+            français, sans quitter la conversation.
           </p>
 
           <div className="guide-exemple">
-            <span className="guide-kicker">Tes mots de la semaine</span>
+            <span className="guide-kicker">Vos mots de la semaine</span>
             <div className="parler-mots">
               {['a crowd', 'to cheer', 'a draw', 'to train'].map((m) => (
                 <span key={m} className="parler-mot">{m}</span>
@@ -617,11 +633,11 @@ export function Onboarding({
 
       {etape === 'bilan' && (
         <>
-          <h2 className="guide-titre">À la fin, tu choisis ce que tu retravailles.</h2>
+          <h2 className="guide-titre">À la fin, vous choisissez ce que vous retravaillez.</h2>
           <p className="guide-texte">
-            Après chaque conversation, un bilan court : tes phrases corrigées,
-            chacune avec l’explication de la faute, et jusqu’à cinq mots qui t’ont posé problème. Tu coches ceux que
-            tu veux revoir.
+            Après chaque conversation, un bilan court : vos phrases corrigées,
+            chacune avec l’explication de la faute, et jusqu’à cinq mots qui vous ont posé problème. Vous cochez ceux que
+            vous voulez revoir.
           </p>
 
           <div className="guide-exemple">
@@ -634,10 +650,10 @@ export function Onboarding({
           </div>
 
           <div className="guide-exemple">
-            <span className="guide-kicker">Tu veux les revoir ?</span>
+            <span className="guide-kicker">Vous voulez les revoir ?</span>
             <div className="reprise-liste">
               {[
-                { en: 'a crowd', fr: 'une foule', note: 'Déjà dans un de tes paquets : il revient dans ta journée.', cl: 'ramene', on: true },
+                { en: 'a crowd', fr: 'une foule', note: 'Déjà dans un de vos paquets : il revient dans votre journée.', cl: 'ramene', on: true },
                 { en: 'a referee', fr: 'un arbitre', note: `Nouveau : il rejoint « ${REPRISE_NOM} ».`, cl: 'nouveau', on: true },
                 { en: 'a season', fr: 'une saison', note: `Nouveau : il rejoint « ${REPRISE_NOM} ».`, cl: 'nouveau', on: false },
               ].map((m) => (
@@ -655,7 +671,7 @@ export function Onboarding({
           </div>
 
           <div className="guide-regles">
-            <p><b>Jamais de doublon.</b> Un mot que tu as déjà dans un paquet en jeu n’est pas recopié : c’est sa carte qui revient, en « À reprendre ».</p>
+            <p><b>Jamais de doublon.</b> Un mot que vous avez déjà dans un paquet en jeu n’est pas recopié : c’est sa carte qui revient, en « À reprendre ».</p>
             <p><b>Le paquet « {REPRISE_NOM} »</b> reçoit les mots nouveaux. Il se met en jeu tout seul.</p>
             <p><b>Les fautes de grammaire</b> restent dans le bilan : l’IA les reprend à la conversation suivante.</p>
           </div>
