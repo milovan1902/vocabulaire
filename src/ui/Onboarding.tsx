@@ -563,7 +563,7 @@ export function Onboarding({
           </div>
 
           <div className="guide-exemple guide-faits">
-            <p><b>10 min</b>de parole par jour, remises à zéro à minuit.</p>
+            <p><b>5 min</b>de parole par semaine, remises à zéro le lundi.</p>
             <p>
               <b>{classeDite ?? 'Classe'}</b>
               {classeDite
