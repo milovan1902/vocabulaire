@@ -148,6 +148,18 @@ export async function bilanDeSeance(
   return appelle('/api/parler-bilan', { messages, fiche, secondes, totalSecondes });
 }
 
+/**
+ * CHANTIER 142 — signaler une réponse. Motif court, contexte borné côté
+ * serveur (six répliques au plus).
+ */
+export type Motif = 'inapproprie' | 'faux' | 'blessant' | 'autre';
+
+export async function signaleReponse(
+  reponse: string, contexte: Tour[], motif: Motif, classe: string | null,
+): Promise<void> {
+  await appelle<{ ok: true }>('/api/signaler', { reponse, contexte: contexte.slice(-6), motif, classe });
+}
+
 /** « 0,19 € », « 12 centimes ». Toujours lisible, jamais scientifique. */
 export function euros(centimes: number): string {
   if (centimes < 1) return `${centimes.toFixed(2).replace('.', ',')} centime`;
