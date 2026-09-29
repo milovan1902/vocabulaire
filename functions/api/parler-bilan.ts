@@ -24,9 +24,9 @@
  * « Reprise des fautes à l'oral ». Le reste du fichier est inchangé.
  */
 import {
-  appelleClaude, consommationDuJour, json, minutesRestantes, modeleBilan,
-  noteConsommation, noteSeance, promptSysteme, utilisateur,
-  type Contexte, type Fiche,
+  appelleClaude, consommationDepuis, json, modeleBilan,
+  noteConsommation, noteSeance, promptSysteme, quotaDe, utilisateurEtEmail,
+  budgetDe, type Contexte, type Fiche,
 } from './_parler-commun';
 import { voixOuverte } from './_parler-commun';
 
@@ -89,8 +89,10 @@ function litBilan(texte: string): Bilan {
 }
 
 export const onRequestPost = async ({ request, env }: Contexte): Promise<Response> => {
-  const userId = await utilisateur(request, env);
-  if (!userId) return json({ erreur: 'compte requis' }, 401);
+  const qui = await utilisateurEtEmail(request, env);
+  if (!qui) return json({ erreur: 'compte requis' }, 401);
+  const userId = qui.id;
+  const q = quotaDe(qui.email, env);
 
   let corps: Requete;
   try {
@@ -116,7 +118,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   /*
    * LE QUOTA N'EST PAS VÉRIFIÉ ICI, et c'est voulu : le bilan est la
    * contrepartie du temps déjà passé. Refuser le compte rendu à l'élève qui
-   * vient d'épuiser ses dix minutes serait lui prendre son travail. Le
+   * vient d'épuiser ses minutes serait lui prendre son travail. Le
    * coût est écrit comme le reste, et un bilan par séance est borné par
    * construction.
    */
@@ -173,15 +175,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   }, env);
 
   try {
-    const c = await consommationDuJour(userId, env);
-    return json({
-      bilan,
-      budget: {
-        minutes: minutesRestantes(c.ponderes, c.secondes),
-        coutJour: Number(c.coutCentimes.toFixed(2)),
-        appels: c.appels,
-      },
-    });
+    const c = await consommationDepuis(userId, q.depuis, env);
+    return json({ bilan, budget: budgetDe(c, q) });
   } catch {
     /* Le bilan passe avant la jauge : on le rend sans elle. */
     return json({ bilan });
