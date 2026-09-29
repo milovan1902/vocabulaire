@@ -51,6 +51,8 @@ export function materialize(seed: SeedDeck): { deck: Deck; cards: Card[] } {
       id: seed.id,
       name: seed.name,
       description: seed.description,
+      // CHANTIER 140 — la pastille « SC » et le filtre « Sans catégorie ».
+      sansCategorie: seed.sansCategorie ?? false,
       builtin: true,
       hasImage: false,
       createdAt: now,
