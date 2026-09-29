@@ -51,7 +51,12 @@ export default defineConfig({
          * sont pas des navigations. La confusion ne portait donc que sur le
          * diagnostic — mais elle coûterait une demi-heure à chaque fois.
          */
-        navigateFallbackDenylist: [/^\/api\//],
+        /*
+         * CHANTIER 137 — la page publique de suppression de compte est un
+         * vrai fichier : le service worker ne doit pas la remplacer par
+         * l'application quand on l'ouvre depuis la fiche Google Play.
+         */
+        navigateFallbackDenylist: [/^\/api\//, /^\/suppression-compte/],
       },
     }),
   ],
