@@ -1,5 +1,14 @@
-/** Bloc « compte » affiché en bas de la bibliothèque. */
+/**
+ * Bloc « compte » affiché en bas de la bibliothèque.
+ *
+ * CHANTIER 137 — « Supprimer mon compte ». Deux gestes, pas un : le
+ * premier ouvre l'avertissement, le second efface. Pas de fenêtre du
+ * navigateur (`confirm`) : elle est laide dans l'application installée
+ * et ne dit pas ce qui va disparaître.
+ */
+import { useState } from 'react';
 import type { Auth } from './useAuth';
+import { supprimeCompte } from '../data/compte';
 
 export function AccountPanel({ auth }: { auth: Auth }) {
   if (auth.loading) return null;
@@ -34,6 +43,66 @@ export function AccountPanel({ auth }: { auth: Auth }) {
       </button>
       <button className="btn ghost" onClick={() => void auth.logOut()}>
         Se déconnecter
+      </button>
+      <SupprimerCompte />
+    </div>
+  );
+}
+
+function SupprimerCompte() {
+  const [etape, setEtape] = useState<'repos' | 'confirmer' | 'en-cours'>('repos');
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  async function supprimer() {
+    setEtape('en-cours');
+    setErreur(null);
+    try {
+      await supprimeCompte();
+      // Tout est effacé : on repart de l'accueil, comme un premier lancement.
+      location.reload();
+    } catch (e) {
+      setErreur((e as Error).message);
+      setEtape('confirmer');
+    }
+  }
+
+  if (etape === 'repos') {
+    return (
+      <button
+        className="btn ghost"
+        style={{ color: 'var(--bad)' }}
+        onClick={() => setEtape('confirmer')}
+      >
+        Supprimer mon compte
+      </button>
+    );
+  }
+
+  return (
+    <div className="setting" style={{ marginTop: 10 }}>
+      <p className="hint" style={{ marginBottom: 10 }}>
+        <b>Supprimer ton compte efface définitivement</b> ta progression, tes
+        réglages, tes conversations et leurs corrections, en ligne et sur cet
+        appareil. Ça ne peut pas être annulé. Si tu veux garder ta
+        progression, enregistre d’abord une sauvegarde.
+      </p>
+      {erreur && (
+        <p className="hint" style={{ color: 'var(--bad)', marginBottom: 10 }}>{erreur}</p>
+      )}
+      <button
+        className="btn ghost"
+        style={{ color: 'var(--bad)' }}
+        disabled={etape === 'en-cours'}
+        onClick={() => void supprimer()}
+      >
+        {etape === 'en-cours' ? 'Suppression…' : 'Oui, supprimer définitivement'}
+      </button>
+      <button
+        className="btn ghost"
+        disabled={etape === 'en-cours'}
+        onClick={() => { setEtape('repos'); setErreur(null); }}
+      >
+        Annuler
       </button>
     </div>
   );
