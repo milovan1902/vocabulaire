@@ -134,6 +134,22 @@ export function useStore(): Store {
         list = created;
       }
 
+      /*
+       * CHANTIER 140 — les paquets fournis ne sont installés qu'au premier
+       * lancement : un appareil déjà en service garde la fiche d'origine,
+       * sans « Sans catégorie ». On la remet d'aplomb à chaque démarrage,
+       * sans toucher aux cartes ni à la progression.
+       */
+      const seedParId = new Map(SEED_DECKS.map((s) => [s.id, s]));
+      let retouche = false;
+      list = list.map((d) => {
+        const s = seedParId.get(d.id);
+        if (!s || !!d.sansCategorie === !!s.sansCategorie) return d;
+        retouche = true;
+        return { ...d, sansCategorie: !!s.sansCategorie, updatedAt: Date.now() };
+      });
+      if (retouche) await repository.saveDecks(list);
+
       const [cats, s, o, c, st] = await Promise.all([
         repository.listCategories(),
         repository.getSettings(),
