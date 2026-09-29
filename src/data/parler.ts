@@ -17,12 +17,29 @@ import { supabase } from './supabase';
 
 /** Ce que l'écran affiche. Aucun jeton : ce n'est pas son sujet. */
 export interface Budget {
-  /** Minutes restantes aujourd'hui, de 0 à 10. */
+  /** Minutes restantes sur la période, de 0 à `max`. */
   minutes: number;
+  /** CHANTIER 144 — 5 (gratuit, par semaine) ou 10 (illimité, par jour). */
+  max?: number;
+  periode?: 'jour' | 'semaine';
+  /** Plafond mensuel de l'app atteint. */
+  pause?: boolean;
   fini: boolean;
-  /** Centimes d'euro dépensés aujourd'hui. Pour la vue exploitant. */
+  /** Centimes d'euro dépensés sur la période. Pour la vue exploitant. */
   coutJour: number;
   appels: number;
+}
+
+/** CHANTIER 144 — « aujourd'hui » ou « cette semaine », selon la formule. */
+export function quandDit(b?: Budget | null): string {
+  return b?.periode === 'semaine' ? 'cette semaine' : 'aujourd’hui';
+}
+
+/** CHANTIER 144 — la phrase affichée quand on ne peut plus parler. */
+export function finDit(b?: Budget | null): string {
+  if (b?.pause) return 'Parler fait une pause jusqu’au 1er du mois prochain. Tes cartes restent disponibles.';
+  if (b?.periode === 'semaine') return 'Tes 5 minutes de la semaine sont utilisées. Elles reviennent lundi.';
+  return 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.';
 }
 
 export interface Fiche {
@@ -55,6 +72,8 @@ export class ErreurParler extends Error {
   quotaEpuise: boolean;
   /** Le message brut du service, quand il y en a un. Pour le débogage. */
   detail?: string;
+  /** CHANTIER 144 — le budget renvoyé avec un refus (429). */
+  budget?: Budget;
 
   constructor(message: string, quotaEpuise = false, detail?: string) {
     super(message);
@@ -83,7 +102,10 @@ async function appelle<T>(chemin: string, corps?: unknown): Promise<T> {
   });
 
   if (r.status === 429) {
-    throw new ErreurParler('quota du jour épuisé', true);
+    const d = (await r.json().catch(() => ({}))) as { budget?: Budget };
+    const e = new ErreurParler('quota épuisé', true);
+    e.budget = d.budget;
+    throw e;
   }
   if (!r.ok) {
     const d = (await r.json().catch(() => ({}))) as { erreur?: string; detail?: string };
