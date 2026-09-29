@@ -2,6 +2,9 @@
  * `GET /api/parler` — où en est mon budget du jour ?
  * `POST /api/parler` — un tour de parole.
  *
+ * CHANTIER 144 — le budget suit la formule du compte (5 min/semaine ou
+ * 10 min/jour) et le plafond mensuel de l'app. Voir `quotaDe`.
+ *
  * CHANTIER 104 — LE SEUL POINT DE CONTACT AVEC LE MODÈLE
  *
  * Le téléphone n'appelle jamais l'IA : il appelle ceci. L'ordre des quatre
@@ -18,24 +21,11 @@
  * un plafond vérifié après coup n'est pas un plafond.
  */
 import {
-  appelleClaude, consommationDuJour, json, minutesRestantes, modeleParler,
-  noteConsommation, PLAFOND_CENTIMES_JOUR, promptSysteme, utilisateur,
-  type Consommation, type Contexte, type Fiche,
+  appelleClaude, consommationDepuis, enPause, json, modeleParler,
+  noteConsommation, promptSysteme, quotaDe, utilisateurEtEmail,
+  budgetDe, type Budget, type Contexte, type Fiche,
 } from './_parler-commun';
 import { voixOuverte } from './_parler-commun';
-
-/** Ce que l'écran reçoit. Aucun jeton ne figure ici : ce n'est pas son sujet. */
-interface Budget {
-  minutes: number;
-  /** Vrai quand le quota du jour est épuisé. */
-  fini: boolean;
-  /**
-   * Coût réel, pour la vue exploitant. En centimes d'euro, deux décimales.
-   * L'écran ne le montre qu'à vous, derrière un drapeau local.
-   */
-  coutJour: number;
-  appels: number;
-}
 
 /** Corps attendu d'un tour de parole. */
 interface Requete {
@@ -50,23 +40,14 @@ interface Requete {
   secondes?: number;
 }
 
-function budgetDe(c: Consommation): Budget {
-  const minutes = minutesRestantes(c.ponderes, c.secondes);
-  return {
-    minutes,
-    fini: minutes <= 0 || c.coutCentimes >= PLAFOND_CENTIMES_JOUR,
-    coutJour: Number(c.coutCentimes.toFixed(2)),
-    appels: c.appels,
-  };
-}
-
 export const onRequestGet = async ({ request, env }: Contexte): Promise<Response> => {
-  const userId = await utilisateur(request, env);
-  if (!userId) return json({ erreur: 'compte requis' }, 401);
+  const qui = await utilisateurEtEmail(request, env);
+  if (!qui) return json({ erreur: 'compte requis' }, 401);
+  const q = quotaDe(qui.email, env);
 
   try {
-    const c = await consommationDuJour(userId, env);
-    return json(budgetDe(c));
+    const [c, pause] = await Promise.all([consommationDepuis(qui.id, q.depuis, env), enPause(q, env)]);
+    return json(budgetDe(c, q, pause));
   } catch (e) {
     /* La jauge s'affiche en panne plutôt qu'en plein — et elle dit pourquoi. */
     return json({ erreur: 'budget illisible', detail: String(e) }, 503);
@@ -74,8 +55,10 @@ export const onRequestGet = async ({ request, env }: Contexte): Promise<Response
 };
 
 export const onRequestPost = async ({ request, env }: Contexte): Promise<Response> => {
-  const userId = await utilisateur(request, env);
-  if (!userId) return json({ erreur: 'compte requis' }, 401);
+  const qui = await utilisateurEtEmail(request, env);
+  if (!qui) return json({ erreur: 'compte requis' }, 401);
+  const userId = qui.id;
+  const q = quotaDe(qui.email, env);
 
   let corps: Requete;
   try {
@@ -121,7 +104,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
 
   let budgetAvant: Budget;
   try {
-    budgetAvant = budgetDe(await consommationDuJour(userId, env));
+    const [c, pause] = await Promise.all([consommationDepuis(userId, q.depuis, env), enPause(q, env)]);
+    budgetAvant = budgetDe(c, q, pause);
   } catch (e) {
     /*
      * Quota illisible : on refuse. Laisser passer l'appel serait ouvrir
@@ -130,7 +114,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     return json({ erreur: 'le budget n’a pas pu être vérifié', detail: String(e) }, 503);
   }
   if (budgetAvant.fini) {
-    return json({ erreur: 'quota du jour épuisé', budget: budgetAvant }, 429);
+    return json({ erreur: budgetAvant.pause ? 'Parler en pause' : 'quota épuisé', budget: budgetAvant }, 429);
   }
 
   const modele = modeleParler(env);
@@ -166,8 +150,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
    * plutôt que de transformer une réponse en panne.
    */
   try {
-    const apres = await consommationDuJour(userId, env);
-    return json({ texte: resultat.texte, budget: budgetDe(apres) });
+    const apres = await consommationDepuis(userId, q.depuis, env);
+    return json({ texte: resultat.texte, budget: budgetDe(apres, q) });
   } catch {
     return json({ texte: resultat.texte, budget: budgetAvant });
   }
