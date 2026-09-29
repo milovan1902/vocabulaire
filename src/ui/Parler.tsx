@@ -96,6 +96,9 @@ function themesRetenus(): string[] {
   }
 }
 
+/** CHANTIER 139 — les classes où la conversation est ouverte (13 ans et plus). */
+const CLASSES_VOIX: readonly string[] = ['4e', '3e', '2de', '1re', 'Tle'];
+
 type Etat = 'charge' | 'pret' | 'anonyme' | 'panne';
 
 export function Parler({
@@ -183,6 +186,7 @@ export function Parler({
   };
 
   const classe = settings.classe;
+  const voixOuverte = !!classe && CLASSES_VOIX.includes(classe);
 
   const fiche: Fiche = useMemo(() => ({
     classe,
@@ -190,6 +194,43 @@ export function Parler({
     mots: mots.map((m) => ({ en: m.en, fr: m.fr })),
     themes: choisis,
   }), [classe, mots, choisis]);
+
+  /*
+   * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
+   *
+   * Avant la 4e, l'abonnement donne les cartes seulement. L'écran se
+   * verrouille ici, après tous les hooks (l'ordre des hooks ne doit pas
+   * changer d'un rendu à l'autre). Le serveur refuse aussi, de son côté.
+   */
+  if (!voixOuverte) {
+    return (
+      <section className="parler" aria-label="Parler anglais">
+        <h2 className="screen-title">Parler anglais</h2>
+        <div className="parler-carte">
+          {classe ? (
+            <>
+              <p className="parler-kicker">À partir de la 4e</p>
+              <p className="hint">
+                La conversation en anglais s’ouvre à partir de la 4e. En
+                attendant, tes cartes t’attendent dans la bibliothèque :
+                c’est là que se construit le vocabulaire dont tu te serviras
+                pour parler.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="parler-kicker">Ta classe d’abord</p>
+              <p className="hint">
+                La conversation s’adapte à ta classe, et s’ouvre à partir de
+                la 4e. Choisis ta classe dans les Réglages.
+              </p>
+              <button className="btn ghost" onClick={onReglages}>Choisir ma classe</button>
+            </>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   if (historique) {
     return <ParlerHistorique
@@ -220,6 +261,10 @@ export function Parler({
   return (
     <section className="parler" aria-label="Parler anglais">
       <h2 className="screen-title">Parler anglais</h2>
+      {/* CHANTIER 139 — Anthropic et Google Play demandent de le dire clairement. */}
+      <p className="hint">
+        Tu parles avec une intelligence artificielle, pas avec une personne.
+      </p>
 
       <div className="parler-carte">
         <div className="parler-tete">
