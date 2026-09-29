@@ -28,6 +28,7 @@ import {
   noteConsommation, noteSeance, promptSysteme, utilisateur,
   type Contexte, type Fiche,
 } from './_parler-commun';
+import { voixOuverte } from './_parler-commun';
 
 interface Requete {
   fiche: Fiche;
@@ -96,6 +97,11 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     corps = (await request.json()) as Requete;
   } catch {
     return json({ erreur: 'corps illisible' }, 400);
+  }
+
+  /* CHANTIER 139 — pas de conversation avant la 4e, même par appel direct. */
+  if (!voixOuverte(corps.fiche?.classe)) {
+    return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
   }
 
   const messages = (corps.messages ?? []).slice(-40);
