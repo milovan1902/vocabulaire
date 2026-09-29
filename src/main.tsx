@@ -4,10 +4,15 @@ import App from './App';
 import Lancement from './ui/Lancement';
 import { FiletErreur } from './ui/FiletErreur';
 import { installeSuiviErreurs, signaleErreur } from './data/erreurs';
+import { mesure } from './data/mesures';
 import './styles.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
+
+/* CHANTIER 147 — première ouverture (une fois), puis une ouverture par jour. */
+mesure('installation');
+mesure('ouverture');
 
 createRoot(document.getElementById('root')!, {
   onUncaughtError: (e) => signaleErreur(e, 'react'),

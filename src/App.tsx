@@ -1,4 +1,5 @@
 /** Composant racine : navigation entre les écrans. */
+import { mesure } from './data/mesures';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import type { Grade } from './domain/types';
@@ -453,6 +454,7 @@ export default function App() {
             loadDeck={(id) => store.loadDeck(id)}
             onGrade={(deckId, p, g, wasNew) => store.gradeCard(deckId, p, g, wasNew)}
             onFini={(vers) => {
+                mesure('onboarding_fini', vers);
               localStorage.setItem(GUIDE, '1');
               void store.refreshAll();
               setRelecture(false);

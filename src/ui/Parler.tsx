@@ -42,6 +42,7 @@ import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
 import { quandDit, finDit, budgetParler, euros, ErreurParler, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
+import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
 
 /** Les thèmes proposés. Au plus dix retenus. */
@@ -429,7 +430,7 @@ export function Parler({
       <button
         className="btn parler-go"
         disabled={etat !== 'pret' || !!budget?.fini || choisis.length === 0}
-        onClick={() => setEnSeance(true)}
+        onClick={() => { mesure('parler'); setEnSeance(true); }}
       >
         Commencer à parler
       </button>

@@ -38,6 +38,7 @@ import { freshCounter, rollDay } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
+import { mesure } from '../data/mesures';
 
 export interface Store {
   ready: boolean;
@@ -346,6 +347,7 @@ export function useStore(): Store {
       setStreak((prev) => {
         const suivant = recordDay(prev);
         if (suivant !== prev) void repository.saveStreak(suivant);
+        mesure('revision'); // CHANTIER 147 — une fois par jour au plus
         return suivant;
       });
 

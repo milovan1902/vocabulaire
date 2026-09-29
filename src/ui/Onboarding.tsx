@@ -53,6 +53,7 @@ import { DeckVign } from './components';
 import { Anneau } from './MesMots';
 import { REPRISE_NOM } from '../data/reprise';
 import './reprise.css';
+import { mesure } from '../data/mesures';
 
 type PaquetCharge = {
   deck: { id: string; name: string };
@@ -116,6 +117,8 @@ export function Onboarding({
   debit?: number;
 }) {
   const [etape, setEtape] = useState<Etape>('methode');
+  /* CHANTIER 147 — chaque étape atteinte, une fois : c'est l'abandon étape par étape. */
+  useEffect(() => { if (!relecture) mesure('onboarding', etape); }, [etape, relecture]);
   const [enCours, setEnCours] = useState(false);
   const [charge, setCharge] = useState<PaquetCharge | null>(null);
   const [index, setIndex] = useState(0);

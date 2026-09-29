@@ -5,6 +5,7 @@
  * exactement comme avant, en local. Se connecter ajoute la sauvegarde
  * en ligne et l'accès aux paquets achetés.
  */
+import { mesure } from '../data/mesures';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, signInWithGoogle, signOut, type Session } from '../data/supabase';
 import { syncAll, type SyncReport } from '../data/sync';
@@ -77,7 +78,7 @@ export function useAuth(onDataChanged: () => void): Auth {
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       // Première synchronisation juste après la connexion.
-      if (event === 'SIGNED_IN' && next) void runSync();
+      if (event === 'SIGNED_IN' && next) { void runSync(); mesure('compte'); }
       if (event === 'SIGNED_OUT') setSync({ status: 'idle' });
     });
 
