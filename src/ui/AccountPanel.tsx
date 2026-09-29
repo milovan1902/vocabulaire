@@ -9,8 +9,11 @@
 import { useState } from 'react';
 import type { Auth } from './useAuth';
 import { supprimeCompte } from '../data/compte';
+import { useAccordCompte } from './accordParental';
 
 export function AccountPanel({ auth }: { auth: Auth }) {
+  // CHANTIER 141 — appelé avant tout `return` : règle des hooks.
+  const accord = useAccordCompte();
   if (auth.loading) return null;
 
   if (!auth.session) {
@@ -21,7 +24,12 @@ export function AccountPanel({ auth }: { auth: Auth }) {
           retrouver votre progression ailleurs et accéder aux paquets
           de la bibliothèque.
         </p>
-        <button className="btn ghost" onClick={() => void auth.signIn()}>
+        {accord.caseAccord}
+        <button
+          className="btn ghost"
+          disabled={!accord.pret}
+          onClick={() => void auth.signIn()}
+        >
           Se connecter avec Google
         </button>
       </div>
