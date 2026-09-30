@@ -1,0 +1,18 @@
+# Chantier 151 — en-têtes de sécurité (point b4 de l'audit).
+# Cloudflare Pages lit ce fichier à la racine du site (Vite le copie de public/ vers dist/).
+# Ne s'applique pas aux réponses des fonctions /api (elles fixent leurs propres en-têtes).
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://lvgcbezgznudvtijsjyq.supabase.co wss://lvgcbezgznudvtijsjyq.supabase.co; media-src 'self' blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: microphone=(self), camera=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+
+# Le service worker et la page d'entrée doivent toujours être revérifiés,
+# sinon une mise à jour peut rester bloquée derrière l'ancienne version.
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
