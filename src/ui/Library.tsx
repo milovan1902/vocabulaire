@@ -9,6 +9,7 @@ import { DeckVign } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
+import { RappelSauvegarde } from './RappelSauvegarde';
 
 export type Tab = 'travail' | 'collection' | 'catalogue';
 
@@ -573,6 +574,7 @@ export function Library({
     if (rows.length === 0) {
       return (
         <>
+          {!auth.session && <RappelSauvegarde />}
           <p className="lead">
             Aucun paquet en jeu. Mettez-en un depuis votre collection pour
             commencer à travailler.
@@ -586,6 +588,8 @@ export function Library({
 
     return (
       <>
+        {/* CHANTIER 154 — sans compte, rappeler que tout est sur ce téléphone. */}
+        {!auth.session && <RappelSauvegarde />}
         <div className="engage">
           <p className="label">Ce à quoi je m’engage</p>
           <div className="engage-n">

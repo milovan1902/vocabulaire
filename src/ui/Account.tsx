@@ -72,6 +72,7 @@ import { Ligne, Tiroir } from './tiroir';
 import { minutesPour } from '../engine/tempo';
 import { AccountPanel } from './AccountPanel';
 import { phraseErreur } from '../data/messageErreur';
+import { telechargeSauvegarde } from '../data/stockage';
 import type { Auth } from './useAuth';
 import type { Streak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
@@ -226,23 +227,11 @@ export function Account({
     onSettings({ ...settings, reminderAt: settings.reminderAt ?? '19:00' });
   }
 
+  /* CHANTIER 154 — le téléchargement vit dans data/stockage.ts : la bannière
+     de « Mon travail » s'en sert aussi. */
   async function exportBackup() {
     try {
-      const data = await repository.exportAll();
-      const payload = {
-        format: 'vocab-backup',
-        version: 3,
-        date: new Date().toISOString(),
-        data,
-      };
-      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `vocabulaire-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 400);
+      await telechargeSauvegarde();
     } catch (e) {
       alert('Sauvegarde impossible. ' + phraseErreur(e, 'sauvegarde'));
     }
