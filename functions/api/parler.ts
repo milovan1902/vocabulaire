@@ -2,6 +2,9 @@
  * `GET /api/parler` — où en est mon budget du jour ?
  * `POST /api/parler` — un tour de parole.
  *
+ * CHANTIER 153 — le détail technique d'une panne reste dans les journaux
+ * Cloudflare (console.error) ; il ne repart plus vers le téléphone.
+ *
  * CHANTIER 144 — le budget suit la formule du compte (5 min/semaine ou
  * 10 min/jour) et le plafond mensuel de l'app. Voir `quotaDe`.
  *
@@ -50,7 +53,8 @@ export const onRequestGet = async ({ request, env }: Contexte): Promise<Response
     return json(budgetDe(c, q, pause));
   } catch (e) {
     /* La jauge s'affiche en panne plutôt qu'en plein — et elle dit pourquoi. */
-    return json({ erreur: 'budget illisible', detail: String(e) }, 503);
+    console.error('budget illisible', String(e));
+    return json({ erreur: 'budget illisible' }, 503);
   }
 };
 
@@ -111,7 +115,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
      * Quota illisible : on refuse. Laisser passer l'appel serait ouvrir
      * le robinet pendant exactement la panne où l'on ne compte plus rien.
      */
-    return json({ erreur: 'le budget n’a pas pu être vérifié', detail: String(e) }, 503);
+    console.error('budget non vérifié', String(e));
+    return json({ erreur: 'le budget n’a pas pu être vérifié' }, 503);
   }
   if (budgetAvant.fini) {
     return json({ erreur: budgetAvant.pause ? 'Parler en pause' : 'quota épuisé', budget: budgetAvant }, 429);
@@ -139,7 +144,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
      * Un appel qui échoue n'est pas facturé : on n'écrit rien. L'élève
      * garde son temps, ce qui est la seule issue juste.
      */
-    return json({ erreur: 'le service de conversation n’a pas répondu', detail: String(e) }, 502);
+    console.error('appel au modèle', String(e));
+    return json({ erreur: 'le service de conversation n’a pas répondu' }, 502);
   }
 
   await noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env);

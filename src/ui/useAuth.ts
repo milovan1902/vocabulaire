@@ -9,6 +9,7 @@ import { mesure } from '../data/mesures';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, signInWithGoogle, signOut, type Session } from '../data/supabase';
 import { syncAll, type SyncReport } from '../data/sync';
+import { phraseErreur } from '../data/messageErreur';
 
 export type SyncState =
   | { status: 'idle' }
@@ -104,7 +105,7 @@ export function useAuth(onDataChanged: () => void): Auth {
     try {
       await signInWithGoogle();
     } catch (e) {
-      setSync({ status: 'error', message: (e as Error).message });
+      setSync({ status: 'error', message: phraseErreur(e, 'connexion') });
     }
   }, []);
 

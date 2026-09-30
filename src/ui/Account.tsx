@@ -71,6 +71,7 @@ import { Slider, Toggle } from './components';
 import { Ligne, Tiroir } from './tiroir';
 import { minutesPour } from '../engine/tempo';
 import { AccountPanel } from './AccountPanel';
+import { phraseErreur } from '../data/messageErreur';
 import type { Auth } from './useAuth';
 import type { Streak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
@@ -243,7 +244,7 @@ export function Account({
       a.click();
       setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 400);
     } catch (e) {
-      alert('Sauvegarde impossible : ' + (e as Error).message);
+      alert('Sauvegarde impossible. ' + phraseErreur(e, 'sauvegarde'));
     }
   }
 

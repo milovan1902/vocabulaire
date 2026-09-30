@@ -40,10 +40,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
-import { quandDit, finDit, budgetParler, euros, ErreurParler, type Budget, type Fiche } from '../data/parler';
+import { quandDit, finDit, budgetParler, euros, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
+import { detailExploitant } from '../data/messageErreur';
 
 /** Les thèmes proposés. Au plus dix retenus. */
 const THEMES = [
@@ -145,9 +146,7 @@ export function Parler({
       setEtat('pret');
       setPourquoi(null);
     } catch (e) {
-      setPourquoi(
-        e instanceof ErreurParler ? e.detail ?? e.message : String(e),
-      );
+      setPourquoi(detailExploitant(e, 'parler-budget'));
       setEtat('panne');
     }
   }, []);

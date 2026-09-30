@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import { analyse, verse, REPRISE_NOM, type Proposition, type Versement } from '../data/reprise';
 import './reprise.css';
+import { phraseErreur } from '../data/messageErreur';
 
 function note(p: Proposition): string {
   switch (p.statut.type) {
@@ -71,7 +72,7 @@ export function ReprendreMots({
       if (r.ajoutes > 0 || r.ramenes > 0) await onReprise();
       setFait(r);
     } catch (e) {
-      setErreur(`Les mots n’ont pas pu être ajoutés. ${String(e)}`);
+      setErreur(`Les mots n’ont pas pu être ajoutés. ${phraseErreur(e, 'reprise')}`);
     } finally {
       setEnCours(false);
     }

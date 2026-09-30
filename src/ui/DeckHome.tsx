@@ -7,6 +7,7 @@ import { computeStats } from '../engine/session';
 import { repository } from '../data/repository';
 import { paletteFor, Slider, Toggle } from './components';
 import { clearRemoteProgress } from '../data/sync';
+import { phraseErreur } from '../data/messageErreur';
 
 /*
  * CHANTIER 59 — DEUX ACTIONS RETIRÉES : L'IMAGE ET LE RENOMMAGE
@@ -252,7 +253,7 @@ export function DeckHome({
             await clearRemoteProgress(userId, deck.id);
           } catch (e) {
             alert(
-              'Effacement impossible sur le serveur : ' + (e as Error).message +
+              'Effacement impossible sur le serveur. ' + phraseErreur(e, 'effacement-progression') +
               '\n\nRien n’a été modifié. Réessayez une fois connecté.',
             );
             return;

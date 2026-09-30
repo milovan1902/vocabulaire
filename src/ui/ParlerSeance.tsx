@@ -38,6 +38,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { parle, nettoie } from './speech';
 import { ReprendreMots } from './ReprendreMots';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
+import { detailExploitant } from '../data/messageErreur';
 import {
   bilanDeSeance, euros, tourDeParole, ErreurParler, signaleReponse, quandDit, finDit,
   type Bilan, type Budget, type Fiche, type Motif, type Tour,
@@ -178,7 +179,7 @@ export function ParlerSeance({
           ? finDit(e.budget)
           : 'La conversation ne répond pas. Réessaie dans un instant.',
       );
-      setDetail(e instanceof ErreurParler ? e.detail ?? null : String(e));
+      if (!(e instanceof ErreurParler && e.quotaEpuise)) setDetail(detailExploitant(e, 'parler-tour'));
       if (e instanceof ErreurParler && e.budget) setB(e.budget);
     } finally {
       setEnVol(false);

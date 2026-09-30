@@ -10,6 +10,7 @@ import { useState } from 'react';
 import type { Auth } from './useAuth';
 import { supprimeCompte } from '../data/compte';
 import { useAccordCompte } from './accordParental';
+import { phraseErreur } from '../data/messageErreur';
 
 export function AccountPanel({ auth }: { auth: Auth }) {
   // CHANTIER 141 — appelé avant tout `return` : règle des hooks.
@@ -69,7 +70,7 @@ function SupprimerCompte() {
       // Tout est effacé : on repart de l'accueil, comme un premier lancement.
       location.reload();
     } catch (e) {
-      setErreur((e as Error).message);
+      setErreur(phraseErreur(e, 'suppression-compte'));
       setEtape('confirmer');
     }
   }
@@ -122,7 +123,7 @@ function SyncLabel({ auth }: { auth: Auth }) {
   if (s.status === 'error') {
     return (
       <span style={{ color: 'var(--bad)' }}>
-        Dernière synchronisation en échec : {s.message}. Les données restent
+        Dernière synchronisation en échec. {s.message} Les données restent
         sur cet appareil, rien n’est perdu.
       </span>
     );

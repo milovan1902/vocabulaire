@@ -10,6 +10,7 @@
  * pas sur deux appareils à la même minute.
  */
 import { supabase } from './supabase';
+import { phraseErreur } from './messageErreur';
 import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
@@ -627,7 +628,8 @@ export async function syncAll(userId: string): Promise<SyncReport> {
       progressPushed: 0,
       progressPulled: 0,
       settingsSynced: false,
-      error: (e as Error).message ?? 'échec de la synchronisation',
+      // CHANTIER 153 — une phrase pour l'élève ; le détail part au suivi.
+      error: phraseErreur(e, 'sync'),
     };
   }
 }

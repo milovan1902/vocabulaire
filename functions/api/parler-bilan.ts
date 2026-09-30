@@ -19,6 +19,8 @@
  * mots retenus peuvent alors partir en cartes, et les erreurs incrémenter
  * la fiche d'élève. Un bilan en prose serait joli et mort.
  *
+ * CHANTIER 153 — le détail d'une panne reste dans les journaux Cloudflare.
+ *
  * CHANTIER 110 — la consigne des mots change : on veut ceux qui ont POSÉ
  * PROBLÈME, puisqu'ils peuvent maintenant partir en cartes dans le paquet
  * « Reprise des fautes à l'oral ». Le reste du fichier est inchangé.
@@ -149,7 +151,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
       false,
     );
   } catch (e) {
-    return json({ erreur: 'le bilan n’a pas pu être établi', detail: String(e) }, 502);
+    console.error('bilan', String(e));
+    return json({ erreur: 'le bilan n’a pas pu être établi' }, 502);
   }
 
   await noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env);

@@ -30,10 +30,11 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
-  duree, ErreurParler, mesSeances, oublieSeance, quand, type SeanceGardee,
+  duree, mesSeances, oublieSeance, quand, type SeanceGardee,
 } from '../data/parler';
 import { ReprendreMots } from './ReprendreMots';
 import { nettoie } from './speech';
+import { detailExploitant } from '../data/messageErreur';
 
 type Etat = 'charge' | 'pret' | 'panne';
 
@@ -55,7 +56,7 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
       setEtat('pret');
       setPourquoi(null);
     } catch (e) {
-      setPourquoi(e instanceof ErreurParler ? e.detail ?? e.message : String(e));
+      setPourquoi(detailExploitant(e, 'parler-archive'));
       setEtat('panne');
     }
   }, []);
