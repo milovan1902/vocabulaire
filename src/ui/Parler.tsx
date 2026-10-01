@@ -282,7 +282,8 @@ export function Parler({
           </p>
         ) : etat === 'panne' ? (
           <>
-            <p className="hint">
+            {/* CHANTIER 155 — la panne doit se voir : gras, couleur d'alerte. */}
+            <p className="hint" style={{ color: 'var(--bad)', fontWeight: 600 }}>
               Ton budget n’est pas joignable pour l’instant.{' '}
               <button className="parler-lien" onClick={() => void litBudget()}>
                 Réessayer
