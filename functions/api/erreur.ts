@@ -11,6 +11,8 @@
  * Alerte par e-mail à la PREMIÈRE apparition du jour d'une erreur, si
  * RESEND_API_KEY et ALERTE_EMAIL sont posés dans Cloudflare. Sinon, rien
  * n'est envoyé et la table suffit.
+ *
+ * CHANTIER 160 — le nom de l'application est « Neuro Anglais », partout.
  */
 import { json, type Env } from './_parler-commun';
 
@@ -72,9 +74,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       method: 'POST',
       headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
       body: JSON.stringify({
-        from: 'Ma Parole <onboarding@resend.dev>',
+        from: 'Neuro Anglais <onboarding@resend.dev>',
         to: env.ALERTE_EMAIL,
-        subject: `Erreur Ma Parole : ${message.slice(0, 80)}`,
+        subject: `Erreur Neuro Anglais : ${message.slice(0, 80)}`,
         text: `Nouvelle erreur aujourd'hui.\n\nMessage : ${message}\nPage : ${coupe(c.page, 200)}\nOrigine : ${coupe(c.origine, 30)}\nNavigateur : ${coupe(c.navigateur, 200)}\n\n${pile}\n\nDétail et compteur : Supabase → Table Editor → app_erreur.`,
       }),
     }).catch((e) => console.error('alerte e-mail', String(e)));
