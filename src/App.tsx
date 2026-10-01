@@ -735,7 +735,7 @@ export default function App() {
 }
 
 function title(view: View, loaded: LoadedDeck | null): string {
-  if (view.name === 'welcome') return 'Vocabulaire';
+  if (view.name === 'welcome') return 'Neuro Anglais';
   if (view.name === 'onboarding') return 'Premiers pas';
   if (view.name === 'today') return 'Aujourd’hui';
   if (view.name === 'library') return 'Paquets';
@@ -744,5 +744,5 @@ function title(view: View, loaded: LoadedDeck | null): string {
   if (view.name === 'progress') return 'Mes progrès';
   if (view.name === 'search') return 'Rechercher';
   if (view.name === 'editor') return view.mode === 'create' ? 'Nouveau paquet' : 'Ajouter des mots';
-  return loaded?.deck.name ?? 'Vocabulaire';
+  return loaded?.deck.name ?? 'Neuro Anglais';
 }

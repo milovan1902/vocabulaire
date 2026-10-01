@@ -516,14 +516,14 @@ export function Library({
             {plein ? (
               <>
                 <b>Le 100 % est indicatif.</b> Tant que le paquet reste ouvert
-                dans votre espace de travail, il vous fera réviser son contenu
+                dans ton espace de travail, il te fera réviser son contenu
                 à intervalles importants pour ne rien oublier. Seule la mise en
                 pause de ce paquet arrêtera le travail sur ce dernier.
               </>
             ) : (
               <>
                 {m.partial
-                  ? `Sur les ${m.counted} mots des thèmes que vous avez retenus, et non sur le paquet entier.`
+                  ? `Sur les ${m.counted} mots des thèmes que tu as retenus, et non sur le paquet entier.`
                   : `Sur les ${m.counted} mots du paquet.`}{' '}
                 Un mot noté « Facile » avance de moitié, « Bien » d’un quart.
                 Un mot raté recule.
@@ -576,7 +576,7 @@ export function Library({
         <>
           {!auth.session && <RappelSauvegarde />}
           <p className="lead">
-            Aucun paquet en jeu. Mettez-en un depuis votre collection pour
+            Aucun paquet en jeu. Mets-en un depuis ta collection pour
             commencer à travailler.
           </p>
           <button className="btn" onClick={() => setTab('collection')}>
@@ -705,7 +705,7 @@ export function Library({
     if (mine.length === 0) {
       return (
         <div className="empty">
-          <p>Votre collection est vide.</p>
+          <p>Ta collection est vide.</p>
           <button className="btn ghost" onClick={() => setTab('catalogue')}>
             Parcourir le catalogue
           </button>
@@ -729,7 +729,7 @@ export function Library({
     return (
       <>
         <p className="lead">
-          Mettez en jeu ceux sur lesquels vous travaillez. Les autres attendent
+          Mets en jeu ceux sur lesquels tu travailles. Les autres attendent
           sans rien perdre.
         </p>
 
@@ -750,7 +750,7 @@ export function Library({
 
         {retenus.length === 0 && (
           <p className="hint">
-            Aucun paquet de votre collection ne correspond à ce filtre.
+            Aucun paquet de ta collection ne correspond à ce filtre.
           </p>
         )}
 
@@ -780,7 +780,7 @@ export function Library({
 
         <p className="hint">
           Un paquet en pause ne compte pas dans la charge du jour et ne
-          rappelle rien : le remettre en jeu reprend là où vous l’avez laissé.
+          rappelle rien : le remettre en jeu reprend là où tu l’as laissé.
         </p>
       </>
     );
@@ -931,12 +931,12 @@ export function Library({
         {enConsultation && (
           <div className="consultbox">
             <p className="ttl">
-              Vous consultez {consultes.join(', ')}
+              Tu consultes {consultes.join(', ')}
             </p>
             <p className="hint">
-              Ce sont les paquets dont le plancher tombe dans ce que vous avez
-              coché, et non ceux de votre classe. Un paquet d’un cycle plus bas
-              n’y figure pas, même s’il vous conviendrait.
+              Ce sont les paquets dont le plancher tombe dans ce que tu as
+              coché, et non ceux de ta classe. Un paquet d’un cycle plus bas
+              n’y figure pas, même s’il te conviendrait.
             </p>
             <button
               className="btn ghost"
@@ -968,7 +968,7 @@ export function Library({
 
         {!auth.session && (
           <p className="hint">
-            Vous n’êtes pas connecté : seuls les paquets fournis avec
+            Tu n’es pas connecté : seuls les paquets fournis avec
             l’application sont visibles. La connexion donne accès au catalogue
             complet.
           </p>
@@ -1003,7 +1003,7 @@ export function Library({
               </span>
             </div>
             <p className="hint">
-              Après {maClasse ? CLASSE_LABELS[maClasse] : 'votre classe'}. Rien
+              Après {maClasse ? CLASSE_LABELS[maClasse] : 'ta classe'}. Rien
               n’empêche de les prendre maintenant.
             </p>
             <div className="catlist">{plusTard.map((s) => ligneCatalogue(s, true))}</div>
@@ -1011,7 +1011,7 @@ export function Library({
         )}
 
         <p className="hint">
-          Un paquet obtenu arrive en pause : c’est vous qui le mettez en jeu.
+          Un paquet obtenu arrive en pause : c’est toi qui le mets en jeu.
         </p>
       </>
     );

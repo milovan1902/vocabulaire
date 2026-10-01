@@ -53,14 +53,14 @@ export function Editor({
     if (badLines.length && !warned) {
       setError(
         `${badLines.length} ligne(s) sans séparateur : ligne ${badLines.slice(0, 6).join(', ')}` +
-        `${badLines.length > 6 ? '…' : ''}. Corrigez-les, ou appuyez à nouveau pour enregistrer sans elles.`,
+        `${badLines.length > 6 ? '…' : ''}. Corrige-les, ou appuie à nouveau pour enregistrer sans elles.`,
       );
       setWarned(true);
       return;
     }
 
     if (mode === 'create') {
-      if (!name.trim()) { setError('Donnez un nom au paquet.'); return; }
+      if (!name.trim()) { setError('Donne un nom au paquet.'); return; }
       const id = `d${Date.now().toString(36)}`;
       const cards: Card[] = rows.map((r) => ({
         id: `${id}:${r.en.toLowerCase().replace(/\s+/g, '-')}`,

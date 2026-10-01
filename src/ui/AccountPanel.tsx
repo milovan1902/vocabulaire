@@ -21,8 +21,8 @@ export function AccountPanel({ auth }: { auth: Auth }) {
     return (
       <div className="account">
         <p className="hint" style={{ marginBottom: 10 }}>
-          Sans compte, tout reste sur cet appareil. Connectez-vous pour
-          retrouver votre progression ailleurs et accéder aux paquets
+          Sans compte, tout reste sur cet appareil. Connecte-toi pour
+          retrouver ta progression ailleurs et accéder aux paquets
           de la bibliothèque.
         </p>
         {accord.caseAccord}

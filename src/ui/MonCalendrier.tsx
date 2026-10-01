@@ -190,7 +190,7 @@ export function MonCalendrier({
 
       <p className="hint">
         {avantDebut
-          ? `Vous n’aviez pas encore commencé en ${MOIS_NOMS[vue.getMonth()]} : votre premier jour travaillé est le ${debut?.slice(8, 10)}/${debut?.slice(5, 7)}/${debut?.slice(0, 4)}.`
+          ? `Tu n’avais pas encore commencé en ${MOIS_NOMS[vue.getMonth()]} : ton premier jour travaillé est le ${debut?.slice(8, 10)}/${debut?.slice(5, 7)}/${debut?.slice(0, 4)}.`
           : `${faitsDuMois} jour${faitsDuMois > 1 ? 's' : ''} travaillé${faitsDuMois > 1 ? 's' : ''} en ${MOIS_NOMS[vue.getMonth()]}${debut ? `, ${total} depuis le début` : ''}.`}
       </p>
 
@@ -204,7 +204,7 @@ export function MonCalendrier({
 
       <p className="hint prog-perim-note">
         Un jour est marqué dès qu’une carte y a été revue — jamais selon le
-        nombre de cartes. Le calendrier n’affirme qu’une chose : vous étiez
+        nombre de cartes. Le calendrier n’affirme qu’une chose : tu étais
         là ce jour-là.
       </p>
     </section>

@@ -201,7 +201,7 @@ export function Study({
       {!revealed ? (
         <>
           <button className="reveal" onClick={reveal}>Afficher la réponse</button>
-          <p className="tap-hint">Appuyez sur le mot, ou espace au clavier.</p>
+          <p className="tap-hint">Touche le mot, ou appuie sur espace au clavier.</p>
         </>
       ) : (
         <div className="grades">

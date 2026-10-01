@@ -21,16 +21,16 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
 
       <header className="welcome-head">
         <Mark />
-        <h1>Vocabulaire</h1>
+        <h1>Neuro Anglais</h1>
         <p className="welcome-sub">
           L’anglais qui reste, quinze minutes par jour.
         </p>
       </header>
 
       <p className="welcome-lead">
-        Chaque mot revient juste avant que vous ne l’oubliiez. Ni plus tôt, ce
+        Chaque mot revient juste avant que tu ne l’oublies. Ni plus tôt, ce
         serait du temps perdu, ni plus tard, il faudrait tout réapprendre.
-        L’application choisit le moment ; vous n’avez qu’à répondre.
+        L’application choisit le moment ; tu n’as qu’à répondre.
       </p>
 
       <div className="welcome-actions">
@@ -40,7 +40,7 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
               Revenir à mes paquets
             </button>
             <p className="welcome-note">
-              Connecté en tant que {auth.email}. Votre progression est
+              Connecté en tant que {auth.email}. Ta progression est
               sauvegardée en ligne.
             </p>
           </>
@@ -56,7 +56,7 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
               Continuer avec Google
             </button>
             <p className="welcome-note">
-              Votre progression est sauvegardée et vous retrouvez toute la
+              Ta progression est sauvegardée et tu retrouves toute la
               bibliothèque de paquets, sur téléphone comme sur ordinateur.
             </p>
 
@@ -65,7 +65,7 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
             </button>
             <p className="welcome-note">
               Les paquets fournis avec l’application, hors ligne, sans
-              inscription. Tout reste sur cet appareil. Vous pourrez vous
+              inscription. Tout reste sur cet appareil. Tu pourras te
               connecter plus tard sans rien perdre.
             </p>
           </>
@@ -109,11 +109,11 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
               Les boîtes ont un défaut : elles traitent tous les mots de la même
               façon. Cette application utilise un algorithme moderne, FSRS, qui
               garde le principe mais calcule un intervalle propre à chaque mot,
-              d’après vos réponses passées. Un mot facile peut partir à trois
+              d’après tes réponses passées. Un mot facile peut partir à trois
               semaines pendant qu’un mot rétif revient demain.
             </p>
             <p className="method-foot">
-              En pratique : vous jugez chaque carte d’un mot — au hasard, dur,
+              En pratique : tu juges chaque carte d’un mot — au hasard, dur,
               correct, facile. C’est tout. Le calendrier se fait seul.
             </p>
           </div>
@@ -122,7 +122,7 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
 
       <p className="welcome-legal">
         Aucune publicité, aucun traceur. La connexion ne sert qu’à retrouver
-        votre progression.
+        ta progression.
       </p>
     </div>
   );

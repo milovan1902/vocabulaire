@@ -26,10 +26,10 @@ export function RappelSauvegarde() {
 
   return (
     <div className="consultbox" role="note">
-      <p className="ttl">Votre progression n’est que sur ce téléphone</p>
+      <p className="ttl">Ta progression n’est que sur ce téléphone</p>
       <p className="hint">
-        Si Chrome est vidé ou si vous changez de téléphone, elle sera perdue.
-        Enregistrez une sauvegarde, ou connectez-vous depuis les Réglages pour
+        Si Chrome est vidé ou si tu changes de téléphone, elle sera perdue.
+        Enregistre une sauvegarde, ou connecte-toi depuis les Réglages pour
         la garder en ligne.
       </p>
       {erreur && <p className="hint" style={{ color: 'var(--bad)' }}>{erreur}</p>}

@@ -66,7 +66,7 @@ export function scheduleReminder(
       const n = await dueToday();
       if (n > 0) {
         new Notification('Vocabulaire', {
-          body: `${n} carte${n > 1 ? 's' : ''} vous attend${n > 1 ? 'ent' : ''} aujourd’hui.`,
+          body: `${n} carte${n > 1 ? 's' : ''} t’attend${n > 1 ? 'ent' : ''} aujourd’hui.`,
           icon: '/icon-192.png',
           tag: 'rappel-quotidien',
         });

@@ -340,7 +340,7 @@ export function Account({
           <AccountPanel auth={auth} />
           <p className="hint" style={{ marginTop: 14 }}>
             Sans compte, la progression reste sur cet appareil. Pour la
-            retrouver ailleurs, exportez une sauvegarde ici et restaurez-la
+            retrouver ailleurs, exporte une sauvegarde ici et restaure-la
             là-bas.
           </p>
           <button className="btn ghost" onClick={exportBackup}>Enregistrer une sauvegarde</button>
@@ -433,7 +433,7 @@ export function Account({
                 ? 'Ce navigateur ne sait pas afficher de notification.'
                 : autorisation === 'denied'
                   ? 'Les notifications sont bloquées pour ce site : à réautoriser dans les réglages du navigateur.'
-                  : 'Le rappel n’arrive que si l’application est encore ouverte, même en arrière-plan. Sur téléphone rangé, comptez plutôt sur l’écran d’accueil, qui prévient quand la série est en jeu.'}
+                  : 'Le rappel n’arrive que si l’application est encore ouverte, même en arrière-plan. Sur téléphone rangé, compte plutôt sur l’écran d’accueil, qui prévient quand la série est en jeu.'}
             </p>
           </div>
         </Tiroir>

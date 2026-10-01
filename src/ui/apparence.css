@@ -1,0 +1,153 @@
+/* ==================================================================
+   CHANTIER 161 — piste 1a « La pioche, en plus lisible »
+
+   Chargée APRÈS styles.css (voir main.tsx) : à sélecteur égal, ces
+   règles l'emportent. Rien n'est retiré de styles.css ; on peut revenir
+   en arrière en supprimant l'import de ce fichier.
+
+   Ce qui change, pour les 10-18 ans :
+   1. une police conçue pour la lisibilité (Atkinson Hyperlegible, utile
+      aux élèves dys), livrée avec l'app donc disponible hors ligne ;
+   2. plus aucune étiquette en petites capitales monospace de 9,5 px :
+      minuscules, 13 px au minimum ;
+   3. des icônes au trait qui prennent la couleur de l'onglet actif ;
+   4. la semaine en sept pastilles ;
+   5. le dos du paquet choisi en plus grand ;
+   6. des couleurs qui étaient écrites en dur passent par les variables
+      du thème, pour que les thèmes à venir (Cahier) les suivent.
+
+   Le bleu nuit, l'or, Newsreader pour les mots anglais et les dos
+   illustrés ne bougent pas.
+   ================================================================== */
+
+:root {
+  --sans: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* L'anneau d'avancement : il était bleu-vert (#0f7c8a), seul de sa
+     couleur dans l'app et peu lisible sur le bleu nuit. Il prend l'or. */
+  --anneau: var(--chalk-ink, var(--chalk));
+}
+
+body { font-family: var(--sans); }
+
+/* ---------- 1. Les étiquettes : minuscules, 13 px au minimum ---------- */
+.today-date,
+.serie-count,
+.rayon-label,
+.rayon h2,
+.memoire .label,
+.workrow-txt small,
+.avant-txt small,
+.avant-pct small,
+.topbar .count,
+.welcome-sub,
+.stat span,
+.hit-meta,
+.studystage .tag,
+.ask,
+.studytop .pos,
+.tabcount,
+.engage .label,
+.filterpanel .flabel,
+.later-n,
+.classbar .label,
+.pioche-txt .label,
+.pioche-txt .sub,
+.heures button,
+.guide-kicker {
+  font-family: var(--sans);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+}
+
+/* La date arrive en minuscules (« jeudi 1 octobre ») : majuscule initiale. */
+.today-date { font-size: 14px; color: var(--ink-soft); }
+.today-date::first-letter { text-transform: uppercase; }
+.serie-count { font-size: 14px; font-weight: 700; }
+
+.rayon-label,
+.memoire .label { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+.rayon h2 { font-size: 14px; font-weight: 700; }
+
+.bar em {
+  font-family: var(--sans); font-size: 12.5px; letter-spacing: 0;
+  text-transform: capitalize;
+}
+
+.ask { font-size: 15px; font-weight: 700; }
+.studytop .pos { font-size: 14px; }
+.classdot { font-family: var(--sans); font-size: 11px; letter-spacing: 0; }
+.heures button { font-size: 14px; }
+
+/* Textes courants : un cran au-dessus. */
+.lead { font-size: 16px; }
+.hint { font-size: 13.5px; line-height: 1.55; }
+.welcome-note { font-size: 13.5px; }
+.welcome-legal { font-size: 13px; }
+.today-est { font-size: 14px; }
+.serie-alerte { font-size: 14px; }
+.tap-hint { font-size: 13px; }
+.workrow-txt b { font-size: 16px; font-weight: 700; }
+.switchrow-txt small,
+.catrow-txt small { font-size: 13px; }
+.grade { font-size: 16px; font-weight: 700; }
+.grade small { font-size: 13px; }
+.speak { font-size: 15px; }
+.btn.ghost { font-size: 15px; }
+
+/* ---------- 2. La barre d'onglets ---------- */
+/* Le fond suit le tapis du thème au lieu d'un bleu nuit écrit en dur.
+   Les thèmes clair et sombre gardent leur propre règle, plus précise. */
+.tabbar { background: color-mix(in srgb, var(--paper) 92%, transparent); }
+.tabbar button { position: relative; font-size: 12.5px; }
+.tabbar button .tabsvg { width: 24px; height: 24px; flex: none; }
+/* L'onglet actif : l'or sur l'icône, le libellé, et un trait en haut. */
+.tabbar button.on::before {
+  content: '';
+  position: absolute; top: -6px; left: 24%; right: 24%;
+  height: 3px; border-radius: 0 0 3px 3px;
+  background: var(--chalk);
+}
+
+/* ---------- 3. La semaine en sept pastilles ---------- */
+.serie7 {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 6px; margin: 14px 0 0;
+}
+.serie7-j {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--grey);
+}
+.serie7-j i {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--voile-2, rgba(234, 230, 219, 0.10));
+  color: var(--on-chalk);
+}
+.serie7-j svg { width: 16px; height: 16px; }
+.serie7-j.on i { background: var(--chalk); }
+.serie7-j.auj { color: var(--chalk-ink, var(--chalk)); font-weight: 700; }
+.serie7-j.auj:not(.on) i {
+  background: transparent;
+  border: 2px dashed var(--chalk);
+}
+
+/* ---------- 4. Le paquet choisi, en plus grand ---------- */
+.avant-vign { width: 112px; }
+.avant-txt b { font-size: 23px; }
+.avant-anneau { color: var(--anneau); }
+
+/* ---------- 5. Couleurs qui étaient écrites en dur ---------- */
+.avanc { color: var(--anneau); }
+.avanc.plein { color: var(--good); }
+.avanc:focus-visible { outline-color: var(--anneau); }
+.small-pct {
+  background: color-mix(in srgb, var(--anneau) 14%, transparent);
+  color: var(--anneau);
+}
+.avanc-bulle {
+  background: var(--panel-hi);
+  color: var(--ink);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--rule);
+}
+.catrow.later .catrow-txt small { color: var(--ink-soft); }

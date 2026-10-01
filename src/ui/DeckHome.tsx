@@ -222,8 +222,8 @@ export function DeckHome({
           <div className="goal">
             <b>Objectif du jour atteint.</b>
             <p>
-              Il reste {beyond} carte{beyond > 1 ? 's' : ''} si vous voulez continuer.
-              Sachez seulement que chaque carte prise en avance revient plus tard :
+              Il reste {beyond} carte{beyond > 1 ? 's' : ''} si tu veux continuer.
+              Sache seulement que chaque carte prise en avance revient plus tard :
               en faire davantage aujourd’hui, c’est plus de révisions demain
               et les jours suivants.
             </p>
@@ -243,7 +243,7 @@ export function DeckHome({
       <button className="btn ghost danger" onClick={async () => {
         const message = userId
           ? `Effacer la progression de « ${deck.name} » ?\n\n` +
-            'Elle sera effacée sur tous vos appareils, pas seulement celui-ci.'
+            'Elle sera effacée sur tous tes appareils, pas seulement celui-ci.'
           : `Effacer la progression de « ${deck.name} » ?`;
         if (!confirm(message)) return;
         // L'ordre compte : si le serveur refuse, on ne veut pas avoir déjà
@@ -254,7 +254,7 @@ export function DeckHome({
           } catch (e) {
             alert(
               'Effacement impossible sur le serveur. ' + phraseErreur(e, 'effacement-progression') +
-              '\n\nRien n’a été modifié. Réessayez une fois connecté.',
+              '\n\nRien n’a été modifié. Réessaie une fois connecté.',
             );
             return;
           }

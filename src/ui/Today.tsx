@@ -297,15 +297,33 @@ export function Today({
         )}
       </div>
 
-      <div className="serie" aria-label={`Série : ${serie} jours`}>
-        {semaine.map((j, i) => (
-          <i
-            key={j.key}
-            className={j.done ? 'on' : ''}
-            title={`${JOURS[new Date(j.key + 'T12:00:00').getDay()]} ${j.key.slice(8)}`}
-            aria-current={i === 6 ? 'date' : undefined}
-          />
-        ))}
+      {/*
+        * CHANTIER 161 — la semaine en sept pastilles, avec l'initiale du
+        * jour. Un jour fait porte une coche ; aujourd'hui, s'il reste à
+        * faire, est un cercle en pointillé. Les sept traits de 5 px ne se
+        * voyaient pas.
+        */}
+      <div className="serie7" aria-label={`Série : ${serie} jours`}>
+        {semaine.map((j, i) => {
+          const nom = JOURS[new Date(j.key + 'T12:00:00').getDay()];
+          return (
+            <span
+              key={j.key}
+              className={`serie7-j${j.done ? ' on' : ''}${i === 6 ? ' auj' : ''}`}
+              title={`${nom} ${j.key.slice(8)}`}
+              aria-current={i === 6 ? 'date' : undefined}
+            >
+              <small>{nom.charAt(0).toUpperCase()}</small>
+              <i>
+                {j.done && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                )}
+              </i>
+            </span>
+          );
+        })}
       </div>
 
       {rows.length === 0 ? (
@@ -315,7 +333,7 @@ export function Today({
             <span>carte<br />à revoir</span>
           </div>
           <p className="hint">
-            Aucun paquet en jeu. Choisissez ceux sur lesquels vous voulez
+            Aucun paquet en jeu. Choisis ceux sur lesquels tu veux
             travailler ; leur charge apparaîtra ici.
           </p>
           <button className="btn" onClick={onManage}>Mettre un paquet en jeu</button>
@@ -355,7 +373,7 @@ export function Today({
 
           {serieEnJeu && (
             <p className="serie-alerte">
-              Votre série de {serie} jour{serie > 1 ? 's' : ''} tient à une
+              Ta série de {serie} jour{serie > 1 ? 's' : ''} tient à une
               révision aujourd’hui.
             </p>
           )}
@@ -365,7 +383,7 @@ export function Today({
           {suite.length > 0 && (
             <>
               <p className="rayon-label">
-                {enAvant ? 'Les autres paquets' : 'Sur quoi travaillez-vous ?'}
+                {enAvant ? 'Les autres paquets' : 'Sur quoi tu travailles ?'}
               </p>
               <div className="worklist todaylist">
                 {suite.map(ligne)}

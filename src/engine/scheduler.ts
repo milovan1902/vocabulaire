@@ -103,16 +103,21 @@ export function previewIntervals(
   return out;
 }
 
+/**
+ * CHANTIER 161 — en mots, pas en abréviations : « 3 j » ne dit rien à un
+ * élève de CM2, « dans 3 jours » si. Le jour suivant devient « demain ».
+ */
 function humanDelay(ms: number): string {
   const min = Math.round(ms / 60000);
   if (min < 1) return 'tout de suite';
-  if (min < 60) return `${min} min`;
+  if (min < 60) return `dans ${min} min`;
   const h = Math.round(min / 60);
-  if (h < 24) return `${h} h`;
+  if (h < 24) return `dans ${h} h`;
   const d = Math.round(h / 24);
-  if (d < 31) return `${d} j`;
+  if (d === 1) return 'demain';
+  if (d < 31) return `dans ${d} jours`;
   const mo = Math.round(d / 30);
-  return `${mo} mois`;
+  return `dans ${mo} mois`;
 }
 
 export function isDue(p: Progress, now = Date.now()): boolean {

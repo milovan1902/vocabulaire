@@ -1,58 +1,80 @@
 /**
- * Les icônes des onglets — les cinq en image, désormais.
+ * Les icônes des onglets.
  *
- * Aucune ne suit `currentColor` : une image en couleur ne peut pas prendre
- * celle de l'onglet actif. C'est donc l'opacité qui dit l'état, pour les
- * cinq pareillement (voir `.tabicon` dans la feuille de style). Les
- * fichiers vivent dans `public/`, servis tels quels.
+ * CHANTIER 161 — UNE SEULE FAMILLE, AU TRAIT.
  *
- * Le module garde sa raison d'être : une icône se remplace ici sans que la
- * barre ni les écrans ne bougent.
+ * Les cinq images de `public/` venaient de cinq séries différentes (clipart,
+ * relief, silhouette…) et ne pouvaient pas prendre la couleur de l'onglet
+ * actif : seule l'opacité disait où l'on était. Elles sont remplacées par des
+ * tracés au trait (famille Lucide), qui suivent `currentColor` — gris au
+ * repos, or quand l'onglet est actif, et la couleur de chaque thème sans
+ * rien ajouter.
+ *
+ * La classe `tabsvg` (et non `tabicon`) est voulue : l'ancienne règle
+ * `.tabicon` baissait l'opacité au repos, ce qui rendrait un trait gris
+ * presque invisible. Voir `apparence.css`.
+ *
+ * Les fichiers PNG restent dans `public/` : « Mes progrès » s'en sert encore.
  */
 
-/** Le calendrier fourni. */
+const TRAIT = {
+  width: 24,
+  height: 24,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.75,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  className: 'tabsvg',
+  'aria-hidden': true,
+} as const;
+
+/** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
-  return <img src="/tab-aujourdhui.png" alt="" width={24} height={24} className="tabicon" />;
+  return (
+    <svg {...TRAIT}>
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  );
 }
 
-/** Les trois cartes fournies : la collection. */
+/** Les cartes empilées : la collection. */
 export function IconPaquets() {
-  return <img src="/tab-paquets.png" alt="" width={24} height={24} className="tabicon" />;
+  return (
+    <svg {...TRAIT}>
+      <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
+      <path d="m2 12 8.58 3.91a2 2 0 0 0 1.66 0L22 12" />
+      <path d="m2 17 8.58 3.91a2 2 0 0 0 1.66 0L22 17" />
+    </svg>
+  );
 }
 
-/**
- * Les trois curseurs fournis : les réglages.
- *
- * Dessin large et bas, là où les deux autres sont carrés : il garde ses
- * proportions et se pose au centre du carré de 24 (`object-fit: contain`
- * dans la feuille de style), plutôt que d'être étiré pour le remplir.
- */
-export function IconReglages() {
-  return <img src="/tab-reglages.png" alt="" width={24} height={24} className="tabicon" />;
-}
-
-/** L'histogramme croissant fourni : ce qui progresse. */
-export function IconProgres() {
-  return <img src="/tab-progres.png" alt="" width={24} height={24} className="tabicon" />;
-}
-
-/**
- * CHANTIER 103 — la bulle de l'onglet « Parler ».
- *
- * Seule icône de la barre dessinée pour elle : les quatre autres sont vos
- * planches. Elle n'emploie donc que les deux couleurs de l'application —
- * l'or de la craie et l'encre — pour ne pas prétendre appartenir à la même
- * série d'illustrations.
- *
- * UNE SEULE FORME PLEINE, et c'est une décision : à 24 px, deux contours qui
- * se chevauchent font une tache, et la barre compte déjà un empilement (les
- * paquets). La bulle d'encre en arrière-plan dit qu'on est deux à parler
- * sans ajouter un second contour à lire.
- *
- * Le micro avait été écarté : il fait doublon avec le bouton « Commencer à
- * parler », et un micro dans une barre d'onglets se lit comme
- * « enregistrer » plutôt que comme « aller ici ».
- */
+/** La bulle : la conversation. */
 export function IconParler() {
-  return <img src="/tab-parler.png" alt="" width={24} height={24} className="tabicon" />;
+  return (
+    <svg {...TRAIT}>
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </svg>
+  );
+}
+
+/** Les trois curseurs : les réglages. */
+export function IconReglages() {
+  return (
+    <svg {...TRAIT}>
+      <path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4" />
+    </svg>
+  );
+}
+
+/** La courbe qui monte : ce qui progresse. */
+export function IconProgres() {
+  return (
+    <svg {...TRAIT}>
+      <path d="M22 7 13.5 15.5 8.5 10.5 2 17" />
+      <path d="M16 7h6v6" />
+    </svg>
+  );
 }

@@ -8,7 +8,13 @@ import { mesure } from './data/mesures';
 import { demandeStockagePersistant, noteJourUsage } from './data/stockage';
 import { installeMiseAJour } from './data/miseAJour';
 import { MiseAJour } from './ui/MiseAJour';
+/* CHANTIER 161 — Atkinson Hyperlegible, livrée avec l'application : elle
+   marche hors ligne. Installée par `npm install @fontsource/atkinson-hyperlegible`. */
+import '@fontsource/atkinson-hyperlegible/400.css';
+import '@fontsource/atkinson-hyperlegible/700.css';
 import './styles.css';
+/* Posée APRÈS styles.css : à sélecteur égal, c'est elle qui l'emporte. */
+import './ui/apparence.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

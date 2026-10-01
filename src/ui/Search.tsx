@@ -100,7 +100,7 @@ export function Search({
       {tout !== null && terme.length >= 2 && resultats.length === 0 && (
         <p className="hint">
           Aucun mot ne correspond. La recherche ne porte que sur les paquets de
-          votre collection.
+          ta collection.
         </p>
       )}
 
@@ -123,7 +123,7 @@ export function Search({
 
       {tout !== null && tout.length === 0 && (
         <p className="hint">
-          Votre collection est vide : ajoutez un paquet depuis le catalogue.
+          Ta collection est vide : ajoute un paquet depuis le catalogue.
         </p>
       )}
     </>
