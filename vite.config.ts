@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // CHANTIER 156 — « prompt » : la page est prévenue qu'une version attend,
+      // et le bandeau « Recharger » l'applique tout de suite.
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: [
         'icon-192.png',
         'icon-512.png',

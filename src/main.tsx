@@ -6,6 +6,8 @@ import { FiletErreur } from './ui/FiletErreur';
 import { installeSuiviErreurs, signaleErreur } from './data/erreurs';
 import { mesure } from './data/mesures';
 import { demandeStockagePersistant, noteJourUsage } from './data/stockage';
+import { installeMiseAJour } from './data/miseAJour';
+import { MiseAJour } from './ui/MiseAJour';
 import './styles.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
@@ -18,6 +20,9 @@ mesure('ouverture');
 /* CHANTIER 154 — la progression ne doit pas être effacée par le navigateur. */
 void demandeStockagePersistant();
 noteJourUsage();
+
+/* CHANTIER 156 — une nouvelle version s'annonce et s'applique en un geste. */
+installeMiseAJour();
 
 createRoot(document.getElementById('root')!, {
   onUncaughtError: (e) => signaleErreur(e, 'react'),
@@ -32,6 +37,7 @@ createRoot(document.getElementById('root')!, {
           les trois sans qu'aucune ne la connaisse. */}
       <Lancement />
       <App />
+      <MiseAJour />
     </FiletErreur>
   </StrictMode>,
 );
