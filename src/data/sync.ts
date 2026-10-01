@@ -322,6 +322,28 @@ export function fusionnerReprise(local: RepriseVoyage, distant: RepriseVoyage | 
   return { cards, progress };
 }
 
+/**
+ * CHANTIER 163 — LES THÈMES RETENUS, D'UN APPAREIL À L'AUTRE.
+ *
+ * Le choix des thèmes d'un paquet ne voyageait pas : « 3 thèmes sur 6 » sur
+ * le téléphone, les 6 sur l'ordinateur — donc pas le même nombre de cartes
+ * à revoir. Il rejoint le paquet JSON des réglages.
+ *
+ * Règle : pour chaque paquet, le choix le plus récent gagne. À égalité
+ * (deux choix hérités, datés à zéro), le local reste : rien ne change pour
+ * qui n'a pas touché à ses thèmes depuis cette mise à jour.
+ */
+export type ChoixThemes = Record<string, { t: string[]; at: number }>;
+
+export function fusionnerThemes(local: ChoixThemes, distant: ChoixThemes): ChoixThemes {
+  const out: ChoixThemes = { ...distant };
+  for (const [id, ici] of Object.entries(local)) {
+    const la = distant[id];
+    if (!la || ici.at >= la.at) out[id] = ici;
+  }
+  return out;
+}
+
 export async function syncProgress(
   userId: string,
 ): Promise<Pick<SyncReport, 'progressPushed' | 'progressPulled'>> {
@@ -489,6 +511,7 @@ export async function syncSettings(userId: string): Promise<void> {
     jalons?: Jalon[];
     paliers?: Releve[];
     reprise?: RepriseVoyage;
+    themes?: ChoixThemes;
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -577,6 +600,21 @@ export async function syncSettings(userId: string): Promise<void> {
     await repository.saveProgress(REPRISE_ID, reprise.progress);
   }
 
+  /* CHANTIER 163 — les thèmes retenus, paquet par paquet. */
+  const datesThemes = await repository.getThemesAt();
+  const themesLocaux: ChoixThemes = {};
+  for (const d of await repository.listDecks()) {
+    const t = await repository.getThemes(d.id);
+    if (t && t.length) themesLocaux[d.id] = { t, at: datesThemes[d.id] ?? 0 };
+  }
+  const themes = fusionnerThemes(themesLocaux, bundle?.themes ?? {});
+  for (const [id, v] of Object.entries(themes)) {
+    const ici = themesLocaux[id];
+    if (!ici || ici.at !== v.at || ici.t.join('\u0000') !== v.t.join('\u0000')) {
+      await repository.saveThemes(id, v.t, v.at);
+    }
+  }
+
   await repository.saveSettings(general);
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
@@ -600,7 +638,7 @@ export async function syncSettings(userId: string): Promise<void> {
       user_id: userId,
       settings: {
         general, decks: overrides, streak, installed, active, deckJournal, jalons, paliers,
-        reprise,
+        reprise, themes,
       },
       counter: counters,
       updated_at: new Date().toISOString(),

@@ -36,6 +36,12 @@ const k = {
   cards: (u: UserId, d: DeckId) => `u:${u}:cards:${d}`,
   progress: (u: UserId, d: DeckId) => `u:${u}:progress:${d}`,
   themes: (u: UserId, d: DeckId) => `u:${u}:themes:${d}`,
+  /*
+   * CHANTIER 163 — la date de chaque choix de thèmes, paquet par paquet.
+   * Sans elle, la synchronisation ne saurait pas lequel de deux appareils a
+   * décidé en dernier. Absente = choix hérité, daté à zéro.
+   */
+  themesAt: (u: UserId) => `u:${u}:themes-at`,
   image: (u: UserId, d: DeckId) => `u:${u}:image:${d}`,
   settings: (u: UserId) => `u:${u}:settings`,
   overrides: (u: UserId) => `u:${u}:overrides`,
@@ -101,7 +107,9 @@ export interface Repository {
   getProgress(deckId: DeckId): Promise<Record<string, Progress>>;
   saveProgress(deckId: DeckId, p: Record<string, Progress>): Promise<void>;
   getThemes(deckId: DeckId): Promise<string[] | null>;
-  saveThemes(deckId: DeckId, themes: string[]): Promise<void>;
+  /** `at` : la date du choix. Par défaut maintenant ; la synchronisation passe celle du gagnant. */
+  saveThemes(deckId: DeckId, themes: string[], at?: number): Promise<void>;
+  getThemesAt(): Promise<Record<DeckId, number>>;
   getImage(deckId: DeckId): Promise<string | null>;
   saveImage(deckId: DeckId, dataUrl: string): Promise<void>;
   removeImage(deckId: DeckId): Promise<void>;
@@ -167,8 +175,14 @@ export class IdbRepository implements Repository {
   async getThemes(d: DeckId) {
     return (await get<string[]>(k.themes(this.user, d))) ?? null;
   }
-  async saveThemes(d: DeckId, t: string[]) {
+  async saveThemes(d: DeckId, t: string[], at = Date.now()) {
     await set(k.themes(this.user, d), t);
+    const dates = await this.getThemesAt();
+    dates[d] = at;
+    await set(k.themesAt(this.user), dates);
+  }
+  async getThemesAt() {
+    return (await get<Record<DeckId, number>>(k.themesAt(this.user))) ?? {};
   }
   async getImage(d: DeckId) {
     return (await get<string>(k.image(this.user, d))) ?? null;
