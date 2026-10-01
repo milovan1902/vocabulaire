@@ -1,15 +1,16 @@
+# CHANTIER 157 — contrôle à chaque envoi.
+# Avant : ne tournait que si src/engine, src/data ou src/domain changeaient,
+# et un test raté passait quand même au vert (le « | tee » masquait l'échec).
+# Maintenant : à chaque push, compilation + tests + failles connues.
 name: Banc d'essai
 
 on:
   workflow_dispatch:
   push:
-    paths:
-      - 'src/engine/**'
-      - 'src/data/**'
-      - 'src/domain/**'
+  pull_request:
 
 jobs:
-  simulation:
+  controle:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +21,14 @@ jobs:
       - name: Installer
         run: npm ci
       - name: Tous les tests, simulation comprise
-        run: npx vitest run 2>&1 | tee rapport.txt
+        shell: bash
+        run: |
+          set -o pipefail
+          npx vitest run 2>&1 | tee rapport.txt
+      - name: Compiler l'application
+        run: npm run build
+      - name: Failles connues dans les dépendances (graves seulement)
+        run: npm audit --omit=dev --audit-level=high
       - name: Garder le relevé
         if: always()
         uses: actions/upload-artifact@v4
