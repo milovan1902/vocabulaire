@@ -22,14 +22,35 @@
  * Les fautes de grammaire (« I am agree ») ne deviennent pas des cartes :
  * elles restent dans le bilan, et l'IA les retrouve à la séance suivante.
  *
- * LE PAQUET EST LOCAL, comme ceux qu'on crée soi-même dans l'éditeur : il
- * n'existe pas côté serveur, et la synchronisation le laisse tranquille.
+ * LE PAQUET N'EXISTE PAS DANS LE CATALOGUE du serveur, comme ceux qu'on crée
+ * soi-même dans l'éditeur : ses cartes ne sont pas dans la table `cards`, et
+ * leur progression ne peut donc pas aller dans la table `progress`.
+ *
+ * CHANTIER 162 — IL VOYAGE QUAND MÊME. Ses cartes et leur progression partent
+ * dans le paquet JSON des réglages (`user_settings.settings.reprise`), comme
+ * la série ou les relevés : aucune table, aucune colonne nouvelle. Voir
+ * `fusionnerReprise` dans `sync.ts`. Avant, un paquet rempli sur le
+ * téléphone n'apparaissait jamais sur l'ordinateur.
  */
 import type { Card, Deck, Progress } from '../domain/types';
 import { repository } from './repository';
 
 export const REPRISE_ID = 'reprise-oral';
 export const REPRISE_NOM = 'Reprise des fautes à l’oral';
+
+/** La fiche du paquet, la même qu'il naisse d'une conversation ou d'une synchronisation. */
+export function deckReprise(maintenant = Date.now()): Deck {
+  return {
+    id: REPRISE_ID,
+    name: REPRISE_NOM,
+    description: 'Les mots qui ont posé problème pendant tes conversations.',
+    categoryId: null,
+    builtin: false,
+    hasImage: false,
+    createdAt: maintenant,
+    updatedAt: maintenant,
+  };
+}
 
 export type Statut =
   | { type: 'ramene'; deckId: string; deckNom: string; cardId: string }
@@ -170,16 +191,7 @@ export async function verse(choisis: Proposition[], quandIso?: string): Promise<
   if (aCreer.length > 0) {
     const decks = await repository.listDecks();
     if (!decks.some((d) => d.id === REPRISE_ID)) {
-      decks.push({
-        id: REPRISE_ID,
-        name: REPRISE_NOM,
-        description: 'Les mots qui ont posé problème pendant tes conversations.',
-        categoryId: null,
-        builtin: false,
-        hasImage: false,
-        createdAt: maintenant,
-        updatedAt: maintenant,
-      });
+      decks.push(deckReprise(maintenant));
     } else {
       const d = decks.find((x) => x.id === REPRISE_ID)!;
       d.updatedAt = maintenant;

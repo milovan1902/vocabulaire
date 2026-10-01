@@ -25,6 +25,7 @@ import {
   fusionner, journalDepuisListes, listes,
   type DeckJournal,
 } from '../domain/deckState';
+import { REPRISE_ID, deckReprise } from './reprise';
 
 export interface SyncReport {
   decksPulled: number;
@@ -282,6 +283,45 @@ export function garderMastery(
   return { ...gagnant, mastery: perdant.mastery };
 }
 
+/**
+ * CHANTIER 162 — LE PAQUET « REPRISE DES FAUTES À L'ORAL » ENTRE DEUX APPAREILS.
+ *
+ * Ce que porte le paquet JSON des réglages pour lui : ses cartes, et la
+ * progression de chacune.
+ */
+export interface RepriseVoyage {
+  cards: Card[];
+  progress: Record<string, Progress>;
+}
+
+/**
+ * Réunit le paquet de reprise de cet appareil et celui du serveur.
+ *
+ * — LES CARTES s'additionnent, par identifiant. Une carte n'est jamais
+ *   retirée de ce paquet par l'application : l'union ne ressuscite donc rien.
+ *   Un même mot créé sur les deux appareils porte le même identifiant
+ *   (`reprise-oral:<mot>`) et n'apparaît qu'une fois.
+ * — LA PROGRESSION suit exactement la règle des autres paquets :
+ *   `pickFresher` pour l'ordonnancement, `garderMastery` pour l'avancement.
+ */
+export function fusionnerReprise(local: RepriseVoyage, distant: RepriseVoyage | null): RepriseVoyage {
+  if (!distant) return local;
+  const parId = new Map<string, Card>();
+  for (const c of distant.cards ?? []) parId.set(c.id, c);
+  for (const c of local.cards) parId.set(c.id, c);
+  const cards = [...parId.values()];
+
+  const progress: Record<string, Progress> = {};
+  for (const c of cards) {
+    const ici = local.progress[c.id];
+    const la = distant.progress?.[c.id];
+    if (!ici && !la) continue;
+    const brut = pickFresher(ici, la);
+    progress[c.id] = garderMastery(brut, brut === ici ? la : ici);
+  }
+  return { cards, progress };
+}
+
 export async function syncProgress(
   userId: string,
 ): Promise<Pick<SyncReport, 'progressPushed' | 'progressPulled'>> {
@@ -448,6 +488,7 @@ export async function syncSettings(userId: string): Promise<void> {
     deckJournal?: DeckJournal;
     jalons?: Jalon[];
     paliers?: Releve[];
+    reprise?: RepriseVoyage;
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -514,6 +555,28 @@ export async function syncSettings(userId: string): Promise<void> {
     );
   }
 
+  /*
+   * CHANTIER 162 — le paquet de reprise. S'il n'existe pas encore sur cet
+   * appareil (l'ordinateur, typiquement), il est créé : le journal des
+   * paquets, lui, disait déjà qu'il était en jeu.
+   */
+  const reprise = fusionnerReprise(
+    {
+      cards: await repository.getCards(REPRISE_ID),
+      progress: await repository.getProgress(REPRISE_ID),
+    },
+    bundle?.reprise ?? null,
+  );
+  if (reprise.cards.length > 0) {
+    const decks = await repository.listDecks();
+    if (!decks.some((d) => d.id === REPRISE_ID)) {
+      decks.push(deckReprise());
+      await repository.saveDecks(decks);
+    }
+    await repository.saveCards(REPRISE_ID, reprise.cards);
+    await repository.saveProgress(REPRISE_ID, reprise.progress);
+  }
+
   await repository.saveSettings(general);
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
@@ -537,6 +600,7 @@ export async function syncSettings(userId: string): Promise<void> {
       user_id: userId,
       settings: {
         general, decks: overrides, streak, installed, active, deckJournal, jalons, paliers,
+        reprise,
       },
       counter: counters,
       updated_at: new Date().toISOString(),
