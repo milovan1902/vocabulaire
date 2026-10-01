@@ -388,7 +388,7 @@ export function Account({
       {tiroir === 'apparence' && (
         <Tiroir titre="Apparence" onFermer={() => setTiroir(null)}>
           <div className="themechoix">
-            {(['auto', 'clair', 'sombre'] as Theme[]).map((t) => (
+            {(['auto', 'clair', 'sombre', 'cahier'] as Theme[]).map((t) => (
               <button
                 key={t}
                 className={theme === t ? 'on' : ''}
@@ -402,7 +402,8 @@ export function Account({
           <p className="hint">
             Le thème reste sur cet appareil : il ne suit pas le compte, et ne
             part pas dans les sauvegardes. « Automatique » suit le système et
-            continue de le suivre.
+            continue de le suivre. « Cahier » est un thème clair, façon cahier
+            d’école.
           </p>
         </Tiroir>
       )}

@@ -1,0 +1,220 @@
+/* ==================================================================
+   CHANTIER 164 — le style « Cahier »
+
+   Actif quand <html> porte data-style="cahier" (voir theme.ts). Il porte
+   AUSSI data-theme="clair" : toutes les règles du thème clair
+   s'appliquent d'abord, ce fichier n'ajoute que l'habillage cahier :
+   papier quadrillé, marge rouge, encre bleu stylo, l'or en surligneur,
+   les gommettes, et la révision sur une fiche bristol.
+
+   Chargé en dernier (main.tsx). Pour le retirer : supprimer l'import, et
+   le choix « Cahier » retombe sur un thème clair ordinaire.
+   ================================================================== */
+
+[data-style='cahier'] {
+  --paper: #fbf8f1;
+  --panel: #ffffff;
+  --panel-hi: #f3eee2;
+  --ink: #1d2a4a;
+  --ink-soft: #3d4a6a;
+  --grey: #5a6785;
+  --ink-dim: #5a6785;
+  --rule: rgba(39, 71, 168, 0.14);
+  --rule-strong: rgba(39, 71, 168, 0.28);
+  /* L'or reste l'aplat (surligneur, gommettes) ; en texte, c'est le stylo bleu. */
+  --chalk: #f2b705;
+  --chalk-ink: #2747a8;
+  --on-chalk: #1d2a4a;
+  --good: #17683f;
+  --bad: #a52a20;
+  --voile: rgba(39, 71, 168, 0.05);
+  --voile-2: rgba(39, 71, 168, 0.10);
+  --voile-3: rgba(39, 71, 168, 0.16);
+
+  --stylo: #2747a8;
+  --stylo-fonce: #1a2f73;
+  --marge: rgba(214, 96, 96, 0.55);
+  --surligneur: rgba(242, 183, 5, 0.55);
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --main: 'Caveat', 'Segoe Print', cursive;
+  --serif: 'Lexend', -apple-system, sans-serif;
+  --anneau: var(--stylo);
+}
+
+/* ---------- le papier ---------- */
+[data-style='cahier'] body {
+  font-family: var(--sans);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(39, 71, 168, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 71, 168, 0.07) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-attachment: fixed;
+}
+/* La marge rouge, à gauche de la colonne. */
+[data-style='cahier'] .app::before {
+  content: '';
+  position: fixed; top: 0; bottom: 0; z-index: 0;
+  left: max(8px, calc(50% - var(--shell) / 2 + 8px));
+  width: 1.5px;
+  background: var(--marge);
+  pointer-events: none;
+}
+
+/* ---------- les titres ---------- */
+[data-style='cahier'] .screen-title,
+[data-style='cahier'] .topbar h1,
+[data-style='cahier'] .welcome-head h1,
+[data-style='cahier'] .done h2 {
+  font-family: var(--sans); font-weight: 800; letter-spacing: -0.01em;
+}
+[data-style='cahier'] .rayon-label,
+[data-style='cahier'] .memoire .label { font-weight: 600; color: var(--ink); }
+
+/* ---------- Aujourd'hui ---------- */
+[data-style='cahier'] .today-date {
+  font-family: var(--main); font-size: 28px; font-weight: 700;
+  line-height: 1; color: var(--stylo);
+}
+/* La série devient une gommette. */
+[data-style='cahier'] .serie-count {
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--chalk); color: var(--on-chalk);
+  border: 2px solid #fff;
+  box-shadow: 0 3px 8px rgba(29, 42, 74, 0.18);
+  transform: rotate(-4deg);
+}
+/* Les sept jours : des cases cochées au stylo. */
+[data-style='cahier'] .serie7-j i {
+  border-radius: 7px;
+  background: #fff;
+  border: 1.5px solid rgba(39, 71, 168, 0.45);
+  color: var(--stylo);
+}
+[data-style='cahier'] .serie7-j.on i { background: #fff; }
+[data-style='cahier'] .serie7-j svg { width: 18px; height: 18px; }
+[data-style='cahier'] .serie7-j.auj { color: var(--ink); }
+[data-style='cahier'] .serie7-j.auj:not(.on) i {
+  background: rgba(242, 183, 5, 0.12);
+  border: 2px dashed #e0a800;
+}
+/* Le chiffre du jour, surligné. */
+[data-style='cahier'] .today-count b {
+  font-family: var(--sans); font-weight: 800; font-size: 76px;
+  padding: 0 4px;
+  background: linear-gradient(transparent 52%, var(--surligneur) 52%, var(--surligneur) 88%, transparent 88%);
+}
+[data-style='cahier'] .serie-alerte { border-left-color: var(--chalk); color: var(--ink); }
+
+/* Le paquet choisi : une fiche scotchée. */
+[data-style='cahier'] .avant {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid rgba(29, 42, 74, 0.12);
+  box-shadow: 0 2px 0 rgba(29, 42, 74, 0.08);
+}
+[data-style='cahier'] .avant::before {
+  content: '';
+  position: absolute; left: 50%; top: -10px;
+  width: 76px; height: 20px; margin-left: -38px;
+  background: rgba(255, 240, 200, 0.9);
+  border: 1px solid rgba(29, 42, 74, 0.07);
+  transform: rotate(-3deg);
+}
+[data-style='cahier'] .avant-txt b { font-family: var(--sans); font-weight: 600; }
+
+/* Les autres paquets : des étiquettes. */
+[data-style='cahier'] .worklist .workrow {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(29, 42, 74, 0.1);
+}
+
+/* ---------- les boutons : l'encre du stylo ---------- */
+[data-style='cahier'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='cahier'] .reveal,
+[data-style='cahier'] .minibtn:not(.done):not(.outline) {
+  background: var(--stylo);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--stylo-fonce);
+}
+[data-style='cahier'] .btn.ghost { background: #fff; }
+
+/* ---------- la barre d'onglets ---------- */
+[data-style='cahier'] .tabbar {
+  background: rgba(255, 253, 248, 0.96);
+  border-top-color: rgba(29, 42, 74, 0.14);
+}
+
+/* ---------- l'écran de réglages ---------- */
+[data-style='cahier'] .themechoix {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+
+/* ==================================================================
+   La révision : une fiche bristol sur le papier
+
+   Le clair garde la révision sombre (photo du paquet). Le cahier la
+   remet sur le papier : la photo s'efface, le mot s'écrit à l'encre.
+   ================================================================== */
+[data-style='cahier'] .studybg {
+  background-image: none !important;
+  background-color: var(--paper);
+}
+[data-style='cahier'] .studybg::after { display: none; }
+
+[data-style='cahier'] .studystage {
+  margin: 22px 4px 18px;
+  padding: 26px 18px 28px;
+  border-radius: 10px;
+  background-color: #fff;
+  background-image:
+    linear-gradient(180deg, transparent 0, transparent 58px, rgba(214, 96, 96, 0.5) 58px, rgba(214, 96, 96, 0.5) 60px, transparent 60px),
+    repeating-linear-gradient(180deg, transparent 0, transparent 33px, rgba(39, 71, 168, 0.13) 33px, rgba(39, 71, 168, 0.13) 34px);
+  box-shadow: 0 12px 26px rgba(29, 42, 74, 0.15), 0 1px 0 rgba(29, 42, 74, 0.08);
+  transform: rotate(-1deg);
+}
+
+[data-style='cahier'] .progressbar { height: 10px; border-radius: 999px; background: rgba(39, 71, 168, 0.12); }
+[data-style='cahier'] .progressbar i { background: var(--stylo); border-radius: 999px; }
+[data-style='cahier'] .studytop .pos { color: var(--ink); font-weight: 600; }
+[data-style='cahier'] .studytop .stop {
+  background: #fff; color: var(--grey);
+  border: 1px solid rgba(29, 42, 74, 0.15);
+}
+[data-style='cahier'] .studystage .tag {
+  color: #5c4300; border: none;
+  background: rgba(242, 183, 5, 0.28);
+}
+[data-style='cahier'] .ask { color: var(--stylo); }
+[data-style='cahier'] .word { font-family: var(--sans); font-weight: 600; color: var(--ink); }
+[data-style='cahier'] .wordsmall { color: var(--grey); }
+[data-style='cahier'] .ruleline { background: var(--rule-strong); }
+[data-style='cahier'] .answer {
+  font-family: var(--sans); font-weight: 800; color: var(--stylo);
+  padding: 0 6px;
+  background: linear-gradient(transparent 58%, var(--surligneur) 58%, var(--surligneur) 92%, transparent 92%);
+}
+[data-style='cahier'] .example { font-family: var(--sans); font-style: normal; color: var(--grey); }
+[data-style='cahier'] .speak {
+  background: #fff; color: var(--stylo);
+  border: 1.5px solid var(--stylo); font-weight: 600;
+}
+[data-style='cahier'] .tap-hint { color: var(--grey); }
+
+/* Les quatre notes : des gommettes de couleur. */
+[data-style='cahier'] .grades .grade {
+  border: none; color: var(--ink); font-weight: 600;
+}
+[data-style='cahier'] .grades .grade small { color: inherit; opacity: 0.85; }
+[data-style='cahier'] .grades .grade:nth-child(1) { background: #fde4e1; color: #a52a20; box-shadow: 0 3px 0 #f0b9b2; }
+[data-style='cahier'] .grades .grade:nth-child(2) { background: #fdecd2; color: #8a5200; box-shadow: 0 3px 0 #f1cf9c; }
+[data-style='cahier'] .grades .grade:nth-child(3) { background: #e0e8fb; color: #2747a8; box-shadow: 0 3px 0 #b7c7f1; }
+[data-style='cahier'] .grades .grade:nth-child(4) { background: #dcf2e6; color: #17683f; box-shadow: 0 3px 0 #a9dcc0; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='cahier'] .studystage,
+  [data-style='cahier'] .serie-count,
+  [data-style='cahier'] .avant::before { transform: none; }
+}

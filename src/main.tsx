@@ -15,6 +15,13 @@ import '@fontsource/atkinson-hyperlegible/700.css';
 import './styles.css';
 /* Posée APRÈS styles.css : à sélecteur égal, c'est elle qui l'emporte. */
 import './ui/apparence.css';
+/* CHANTIER 164 — le style Cahier et ses deux polices, livrées avec l'app.
+   Installées par `npm install @fontsource/lexend @fontsource/caveat`. */
+import '@fontsource/lexend/400.css';
+import '@fontsource/lexend/600.css';
+import '@fontsource/lexend/800.css';
+import '@fontsource/caveat/700.css';
+import './ui/cahier.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
