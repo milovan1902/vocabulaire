@@ -19,7 +19,13 @@
  * que lit `cahier.css` pour le papier quadrillé, l'encre bleue, le
  * surligneur et les gommettes. Les deux autres thèmes retirent `data-style`.
  */
-export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier';
+/*
+ * CHANTIER 165 — « Lycée », un cinquième choix. Même principe que le
+ * Cahier, sur la base du SOMBRE : `data-theme="sombre"` + `data-style="lycee"`,
+ * que lit `lycee.css`. Les écrans qui changent de forme (Aujourd'hui,
+ * Révision) lisent le style par `useStyle()`.
+ */
+export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'lycee';
 
 const CLE = 'vocab-theme';
 
@@ -28,11 +34,12 @@ export const THEME_LABELS: Record<Theme, string> = {
   clair: 'Clair',
   sombre: 'Sombre',
   cahier: 'Cahier',
+  lycee: 'Lycée',
 };
 
 export function themeChoisi(): Theme {
   const v = localStorage.getItem(CLE);
-  return v === 'clair' || v === 'sombre' || v === 'cahier' ? v : 'auto';
+  return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'lycee' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -42,14 +49,17 @@ function systeme(): 'clair' | 'sombre' {
 
 export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'cahier') return 'clair';
+  if (t === 'lycee') return 'sombre';
   return t === 'auto' ? systeme() : t;
 }
 
 function appliquer(t: Theme) {
   const e = themeEffectif(t);
   document.documentElement.dataset.theme = e;
-  if (t === 'cahier') document.documentElement.dataset.style = 'cahier';
+  if (t === 'cahier' || t === 'lycee') document.documentElement.dataset.style = t;
   else delete document.documentElement.dataset.style;
+  /* Prévient les écrans qui changent de forme selon le style (useStyle). */
+  window.dispatchEvent(new Event('apparence'));
   // Pour que les champs, les ascenseurs et la barre d'état du navigateur
   // suivent : sans ça, un champ de saisie resterait sombre en thème clair.
   document.documentElement.style.colorScheme = e === 'clair' ? 'light' : 'dark';

@@ -22,6 +22,10 @@ import '@fontsource/lexend/600.css';
 import '@fontsource/lexend/800.css';
 import '@fontsource/caveat/700.css';
 import './ui/cahier.css';
+/* CHANTIER 165 — le style Lycée et sa police, livrée avec l'app.
+   Installée par `npm install @fontsource-variable/archivo`. */
+import '@fontsource-variable/archivo';
+import './ui/lycee.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

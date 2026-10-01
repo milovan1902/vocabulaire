@@ -1,0 +1,191 @@
+/* ==================================================================
+   CHANTIER 165 — le style « Lycée » (piste 1c, prototype 2a)
+
+   Actif quand <html> porte data-style="lycee" (voir theme.ts), avec
+   data-theme="sombre" : toutes les règles du sombre s'appliquent
+   d'abord, ce fichier ajoute le reste — nuit plus profonde, police
+   grotesque large (Archivo), rouge et bleu des drapeaux de l'icône,
+   niveau et XP, défi du jour, éventail, notes en quatre couleurs.
+
+   Les classes ly-* et eventail-* ne sont rendues qu'en style Lycée
+   (Today.tsx, Study.tsx) : elles n'ont pas besoin d'être protégées.
+   ================================================================== */
+
+[data-style='lycee'] {
+  --paper: #0a0f1f;
+  --panel: #141c33;
+  --panel-hi: #1b2542;
+  --ink: #ffffff;
+  --ink-soft: #c9d1e6;
+  --grey: #aab3cc;
+  --ink-dim: #aab3cc;
+  --rule: rgba(255, 255, 255, 0.08);
+  --rule-strong: rgba(255, 255, 255, 0.16);
+  --chalk: #f2b705;
+  --chalk-ink: #f2b705;
+  --on-chalk: #0a0f1f;
+  --good: #3ed598;
+  --bad: #ff5a66;
+  --bleu: #5b8cff;
+  --rouge: #ff5a66;
+  --orange: #ff9f43;
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--bleu);
+}
+
+[data-style='lycee'] body { font-family: var(--sans); background: var(--paper); }
+
+[data-style='lycee'] .screen-title,
+[data-style='lycee'] .topbar h1,
+[data-style='lycee'] .welcome-head h1,
+[data-style='lycee'] .done h2,
+[data-style='lycee'] .today-count b {
+  font-family: var(--sans); font-weight: 900; letter-spacing: -0.01em;
+}
+[data-style='lycee'] .btn:not(.ghost):not(.google):not(.danger),
+[data-style='lycee'] .reveal { font-weight: 800; border-radius: 16px; }
+
+/* ---------- la barre d'onglets : une pastille sous l'icône active ---------- */
+[data-style='lycee'] .tabbar { background: rgba(13, 19, 38, 0.96); border-top-color: var(--rule); }
+[data-style='lycee'] .tabbar button.on::before { display: none; }
+[data-style='lycee'] .tabbar button .tabsvg {
+  box-sizing: content-box;
+  padding: 3px 14px;
+  border-radius: 999px;
+}
+[data-style='lycee'] .tabbar button.on .tabsvg { background: rgba(242, 183, 5, 0.16); }
+
+/* ==================================================================
+   Aujourd'hui
+   ================================================================== */
+.ly-haut { display: flex; align-items: center; gap: 14px; margin-top: calc(14px + env(safe-area-inset-top)); }
+.ly-niv {
+  flex: none; width: 46px; height: 46px; border-radius: 14px;
+  border: 2px solid var(--bleu); background: rgba(91, 140, 255, 0.14);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+}
+.ly-niv small { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: #9db8ff; }
+.ly-niv b { font-size: 19px; font-weight: 900; }
+.ly-xp { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ly-xp-txt { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--grey); }
+.ly-xp-txt b { color: var(--ink); font-weight: 700; }
+.ly-barre { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.ly-barre i { display: block; height: 100%; border-radius: 999px; background: var(--bleu); transition: width 0.6s ease; }
+.ly-flamme {
+  flex: none; display: flex; align-items: center; gap: 4px;
+  height: 40px; padding: 0 12px; border-radius: 999px;
+  background: rgba(255, 90, 102, 0.14); color: var(--rouge);
+}
+.ly-flamme svg { width: 20px; height: 20px; }
+.ly-flamme b { font-size: 19px; font-weight: 900; color: var(--ink); }
+
+.ly-defi {
+  margin-top: 18px; padding: 16px 18px; border-radius: 20px;
+  background: var(--panel); border: 1.5px solid var(--chalk);
+}
+.ly-defi-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ly-defi-haut > span:first-child {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--chalk);
+}
+.ly-gain {
+  font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+  background: rgba(62, 213, 152, 0.16); color: var(--good);
+}
+.ly-defi-n { display: block; margin-top: 8px; font-size: 46px; font-weight: 900; line-height: 1; letter-spacing: -0.01em; }
+.ly-defi-sous { display: block; margin-top: 6px; font-size: 14px; color: var(--grey); }
+
+/* ---------- l'éventail ---------- */
+.eventail {
+  position: relative; height: 200px; margin-top: 22px;
+  touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  cursor: grab; outline: none;
+}
+.eventail:focus-visible { outline: 2px solid var(--chalk); outline-offset: 4px; border-radius: 16px; }
+.eventail-carte {
+  position: absolute; left: 50%; top: 10px;
+  width: 126px; aspect-ratio: 620 / 874; margin-left: -63px;
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease;
+}
+.eventail-dos {
+  position: absolute; inset: 0; display: block; overflow: hidden;
+  border-radius: 14px; border: 2px solid rgba(255, 255, 255, 0.12);
+  background: var(--panel-hi);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+}
+.eventail-carte.centre .eventail-dos { border-color: var(--chalk); }
+.eventail-dos > img:not(.dos-illus-img) { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.eventail-dos > svg { width: 100%; height: 100%; display: block; }
+.eventail-dos .dos-illus-img {
+  position: absolute; left: 16.1%; top: 26%; width: 67.7%; height: auto;
+  aspect-ratio: 1; object-fit: contain; pointer-events: none;
+}
+.eventail-due {
+  position: absolute; right: -12px; top: -10px; z-index: 2;
+  min-width: 36px; height: 36px; padding: 0 8px; border-radius: 999px;
+  background: var(--chalk); color: var(--on-chalk);
+  font-size: 15px; font-weight: 900; display: grid; place-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.ly-points { display: flex; justify-content: center; gap: 6px; margin-top: 2px; }
+.ly-points i { width: 6px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.22); transition: width 0.25s ease; }
+.ly-points i.on { width: 20px; background: var(--chalk); }
+.ly-nom { margin: 10px 0 0; text-align: center; font-size: 15px; font-weight: 700; }
+.ly-nom span { font-weight: 400; color: var(--grey); }
+.btn.ly-go { margin-top: 12px; min-height: 54px; font-size: 17px; }
+
+.ly-semaine {
+  margin-top: 6px; padding: 12px 14px; border-radius: 16px; background: var(--panel);
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px 12px;
+}
+.ly-semaine > span:first-child { font-size: 13px; color: var(--grey); }
+.ly-semaine b { font-size: 18px; font-weight: 800; }
+.ly-segments { grid-column: 1 / -1; display: flex; gap: 3px; height: 6px; }
+.ly-segments i { flex: 1; border-radius: 3px; background: rgba(255, 255, 255, 0.12); }
+.ly-segments i.on { background: var(--good); }
+
+/* ==================================================================
+   La révision : une carte posée sur une pile, notes en quatre couleurs
+   ================================================================== */
+[data-style='lycee'] .studybg { background-image: none !important; background-color: var(--paper); }
+[data-style='lycee'] .studybg::after { display: none; }
+
+[data-style='lycee'] .studystage {
+  margin: 18px 6px 16px; padding: 24px 18px;
+  border-radius: 24px; background: var(--panel);
+  border: 1px solid var(--rule-strong);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    8px 12px 0 -3px rgba(20, 28, 51, 0.75),
+    -6px 20px 0 -6px rgba(20, 28, 51, 0.45);
+}
+[data-style='lycee'] .studystage .tag { border: none; background: rgba(10, 15, 31, 0.7); font-weight: 700; }
+[data-style='lycee'] .ask { color: var(--chalk); font-weight: 800; }
+[data-style='lycee'] .word { font-family: var(--sans); font-weight: 900; letter-spacing: -0.01em; }
+[data-style='lycee'] .answer { font-family: var(--sans); font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
+[data-style='lycee'] .example { font-family: var(--sans); font-style: normal; }
+[data-style='lycee'] .speak { border: 1.5px solid var(--chalk); color: var(--chalk); background: none; font-weight: 700; }
+[data-style='lycee'] .progressbar { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
+[data-style='lycee'] .progressbar i { border-radius: 999px; }
+
+.ly-combo {
+  flex: none; display: flex; align-items: center; height: 30px; padding: 0 10px;
+  border-radius: 999px; background: rgba(255, 90, 102, 0.14); color: var(--rouge);
+  font-size: 14px; font-weight: 900;
+}
+
+/* Les quatre notes, dans l'ordre : rouge, orange, jaune, vert. */
+[data-style='lycee'] .grades { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+[data-style='lycee'] .grades .grade {
+  min-height: 70px; border-radius: 16px; border-width: 1.5px; border-style: solid;
+  font-size: 16px; font-weight: 800;
+}
+[data-style='lycee'] .grades .grade small { font-weight: 500; color: var(--grey); }
+[data-style='lycee'] .grades .g-again { border-color: var(--rouge); background: rgba(255, 90, 102, 0.12); color: var(--rouge); }
+[data-style='lycee'] .grades .g-hard { border-color: var(--orange); background: rgba(255, 159, 67, 0.12); color: var(--orange); }
+[data-style='lycee'] .grades .g-good { border-color: var(--chalk); background: rgba(242, 183, 5, 0.12); color: var(--chalk); }
+[data-style='lycee'] .grades .g-easy { border-color: var(--good); background: rgba(62, 213, 152, 0.12); color: var(--good); }
+
+@media (prefers-reduced-motion: reduce) {
+  .eventail-carte, .ly-points i, .ly-barre i { transition: none; }
+}

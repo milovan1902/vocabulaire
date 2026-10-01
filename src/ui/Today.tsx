@@ -26,6 +26,10 @@ import { masteryLabel, STATUTS } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
 import { doneToday, lastSeven, liveStreak } from '../engine/streak';
 import { minutesPour } from '../engine/tempo';
+import { repository } from '../data/repository';
+import { niveauDe, xpDe, XP_PAR_REVISION } from '../engine/niveau';
+import { useStyle } from './useStyle';
+import { Eventail } from './Eventail';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -105,6 +109,28 @@ export function Today({
   const [dueByDay, setDueByDay] = useState<number[]>([]);
   const [resting, setResting] = useState(0);
   const [choisi, setChoisi] = useState<string | null>(() => lireChoix());
+  /* CHANTIER 165 — style Lycée : la forme de l'écran change, pas seulement ses couleurs. */
+  const style = useStyle();
+  const [revisions, setRevisions] = useState<number | null>(null);
+
+  /*
+   * Les XP du style Lycée : 10 par carte révisée, depuis toujours. Rien de
+   * nouveau n'est stocké — c'est la somme des répétitions déjà enregistrées,
+   * donc le même chiffre sur tous les appareils une fois synchronisés.
+   */
+  useEffect(() => {
+    if (style !== 'lycee') return;
+    let alive = true;
+    (async () => {
+      let n = 0;
+      for (const d of decks) {
+        const p = await repository.getProgress(d.id);
+        for (const v of Object.values(p)) n += v.reps;
+      }
+      if (alive) setRevisions(n);
+    })();
+    return () => { alive = false; };
+  }, [decks, style]);
 
   useEffect(() => {
     let alive = true;
@@ -282,6 +308,76 @@ export function Today({
         <button className="btn ghost" onClick={() => choisir(null)}>
           Choisir un autre paquet
         </button>
+      </div>
+    );
+  }
+
+  /*
+   * CHANTIER 165 — L'ÉCRAN « AUJOURD'HUI » DU STYLE LYCÉE.
+   *
+   * Seulement quand il y a du travail : une journée faite, ou sans paquet,
+   * garde l'écran ordinaire (habillé par lycee.css). L'éventail ne montre
+   * que les paquets qui ont des cartes dues ; celui du centre est le paquet
+   * choisi, et c'est lui que le bouton lance.
+   */
+  if (style === 'lycee' && total > 0) {
+    const iCentre = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));
+    const pc = aFaire[iCentre];
+    const n = niveauDe(xpDe(revisions ?? 0));
+    const fr = (v: number) => v.toLocaleString('fr-FR');
+    const faits = semaine.filter((j) => j.done).length;
+    return (
+      <div className="today ly">
+        <div className="ly-haut">
+          <span className="ly-niv" aria-hidden="true"><small>NIV.</small><b>{n.niveau}</b></span>
+          <span className="ly-xp">
+            <span className="ly-xp-txt">
+              <b>Niveau {n.niveau}</b>
+              <span>{fr(n.dansNiveau)} / {fr(n.pourNiveau)} XP</span>
+            </span>
+            <span className="ly-barre"><i style={{ width: `${Math.round((100 * n.dansNiveau) / n.pourNiveau)}%` }} /></span>
+          </span>
+          <span className="ly-flamme" aria-label={`Série : ${serie} jour${serie > 1 ? 's' : ''}`}>
+            <svg viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+            </svg>
+            <b>{serie}</b>
+          </span>
+        </div>
+
+        <div className="ly-defi">
+          <div className="ly-defi-haut">
+            <span>Défi du jour</span>
+            <span className="ly-gain">+{fr(total * XP_PAR_REVISION)} XP</span>
+          </div>
+          <b className="ly-defi-n">{total} carte{total > 1 ? 's' : ''}</b>
+          <span className="ly-defi-sous">
+            Environ {minutesPour(total)} min · {aFaire.length} paquet{aFaire.length > 1 ? 's' : ''}
+          </span>
+        </div>
+
+        <Eventail
+          paquets={aFaire}
+          centre={iCentre}
+          onCentre={(i) => choisir(aFaire[i].deck.id)}
+          onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
+        />
+        <div className="ly-points" aria-hidden="true">
+          {aFaire.map((r, i) => <i key={r.deck.id} className={i === iCentre ? 'on' : ''} />)}
+        </div>
+        <p className="ly-nom">{pc.deck.name} <span>· {masteryLabel(pc.mastery.percent)}</span></p>
+
+        <button className="btn ly-go" onClick={() => onReview(pc.deck.id)}>
+          C’est parti · {Math.min(pc.due, settings.cardsPerSession)} cartes
+        </button>
+
+        <div className="ly-semaine">
+          <span>Cette semaine</span>
+          <b>{faits} / 7 jours</b>
+          <span className="ly-segments" aria-hidden="true">
+            {semaine.map((j) => <i key={j.key} className={j.done ? 'on' : ''} />)}
+          </span>
+        </div>
       </div>
     );
   }

@@ -14,6 +14,11 @@ import type { Grade, Settings } from '../domain/types';
 import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
 import { speak } from './speech';
+import { useStyle } from './useStyle';
+
+/* CHANTIER 165 — style Lycée : des notes courtes, et les couleurs rouge,
+   orange, jaune, vert (voir lycee.css, classes g-again … g-easy). */
+const COURTS: Record<Grade, string> = { again: 'Raté', hard: 'Dur', good: 'Bien', easy: 'Facile' };
 
 const GRADES: Array<{ key: Grade; label: string; className: string }> = [
   { key: 'again', label: 'À revoir', className: 'grade again' },
@@ -36,6 +41,9 @@ export function Study({
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [reviewed, setReviewed] = useState(0);
+  const style = useStyle();
+  /* Bonnes réponses d'affilée dans la séance. « Raté » remet à zéro. */
+  const [combo, setCombo] = useState(0);
 
   const total = queue.length;
   const current = items[index];
@@ -100,6 +108,7 @@ export function Study({
       if (!current) return;
       await onGrade(current, g);
       setReviewed((n) => n + 1);
+      setCombo((c) => (g === 'again' ? 0 : c + 1));
 
       const rest = [...items];
       // « À revoir » remet la carte un peu plus loin dans la même session.
@@ -145,6 +154,9 @@ export function Study({
         <div className="progressbar">
           <i style={{ width: `${(100 * index) / Math.max(total, 1)}%` }} />
         </div>
+        {style === 'lycee' && combo >= 2 && (
+          <span className="ly-combo" aria-label={`${combo} bonnes réponses d’affilée`}>×{combo}</span>
+        )}
         <span className="pos">
           {String(index + 1).padStart(2, '0')}/{String(total).padStart(2, '0')}
         </span>
@@ -206,8 +218,8 @@ export function Study({
       ) : (
         <div className="grades">
           {GRADES.map((g) => (
-            <button key={g.key} className={g.className} onClick={() => void grade(g.key)}>
-              {g.label}
+            <button key={g.key} className={`${g.className} g-${g.key}`} onClick={() => void grade(g.key)}>
+              {style === 'lycee' ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
             </button>
           ))}
