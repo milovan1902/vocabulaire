@@ -45,7 +45,8 @@
  * posent data-style="decollage" ou "orbite", que lit espace.css.
  */
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
-  | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir';
+  | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
+  | 'arcade' | 'neon';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -81,13 +82,16 @@ export const THEME_LABELS: Record<Theme, string> = {
   orbite: 'Orbite',
   'tableau-vert': 'Tableau vert',
   'tableau-noir': 'Tableau noir',
+  arcade: 'Borne arcade',
+  neon: 'Néon',
 };
 
 export function themeChoisi(): Theme {
   const v = localStorage.getItem(CLE);
   return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'cahier-vert'
     || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair'
-    || v === 'decollage' || v === 'orbite' || v === 'tableau-vert' || v === 'tableau-noir' ? v : 'auto';
+    || v === 'decollage' || v === 'orbite' || v === 'tableau-vert' || v === 'tableau-noir'
+    || v === 'arcade' || v === 'neon' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -97,7 +101,8 @@ function systeme(): 'clair' | 'sombre' {
 
 export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (estCahier(t)) return 'clair';
-  if (t === 'lycee' || t === 'decollage' || t === 'orbite' || estTableau(t)) return 'sombre';
+  if (t === 'lycee' || t === 'decollage' || t === 'orbite' || estTableau(t)
+    || t === 'arcade' || t === 'neon') return 'sombre';
   if (t === 'lycee-clair') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
@@ -109,7 +114,8 @@ function appliquer(t: Theme) {
   document.documentElement.dataset.theme = e;
   if (estCahier(t)) document.documentElement.dataset.style = 'cahier';
   else if (t === 'lycee' || t === 'lycee-clair') document.documentElement.dataset.style = 'lycee';
-  else if (t === 'decollage' || t === 'orbite') document.documentElement.dataset.style = t;
+  /* CHANTIER 174 — Borne arcade et Néon posent data-style="arcade" / "neon" (neon.css). */
+  else if (t === 'decollage' || t === 'orbite' || t === 'arcade' || t === 'neon') document.documentElement.dataset.style = t;
   else if (estTableau(t)) document.documentElement.dataset.style = 'tableau';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];

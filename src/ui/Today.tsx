@@ -365,6 +365,10 @@ export function Today({
     /* CHANTIER 171 — les mots changent avec l'apparence, la forme reste. */
     const mots = style === 'decollage'
       ? { defi: 'Mission du jour', go: 'Décoller', jour: `carburant ${cartesAuj} / ${CARTES_PAR_JOUR}` }
+      : style === 'arcade'
+        ? { defi: 'Stage du jour', go: '▶ Jouer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR}` }
+      : style === 'neon'
+        ? { defi: 'Défi du soir', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
       : style === 'tableau'
         ? { defi: 'Au tableau aujourd’hui', go: 'Réviser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
       : style === 'orbite'
@@ -453,21 +457,26 @@ export function Today({
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
           {/* CHANTIER 171 — Décollage : une fusée de chaque côté pour changer de paquet.
-              CHANTIER 173 — Tableau : une craie. */}
-          {(style === 'decollage' || style === 'tableau') && aFaire.length > 1 && (
+              CHANTIER 173 — Tableau : une craie.
+              CHANTIER 174 — Borne arcade : un triangle ; Néon : un chevron lumineux. */}
+          {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
                 aria-label="Paquet précédent"
                 disabled={iCentre === 0}
                 onClick={() => choisir(aFaire[iCentre - 1].deck.id)}
-              >{style === 'tableau' ? <i className="craie-baton" /> : <Fusee />}</button>
+              >{style === 'tableau' ? <i className="craie-baton" />
+                : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
+                : <Fusee />}</button>
               <button
                 className="ly-fusee suiv"
                 aria-label="Paquet suivant"
                 disabled={iCentre === aFaire.length - 1}
                 onClick={() => choisir(aFaire[iCentre + 1].deck.id)}
-              >{style === 'tableau' ? <i className="craie-baton" /> : <Fusee />}</button>
+              >{style === 'tableau' ? <i className="craie-baton" />
+                : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
+                : <Fusee />}</button>
             </>
           )}
         </div>

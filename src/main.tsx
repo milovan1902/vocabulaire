@@ -31,6 +31,8 @@ import './ui/lycee.css';
 import './ui/espace.css';
 /* CHANTIER 173 — Tableau vert et Tableau noir (Caveat, déjà livrée). */
 import './ui/tableau.css';
+/* CHANTIER 174 — Borne arcade et Néon (Archivo et Caveat, déjà livrées). */
+import './ui/neon.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

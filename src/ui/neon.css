@@ -1,0 +1,302 @@
+/* ==================================================================
+   CHANTIER 174 — « Borne arcade » et « Néon ».
+
+   Actifs quand <html> porte data-style="arcade" ou "neon" (theme.ts),
+   toujours avec data-theme="sombre". Ils prennent la forme du Lycée
+   (voir `estLudique`) : ce fichier ne fait que rhabiller les classes
+   ly-* et eventail-* de lycee.css. Polices déjà livrées : Archivo
+   (titres, chiffres), Caveat (enseignes du Néon). Aucune image.
+   ================================================================== */
+
+/* ---------- Borne arcade ---------- */
+[data-style='arcade'] {
+  --paper: #07060d;
+  --panel: #12101d;
+  --panel-hi: #1b1829;
+  --ink: #f4f1ff;
+  --ink-soft: #c8c2e6;
+  --grey: #a9a3c4;
+  --ink-dim: #a9a3c4;
+  --rule: rgba(41, 240, 255, 0.16);
+  --rule-strong: rgba(41, 240, 255, 0.32);
+  --chalk: #ff3ea5;
+  --chalk-ink: #ff3ea5;
+  --on-chalk: #1a0010;
+  --good: #3dff8b;
+  --bad: #ff3ea5;
+  --voile: rgba(255, 255, 255, 0.05);
+  --voile-2: rgba(255, 255, 255, 0.1);
+  --voile-3: rgba(255, 255, 255, 0.16);
+  --bleu: #29f0ff;
+  --bleu-ink: #29f0ff;
+  --rouge: #ff3ea5;
+  --orange: #ff9a3c;
+  --jaune: #ffe14d;
+  --ly-voile: rgba(255, 255, 255, 0.08);
+  --ly-voile-2: rgba(255, 255, 255, 0.22);
+  --ly-tabbar: rgba(7, 6, 13, 0.97);
+  --ly-ombre: rgba(0, 0, 0, 0.6);
+  --ly-tag: transparent;
+  --ly-bord-carte: rgba(41, 240, 255, 0.35);
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--bleu);
+}
+
+/* ---------- Néon ---------- */
+[data-style='neon'] {
+  --paper: #170a2a;
+  --panel: rgba(23, 10, 42, 0.75);
+  --panel-hi: rgba(43, 20, 72, 0.85);
+  --ink: #f4f1ff;
+  --ink-soft: #e2d6f7;
+  --grey: #cdbfe6;
+  --ink-dim: #cdbfe6;
+  --rule: rgba(255, 255, 255, 0.14);
+  --rule-strong: rgba(255, 255, 255, 0.26);
+  --chalk: #ff4fd8;
+  --chalk-ink: #ff4fd8;
+  --on-chalk: #2a0022;
+  --good: #4de8ff;
+  --bad: #ff4fd8;
+  --voile: rgba(255, 255, 255, 0.05);
+  --voile-2: rgba(255, 255, 255, 0.1);
+  --voile-3: rgba(255, 255, 255, 0.16);
+  --bleu: #a259ff;
+  --bleu-ink: #d9c4ff;
+  --rouge: #ff4fd8;
+  --orange: #ffb36b;
+  --cyan: #4de8ff;
+  --ly-voile: rgba(255, 255, 255, 0.1);
+  --ly-voile-2: rgba(255, 255, 255, 0.24);
+  --ly-tabbar: rgba(18, 8, 33, 0.96);
+  --ly-ombre: rgba(0, 0, 0, 0.5);
+  --ly-tag: transparent;
+  --ly-bord-carte: rgba(162, 89, 255, 0.5);
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --enseigne: 'Caveat', 'Segoe Print', cursive;
+  --anneau: var(--rouge);
+}
+
+/* ---------- les fonds ---------- */
+[data-style='arcade'] body {
+  font-family: var(--sans);
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.025) 3px 4px),
+    radial-gradient(80vmax 50vmax at 50% 0%, rgba(255, 62, 165, 0.14), transparent),
+    radial-gradient(80vmax 55vmax at 50% 100%, rgba(41, 240, 255, 0.1), transparent);
+  background-attachment: fixed;
+}
+[data-style='neon'] body {
+  font-family: var(--sans);
+  background-color: var(--paper);
+  background-image: linear-gradient(180deg, #120821 0%, #1d0c35 55%, #33104a 100%);
+  background-attachment: fixed;
+}
+/* Le sol quadrillé qui file vers l'horizon, derrière tout le contenu. */
+[data-style='neon'] body::after {
+  content: ''; position: fixed; left: -10%; right: -10%; bottom: 0; height: 34vh; z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 79, 216, 0.33) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(255, 79, 216, 0.33) 1.5px, transparent 1.5px);
+  background-size: 40px 30px;
+  transform: perspective(260px) rotateX(62deg); transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(to top, #000 30%, transparent);
+  mask-image: linear-gradient(to top, #000 30%, transparent);
+  pointer-events: none;
+}
+
+/* ---------- commun aux deux ---------- */
+:is([data-style='arcade'], [data-style='neon']) .screen-title,
+:is([data-style='arcade'], [data-style='neon']) .topbar h1,
+:is([data-style='arcade'], [data-style='neon']) .done h2 { font-family: var(--sans); font-weight: 900; letter-spacing: -0.01em; }
+:is([data-style='arcade'], [data-style='neon']) .tabbar { background: var(--ly-tabbar); border-top-color: var(--rule); }
+:is([data-style='arcade'], [data-style='neon']) .tabbar button.on::before { display: none; }
+:is([data-style='arcade'], [data-style='neon']) .tabbar button.on .tabsvg { filter: drop-shadow(0 0 5px currentColor); }
+[data-style='arcade'] .tabbar button.on { color: var(--bleu); }
+[data-style='neon'] .tabbar button.on { color: var(--rouge); }
+
+:is([data-style='arcade'], [data-style='neon']) .studybg { background-image: none !important; background-color: transparent; }
+:is([data-style='arcade'], [data-style='neon']) .studybg::after { display: none; }
+:is([data-style='arcade'], [data-style='neon']) .word { font-family: var(--sans); font-weight: 900; }
+:is([data-style='arcade'], [data-style='neon']) .example { font-style: normal; }
+:is([data-style='arcade'], [data-style='neon']) .grades { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+/* Les flèches pour changer de paquet. */
+:is([data-style='arcade'], [data-style='neon']) .ly-fusee { background: transparent; }
+.fleche-neon { display: block; width: 16px; height: 18px; background: currentColor; filter: drop-shadow(0 0 4px currentColor); }
+[data-style='arcade'] .ly-fusee {
+  border: 2px solid var(--bleu); border-radius: 10px; color: var(--bleu);
+  box-shadow: 0 0 10px rgba(41, 240, 255, 0.4), inset 0 0 10px rgba(41, 240, 255, 0.2);
+}
+[data-style='arcade'] .ly-fusee.prec .fleche-neon { clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+[data-style='arcade'] .ly-fusee.suiv .fleche-neon { clip-path: polygon(0 0, 100% 50%, 0 100%); }
+[data-style='neon'] .ly-fusee { border: none; color: var(--cyan); }
+[data-style='neon'] .ly-fusee .fleche-neon { width: 14px; height: 22px; }
+[data-style='neon'] .ly-fusee.prec .fleche-neon { clip-path: polygon(100% 0, 70% 0, 0 50%, 70% 100%, 100% 100%, 30% 50%); }
+[data-style='neon'] .ly-fusee.suiv .fleche-neon { clip-path: polygon(0 0, 30% 0, 100% 50%, 30% 100%, 0 100%, 70% 50%); }
+
+/* ==================================================================
+   Borne arcade
+   ================================================================== */
+[data-style='arcade'] .btn:not(.ghost):not(.google):not(.danger),
+[data-style='arcade'] .reveal {
+  border-radius: 8px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+  box-shadow: 0 0 20px rgba(255, 62, 165, 0.65);
+}
+[data-style='arcade'] .ly-niv {
+  border: 2px solid var(--bleu); border-radius: 6px; background: transparent;
+  box-shadow: 0 0 10px rgba(41, 240, 255, 0.4);
+}
+[data-style='arcade'] .ly-niv small { color: var(--bleu); font-weight: 900; letter-spacing: 0.1em; }
+[data-style='arcade'] .ly-niv b { text-shadow: 0 0 6px var(--bleu); }
+/* L'XP en blocs, comme une barre de vie. */
+/* Le découpage en blocs est un masque posé sur toute la barre : le
+   remplissage et le fond tombent sur les mêmes blocs. */
+[data-style='arcade'] .ly-barre {
+  height: 10px; border-radius: 0; background: var(--ly-voile);
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 calc(10% - 3px), transparent calc(10% - 3px) 10%);
+  mask-image: repeating-linear-gradient(90deg, #000 0 calc(10% - 3px), transparent calc(10% - 3px) 10%);
+}
+[data-style='arcade'] .ly-barre i { border-radius: 0; background: var(--bleu); }
+[data-style='arcade'] .ly-flamme {
+  border-radius: 6px; background: transparent; border: 2px solid var(--rouge); color: var(--rouge);
+  box-shadow: 0 0 10px rgba(255, 62, 165, 0.4);
+}
+[data-style='arcade'] .ly-flamme b { color: var(--rouge); }
+[data-style='arcade'] .ly-flamme b::before { content: '×'; }
+[data-style='arcade'] .ly-defi {
+  border-radius: 8px; border: 2px solid var(--jaune); background: transparent;
+  box-shadow: 0 0 14px rgba(255, 225, 77, 0.27), inset 0 0 18px rgba(255, 225, 77, 0.08);
+}
+[data-style='arcade'] .ly-defi-haut > span:first-child { color: var(--jaune); letter-spacing: 0.14em; }
+[data-style='arcade'] .ly-gain { background: transparent; color: var(--good); text-shadow: 0 0 5px var(--good); }
+[data-style='arcade'] .ly-defi-n { color: var(--jaune); text-shadow: 0 0 10px var(--jaune), 0 0 20px rgba(255, 225, 77, 0.33); }
+[data-style='arcade'] .ly-defi-jour .ly-barre {
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 calc(5% - 2px), transparent calc(5% - 2px) 5%);
+  mask-image: repeating-linear-gradient(90deg, #000 0 calc(5% - 2px), transparent calc(5% - 2px) 5%);
+}
+[data-style='arcade'] .ly-defi-jour .ly-barre i { background: var(--jaune); }
+[data-style='arcade'] .eventail-dos { border-radius: 10px; border-color: rgba(41, 240, 255, 0.4); background: #14121f; }
+[data-style='arcade'] .eventail-carte.centre .eventail-dos { border: 3px solid var(--rouge); box-shadow: 0 0 18px rgba(255, 62, 165, 0.55), inset 0 0 14px rgba(255, 62, 165, 0.2); }
+[data-style='arcade'] .eventail-due { border-radius: 6px; background: var(--jaune); color: #1a1400; box-shadow: 0 0 10px var(--jaune); }
+[data-style='arcade'] .ly-points i.on { background: var(--bleu); }
+[data-style='arcade'] .ly-tuile { border-radius: 8px; background: transparent; border: 1.5px solid rgba(61, 255, 139, 0.4); }
+[data-style='arcade'] .ly-tuile + .ly-tuile { border-color: rgba(41, 240, 255, 0.4); }
+[data-style='arcade'] .ly-tuile-haut > span:first-child { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+[data-style='arcade'] .ly-tuile-haut svg { color: var(--bleu); }
+[data-style='arcade'] .ly-segments { gap: 4px; height: 8px; }
+[data-style='arcade'] .ly-segments i { border-radius: 0; }
+[data-style='arcade'] .ly-segments i.on { background: var(--good); box-shadow: 0 0 6px var(--good); }
+
+/* La révision : un écran de borne, et quatre boutons d'arcade. */
+[data-style='arcade'] .progressbar {
+  height: 10px; border-radius: 0; background: var(--ly-voile);
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 calc(5% - 2px), transparent calc(5% - 2px) 5%);
+  mask-image: repeating-linear-gradient(90deg, #000 0 calc(5% - 2px), transparent calc(5% - 2px) 5%);
+}
+[data-style='arcade'] .progressbar i { border-radius: 0; background: var(--bleu); }
+[data-style='arcade'] .ly-combo { border-radius: 6px; background: transparent; border: 1.5px solid var(--rouge); text-shadow: 0 0 5px var(--rouge); }
+[data-style='arcade'] .ly-combo::before { content: 'COMBO '; font-size: 11px; letter-spacing: 0.08em; }
+[data-style='arcade'] .studystage {
+  margin: 18px 4px 16px; padding: 26px 18px;
+  border-radius: 12px; border: 3px solid var(--bleu); background: #0e0d18;
+  box-shadow: 0 0 22px rgba(41, 240, 255, 0.33), inset 0 0 26px rgba(41, 240, 255, 0.12);
+}
+[data-style='arcade'] .studystage .tag { border: none; background: transparent; color: var(--grey); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+[data-style='arcade'] .ask { color: var(--jaune); font-weight: 700; }
+[data-style='arcade'] .answer { font-family: var(--sans); font-weight: 900; color: var(--rouge); text-shadow: 0 0 10px var(--rouge), 0 0 20px rgba(255, 62, 165, 0.33); }
+[data-style='arcade'] .speak { background: transparent; border: 2px solid var(--bleu); border-radius: 8px; color: var(--bleu); font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+[data-style='arcade'] .grades { padding: 14px 6px; border-radius: 14px; background: #14121f; box-shadow: inset 0 2px 0 #26233a; }
+[data-style='arcade'] .grades .grade {
+  --c: var(--rouge);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-height: 0; padding: 0; border: none; background: transparent;
+  color: var(--c); font-weight: 900; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+  text-shadow: 0 0 5px var(--c);
+}
+[data-style='arcade'] .grades .grade::before {
+  content: ''; display: block; width: 58px; height: 58px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 32%, rgba(255, 255, 255, 0.8) 0 6%, var(--c) 22%, var(--c) 60%, rgba(0, 0, 0, 0.4) 100%);
+  box-shadow: 0 0 0 4px #1d1b2b, 0 0 0 6px var(--c), 0 0 18px var(--c), inset 0 -4px 0 rgba(0, 0, 0, 0.33);
+  transition: transform 0.08s ease;
+}
+[data-style='arcade'] .grades .grade:active::before { transform: translateY(2px) scale(0.96); }
+[data-style='arcade'] .grades .grade small { color: var(--grey); text-shadow: none; letter-spacing: 0; text-transform: none; font-weight: 500; }
+[data-style='arcade'] .grades .g-hard { --c: var(--orange); }
+[data-style='arcade'] .grades .g-good { --c: var(--jaune); }
+[data-style='arcade'] .grades .g-easy { --c: var(--good); }
+
+/* ==================================================================
+   Néon
+   ================================================================== */
+[data-style='neon'] .btn:not(.ghost):not(.google):not(.danger),
+[data-style='neon'] .reveal {
+  border-radius: 999px; font-weight: 900; color: #fff;
+  background: rgba(255, 79, 216, 0.16); border: 2px solid var(--rouge);
+  box-shadow: 0 0 8px var(--rouge), inset 0 0 8px rgba(255, 79, 216, 0.4);
+  text-shadow: 0 0 6px var(--rouge);
+}
+[data-style='neon'] .ly-niv {
+  border: 2px solid var(--bleu); border-radius: 50%; background: transparent;
+  box-shadow: 0 0 8px var(--bleu), inset 0 0 8px rgba(162, 89, 255, 0.4);
+}
+[data-style='neon'] .ly-niv small { color: var(--bleu-ink); }
+[data-style='neon'] .ly-barre i { background: linear-gradient(90deg, var(--rouge), var(--cyan)); box-shadow: 0 0 10px var(--rouge); }
+[data-style='neon'] .ly-flamme {
+  background: transparent; border: 2px solid var(--orange); color: var(--orange);
+  box-shadow: 0 0 8px var(--orange), inset 0 0 8px rgba(255, 179, 107, 0.4);
+}
+[data-style='neon'] .ly-defi {
+  border-radius: 18px; border: 2px solid var(--rouge); background: rgba(23, 10, 42, 0.75);
+  box-shadow: 0 0 8px var(--rouge), inset 0 0 8px rgba(255, 79, 216, 0.4);
+}
+[data-style='neon'] .ly-defi-haut > span:first-child {
+  font-family: var(--enseigne); font-size: 30px; font-weight: 700; line-height: 1;
+  letter-spacing: 0; text-transform: none; color: #ffd6f6;
+  text-shadow: 0 0 8px var(--rouge), 0 0 16px rgba(255, 79, 216, 0.33);
+}
+[data-style='neon'] .ly-gain { background: transparent; border: 2px solid var(--cyan); color: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+[data-style='neon'] .ly-defi-n { color: #fff; text-shadow: 0 0 10px var(--rouge), 0 0 20px rgba(255, 79, 216, 0.33); }
+[data-style='neon'] .ly-defi-jour .ly-barre i { background: linear-gradient(90deg, var(--orange), var(--rouge)); }
+[data-style='neon'] .eventail-dos { border-radius: 14px; border: 2px solid rgba(162, 89, 255, 0.55); background: #1d0f33; }
+[data-style='neon'] .eventail-carte.centre .eventail-dos { border-color: var(--cyan); box-shadow: 0 0 8px var(--cyan), inset 0 0 8px rgba(77, 232, 255, 0.4); }
+[data-style='neon'] .eventail-due { background: var(--rouge); color: var(--on-chalk); box-shadow: 0 0 12px var(--rouge); }
+[data-style='neon'] .ly-points i.on { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+[data-style='neon'] .ly-tuile { border-radius: 16px; border: 1px solid var(--rule-strong); background: rgba(23, 10, 42, 0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+[data-style='neon'] .ly-tuile-haut svg { color: var(--rouge); }
+[data-style='neon'] .ly-segments i.on { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+
+/* La révision : une enseigne à double tube, et quatre tubes de couleur. */
+[data-style='neon'] .progressbar { height: 8px; border-radius: 999px; background: var(--ly-voile); }
+[data-style='neon'] .progressbar i { border-radius: 999px; background: linear-gradient(90deg, var(--rouge), var(--cyan)); box-shadow: 0 0 8px var(--rouge); }
+[data-style='neon'] .ly-combo { background: transparent; color: var(--orange); }
+[data-style='neon'] .studystage {
+  margin: 22px 10px 18px; padding: 24px 16px;
+  border-radius: 20px; border: 2px solid var(--rouge); background: rgba(23, 10, 42, 0.85);
+  box-shadow:
+    0 0 8px var(--rouge), inset 0 0 8px rgba(255, 79, 216, 0.4),
+    0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px var(--bleu), 0 0 18px 10px rgba(162, 89, 255, 0.45);
+}
+[data-style='neon'] .studystage .tag { background: transparent; border: 1px solid rgba(77, 232, 255, 0.55); color: var(--cyan); }
+[data-style='neon'] .ask { font-family: var(--enseigne); font-weight: 700; font-size: 28px; color: #ffe2c4; text-shadow: 0 0 8px var(--orange); }
+[data-style='neon'] .ruleline { background: var(--bleu); box-shadow: 0 0 6px var(--bleu); }
+[data-style='neon'] .answer { font-family: var(--enseigne); font-weight: 700; font-size: 52px; line-height: 1; color: #fff; text-shadow: 0 0 10px var(--cyan), 0 0 20px rgba(77, 232, 255, 0.33); }
+[data-style='neon'] .speak { background: transparent; border: 2px solid var(--cyan); color: #fff; box-shadow: 0 0 8px var(--cyan); }
+[data-style='neon'] .grades .grade {
+  --c: var(--rouge);
+  min-height: 66px; border-radius: 16px; border: 2px solid var(--c);
+  background: color-mix(in srgb, var(--c) 8%, transparent);
+  box-shadow: 0 0 8px var(--c), inset 0 0 8px color-mix(in srgb, var(--c) 40%, transparent);
+  color: #fff; font-weight: 900; font-size: 15px; text-shadow: 0 0 6px var(--c);
+}
+[data-style='neon'] .grades .grade small { color: var(--grey); text-shadow: none; font-weight: 400; }
+[data-style='neon'] .grades .g-hard { --c: var(--orange); }
+[data-style='neon'] .grades .g-good { --c: var(--bleu); }
+[data-style='neon'] .grades .g-easy { --c: var(--cyan); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='arcade'] .grades .grade::before { transition: none; }
+}
