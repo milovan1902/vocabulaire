@@ -81,6 +81,8 @@ import type { Streak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
 import type { Theme } from './theme';
 import { THEME_LABELS, setTheme, themeChoisi } from './theme';
+import { DEBLOCAGE, estDebloquee, retenir } from './apparences';
+import { XP_MAX_GRATUIT, estPremium, xpTotal } from '../engine/xp';
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -152,15 +154,11 @@ function tempsDit(s: Settings): string {
 type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide';
 
 export function Account({
-  settings, auth, onSettings, onHome, onGuide,
+  settings, auth, streak, onSettings, onHome, onGuide,
 }: {
   settings: Settings;
   auth: Auth;
-  /*
-   * La série est partie dans « Mes progrès » : cet écran ne la lit plus.
-   * Le prop reste accepté pour qu'`App.tsx` n'ait pas à changer — il le
-   * passe encore, sans conséquence.
-   */
+  /* CHANTIER 168 — relu ici pour les XP qui débloquent les apparences. */
   streak: Streak;
   onSettings: (s: Settings) => void;
   onHome: () => void;
@@ -171,6 +169,19 @@ export function Account({
   const [autorisation, setAutorisation] = useState(permission());
   const [tiroir, setTiroir] = useState<Tiroirs>(null);
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
+  /* CHANTIER 168 — le message sous une apparence encore verrouillée. */
+  const [verrou, setVerrou] = useState<string | null>(null);
+  const xp = xpTotal(streak);
+
+  /*
+   * L'apparence en cours est acquise pour de bon, et chaque palier
+   * atteint aussi. C'est ce qui garde à qui l'utilisait déjà le Cahier ou
+   * le Lycée, quel que soit son total d'XP.
+   */
+  useEffect(() => {
+    retenir(themeChoisi());
+    for (const t of Object.keys(DEBLOCAGE) as Theme[]) if (xp >= (DEBLOCAGE[t] ?? Infinity)) retenir(t);
+  }, [xp]);
 
   /*
    * CHANTIER 114 — bornes resserrées : nouveaux mots 0 à 20, révisions
@@ -405,24 +416,63 @@ export function Account({
 
       {tiroir === 'apparence' && (
         <Tiroir titre="Apparence" onFermer={() => setTiroir(null)}>
-          <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'lycee', 'lycee-clair'] as Theme[]).map((t) => (
-              <button
-                key={t}
-                className={theme === t ? 'on' : ''}
-                aria-pressed={theme === t}
-                onClick={() => { setTheme(t); setThemeLocal(t); }}
-              >
-                {THEME_LABELS[t]}
-              </button>
-            ))}
+          {/* CHANTIER 168 — les XP, et ce qu'ils débloquent. */}
+          <div className="xp-bloc">
+            <span className="xp-ligne">
+              <span>Tes XP</span>
+              <b>{xp.toLocaleString('fr-FR')}{estPremium() ? '' : ` / ${XP_MAX_GRATUIT.toLocaleString('fr-FR')}`}</b>
+            </span>
+            <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
           </div>
+          <div className="themechoix themechoix-6">
+            {(['auto', 'clair', 'sombre', 'cahier', 'lycee-clair', 'lycee'] as Theme[]).map((t) => {
+              const libre = estDebloquee(t, xp);
+              const seuil = DEBLOCAGE[t] ?? 0;
+              return (
+                <button
+                  key={t}
+                  className={`${theme === t ? 'on' : ''}${libre ? '' : ' verrou'}`}
+                  aria-pressed={theme === t}
+                  aria-disabled={!libre}
+                  onClick={() => {
+                    if (!libre) {
+                      const manque = seuil - xp;
+                      const j = Math.ceil(manque / 20);
+                      setVerrou(`« ${THEME_LABELS[t]} » se débloque à ${seuil} XP. Il t’en manque ${manque} : environ ${j} jour${j > 1 ? 's' : ''} à 20 cartes.`);
+                      return;
+                    }
+                    setVerrou(null);
+                    setTheme(t);
+                    setThemeLocal(t);
+                    retenir(t);
+                  }}
+                >
+                  {THEME_LABELS[t]}
+                  {!libre && (
+                    <small className="verrou-seuil">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                      {seuil} XP
+                    </small>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {verrou && <p className="xp-verrou" role="status">{verrou}</p>}
           <p className="hint">
-            Le thème reste sur cet appareil : il ne suit pas le compte, et ne
-            part pas dans les sauvegardes. « Automatique » suit le système et
-            continue de le suivre. « Cahier » est un thème clair, façon cahier
-            d’école. « Lycée foncé » et « Lycée clair » ont la même forme — niveaux,
-            défi du jour, paquets en éventail — sur fond sombre ou clair.
+            Tu gagnes 20 XP chaque jour où tu révises au moins 20 cartes. Tous
+            les 5 jours d’affilée, un bonus : +20, puis +40, puis +60. Un jour
+            manqué remet le bonus à zéro, jamais tes XP. D’autres apparences
+            arrivent à 600, 800 et 1 000 XP.
+          </p>
+          <p className="hint">
+            Le thème choisi reste sur cet appareil. « Automatique » suit le
+            système. « Cahier » est un thème clair, façon cahier d’école.
+            « Lycée clair » et « Lycée foncé » ont la même forme — niveaux,
+            défi du jour, paquets en éventail — sur fond clair ou sombre.
           </p>
         </Tiroir>
       )}

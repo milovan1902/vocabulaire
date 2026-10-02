@@ -28,8 +28,8 @@ import { doneToday, lastSeven, liveStreak, shiftDay } from '../engine/streak';
 import { todayKey } from '../engine/session';
 import { budgetParler, quandDit, type Budget } from '../data/parler';
 import { minutesPour } from '../engine/tempo';
-import { repository } from '../data/repository';
-import { niveauDe, xpDe, XP_PAR_REVISION } from '../engine/niveau';
+import { niveauDe } from '../engine/niveau';
+import { CARTES_PAR_JOUR, cartesDuJour, gainDuJour, serieValidee, xpTotal } from '../engine/xp';
 import { useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 
@@ -133,7 +133,6 @@ export function Today({
   const [choisi, setChoisi] = useState<string | null>(() => lireChoix());
   /* CHANTIER 165 — style Lycée : la forme de l'écran change, pas seulement ses couleurs. */
   const style = useStyle();
-  const [revisions, setRevisions] = useState<number | null>(null);
   /* CHANTIER 166 — le temps de parole : undefined = en cours de lecture,
      null = sans compte, 'erreur' = service injoignable (hors ligne…). */
   const [budget, setBudget] = useState<Budget | null | 'erreur' | undefined>(undefined);
@@ -147,24 +146,7 @@ export function Today({
     return () => { alive = false; };
   }, [style]);
 
-  /*
-   * Les XP du style Lycée : 10 par carte révisée, depuis toujours. Rien de
-   * nouveau n'est stocké — c'est la somme des répétitions déjà enregistrées,
-   * donc le même chiffre sur tous les appareils une fois synchronisés.
-   */
-  useEffect(() => {
-    if (style !== 'lycee') return;
-    let alive = true;
-    (async () => {
-      let n = 0;
-      for (const d of decks) {
-        const p = await repository.getProgress(d.id);
-        for (const v of Object.values(p)) n += v.reps;
-      }
-      if (alive) setRevisions(n);
-    })();
-    return () => { alive = false; };
-  }, [decks, style]);
+
 
   useEffect(() => {
     let alive = true;
@@ -203,6 +185,13 @@ export function Today({
   /* Série en jeu : elle existe, elle n'est pas encore assurée, et il reste
      du travail pour la sauver. Sans ces trois conditions, se taire. */
   const serieEnJeu = serie > 0 && !faitAujourdhui && total > 0;
+  /* CHANTIER 168 — la journée qui rapporte des XP : 20 cartes notées. */
+  const cartesAuj = cartesDuJour(streak);
+  const gain = gainDuJour(streak);
+  const manque = Math.max(0, CARTES_PAR_JOUR - cartesAuj);
+  const ligneXp = gain.valide
+    ? `Journée validée : +${gain.xp} XP.`
+    : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes aujourd’hui — +${gain.xp} XP à la clé.`;
 
   const date = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
@@ -357,7 +346,8 @@ export function Today({
   if (style === 'lycee' && total > 0) {
     const iCentre = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));
     const pc = aFaire[iCentre];
-    const n = niveauDe(xpDe(revisions ?? 0));
+    const n = niveauDe(xpTotal(streak));
+    const flamme = serieValidee(streak);
     const fr = (v: number) => v.toLocaleString('fr-FR');
     const faits = joursCetteSemaine(streak);
     let parlerN = '…';
@@ -384,22 +374,26 @@ export function Today({
             </span>
             <span className="ly-barre"><i style={{ width: `${Math.round((100 * n.dansNiveau) / n.pourNiveau)}%` }} /></span>
           </span>
-          <span className="ly-flamme" aria-label={`Série : ${serie} jour${serie > 1 ? 's' : ''}`}>
+          <span className="ly-flamme" aria-label={`Série : ${flamme} jour${flamme > 1 ? 's' : ''} à ${CARTES_PAR_JOUR} cartes`}>
             <svg viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
             </svg>
-            <b>{serie}</b>
+            <b>{flamme}</b>
           </span>
         </div>
 
         <div className="ly-defi">
           <div className="ly-defi-haut">
             <span>Défi du jour</span>
-            <span className="ly-gain">+{fr(total * XP_PAR_REVISION)} XP</span>
+            <span className="ly-gain">{gain.valide ? `+${gain.xp} XP ✓` : `+${gain.xp} XP`}</span>
           </div>
           <b className="ly-defi-n">{total} carte{total > 1 ? 's' : ''}</b>
           <span className="ly-defi-sous">
             Environ {minutesPour(total)} min · {aFaire.length} paquet{aFaire.length > 1 ? 's' : ''}
+          </span>
+          <span className="ly-defi-jour">
+            <span className="ly-barre"><i style={{ width: `${Math.min(100, (100 * cartesAuj) / CARTES_PAR_JOUR)}%` }} /></span>
+            <span>{gain.valide ? 'Journée validée' : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP`}</span>
           </span>
         </div>
 
@@ -508,6 +502,17 @@ export function Today({
               ? 'Journée faite. Les mots revus reviendront à leur date, pas avant.'
               : 'Tout est à jour. Les mots déjà appris reviendront d’eux-mêmes, au moment où ils commencent à s’effacer.'}
           </p>
+          {/* CHANTIER 168 — moins de 20 cartes dues : on peut aller chercher
+              des mots nouveaux pour valider la journée. */}
+          {gain.valide ? (
+            <p className="today-xp">{ligneXp}</p>
+          ) : (
+            <p className="today-xp">
+              {cartesAuj} / {CARTES_PAR_JOUR} cartes aujourd’hui. Pour gagner
+              tes {gain.xp} XP, ouvre un paquet et choisis « Continuer quand
+              même » : encore {manque} carte{manque > 1 ? 's' : ''}.
+            </p>
+          )}
         </>
       ) : (
         <>
@@ -529,6 +534,7 @@ export function Today({
                 bouge, cette ligne serait restée seule en arrière. */}
             Environ {minutesPour(total)} minutes.
           </p>
+          <p className="today-xp">{ligneXp}</p>
 
           {serieEnJeu && (
             <p className="serie-alerte">

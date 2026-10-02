@@ -22,6 +22,12 @@ export interface Streak {
   best: number;
   /** Jours travaillés, triés, du plus ancien au plus récent. */
   days: string[];
+  /**
+   * CHANTIER 168 — cartes notées par jour (AAAA-MM-JJ → nombre). Absent
+   * pour les jours d'avant ce chantier : ceux-là comptent comme validés
+   * (voir engine/xp.ts). Fusion entre appareils : le plus grand des deux.
+   */
+  counts?: Record<string, number>;
   updatedAt: number;
 }
 
@@ -87,6 +93,19 @@ export function record(s: Streak, today = todayKey()): Streak {
   };
 }
 
+/**
+ * CHANTIER 168 — une carte de plus notée aujourd'hui. Appelée à chaque
+ * carte, APRÈS `record`. Les compteurs des jours sortis de l'historique
+ * sont retirés avec eux.
+ */
+export function compterCarte(s: Streak, today = todayKey()): Streak {
+  const counts: Record<string, number> = {};
+  const garde = new Set(s.days);
+  for (const [k, v] of Object.entries(s.counts ?? {})) if (garde.has(k)) counts[k] = v;
+  counts[today] = (counts[today] ?? 0) + 1;
+  return { ...s, counts, updatedAt: Date.now() };
+}
+
 /** Les sept derniers jours, du plus ancien à aujourd'hui. */
 export function lastSeven(
   s: Streak,
@@ -148,11 +167,29 @@ export function mergeStreak(local: Streak, remote: Streak | null): Streak {
     for (let d = last; faits.has(d); d = shiftDay(d, -1)) current++;
   }
 
+  /*
+   * CHANTIER 168 — les compteurs du jour : le plus grand des deux, jamais
+   * la somme. Une même journée synchronisée deux fois serait sinon comptée
+   * deux fois. Contrepartie assumée : 10 cartes sur le téléphone et 10 sur
+   * l'ordinateur le même jour comptent 10, pas 20.
+   */
+  let counts: Record<string, number> | undefined;
+  if (local.counts || remote.counts) {
+    counts = {};
+    const garde = new Set(days);
+    for (const src of [local.counts ?? {}, remote.counts ?? {}]) {
+      for (const [k, v] of Object.entries(src)) {
+        if (garde.has(k)) counts[k] = Math.max(counts[k] ?? 0, v);
+      }
+    }
+  }
+
   return {
     lastDay: last,
     current,
     best: Math.max(local.best, remote.best, current),
     days,
+    ...(counts ? { counts } : {}),
     updatedAt: Math.max(local.updatedAt, remote.updatedAt),
   };
 }

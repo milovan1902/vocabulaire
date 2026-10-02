@@ -36,7 +36,7 @@ import { SEED_DECKS, materialize } from '../data/seed';
 import { emptyProgress, review } from '../engine/scheduler';
 import { freshCounter, rollDay } from '../engine/session';
 import type { Streak } from '../engine/streak';
-import { EMPTY_STREAK, record as recordDay } from '../engine/streak';
+import { EMPTY_STREAK, compterCarte, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
 import { mesure } from '../data/mesures';
 
@@ -345,8 +345,9 @@ export function useStore(): Store {
        * plusieurs fois.
        */
       setStreak((prev) => {
-        const suivant = recordDay(prev);
-        if (suivant !== prev) void repository.saveStreak(suivant);
+        /* CHANTIER 168 — et une carte de plus au compteur du jour (XP). */
+        const suivant = compterCarte(recordDay(prev));
+        void repository.saveStreak(suivant);
         mesure('revision'); // CHANTIER 147 — une fois par jour au plus
         return suivant;
       });

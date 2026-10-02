@@ -1,24 +1,18 @@
 /**
- * CHANTIER 165 — NIVEAU ET XP DU STYLE LYCÉE.
+ * CHANTIER 165 — NIVEAU DU STYLE LYCÉE.
+ * CHANTIER 168 — les niveaux suivent les paliers des apparences : chaque
+ * niveau gagné débloque une apparence. Les XP viennent de engine/xp.ts.
  *
- * Rien n'est stocké : les XP se déduisent des répétitions déjà enregistrées
- * (10 XP par carte révisée), le niveau se déduit des XP. Conséquences :
- *   — aucune donnée nouvelle, rien à synchroniser, rien à déclarer ;
- *   — impossible de « perdre » des XP : ils ne font que monter ;
- *   — rien ne s'achète (programme Familles de Google Play).
- *
- * Paliers : il faut 150 XP pour le niveau 2, puis 300 de plus pour le 3,
- * 450 de plus pour le 4… Le niveau 7 demande 3 150 XP, soit 315 cartes.
+ * Niveau 1 : 0 XP · 2 : 100 · 3 : 250 · 4 : 400 · 5 : 600 · 6 : 800 ·
+ * 7 : 1 000 (plafond du gratuit). Au-delà (payant), un niveau tous les
+ * 250 XP.
  */
-export const XP_PAR_REVISION = 10;
+export const PALIERS = [0, 100, 250, 400, 600, 800, 1000];
 
 /** XP cumulés à partir desquels on est au niveau `n` (n ≥ 1). */
 export function seuil(n: number): number {
-  return 75 * (n - 1) * n;
-}
-
-export function xpDe(revisions: number): number {
-  return Math.max(0, revisions) * XP_PAR_REVISION;
+  if (n <= PALIERS.length) return PALIERS[n - 1];
+  return PALIERS[PALIERS.length - 1] + 250 * (n - PALIERS.length);
 }
 
 export interface Niveau {
