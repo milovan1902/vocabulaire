@@ -1,0 +1,196 @@
+/* ==================================================================
+   CHANTIER 176 — « Grand bleu » : la plongée.
+
+   Actif quand <html> porte data-style="ocean" (theme.ts), toujours avec
+   data-theme="sombre". Forme du Lycée (voir `estLudique`) : ce fichier
+   rhabille les classes ly-*, eventail-* et grades. Police : Lexend (déjà
+   livrée). Aucune image : bulles, rayons et coquillages sont en CSS ou en
+   petits dessins data: (autorisés par la CSP).
+
+   L'animation : quand un paquet arrive au centre, son dos passe de la
+   bulle à la carte en 8 étapes (bulle, petite bulle, grosse bulle, goutte,
+   ovale, galet, carte arrondie, carte) sur 0,9 s.
+   ================================================================== */
+
+[data-style='ocean'] {
+  --paper: #04182b;
+  --panel: #0a3452;
+  --panel-hi: #0e3f61;
+  --ink: #eaf8ff;
+  --ink-soft: #cfe6f2;
+  --grey: #a9cbe0;
+  --ink-dim: #a9cbe0;
+  --rule: rgba(255, 255, 255, 0.12);
+  --rule-strong: rgba(255, 255, 255, 0.26);
+  --chalk: #5ce1e6;
+  --chalk-ink: #5ce1e6;
+  --on-chalk: #032234;
+  --good: #6fe3b8;
+  --bad: #ff8a8a;
+  --voile: rgba(255, 255, 255, 0.05);
+  --voile-2: rgba(255, 255, 255, 0.1);
+  --voile-3: rgba(255, 255, 255, 0.16);
+  --bleu: #5ce1e6;
+  --bleu-ink: #5ce1e6;
+  --rouge: #ff8a65;
+  --orange: #ffb36b;
+  --sable: #ffd479;
+  --ly-voile: rgba(255, 255, 255, 0.1);
+  --ly-voile-2: rgba(255, 255, 255, 0.3);
+  --ly-tabbar: rgba(3, 20, 36, 0.96);
+  --ly-ombre: rgba(0, 0, 0, 0.45);
+  --ly-tag: transparent;
+  --ly-bord-carte: rgba(255, 255, 255, 0.15);
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --anneau: var(--bleu);
+}
+
+/* ---------- le fond : on descend, des rayons filtrent, des bulles montent ---------- */
+[data-style='ocean'] body {
+  background-color: #04182b;
+  background-image:
+    radial-gradient(circle 9px at 10% 14%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 6.3px, rgba(255,255,255,0.35) 7.9px, transparent 9px),
+    radial-gradient(circle 6px at 86% 9%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 4.2px, rgba(255,255,255,0.35) 5.3px, transparent 6px),
+    radial-gradient(circle 12px at 78% 31%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 8.4px, rgba(255,255,255,0.35) 10.6px, transparent 12px),
+    radial-gradient(circle 7px at 16% 50%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 4.9px, rgba(255,255,255,0.35) 6.2px, transparent 7px),
+    radial-gradient(circle 10px at 92% 62%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 7.0px, rgba(255,255,255,0.35) 8.8px, transparent 10px),
+    radial-gradient(circle 5px at 8% 77%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 3.5px, rgba(255,255,255,0.35) 4.4px, transparent 5px),
+    radial-gradient(circle 8px at 54% 85%, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.04) 5.6px, rgba(255,255,255,0.25) 7.0px, transparent 8px),
+    linear-gradient(105deg, transparent 30%, rgba(160, 230, 255, 0.07) 38%, transparent 46%),
+    linear-gradient(80deg, transparent 52%, rgba(160, 230, 255, 0.06) 58%, transparent 64%),
+    linear-gradient(180deg, #0b4466 0%, #072c47 40%, #04182b 100%);
+  background-attachment: fixed;
+}
+[data-style='ocean'] .screen-title,
+[data-style='ocean'] .topbar h1,
+[data-style='ocean'] .done h2 { font-family: var(--sans); font-weight: 800; }
+[data-style='ocean'] .tabbar { background: var(--ly-tabbar); border-top-color: var(--rule); }
+[data-style='ocean'] .tabbar button.on { color: var(--bleu); }
+[data-style='ocean'] .tabbar button.on::before { display: none; }
+[data-style='ocean'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='ocean'] .tabbar button.on .tabsvg { background: rgba(92, 225, 230, 0.16); }
+
+[data-style='ocean'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='ocean'] .reveal { background: var(--bleu); color: var(--on-chalk); border: none; border-radius: 999px; font-family: var(--sans); font-weight: 800; }
+
+/* ---------- Aujourd'hui ---------- */
+[data-style='ocean'] .ly-niv {
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.35), rgba(92, 225, 230, 0.15) 45%, rgba(92, 225, 230, 0.05) 70%);
+  border: 1.5px solid rgba(92, 225, 230, 0.67);
+}
+[data-style='ocean'] .ly-barre i { background: linear-gradient(90deg, #2bb5c9, var(--bleu)); }
+[data-style='ocean'] .ly-flamme { background: rgba(255, 138, 101, 0.16); color: var(--rouge); }
+[data-style='ocean'] .ly-defi { border-radius: 22px; background: rgba(9, 52, 82, 0.72); border: 1.5px solid rgba(255, 212, 121, 0.67); }
+[data-style='ocean'] .ly-defi-haut > span:first-child { color: var(--sable); }
+[data-style='ocean'] .ly-gain { background: rgba(92, 225, 230, 0.16); color: var(--bleu); border: none; }
+[data-style='ocean'] .ly-defi-jour .ly-barre i { background: var(--sable); }
+
+[data-style='ocean'] .eventail-dos { border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.15); background: #0d3f5f; }
+[data-style='ocean'] .eventail-carte.centre .eventail-dos {
+  border: 2px solid var(--bleu);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.45), 0 0 24px rgba(92, 225, 230, 0.25);
+  animation: ocean-bulle 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+[data-style='ocean'] .eventail-carte.centre .eventail-dos > * { animation: ocean-apparait 0.9s ease both; }
+[data-style='ocean'] .eventail-carte.centre .eventail-due { animation: ocean-apparait 0.9s ease both; }
+[data-style='ocean'] .eventail-due { background: var(--rouge); color: #2b0e04; }
+[data-style='ocean'] .ly-points i.on { background: var(--bleu); }
+
+/* La carte (126 × 178) : les échelles gardent la bulle ronde au début. */
+@keyframes ocean-bulle {
+  0%   { transform: scale(0.26, 0.18); border-radius: 50%; opacity: 0.35; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5); }
+  14%  { transform: scale(0.4, 0.29);  border-radius: 50%; opacity: 0.7; }
+  28%  { transform: scale(0.55, 0.4);  border-radius: 50%; opacity: 1; }
+  42%  { transform: scale(0.66, 0.52); border-radius: 48% / 46%; }
+  56%  { transform: scale(0.76, 0.66); border-radius: 40%; }
+  70%  { transform: scale(0.85, 0.78); border-radius: 30%; }
+  85%  { transform: scale(0.94, 0.92); border-radius: 22px; }
+  100% { transform: none; border-radius: 16px; }
+}
+@keyframes ocean-apparait { 0%, 70% { opacity: 0; } 100% { opacity: 1; } }
+
+/* Les deux poissons qui changent de paquet. */
+[data-style='ocean'] .ly-fusee {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: rgba(92, 225, 230, 0.12); border: 1.5px solid rgba(92, 225, 230, 0.55); color: var(--bleu);
+}
+[data-style='ocean'] .ly-fusee:hover { background: rgba(92, 225, 230, 0.24); }
+[data-style='ocean'] .ly-fusee svg { width: 24px; height: 24px; }
+[data-style='ocean'] .ly-fusee.prec svg { transform: scaleX(-1); }
+
+/* Les tuiles : la semaine en gouttes, le micro qui fait des bulles. */
+[data-style='ocean'] .ly-tuile { background: rgba(9, 52, 82, 0.72); border: 1px solid rgba(255, 255, 255, 0.12); }
+[data-style='ocean'] .ly-tuile:hover { background: rgba(14, 63, 97, 0.85); }
+[data-style='ocean'] .ly-segments { gap: 9px; height: 14px; padding: 2px 0 0 3px; }
+[data-style='ocean'] .ly-segments i {
+  flex: none; width: 13px; height: 13px; border-radius: 50% 0 50% 50%; transform: rotate(-45deg);
+  background: transparent; border: 1.5px solid rgba(255, 255, 255, 0.35);
+}
+[data-style='ocean'] .ly-segments i.on { border: none; background: radial-gradient(circle at 60% 40%, #fff 0 12%, var(--bleu) 45%, #2bb5c9 100%); }
+[data-style='ocean'] .ly-tuile-haut { position: relative; }
+[data-style='ocean'] .ly-tuile-haut svg { color: var(--rouge); transform: translate(-10px, 8px); }
+[data-style='ocean'] .ly-tuile-haut:has(svg)::after {
+  content: ''; position: absolute; right: -6px; top: -10px; width: 26px; height: 24px; pointer-events: none;
+  background:
+    radial-gradient(circle 2.5px at 4px 20px, transparent 1.3px, rgba(255, 255, 255, 0.6) 1.5px, rgba(255, 255, 255, 0.6) 2.5px, transparent 2.6px),
+    radial-gradient(circle 4px at 12px 12px, transparent 2.5px, rgba(255, 255, 255, 0.6) 2.7px, rgba(255, 255, 255, 0.6) 4px, transparent 4.1px),
+    radial-gradient(circle 5.5px at 20px 5.5px, transparent 4px, rgba(255, 255, 255, 0.6) 4.2px, rgba(255, 255, 255, 0.6) 5.5px, transparent 5.6px);
+}
+
+/* ==================================================================
+   La révision : la carte est une grosse bulle, les notes des coquillages
+   ================================================================== */
+[data-style='ocean'] .studybg { background-image: none !important; background-color: transparent; }
+[data-style='ocean'] .studybg::after { display: none; }
+[data-style='ocean'] .progressbar { border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
+[data-style='ocean'] .progressbar i { border-radius: 999px; background: var(--bleu); }
+[data-style='ocean'] .ly-combo { background: transparent; color: var(--rouge); }
+[data-style='ocean'] .studystage {
+  margin: 18px 4px 18px; padding: 30px 18px;
+  border-radius: 44px;
+  background: radial-gradient(ellipse at 30% 10%, rgba(255, 255, 255, 0.14), transparent 50%), rgba(10, 58, 90, 0.78);
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 0 40px rgba(92, 225, 230, 0.12), 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+[data-style='ocean'] .studystage .tag { background: rgba(255, 212, 121, 0.16); border: none; color: var(--sable); }
+[data-style='ocean'] .ask { color: var(--sable); font-weight: 600; }
+[data-style='ocean'] .word { font-family: var(--sans); font-weight: 800; }
+[data-style='ocean'] .ruleline { background: rgba(92, 225, 230, 0.4); }
+[data-style='ocean'] .answer { font-family: var(--sans); font-weight: 800; color: var(--bleu); }
+[data-style='ocean'] .example { font-style: normal; color: var(--grey); }
+[data-style='ocean'] .speak { background: transparent; border: 1.5px solid var(--bleu); color: var(--bleu); }
+
+[data-style='ocean'] .grades { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+[data-style='ocean'] .grades .grade {
+  --c: #ff9b8f; --f: #4a0f0b;
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0;
+  min-height: 96px; padding: 26px 0 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  font-family: var(--sans); font-weight: 800; font-size: 14px; color: var(--f);
+}
+[data-style='ocean'] .grades .grade::before,
+[data-style='ocean'] .grades .grade::after {
+  content: ''; position: absolute; left: 50%; top: 0; width: 74px; height: 70px; margin-left: -37px; z-index: -1;
+}
+[data-style='ocean'] .grades .grade::before {
+  background: var(--c);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 62'%3E%3Cpath d='M32 56 L5 24 A29 29 0 0 1 59 24 Z'/%3E%3Ccircle cx='5' cy='24' r='4.5'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='22' cy='5.5' r='5'/%3E%3Ccircle cx='32' cy='3.5' r='5'/%3E%3Ccircle cx='42' cy='5.5' r='5'/%3E%3Ccircle cx='52' cy='12' r='5'/%3E%3Ccircle cx='59' cy='24' r='4.5'/%3E%3Cpath d='M24 54h16l-2 6H26z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 62'%3E%3Cpath d='M32 56 L5 24 A29 29 0 0 1 59 24 Z'/%3E%3Ccircle cx='5' cy='24' r='4.5'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Ccircle cx='22' cy='5.5' r='5'/%3E%3Ccircle cx='32' cy='3.5' r='5'/%3E%3Ccircle cx='42' cy='5.5' r='5'/%3E%3Ccircle cx='52' cy='12' r='5'/%3E%3Ccircle cx='59' cy='24' r='4.5'/%3E%3Cpath d='M24 54h16l-2 6H26z'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.35));
+  transition: transform 0.08s ease;
+}
+[data-style='ocean'] .grades .grade::after { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 62'%3E%3Cpath d='M32 56 L9 21 M32 56 L16 11 M32 56 L25 5 M32 56 L32 3 M32 56 L39 5 M32 56 L48 11 M32 56 L55 21' stroke='%23000' stroke-opacity='0.25' stroke-width='1.6' stroke-linecap='round' fill='none'/%3E%3Cellipse cx='22' cy='16' rx='7' ry='3' fill='%23fff' opacity='0.4' transform='rotate(-25 22 16)'/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-style='ocean'] .grades .grade:active::before,
+[data-style='ocean'] .grades .grade:active::after { transform: scale(0.94); }
+[data-style='ocean'] .grades .grade:focus-visible { outline: 2px solid var(--bleu); outline-offset: 2px; border-radius: 12px; }
+[data-style='ocean'] .grades .grade small { margin-top: 26px; font-family: inherit; font-size: 12px; font-weight: 400; color: var(--grey); }
+[data-style='ocean'] .grades .g-hard { --c: #ffbe85; --f: #4a2400; }
+[data-style='ocean'] .grades .g-good { --c: #ffe08f; --f: #4a3600; }
+[data-style='ocean'] .grades .g-easy { --c: #86e8c4; --f: #05372a; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='ocean'] .eventail-carte.centre .eventail-dos,
+  [data-style='ocean'] .eventail-carte.centre .eventail-dos > *,
+  [data-style='ocean'] .eventail-carte.centre .eventail-due { animation: none; }
+  [data-style='ocean'] .grades .grade::before { transition: none; }
+}

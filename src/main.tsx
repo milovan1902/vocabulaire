@@ -33,6 +33,8 @@ import './ui/espace.css';
 import './ui/tableau.css';
 /* CHANTIER 174 — Borne arcade et Néon (Archivo et Caveat, déjà livrées). */
 import './ui/neon.css';
+/* CHANTIER 176 — Grand bleu (Lexend, déjà livrée). */
+import './ui/ocean.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

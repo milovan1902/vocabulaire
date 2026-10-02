@@ -110,6 +110,15 @@ function sousTitre(r: DeckSummary): string {
     : `${r.themesTotal} thèmes · ${r.total} mots`;
 }
 
+/** CHANTIER 176 — le poisson (Lucide « fish-symbol ») : les flèches du Grand bleu. */
+function Poisson() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 16s9-15 20-4C11 23 2 8 2 8" />
+    </svg>
+  );
+}
+
 /** CHANTIER 171 — la fusée (Lucide « rocket ») de l'apparence Décollage. */
 function Fusee() {
   return (
@@ -369,6 +378,8 @@ export function Today({
         ? { defi: 'Stage du jour', go: '▶ Jouer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR}` }
       : style === 'neon'
         ? { defi: 'Défi du soir', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+      : style === 'ocean'
+        ? { defi: 'Plongée du jour', go: 'Plonger', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} m de profondeur` }
       : style === 'tableau'
         ? { defi: 'Au tableau aujourd’hui', go: 'Réviser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
       : style === 'orbite'
@@ -406,7 +417,13 @@ export function Today({
             <span className="ly-barre"><i style={{ width: `${Math.round((100 * n.dansNiveau) / n.pourNiveau)}%` }} /></span>
           </span>
           <span className="ly-flamme" aria-label={`Série : ${flamme} jour${flamme > 1 ? 's' : ''} à ${CARTES_PAR_JOUR} cartes`}>
-            {style === 'decollage' ? <Fusee /> : style === 'orbite' ? (
+            {style === 'decollage' ? <Fusee /> : style === 'ocean' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+              </svg>
+            ) : style === 'orbite' ? (
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
               </svg>
@@ -458,8 +475,9 @@ export function Today({
           />
           {/* CHANTIER 171 — Décollage : une fusée de chaque côté pour changer de paquet.
               CHANTIER 173 — Tableau : une craie.
-              CHANTIER 174 — Borne arcade : un triangle ; Néon : un chevron lumineux. */}
-          {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon') && aFaire.length > 1 && (
+              CHANTIER 174 — Borne arcade : un triangle ; Néon : un chevron lumineux.
+              CHANTIER 176 — Grand bleu : un petit poisson. */}
+          {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -468,6 +486,7 @@ export function Today({
                 onClick={() => choisir(aFaire[iCentre - 1].deck.id)}
               >{style === 'tableau' ? <i className="craie-baton" />
                 : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
+                : style === 'ocean' ? <Poisson />
                 : <Fusee />}</button>
               <button
                 className="ly-fusee suiv"
@@ -476,6 +495,7 @@ export function Today({
                 onClick={() => choisir(aFaire[iCentre + 1].deck.id)}
               >{style === 'tableau' ? <i className="craie-baton" />
                 : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
+                : style === 'ocean' ? <Poisson />
                 : <Fusee />}</button>
             </>
           )}
