@@ -10,6 +10,7 @@
    L'animation : quand un paquet arrive au centre, son dos passe de la
    bulle à la carte en 8 étapes (bulle, petite bulle, grosse bulle, goutte,
    ovale, galet, carte arrondie, carte) sur 0,9 s.
+   CHANTIER 177 — 10 formes intermédiaires, sur 0,7 s.
    ================================================================== */
 
 [data-style='ocean'] {
@@ -89,23 +90,29 @@
 [data-style='ocean'] .eventail-carte.centre .eventail-dos {
   border: 2px solid var(--bleu);
   box-shadow: 0 16px 30px rgba(0, 0, 0, 0.45), 0 0 24px rgba(92, 225, 230, 0.25);
-  animation: ocean-bulle 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  animation: ocean-bulle 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) both;
 }
-[data-style='ocean'] .eventail-carte.centre .eventail-dos > * { animation: ocean-apparait 0.9s ease both; }
-[data-style='ocean'] .eventail-carte.centre .eventail-due { animation: ocean-apparait 0.9s ease both; }
+[data-style='ocean'] .eventail-carte.centre .eventail-dos > * { animation: ocean-apparait 0.7s ease both; }
+[data-style='ocean'] .eventail-carte.centre .eventail-due { animation: ocean-apparait 0.7s ease both; }
 [data-style='ocean'] .eventail-due { background: var(--rouge); color: #2b0e04; }
 [data-style='ocean'] .ly-points i.on { background: var(--bleu); }
 
-/* La carte (126 × 178) : les échelles gardent la bulle ronde au début. */
+/* CHANTIER 177 — 12 étapes : la bulle, 10 formes intermédiaires (bulles qui
+   grossissent, gouttes, ovales, galets, cartes de plus en plus carrées),
+   puis la carte (126 × 178). Les échelles gardent la bulle ronde au début. */
 @keyframes ocean-bulle {
-  0%   { transform: scale(0.26, 0.18); border-radius: 50%; opacity: 0.35; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5); }
-  14%  { transform: scale(0.4, 0.29);  border-radius: 50%; opacity: 0.7; }
-  28%  { transform: scale(0.55, 0.4);  border-radius: 50%; opacity: 1; }
-  42%  { transform: scale(0.66, 0.52); border-radius: 48% / 46%; }
-  56%  { transform: scale(0.76, 0.66); border-radius: 40%; }
-  70%  { transform: scale(0.85, 0.78); border-radius: 30%; }
-  85%  { transform: scale(0.94, 0.92); border-radius: 22px; }
-  100% { transform: none; border-radius: 16px; }
+  0%    { transform: scale(0.254, 0.180); border-radius: 50%; opacity: 0.35; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5); }
+  9%    { transform: scale(0.317, 0.225); border-radius: 50%; opacity: 0.6; }
+  18%   { transform: scale(0.397, 0.281); border-radius: 50%; opacity: 0.85; }
+  27%   { transform: scale(0.476, 0.343); border-radius: 50%; opacity: 1; }
+  36%   { transform: scale(0.556, 0.416); border-radius: 49% / 47%; }
+  45%   { transform: scale(0.627, 0.494); border-radius: 46% / 44%; }
+  54%   { transform: scale(0.698, 0.573); border-radius: 42%; }
+  63%   { transform: scale(0.762, 0.657); border-radius: 37%; }
+  72%   { transform: scale(0.825, 0.736); border-radius: 31%; }
+  81%   { transform: scale(0.881, 0.820); border-radius: 26px; }
+  90%   { transform: scale(0.937, 0.904); border-radius: 21px; }
+  100%  { transform: none; border-radius: 16px; }
 }
 @keyframes ocean-apparait { 0%, 70% { opacity: 0; } 100% { opacity: 1; } }
 
