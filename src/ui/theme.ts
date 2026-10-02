@@ -32,7 +32,23 @@
  * useStyle(), Today et Study n'ont rien à distinguer, seule lycee.css lit
  * data-theme pour les couleurs.
  */
-export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'lycee' | 'lycee-clair';
+/*
+ * CHANTIER 170 — le Cahier en quatre papiers. 'cahier' reste l'identifiant
+ * du jaune (rien ne change pour qui l'a choisi) ; 'cahier-vert',
+ * 'cahier-rose' et 'cahier-bleu' posent le même data-style="cahier" plus
+ * data-papier, que lit cahier.css pour la seule teinte du papier.
+ */
+export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu' | 'lycee' | 'lycee-clair';
+
+const PAPIERS: Partial<Record<Theme, string>> = {
+  'cahier-vert': 'vert',
+  'cahier-rose': 'rose',
+  'cahier-bleu': 'bleu',
+};
+
+function estCahier(t: Theme): boolean {
+  return t === 'cahier' || t in PAPIERS;
+}
 
 const CLE = 'vocab-theme';
 
@@ -40,14 +56,18 @@ export const THEME_LABELS: Record<Theme, string> = {
   auto: 'Automatique',
   clair: 'Clair',
   sombre: 'Sombre',
-  cahier: 'Cahier',
+  cahier: 'Cahier jaune',
+  'cahier-vert': 'Cahier vert',
+  'cahier-rose': 'Cahier rose',
+  'cahier-bleu': 'Cahier bleu',
   lycee: 'Lycée foncé',
   'lycee-clair': 'Lycée clair',
 };
 
 export function themeChoisi(): Theme {
   const v = localStorage.getItem(CLE);
-  return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'lycee' || v === 'lycee-clair' ? v : 'auto';
+  return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'cahier-vert'
+    || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -56,7 +76,7 @@ function systeme(): 'clair' | 'sombre' {
 }
 
 export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
-  if (t === 'cahier') return 'clair';
+  if (estCahier(t)) return 'clair';
   if (t === 'lycee') return 'sombre';
   if (t === 'lycee-clair') return 'clair';
   return t === 'auto' ? systeme() : t;
@@ -65,9 +85,12 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
 function appliquer(t: Theme) {
   const e = themeEffectif(t);
   document.documentElement.dataset.theme = e;
-  if (t === 'cahier') document.documentElement.dataset.style = 'cahier';
+  if (estCahier(t)) document.documentElement.dataset.style = 'cahier';
   else if (t === 'lycee' || t === 'lycee-clair') document.documentElement.dataset.style = 'lycee';
   else delete document.documentElement.dataset.style;
+  const papier = PAPIERS[t];
+  if (papier) document.documentElement.dataset.papier = papier;
+  else delete document.documentElement.dataset.papier;
   /* Prévient les écrans qui changent de forme selon le style (useStyle). */
   window.dispatchEvent(new Event('apparence'));
   // Pour que les champs, les ascenseurs et la barre d'état du navigateur

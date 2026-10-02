@@ -218,3 +218,36 @@
   [data-style='cahier'] .serie-count,
   [data-style='cahier'] .avant::before { transform: none; }
 }
+
+/* ==================================================================
+   CHANTIER 170 — quatre papiers : jaune (ci-dessus), vert, rose, bleu.
+   Seuls le papier, le quadrillage, la barre d'onglets et le scotch
+   changent : stylo bleu, marge rouge, gommettes et bristol restent.
+   ================================================================== */
+
+[data-style='cahier'][data-papier='vert'] { --paper: #eff7ef; --panel-hi: #dfeee0; }
+[data-style='cahier'][data-papier='vert'] body {
+  background-image:
+    linear-gradient(rgba(31, 110, 72, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 110, 72, 0.08) 1px, transparent 1px);
+}
+[data-style='cahier'][data-papier='vert'] .tabbar { background: rgba(247, 252, 247, 0.96); }
+[data-style='cahier'][data-papier='vert'] .avant::before { background: rgba(222, 244, 226, 0.92); }
+
+[data-style='cahier'][data-papier='rose'] { --paper: #fcf1f3; --panel-hi: #f6e1e6; }
+[data-style='cahier'][data-papier='rose'] body {
+  background-image:
+    linear-gradient(rgba(176, 58, 98, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(176, 58, 98, 0.075) 1px, transparent 1px);
+}
+[data-style='cahier'][data-papier='rose'] .tabbar { background: rgba(253, 246, 248, 0.96); }
+[data-style='cahier'][data-papier='rose'] .avant::before { background: rgba(255, 222, 232, 0.92); }
+
+[data-style='cahier'][data-papier='bleu'] { --paper: #eef4fc; --panel-hi: #dce7f7; }
+[data-style='cahier'][data-papier='bleu'] body {
+  background-image:
+    linear-gradient(rgba(39, 71, 168, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 71, 168, 0.10) 1px, transparent 1px);
+}
+[data-style='cahier'][data-papier='bleu'] .tabbar { background: rgba(246, 250, 255, 0.96); }
+[data-style='cahier'][data-papier='bleu'] .avant::before { background: rgba(220, 233, 252, 0.92); }
