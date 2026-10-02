@@ -63,6 +63,9 @@ export function Eventail({
         else if (e.key === 'Enter') onOuvrir(centre);
       }}
     >
+      {/* CHANTIER 172 — la moitié AVANT de l'anneau, posée devant la planète.
+          La moitié arrière est l'anneau entier (::after), caché par la planète. */}
+      {forme === 'orbite' && <i className="orbite-avant" aria-hidden="true" />}
       {paquets.map((r, i) => {
         const o = i - centre;
         const a = Math.abs(o);

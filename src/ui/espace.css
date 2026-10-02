@@ -253,18 +253,30 @@
 /* L'orbite : une planète, son anneau, les paquets posés dessus. */
 .eventail.orbite { height: 250px; }
 .eventail.orbite::before {
-  content: ''; position: absolute; left: 50%; top: 4px; z-index: 0;
+  content: ''; position: absolute; left: 50%; top: 4px; z-index: 1;
   width: 124px; height: 124px; margin-left: -62px; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #c5b1ff, #6a47e0 55%, #2b1a75 85%);
   box-shadow: 0 0 50px rgba(122, 92, 255, 0.55);
   pointer-events: none;
 }
-.eventail.orbite::after {
-  content: ''; position: absolute; left: 6px; right: 6px; top: 42px; z-index: 1;
+/*
+ * CHANTIER 172 — l'anneau passe DERRIÈRE la planète en haut, DEVANT en bas.
+ * ::after est l'anneau entier, sous la planète (z 0) : sa moitié haute est
+ * cachée par elle. .orbite-avant est le même anneau, au-dessus (z 2), dont
+ * on ne garde que la moitié basse. Les paquets restent devant les deux.
+ */
+.eventail.orbite::after,
+.eventail.orbite .orbite-avant {
+  content: ''; position: absolute; left: 6px; right: 6px; top: 42px; z-index: 0;
   height: 116px; border-radius: 50%;
   border: 2px solid rgba(255, 207, 90, 0.55);
   transform: rotate(-6deg);
   pointer-events: none;
+}
+.eventail.orbite .orbite-avant {
+  display: block; z-index: 2;
+  border-color: rgba(255, 207, 90, 0.85);
+  clip-path: inset(50% -4px -4px -4px);
 }
 .eventail.orbite .eventail-carte { top: 74px; width: 112px; margin-left: -56px; }
 .eventail.orbite .eventail-dos { border-radius: 16px; }
