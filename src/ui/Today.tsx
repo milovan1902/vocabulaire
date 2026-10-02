@@ -119,6 +119,22 @@ function Poisson() {
   );
 }
 
+/** CHANTIER 178 — l'avion (Carnet kraft) et l'éclair (BD pop) : les flèches. */
+function Avion() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+    </svg>
+  );
+}
+function Eclair() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+    </svg>
+  );
+}
+
 /** CHANTIER 171 — la fusée (Lucide « rocket ») de l'apparence Décollage. */
 function Fusee() {
   return (
@@ -378,6 +394,12 @@ export function Today({
         ? { defi: 'Stage du jour', go: '▶ Jouer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR}` }
       : style === 'neon'
         ? { defi: 'Défi du soir', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+      : style === 'voyage'
+        ? { defi: 'Étape du jour', go: 'En route', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} km` }
+      : style === 'manga'
+        ? { defi: 'Épisode du jour', go: 'C’est parti !', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} pages` }
+      : style === 'bd'
+        ? { defi: 'Aventure du jour', go: 'C’est parti !', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cases` }
       : style === 'ocean'
         ? { defi: 'Plongée du jour', go: 'Plonger', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} m de profondeur` }
       : style === 'tableau'
@@ -476,8 +498,10 @@ export function Today({
           {/* CHANTIER 171 — Décollage : une fusée de chaque côté pour changer de paquet.
               CHANTIER 173 — Tableau : une craie.
               CHANTIER 174 — Borne arcade : un triangle ; Néon : un chevron lumineux.
-              CHANTIER 176 — Grand bleu : un petit poisson. */}
-          {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean') && aFaire.length > 1 && (
+              CHANTIER 176 — Grand bleu : un petit poisson.
+              CHANTIER 178 — Carnet kraft : un avion ; Manga : traits de vitesse ; BD pop : un éclair. */}
+          {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean'
+            || style === 'voyage' || style === 'manga' || style === 'bd') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -487,6 +511,9 @@ export function Today({
               >{style === 'tableau' ? <i className="craie-baton" />
                 : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
                 : style === 'ocean' ? <Poisson />
+                : style === 'voyage' ? <Avion />
+                : style === 'bd' ? <Eclair />
+                : style === 'manga' ? <i className="fleche-manga" />
                 : <Fusee />}</button>
               <button
                 className="ly-fusee suiv"
@@ -496,6 +523,9 @@ export function Today({
               >{style === 'tableau' ? <i className="craie-baton" />
                 : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
                 : style === 'ocean' ? <Poisson />
+                : style === 'voyage' ? <Avion />
+                : style === 'bd' ? <Eclair />
+                : style === 'manga' ? <i className="fleche-manga" />
                 : <Fusee />}</button>
             </>
           )}

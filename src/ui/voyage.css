@@ -1,0 +1,182 @@
+/* ==================================================================
+   CHANTIER 178 — « Carnet kraft » : le carnet de voyage.
+
+   Actif quand <html> porte data-style="voyage" (theme.ts), avec
+   data-theme="clair". Forme du Lycée (voir `estLudique`) : ce fichier
+   rhabille les classes ly-*, eventail-* et grades. Polices déjà livrées :
+   Lexend (texte), Caveat (écriture au feutre). Aucune image.
+   Les paquets reprennent les cartes d'embarquement du « Passeport » (10b).
+   ================================================================== */
+
+[data-style='voyage'] {
+  --paper: #e9dcc0;
+  --panel: #f6eedc;
+  --panel-hi: #fbf5e6;
+  --ink: #3a2a1a;
+  --ink-soft: #4f3d29;
+  --grey: #6b5640;
+  --ink-dim: #6b5640;
+  --rule: rgba(58, 42, 26, 0.16);
+  --rule-strong: rgba(58, 42, 26, 0.3);
+  --chalk: #2f5d8a;
+  --chalk-ink: #2f5d8a;
+  --on-chalk: #ffffff;
+  --good: #3d7a46;
+  --bad: #b5452f;
+  --voile: rgba(58, 42, 26, 0.05);
+  --voile-2: rgba(58, 42, 26, 0.1);
+  --voile-3: rgba(58, 42, 26, 0.16);
+  --bleu: #2f5d8a;
+  --bleu-ink: #2f5d8a;
+  --rouge: #b5452f;
+  --orange: #b8701a;
+  --or: #d8b25a;
+  --ly-voile: rgba(58, 42, 26, 0.12);
+  --ly-voile-2: rgba(58, 42, 26, 0.28);
+  --ly-tabbar: #e0cfae;
+  --ly-ombre: rgba(58, 42, 26, 0.25);
+  --ly-tag: transparent;
+  --ly-bord-carte: rgba(58, 42, 26, 0.2);
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --feutre: 'Caveat', 'Segoe Print', cursive;
+  --anneau: var(--bleu);
+}
+
+/* ---------- le papier kraft ---------- */
+[data-style='voyage'] body {
+  background-color: #e9dcc0;
+  background-image:
+    radial-gradient(rgba(120, 80, 30, 0.07) 1px, transparent 1.2px),
+    radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1.2px);
+  background-size: 7px 7px, 11px 11px;
+}
+[data-style='voyage'] .screen-title,
+[data-style='voyage'] .topbar h1,
+[data-style='voyage'] .done h2,
+[data-style='voyage'] .sheet h3 { font-family: var(--feutre); font-weight: 700; font-size: 34px; letter-spacing: 0; }
+
+[data-style='voyage'] .tabbar { background: var(--ly-tabbar); border-top: 1.5px dashed #a58a63; }
+[data-style='voyage'] .tabbar button.on { color: var(--bleu); }
+[data-style='voyage'] .tabbar button.on::before { display: none; }
+[data-style='voyage'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='voyage'] .tabbar button.on .tabsvg { background: rgba(47, 93, 138, 0.14); }
+[data-style='voyage'] .studybg { background-image: none !important; background-color: transparent; }
+[data-style='voyage'] .studybg::after { display: none; }
+[data-style='voyage'] .eventail-carte.centre .eventail-dos { animation: none; }
+
+[data-style='voyage'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='voyage'] .reveal { background: var(--bleu); color: #fff; border: none; border-radius: 6px; font-weight: 800; box-shadow: 0 3px 0 #1f3f60; }
+[data-style='voyage'] .sheet { border-top: 2px dashed #a58a63; }
+
+/* ---------- Aujourd'hui ---------- */
+[data-style='voyage'] .ly-niv { border-radius: 50%; background: var(--panel); border: 2px solid var(--bleu); color: var(--bleu); }
+[data-style='voyage'] .ly-barre { border-radius: 2px; background: var(--ly-voile); }
+[data-style='voyage'] .ly-barre i { border-radius: 0; background: repeating-linear-gradient(90deg, var(--bleu) 0 10px, transparent 10px 14px); }
+/* La série : un tampon « escales ». */
+[data-style='voyage'] .ly-flamme {
+  width: 58px; height: 58px; padding: 0; flex-direction: column; justify-content: center; gap: 0; line-height: 1;
+  border-radius: 50%; background: transparent; color: var(--rouge);
+  border: 2.5px solid var(--rouge); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4.5px var(--rouge);
+  transform: rotate(-10deg);
+}
+[data-style='voyage'] .ly-flamme svg { display: none; }
+[data-style='voyage'] .ly-flamme b { font-size: 20px; font-weight: 800; color: var(--rouge); }
+[data-style='voyage'] .ly-flamme::after { content: 'ESCALES'; font-size: 8px; font-weight: 700; letter-spacing: 0.08em; }
+[data-style='voyage'] .ly-defi { border-radius: 4px; background: var(--panel); border: 1.5px dashed #a58a63; box-shadow: 0 2px 0 rgba(58, 42, 26, 0.08); }
+[data-style='voyage'] .ly-defi-haut > span:first-child { font-family: var(--feutre); font-weight: 700; font-size: 26px; line-height: 1; letter-spacing: 0; text-transform: none; color: var(--rouge); }
+[data-style='voyage'] .ly-gain { border-radius: 4px; background: transparent; border: 1.5px solid var(--bleu); color: var(--bleu); }
+[data-style='voyage'] .ly-defi-jour .ly-barre i { background: var(--rouge); }
+
+/* Les paquets : des cartes d'embarquement (bande dorée, talon détachable). */
+[data-style='voyage'] .eventail-dos {
+  box-sizing: border-box; padding: 18px 5px 24px; border: none; border-radius: 10px;
+  background: linear-gradient(var(--or) 0 18px, #fbf6ea 18px);
+  box-shadow: 0 8px 18px rgba(58, 42, 26, 0.22);
+}
+[data-style='voyage'] .eventail-dos::before {
+  content: ''; position: absolute; left: 10px; right: 10px; bottom: 11px; z-index: 1;
+  border-top: 2px dashed rgba(58, 42, 26, 0.28); pointer-events: none;
+}
+[data-style='voyage'] .eventail-dos::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 5px; height: 14px; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(circle 7px at 0 50%, #e9dcc0 98%, transparent 100%),
+    radial-gradient(circle 7px at 100% 50%, #e9dcc0 98%, transparent 100%);
+}
+[data-style='voyage'] .eventail-dos > img:not(.dos-illus-img),
+[data-style='voyage'] .eventail-dos > svg { border-radius: 3px; }
+[data-style='voyage'] .eventail-carte.centre .eventail-dos { box-shadow: 0 14px 28px rgba(58, 42, 26, 0.32), 0 0 0 2px var(--or); }
+
+[data-style='voyage'] .eventail-due { background: var(--rouge); color: #fff; }
+[data-style='voyage'] .ly-points i.on { background: var(--bleu); }
+
+/* Les avions qui changent de paquet. */
+[data-style='voyage'] .ly-fusee { width: 48px; height: 48px; border-radius: 50%; background: var(--panel); border: 1.5px dashed var(--bleu); color: var(--bleu); }
+[data-style='voyage'] .ly-fusee:hover { background: var(--panel-hi); }
+[data-style='voyage'] .ly-fusee svg { width: 24px; height: 24px; transform: rotate(45deg); }
+[data-style='voyage'] .ly-fusee.prec svg { transform: rotate(-135deg); }
+
+/* Les tuiles : la semaine en petits tampons. */
+[data-style='voyage'] .ly-tuile { border-radius: 4px; background: var(--panel); border: 1.5px dashed #a58a63; }
+[data-style='voyage'] .ly-tuile:hover { background: var(--panel-hi); }
+[data-style='voyage'] .ly-tuile-haut svg { color: var(--rouge); }
+[data-style='voyage'] .ly-segments { gap: 7px; height: 18px; }
+[data-style='voyage'] .ly-segments i { flex: none; width: 18px; height: 18px; border-radius: 50%; background: transparent; border: 2px solid rgba(58, 42, 26, 0.25); }
+[data-style='voyage'] .ly-segments i.on { border-color: var(--rouge); background: rgba(181, 69, 47, 0.15); transform: rotate(-12deg); }
+
+/* ==================================================================
+   La révision : une carte postale, des tampons encreurs
+   ================================================================== */
+[data-style='voyage'] .progressbar { border-radius: 2px; background: var(--ly-voile); }
+[data-style='voyage'] .progressbar i { border-radius: 0; background: var(--bleu); }
+[data-style='voyage'] .ly-combo { background: transparent; color: var(--rouge); }
+[data-style='voyage'] .studystage {
+  position: relative; margin: 18px 4px 18px; padding: 28px 18px;
+  border-radius: 4px; background: #fbf6ea; border: none;
+  box-shadow: 0 14px 28px rgba(58, 42, 26, 0.25); transform: rotate(-1.5deg);
+}
+/* Le timbre… */
+[data-style='voyage'] .studystage::before {
+  content: 'EN'; position: absolute; right: 14px; top: 14px;
+  width: 46px; height: 56px; display: grid; place-items: center;
+  background: #f0d9b5; border: 3px dotted #fbf6ea; outline: 1px solid #c9a87a;
+  font-size: 11px; font-weight: 800; color: var(--rouge);
+}
+/* … et son cachet. */
+[data-style='voyage'] .studystage::after {
+  content: ''; position: absolute; right: 44px; top: 36px; width: 54px; height: 54px; border-radius: 50%;
+  border: 1.5px solid rgba(47, 93, 138, 0.45);
+  background: repeating-linear-gradient(0deg, transparent 0 7px, rgba(47, 93, 138, 0.35) 7px 8.5px);
+  pointer-events: none;
+}
+[data-style='voyage'] .studystage .tag { border: none; background: transparent; padding: 0; font-family: var(--feutre); font-weight: 700; font-size: 20px; color: var(--bleu); }
+[data-style='voyage'] .ask { font-family: var(--feutre); font-weight: 700; font-size: 26px; color: var(--rouge); }
+[data-style='voyage'] .word { font-family: var(--sans); font-weight: 800; }
+[data-style='voyage'] .ruleline { background: repeating-linear-gradient(90deg, #a58a63 0 6px, transparent 6px 10px); }
+[data-style='voyage'] .answer { font-family: var(--feutre); font-weight: 700; font-size: 46px; line-height: 1; color: var(--bleu); }
+[data-style='voyage'] .example { font-style: normal; color: var(--grey); }
+[data-style='voyage'] .speak { background: transparent; border: 1.5px solid var(--bleu); color: var(--bleu); }
+
+[data-style='voyage'] .grades { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+[data-style='voyage'] .grades .grade {
+  --c: var(--rouge);
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  min-height: 98px; padding: 27px 0 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c);
+}
+[data-style='voyage'] .grades .grade::before {
+  content: ''; position: absolute; left: 50%; top: 0; z-index: -1;
+  width: 70px; height: 70px; margin-left: -35px; border-radius: 50%;
+  border: 2.5px solid var(--c); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4.5px var(--c);
+  transform: rotate(var(--r, -8deg)); transition: transform 0.08s ease;
+}
+[data-style='voyage'] .grades .grade:active::before { transform: rotate(var(--r, -8deg)) scale(0.94); }
+[data-style='voyage'] .grades .grade small { margin-top: 30px; font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--grey); }
+[data-style='voyage'] .grades .g-hard { --c: var(--orange); --r: 6deg; }
+[data-style='voyage'] .grades .g-good { --c: var(--bleu); --r: -4deg; }
+[data-style='voyage'] .grades .g-easy { --c: var(--good); --r: 9deg; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='voyage'] .grades .grade::before { transition: none; }
+}

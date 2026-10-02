@@ -46,7 +46,7 @@
  */
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
-  | 'arcade' | 'neon' | 'grand-bleu';
+  | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -85,6 +85,9 @@ export const THEME_LABELS: Record<Theme, string> = {
   arcade: 'Borne arcade',
   neon: 'Néon',
   'grand-bleu': 'Grand bleu',
+  'carnet-kraft': 'Carnet kraft',
+  manga: 'Manga',
+  'bd-pop': 'BD pop',
 };
 
 export function themeChoisi(): Theme {
@@ -92,7 +95,8 @@ export function themeChoisi(): Theme {
   return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'cahier-vert'
     || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair'
     || v === 'decollage' || v === 'orbite' || v === 'tableau-vert' || v === 'tableau-noir'
-    || v === 'arcade' || v === 'neon' || v === 'grand-bleu' ? v : 'auto';
+    || v === 'arcade' || v === 'neon' || v === 'grand-bleu'
+    || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -105,6 +109,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'lycee' || t === 'decollage' || t === 'orbite' || estTableau(t)
     || t === 'arcade' || t === 'neon' || t === 'grand-bleu') return 'sombre';
   if (t === 'lycee-clair') return 'clair';
+  /* CHANTIER 178 — les trois nouvelles apparences sont claires. */
+  if (t === 'carnet-kraft' || t === 'manga' || t === 'bd-pop') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -120,6 +126,10 @@ function appliquer(t: Theme) {
   else if (estTableau(t)) document.documentElement.dataset.style = 'tableau';
   /* CHANTIER 176 — Grand bleu pose data-style="ocean" (ocean.css). */
   else if (t === 'grand-bleu') document.documentElement.dataset.style = 'ocean';
+  /* CHANTIER 178 — Carnet kraft (voyage.css), Manga et BD pop (bulles.css). */
+  else if (t === 'carnet-kraft') document.documentElement.dataset.style = 'voyage';
+  else if (t === 'manga') document.documentElement.dataset.style = 'manga';
+  else if (t === 'bd-pop') document.documentElement.dataset.style = 'bd';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

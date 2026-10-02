@@ -1,0 +1,297 @@
+/* ==================================================================
+   CHANTIER 178 — « Manga » et « BD pop » : la bande dessinée.
+
+   Actifs quand <html> porte data-style="manga" ou "bd" (theme.ts), avec
+   data-theme="clair". Forme du Lycée (voir `estLudique`). Police :
+   Archivo (déjà livrée), en gras et en italique. Aucune image : trames,
+   lignes de vitesse et bulles sont en CSS.
+   ================================================================== */
+
+[data-style='manga'] {
+  --paper: #fbfbf8;
+  --panel: #ffffff;
+  --panel-hi: #f2f2ee;
+  --ink: #111111;
+  --ink-soft: #2a2a2a;
+  --grey: #4a4a4a;
+  --ink-dim: #4a4a4a;
+  --rule: rgba(17, 17, 17, 0.2);
+  --rule-strong: #111111;
+  --chalk: #e63946;
+  --chalk-ink: #c62832;
+  --on-chalk: #ffffff;
+  --good: #2f9e55;
+  --bad: #e63946;
+  --voile: rgba(17, 17, 17, 0.05);
+  --voile-2: rgba(17, 17, 17, 0.1);
+  --voile-3: rgba(17, 17, 17, 0.16);
+  --bleu: #111111;
+  --bleu-ink: #111111;
+  --rouge: #e63946;
+  --orange: #e07a00;
+  --ly-voile: rgba(17, 17, 17, 0.12);
+  --ly-voile-2: rgba(17, 17, 17, 0.3);
+  --ly-tabbar: #ffffff;
+  --ly-ombre: rgba(17, 17, 17, 0.2);
+  --ly-tag: transparent;
+  --ly-bord-carte: #111111;
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--rouge);
+}
+[data-style='bd'] {
+  --paper: #ffd23f;
+  --panel: #ffffff;
+  --panel-hi: #fff6d6;
+  --ink: #1a1a1a;
+  --ink-soft: #2a2a2a;
+  --grey: #3d3d3d;
+  --ink-dim: #3d3d3d;
+  --rule: rgba(26, 26, 26, 0.25);
+  --rule-strong: #1a1a1a;
+  --chalk: #e63946;
+  --chalk-ink: #c62832;
+  --on-chalk: #ffffff;
+  --good: #16a34a;
+  --bad: #e63946;
+  --voile: rgba(26, 26, 26, 0.05);
+  --voile-2: rgba(26, 26, 26, 0.1);
+  --voile-3: rgba(26, 26, 26, 0.16);
+  --bleu: #1d4ed8;
+  --bleu-ink: #1d4ed8;
+  --rouge: #e63946;
+  --orange: #ff8c1a;
+  --ly-voile: rgba(26, 26, 26, 0.12);
+  --ly-voile-2: rgba(26, 26, 26, 0.3);
+  --ly-tabbar: #ffffff;
+  --ly-ombre: rgba(26, 26, 26, 0.3);
+  --ly-tag: transparent;
+  --ly-bord-carte: #1a1a1a;
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--rouge);
+}
+
+/* ---------- commun ---------- */
+:is([data-style='manga'], [data-style='bd']) .screen-title,
+:is([data-style='manga'], [data-style='bd']) .topbar h1,
+:is([data-style='manga'], [data-style='bd']) .done h2,
+:is([data-style='manga'], [data-style='bd']) .sheet h3 { font-family: var(--sans); font-weight: 900; font-style: italic; letter-spacing: -0.01em; }
+:is([data-style='manga'], [data-style='bd']) .sheet { border-top: 3px solid #111; }
+:is([data-style='manga'], [data-style='bd']) .word { font-family: var(--sans); font-weight: 900; }
+:is([data-style='manga'], [data-style='bd']) .example { font-style: normal; color: var(--grey); }
+:is([data-style='manga'], [data-style='bd']) .grades { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+:is([data-style='manga'], [data-style='bd']) .ly-segments { gap: 7px; height: 16px; }
+:is([data-style='manga'], [data-style='bd']) .ly-fusee:focus-visible { outline: 3px solid var(--rouge); outline-offset: 2px; }
+
+[data-style='manga'] .tabbar { background: #fff; border-top: 3px solid #111; }
+[data-style='manga'] .tabbar button.on { color: #111; }
+[data-style='manga'] .tabbar button.on::before { display: none; }
+[data-style='manga'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='manga'] .tabbar button.on .tabsvg { background: #ffe1e3; outline: 2px solid #111; }
+[data-style='manga'] .studybg { background-image: none !important; background-color: transparent; }
+[data-style='manga'] .studybg::after { display: none; }
+[data-style='manga'] .eventail-carte.centre .eventail-dos { animation: none; }
+
+
+[data-style='bd'] .tabbar { background: #fff; border-top: 3px solid #1a1a1a; }
+[data-style='bd'] .tabbar button.on { color: var(--rouge); }
+[data-style='bd'] .tabbar button.on::before { display: none; }
+[data-style='bd'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='bd'] .tabbar button.on .tabsvg { background: #ffd23f; outline: 2px solid #1a1a1a; }
+[data-style='bd'] .studybg { background-image: none !important; background-color: transparent; }
+[data-style='bd'] .studybg::after { display: none; }
+[data-style='bd'] .eventail-carte.centre .eventail-dos { animation: none; }
+
+
+/* ==================================================================
+   Manga : la planche en noir et blanc
+   ================================================================== */
+[data-style='manga'] body { background-color: #fbfbf8; }
+/* La trame de points, dans le coin. */
+[data-style='manga'] .app::before {
+  content: ''; position: fixed; right: 0; top: 0; z-index: 0; width: 240px; height: 280px; pointer-events: none;
+  background-image: radial-gradient(#111 1.1px, transparent 1.5px); background-size: 7px 7px;
+  -webkit-mask-image: radial-gradient(circle at 100% 0, #000 0, transparent 70%);
+  mask-image: radial-gradient(circle at 100% 0, #000 0, transparent 70%);
+  opacity: 0.3;
+}
+[data-style='manga'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='manga'] .reveal { background: #111; color: #fff; border: none; border-radius: 3px; font-weight: 900; font-style: italic; }
+
+[data-style='manga'] .ly-niv { border-radius: 50%; border: 3px solid #111; background: #fff; color: #111; }
+[data-style='manga'] .ly-niv small { color: #111; }
+[data-style='manga'] .ly-barre { border-radius: 0; border: 2px solid #111; background: #fff; }
+[data-style='manga'] .ly-barre i { border-radius: 0; background: repeating-linear-gradient(-45deg, #111 0 3px, #fff 3px 6px); }
+/* La série : une bulle qui explose. */
+[data-style='manga'] .ly-flamme {
+  position: relative; isolation: isolate; width: 60px; height: 56px; padding: 0; justify-content: center;
+  border-radius: 0; background: transparent; color: #fff;
+}
+[data-style='manga'] .ly-flamme::before,
+[data-style='manga'] .ly-flamme::after { content: ''; position: absolute; z-index: -1; clip-path: polygon(50% 0%, 61% 18%, 82% 8%, 79% 30%, 100% 36%, 84% 52%, 98% 70%, 76% 72%, 74% 95%, 56% 82%, 40% 100%, 34% 78%, 12% 86%, 18% 64%, 0% 54%, 16% 40%, 4% 20%, 26% 22%, 30% 2%); }
+[data-style='manga'] .ly-flamme::before { inset: 0; background: #111; }
+[data-style='manga'] .ly-flamme::after { inset: 4px; background: var(--rouge); }
+[data-style='manga'] .ly-flamme svg { display: none; }
+[data-style='manga'] .ly-flamme b { color: #fff; font-style: italic; font-size: 19px; }
+[data-style='manga'] .ly-flamme b::after { content: '!'; }
+[data-style='manga'] .ly-defi { border-radius: 3px; background: #fff; border: 3px solid #111; }
+[data-style='manga'] .ly-defi-haut > span:first-child { font-weight: 900; font-style: italic; font-size: 15px; letter-spacing: 0.02em; text-transform: uppercase; color: #111; }
+[data-style='manga'] .ly-gain { border-radius: 999px; background: #111; color: #fff; border: none; }
+[data-style='manga'] .ly-defi-n { font-style: italic; }
+[data-style='manga'] .ly-defi-jour .ly-barre i { background: var(--rouge); }
+[data-style='manga'] .eventail-dos { border-radius: 2px; border: 3px solid #111; background: #fff; }
+[data-style='manga'] .eventail-carte.centre .eventail-dos { border-width: 3.5px; border-color: #111; box-shadow: none; }
+/* Les lignes de vitesse autour du paquet du centre. */
+[data-style='manga'] .eventail-carte.centre::before {
+  content: ''; position: absolute; inset: -46px; z-index: -1; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(17, 17, 17, 0.2) 0 2deg, transparent 2deg 9deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 40%, #000 42%, transparent 75%);
+  mask-image: radial-gradient(circle, transparent 40%, #000 42%, transparent 75%);
+}
+[data-style='manga'] .eventail-due { background: var(--rouge); color: #fff; border: 3px solid #111; }
+[data-style='manga'] .ly-points i.on { background: #111; }
+/* Les flèches : un triangle noir et ses traits de vitesse. */
+[data-style='manga'] .ly-fusee { width: 50px; height: 48px; border: none; border-radius: 0; background: transparent; }
+[data-style='manga'] .ly-fusee:disabled { opacity: 0.25; }
+.fleche-manga {
+  position: relative; display: block; width: 48px; height: 32px;
+  background:
+    linear-gradient(#111, #111) 0 6px / 18px 3px no-repeat,
+    linear-gradient(#111, #111) 4px 15px / 14px 3px no-repeat,
+    linear-gradient(#111, #111) 0 24px / 18px 3px no-repeat;
+}
+.fleche-manga::after { content: ''; position: absolute; left: 22px; top: 0; width: 26px; height: 32px; background: #111; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.ly-fusee.prec .fleche-manga { transform: scaleX(-1); }
+[data-style='manga'] .ly-tuile { border-radius: 3px; background: #fff; border: 3px solid #111; }
+[data-style='manga'] .ly-tuile:hover { background: var(--panel-hi); }
+[data-style='manga'] .ly-tuile-haut svg { color: var(--rouge); }
+[data-style='manga'] .ly-segments i { flex: none; width: 16px; height: 16px; border-radius: 0; border: 2.5px solid #111; background: #fff; transform: skewX(-8deg); }
+[data-style='manga'] .ly-segments i.on { background: #111; }
+
+/* Révision : une case, une bulle, des onomatopées. */
+[data-style='manga'] .progressbar { border-radius: 0; border: 2px solid #111; background: #fff; }
+[data-style='manga'] .progressbar i { border-radius: 0; background: #111; }
+[data-style='manga'] .ly-combo { background: transparent; color: var(--rouge); font-style: italic; }
+[data-style='manga'] .studystage {
+  margin: 18px 4px 18px; padding: 24px 16px;
+  border-radius: 3px; border: 3.5px solid #111;
+  background-color: #fff;
+  background-image: repeating-conic-gradient(from 0deg at 50% 62%, rgba(17, 17, 17, 0.07) 0 2deg, transparent 2deg 10deg);
+  box-shadow: none;
+}
+[data-style='manga'] .studystage .tag { border: none; border-radius: 2px; background: #111; color: #fff; font-weight: 800; }
+[data-style='manga'] .ask { font-weight: 900; font-style: italic; color: var(--chalk-ink); }
+[data-style='manga'] .word {
+  position: relative; display: inline-block; padding: 16px 26px;
+  border-radius: 50%; background: #fff; border: 3px solid #111;
+}
+[data-style='manga'] .word::after {
+  content: ''; position: absolute; left: 26%; bottom: -20px; width: 22px; height: 20px;
+  background: #111; clip-path: polygon(0 0, 100% 0, 10% 100%);
+}
+[data-style='manga'] .ruleline { background: transparent; }
+[data-style='manga'] .answer { font-family: var(--sans); font-weight: 900; font-style: italic; color: #111; text-shadow: 3px 3px 0 #ffd0d4; }
+[data-style='manga'] .speak { background: #fff; border: 2.5px solid #111; border-radius: 3px; color: #111; font-weight: 800; }
+[data-style='manga'] .grades .grade {
+  --c: #ff6b6b;
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  min-height: 96px; padding: 26px 0 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  font-weight: 900; font-style: italic; font-size: 14px; color: #111;
+}
+[data-style='manga'] .grades .grade::before,
+[data-style='manga'] .grades .grade::after {
+  content: ''; position: absolute; left: 50%; z-index: -1; clip-path: polygon(50% 0%, 61% 18%, 82% 8%, 79% 30%, 100% 36%, 84% 52%, 98% 70%, 76% 72%, 74% 95%, 56% 82%, 40% 100%, 34% 78%, 12% 86%, 18% 64%, 0% 54%, 16% 40%, 4% 20%, 26% 22%, 30% 2%); transition: transform 0.08s ease;
+}
+[data-style='manga'] .grades .grade::before { top: 0; width: 78px; height: 72px; margin-left: -39px; background: #111; }
+[data-style='manga'] .grades .grade::after { top: 4px; width: 70px; height: 64px; margin-left: -35px; background: var(--c); }
+[data-style='manga'] .grades .grade:active::before,
+[data-style='manga'] .grades .grade:active::after { transform: scale(0.94); }
+[data-style='manga'] .grades .grade:focus-visible { outline: 3px solid var(--rouge); outline-offset: 2px; }
+[data-style='manga'] .grades .grade small { margin-top: 28px; font-size: 12px; font-weight: 700; font-style: normal; color: var(--grey); }
+[data-style='manga'] .grades .g-hard { --c: #ffb347; }
+[data-style='manga'] .grades .g-good { --c: #ffe066; }
+[data-style='manga'] .grades .g-easy { --c: #7bd88f; }
+
+/* ==================================================================
+   BD pop : couleurs primaires, trame Ben-Day, ombres décalées
+   ================================================================== */
+[data-style='bd'] body {
+  background-color: #ffd23f;
+  background-image: radial-gradient(rgba(230, 57, 70, 0.32) 2.2px, transparent 2.7px);
+  background-size: 12px 12px;
+}
+[data-style='bd'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='bd'] .reveal { background: var(--rouge); color: #fff; border-radius: 0; font-weight: 900; text-transform: uppercase; border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a; }
+[data-style='bd'] .ly-niv { border-radius: 50%; background: var(--bleu); color: #fff; border: 3px solid #1a1a1a; box-shadow: 3px 3px 0 #1a1a1a; }
+[data-style='bd'] .ly-niv small { color: #fff; }
+[data-style='bd'] .ly-barre { border-radius: 0; border: 2.5px solid #1a1a1a; background: #fff; }
+[data-style='bd'] .ly-barre i { border-radius: 0; background: var(--bleu); }
+/* La série : un autocollant « ×5 ». */
+[data-style='bd'] .ly-flamme { border-radius: 0; background: #fff; color: var(--rouge); border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a; transform: rotate(6deg); }
+[data-style='bd'] .ly-flamme svg { display: none; }
+[data-style='bd'] .ly-flamme b { color: var(--rouge); font-size: 18px; }
+[data-style='bd'] .ly-flamme b::before { content: '×'; }
+[data-style='bd'] .ly-defi { position: relative; border-radius: 0; background: #fff; border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a; padding-top: 30px; }
+/* Le titre du défi : un encadré de narration jaune. */
+[data-style='bd'] .ly-defi-haut > span:first-child {
+  position: absolute; left: 0; top: 0; padding: 3px 8px;
+  background: #ffd23f; border-right: 3px solid #1a1a1a; border-bottom: 3px solid #1a1a1a;
+  font-weight: 900; font-size: 13px; letter-spacing: 0; text-transform: uppercase; color: #1a1a1a;
+}
+[data-style='bd'] .ly-gain { margin-left: auto; border-radius: 0; background: var(--bleu); color: #fff; border: 2px solid #1a1a1a; }
+[data-style='bd'] .ly-defi-jour .ly-barre i { background: var(--rouge); }
+[data-style='bd'] .eventail-dos { border-radius: 0; border: 3px solid #1a1a1a; background: #fff; }
+[data-style='bd'] .eventail-carte.centre .eventail-dos { border-color: #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a; }
+[data-style='bd'] .eventail-due { background: var(--rouge); color: #fff; border: 3px solid #1a1a1a; }
+[data-style='bd'] .ly-points i { background: rgba(26, 26, 26, 0.3); }
+[data-style='bd'] .ly-points i.on { background: #1a1a1a; }
+/* Les éclairs qui changent de paquet. */
+[data-style='bd'] .ly-fusee { width: 48px; height: 48px; border-radius: 50%; background: var(--rouge); color: #fff; border: 3px solid #1a1a1a; box-shadow: 3px 3px 0 #1a1a1a; }
+[data-style='bd'] .ly-fusee:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #1a1a1a; }
+[data-style='bd'] .ly-fusee svg { width: 22px; height: 22px; }
+[data-style='bd'] .ly-fusee.prec svg { transform: scaleX(-1); }
+[data-style='bd'] .ly-tuile { border-radius: 0; background: #fff; border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a; }
+[data-style='bd'] .ly-tuile:hover { background: var(--panel-hi); }
+[data-style='bd'] .ly-tuile:active { transform: translate(2px, 2px); box-shadow: 3px 3px 0 #1a1a1a; }
+[data-style='bd'] .ly-tuile-haut svg { color: var(--bleu); }
+[data-style='bd'] .ly-segments i { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid #1a1a1a; background: #fff; }
+[data-style='bd'] .ly-segments i.on { background: var(--rouge); }
+
+/* Révision : une case, son encadré, sa bulle. */
+[data-style='bd'] .progressbar { border-radius: 0; border: 2.5px solid #1a1a1a; background: #fff; }
+[data-style='bd'] .progressbar i { border-radius: 0; background: var(--bleu); }
+[data-style='bd'] .ly-combo { background: #fff; color: var(--rouge); border: 2px solid #1a1a1a; }
+[data-style='bd'] .studystage { position: relative; margin: 18px 6px 22px; padding: 44px 16px 26px; border-radius: 0; background: #fff; border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a; }
+[data-style='bd'] .studystage .tag {
+  position: absolute; left: 0; top: 0; border: none; border-radius: 0;
+  border-right: 3px solid #1a1a1a; border-bottom: 3px solid #1a1a1a; background: #ffd23f;
+  color: #1a1a1a; font-weight: 900; text-transform: uppercase;
+}
+[data-style='bd'] .ask { font-weight: 900; color: var(--bleu); }
+[data-style='bd'] .word {
+  position: relative; display: inline-block; padding: 16px 26px;
+  border-radius: 50%; background: #fff; border: 3px solid #1a1a1a;
+}
+[data-style='bd'] .word::after {
+  content: ''; position: absolute; left: 60%; bottom: -20px; width: 22px; height: 20px;
+  background: #1a1a1a; clip-path: polygon(0 0, 100% 0, 80% 100%);
+}
+[data-style='bd'] .ruleline { background: transparent; }
+[data-style='bd'] .answer { font-family: var(--sans); font-weight: 900; text-transform: uppercase; color: var(--rouge); -webkit-text-stroke: 1.5px #1a1a1a; }
+[data-style='bd'] .speak { background: #fff; color: #1a1a1a; border-radius: 0; font-weight: 800; border: 2.5px solid #1a1a1a; box-shadow: 3px 3px 0 #1a1a1a; }
+[data-style='bd'] .grades .grade {
+  min-height: 66px; border-radius: 0; background: var(--rouge); color: #fff; border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a;
+  font-weight: 900; font-size: 15px; text-transform: uppercase;
+}
+[data-style='bd'] .grades .grade:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #1a1a1a; }
+[data-style='bd'] .grades .grade small { color: inherit; font-size: 12px; font-weight: 600; text-transform: none; opacity: 1; }
+[data-style='bd'] .grades .g-hard { background: #d96a00; }
+[data-style='bd'] .grades .g-good { background: var(--bleu); }
+[data-style='bd'] .grades .g-easy { background: #15803d; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='manga'] .grades .grade::before,
+  [data-style='manga'] .grades .grade::after { transition: none; }
+}
