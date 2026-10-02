@@ -1,7 +1,7 @@
 /** CHANTIER 168 — les XP gagnés par l'assiduité. */
 import { describe, it, expect } from 'vitest';
 import { EMPTY_STREAK, compterCarte, mergeStreak, record, shiftDay, type Streak } from './streak';
-import { bonusSerie, gainDuJour, serieValidee, xpTotal, XP_MAX_GRATUIT } from './xp';
+import { bonusSerie, gainDuJour, historiqueXp, meilleureSerie, serieValidee, xpTotal, XP_MAX_GRATUIT } from './xp';
 
 const J0 = '2026-10-01';
 
@@ -61,5 +61,21 @@ describe('XP par assiduité', () => {
     const b = jours(1, 15);
     expect(mergeStreak(a, b).counts?.[J0]).toBe(15);
     expect(mergeStreak(b, b).counts?.[J0]).toBe(15);
+  });
+
+  it('meilleure série : la plus longue, même cassée depuis', () => {
+    let s = jours(7);
+    s = jours(1, 3, shiftDay(J0, 7), s);
+    s = jours(2, 20, shiftDay(J0, 8), s);
+    expect(meilleureSerie(s)).toBe(7);
+  });
+
+  it('historique : 20 XP par jour validé, bonus au 5e, jour manqué, journée en cours', () => {
+    let s = jours(5);
+    s = jours(1, 8, shiftDay(J0, 5), s);
+    const h = historiqueXp(s, 7, shiftDay(J0, 6));
+    expect(h.map((j) => j.etat)).toEqual(['valide', 'valide', 'valide', 'valide', 'valide', 'manque', 'encours']);
+    expect(h[4].bonus).toBe(20);
+    expect(h[5].cartes).toBe(8);
   });
 });

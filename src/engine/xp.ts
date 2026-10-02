@@ -91,3 +91,47 @@ export function gainDuJour(s: Streak, today = todayKey()): { valide: boolean; xp
   const rang = serieJusqua(s, shiftDay(today, -1)) + 1;
   return { valide, xp: XP_PAR_JOUR + bonusSerie(rang) };
 }
+
+/* ------------------------------------------------------------------
+   CHANTIER 169 — ce que lit le tiroir « Mes XP » des Réglages.
+   ------------------------------------------------------------------ */
+
+/** La plus longue série de jours validés, depuis le début. */
+export function meilleureSerie(s: Streak): number {
+  let best = 0;
+  let serie = 0;
+  let dernier: string | null = null;
+  for (const d of [...s.days].sort()) {
+    if (!jourValide(s, d)) { serie = 0; dernier = null; continue; }
+    serie = dernier && shiftDay(dernier, 1) === d ? serie + 1 : 1;
+    dernier = d;
+    best = Math.max(best, serie);
+  }
+  return best;
+}
+
+export interface JourXp {
+  key: string;
+  /** 'valide' : 20 XP (+ bonus) · 'manque' : rien · 'encours' : aujourd'hui, pas encore validé. */
+  etat: 'valide' | 'manque' | 'encours';
+  base: number;
+  bonus: number;
+  /** Cartes notées ce jour-là (aujourd'hui surtout). */
+  cartes: number;
+}
+
+/** Les `n` derniers jours, du plus ancien à aujourd'hui, avec leurs XP. */
+export function historiqueXp(s: Streak, n = 14, today = todayKey()): JourXp[] {
+  const out: JourXp[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const key = shiftDay(today, -i);
+    const cartes = s.counts?.[key] ?? 0;
+    if (jourValide(s, key)) {
+      const bonus = ancien(s, key) ? 0 : bonusSerie(serieJusqua(s, key));
+      out.push({ key, etat: 'valide', base: XP_PAR_JOUR, bonus, cartes });
+    } else {
+      out.push({ key, etat: i === 0 ? 'encours' : 'manque', base: 0, bonus: 0, cartes });
+    }
+  }
+  return out;
+}

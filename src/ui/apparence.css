@@ -166,3 +166,38 @@ body { font-family: var(--sans); }
 .today-xp { margin: 6px 0 0; font-size: 14px; color: var(--ink-soft); }
 .ly-defi-jour { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; font-size: 13px; color: var(--grey); }
 @media (prefers-reduced-motion: reduce) { .xp-barre i { transition: none; } }
+
+/* ---------- CHANTIER 169 — le tiroir « Mes XP » ---------- */
+.xpj-chiffres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 16px; }
+.xpj-chiffres > span { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--voile, rgba(234, 230, 219, 0.05)); }
+.xpj-chiffres b { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+.xpj-chiffres small { font-size: 12.5px; color: var(--grey); line-height: 1.25; }
+.xpj-titre { margin: 4px 0 8px; font-size: 14px; color: var(--ink-soft); }
+.xpj-barres { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; }
+.xpj-jour { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.xpj-jour small { text-align: center; font-size: 11px; color: var(--grey); }
+.xpj-col { height: 92px; display: flex; flex-direction: column; justify-content: flex-end; }
+.xpj-col i { display: block; }
+.xpj-col .xpj-bonus { border-radius: 4px 4px 0 0; }
+.xpj-col .xpj-base { border-radius: 0; }
+.xpj-col > .xpj-base:first-child { border-radius: 4px 4px 0 0; }
+.xpj-base { background: var(--good); }
+.xpj-bonus { background: var(--chalk); }
+.xpj-manque { height: 3px; border-radius: 2px; background: var(--bad); }
+.xpj-auj { border-radius: 4px 4px 0 0; border: 1.5px dashed var(--chalk); background: color-mix(in srgb, var(--chalk) 12%, transparent); }
+.xpj-legende { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 16px; font-size: 12.5px; color: var(--grey); }
+.xpj-legende span { display: flex; align-items: center; gap: 5px; }
+.xpj-legende i { width: 10px; height: 10px; border-radius: 2px; }
+.xpj-legende i.xpj-manque { height: 3px; }
+.xpj-bareme { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.xpj-bareme > span { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--ink); }
+.xpj-bareme b { color: var(--chalk-ink, var(--chalk)); white-space: nowrap; }
+.xpj-frise { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin-bottom: 6px; }
+.xpj-frise > span { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; color: var(--grey); }
+.xpj-frise > span > i { align-self: stretch; height: 6px; border-radius: 3px; background: var(--voile-2, rgba(234, 230, 219, 0.10)); overflow: hidden; }
+.xpj-frise > span > i > i { display: block; height: 100%; background: var(--chalk); }
+.xpj-frise > span.acquis > i > i { background: var(--good); }
+.xpj-frise b { font-size: 12px; font-variant-numeric: tabular-nums; }
+.xpj-frise small { font-size: 11px; line-height: 1.2; }
+.xpj-frise > span.acquis { color: var(--good); }
+.xpj-frise > span.encours { color: var(--chalk-ink, var(--chalk)); }

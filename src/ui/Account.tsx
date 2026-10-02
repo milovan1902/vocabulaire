@@ -82,7 +82,10 @@ import { HEURES, askPermission, permission } from './reminder';
 import type { Theme } from './theme';
 import { THEME_LABELS, setTheme, themeChoisi } from './theme';
 import { DEBLOCAGE, estDebloquee, retenir } from './apparences';
-import { XP_MAX_GRATUIT, estPremium, xpTotal } from '../engine/xp';
+import {
+  CARTES_PAR_JOUR, XP_MAX_GRATUIT, estPremium, historiqueXp, meilleureSerie, serieValidee, xpTotal,
+} from '../engine/xp';
+import { niveauDe } from '../engine/niveau';
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -151,7 +154,19 @@ function tempsDit(s: Settings): string {
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide';
+type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'xp' | 'aide';
+
+/* CHANTIER 169 — la frise des apparences du tiroir « Mes XP ». Les trois
+   dernières places attendent les prochaines apparences gratuites. */
+const FRISE: Array<{ seuil: number; nom: string }> = [
+  { seuil: 100, nom: 'Cahier' },
+  { seuil: 250, nom: 'Lycée clair' },
+  { seuil: 400, nom: 'Lycée foncé' },
+  { seuil: 600, nom: 'à venir' },
+  { seuil: 800, nom: 'à venir' },
+  { seuil: 1000, nom: 'à venir' },
+];
+const JOURS_COURTS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
 export function Account({
   settings, auth, streak, onSettings, onHome, onGuide,
@@ -172,6 +187,11 @@ export function Account({
   /* CHANTIER 168 — le message sous une apparence encore verrouillée. */
   const [verrou, setVerrou] = useState<string | null>(null);
   const xp = xpTotal(streak);
+  /* CHANTIER 169 — le tiroir « Mes XP ». */
+  const niveau = niveauDe(xp).niveau;
+  const serieXp = serieValidee(streak);
+  const recordXp = Math.max(meilleureSerie(streak), serieXp);
+  const jours14 = historiqueXp(streak, 14);
 
   /*
    * L'apparence en cours est acquise pour de bon, et chaque palier
@@ -322,6 +342,14 @@ export function Account({
           valeur={valeurs.revision}
           onClick={() => setTiroir('revision')}
         />
+        {/* CHANTIER 169 — les XP : évolution, règles, apparences à gagner. */}
+        <Ligne
+          icone="/ico-xp.png"
+          titre="Mes XP"
+          sous="Évolution, règles et bonus."
+          valeur={`${xp.toLocaleString('fr-FR')} XP`}
+          onClick={() => setTiroir('xp')}
+        />
         {/*
           * CHANTIER 167 — « Aide » devient une ligne comme les autres. Les
           * trois boutons qui traînaient sous la liste passent dans son
@@ -335,6 +363,82 @@ export function Account({
           onClick={() => setTiroir('aide')}
         />
       </div>
+
+      {tiroir === 'xp' && (
+        <Tiroir titre="Mes XP" onFermer={() => setTiroir(null)}>
+          <div className="xpj-chiffres">
+            <span>
+              <b>{xp.toLocaleString('fr-FR')}</b>
+              <small>{estPremium() ? 'XP' : `XP sur ${XP_MAX_GRATUIT.toLocaleString('fr-FR')}`}</small>
+            </span>
+            <span>
+              <b>{niveau}</b>
+              <small>niveau</small>
+            </span>
+            <span>
+              <b>{serieXp} / {recordXp}</b>
+              <small>série en cours / meilleure</small>
+            </span>
+          </div>
+
+          <p className="xpj-titre">Les 14 derniers jours</p>
+          <div className="xpj-barres" role="img" aria-label="XP gagnés chacun des 14 derniers jours">
+            {jours14.map((j) => {
+              const nom = JOURS_COURTS[new Date(j.key + 'T12:00:00').getDay()];
+              return (
+                <span key={j.key} className={`xpj-jour ${j.etat}`} title={`${j.key.slice(8)}/${j.key.slice(5, 7)} : ${j.base + j.bonus} XP`}>
+                  <span className="xpj-col">
+                    {j.etat === 'valide' && (
+                      <>
+                        {j.bonus > 0 && <i className="xpj-bonus" style={{ height: `${(100 * j.bonus) / 80}%` }} />}
+                        <i className="xpj-base" style={{ height: `${(100 * j.base) / 80}%` }} />
+                      </>
+                    )}
+                    {j.etat === 'encours' && (
+                      <i className="xpj-auj" style={{ height: `${Math.max(4, (25 * Math.min(j.cartes, CARTES_PAR_JOUR)) / CARTES_PAR_JOUR)}%` }} />
+                    )}
+                    {j.etat === 'manque' && <i className="xpj-manque" />}
+                  </span>
+                  <small>{nom}</small>
+                </span>
+              );
+            })}
+          </div>
+          <div className="xpj-legende">
+            <span><i className="xpj-base" />20 XP du jour</span>
+            <span><i className="xpj-bonus" />bonus de série</span>
+            <span><i className="xpj-manque" />jour manqué</span>
+            <span><i className="xpj-auj" />aujourd’hui ({Math.min(jours14[13].cartes, CARTES_PAR_JOUR)}/{CARTES_PAR_JOUR})</span>
+          </div>
+
+          <div className="xpj-bareme">
+            <span><span>20 cartes dans la journée</span><b>+20 XP</b></span>
+            <span><span>5e jour d’affilée</span><b>+20 bonus</b></span>
+            <span><span>10e jour d’affilée</span><b>+40 bonus</b></span>
+            <span><span>15e, 20e, 25e… jour</span><b>+60 bonus</b></span>
+          </div>
+          <p className="hint">
+            Un jour manqué remet le bonus à zéro, jamais tes XP. « Facile » ne
+            rapporte rien de plus. Parler ne rapporte pas d’XP.
+          </p>
+
+          <p className="xpj-titre">Apparences à gagner</p>
+          <div className="xpj-frise">
+            {FRISE.map((p, i) => {
+              const avant = i === 0 ? 0 : FRISE[i - 1].seuil;
+              const plein = xp >= p.seuil;
+              const part = plein ? 100 : xp > avant ? (100 * (xp - avant)) / (p.seuil - avant) : 0;
+              return (
+                <span key={p.seuil} className={plein ? 'acquis' : part > 0 ? 'encours' : ''}>
+                  <i><i style={{ width: `${part}%` }} /></i>
+                  <b>{p.seuil.toLocaleString('fr-FR')}</b>
+                  <small>{p.nom}</small>
+                </span>
+              );
+            })}
+          </div>
+        </Tiroir>
+      )}
 
       {tiroir === 'aide' && (
         <Tiroir titre="Aide" onFermer={() => setTiroir(null)}>
