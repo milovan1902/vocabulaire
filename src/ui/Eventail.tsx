@@ -17,9 +17,11 @@ import type { DeckSummary } from './deckSummary';
 import { DeckFace } from './components';
 
 export function Eventail({
-  paquets, centre, onCentre, onOuvrir,
+  paquets, centre, onCentre, onOuvrir, forme = 'eventail',
 }: {
   paquets: DeckSummary[];
+  /** CHANTIER 171 — 'orbite' : les paquets voisins montent sur l'anneau de la planète. */
+  forme?: 'eventail' | 'orbite';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -33,7 +35,7 @@ export function Eventail({
 
   return (
     <div
-      className="eventail"
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}`}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
       tabIndex={0}
@@ -65,9 +67,11 @@ export function Eventail({
         const o = i - centre;
         const a = Math.abs(o);
         const s = Math.sign(o);
-        const x = (a === 0 ? 0 : a === 1 ? 82 * s : 130 * s) + dx * 0.6;
-        const rot = a === 0 ? dx * 0.04 : a === 1 ? 10 * s : 16 * s;
-        const k = a === 0 ? 1 : a === 1 ? 0.86 : 0.72;
+        const orb = forme === 'orbite';
+        const x = (a === 0 ? 0 : a === 1 ? (orb ? 108 : 82) * s : (orb ? 150 : 130) * s) + dx * 0.6;
+        const y = orb && a > 0 ? -34 : 0;
+        const rot = a === 0 ? dx * 0.04 : a === 1 ? (orb ? 14 : 10) * s : 16 * s;
+        const k = a === 0 ? 1 : a === 1 ? (orb ? 0.66 : 0.86) : 0.6;
         return (
           <div
             key={r.deck.id}
@@ -77,7 +81,7 @@ export function Eventail({
             aria-label={`${r.deck.name}, ${r.due} carte${r.due > 1 ? 's' : ''} à revoir`}
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
-              transform: `translateX(${x}px) rotate(${rot}deg) scale(${k})`,
+              transform: `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`,
               opacity: a === 0 ? 1 : a === 1 ? 0.72 : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,

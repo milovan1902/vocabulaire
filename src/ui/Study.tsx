@@ -14,7 +14,7 @@ import type { Grade, Settings } from '../domain/types';
 import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
 import { speak } from './speech';
-import { useStyle } from './useStyle';
+import { estLudique, useStyle } from './useStyle';
 
 /* CHANTIER 165 — style Lycée : des notes courtes, et les couleurs rouge,
    orange, jaune, vert (voir lycee.css, classes g-again … g-easy). */
@@ -154,7 +154,7 @@ export function Study({
         <div className="progressbar">
           <i style={{ width: `${(100 * index) / Math.max(total, 1)}%` }} />
         </div>
-        {style === 'lycee' && combo >= 2 && (
+        {estLudique(style) && combo >= 2 && (
           <span className="ly-combo" aria-label={`${combo} bonnes réponses d’affilée`}>×{combo}</span>
         )}
         <span className="pos">
@@ -219,7 +219,7 @@ export function Study({
         <div className="grades">
           {GRADES.map((g) => (
             <button key={g.key} className={`${g.className} g-${g.key}`} onClick={() => void grade(g.key)}>
-              {style === 'lycee' ? COURTS[g.key] : g.label}
+              {estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
             </button>
           ))}

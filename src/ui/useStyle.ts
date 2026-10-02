@@ -9,11 +9,19 @@
  */
 import { useEffect, useState } from 'react';
 
-export type Style = 'cahier' | 'lycee' | null;
+export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | null;
 
 function lire(): Style {
   const s = document.documentElement.dataset.style;
-  return s === 'cahier' || s === 'lycee' ? s : null;
+  return s === 'cahier' || s === 'lycee' || s === 'decollage' || s === 'orbite' ? s : null;
+}
+
+/**
+ * CHANTIER 171 — les styles qui prennent la FORME du Lycée (niveau, défi,
+ * éventail, tuiles, notes courtes). Décollage et Orbite en font partie.
+ */
+export function estLudique(s: Style): boolean {
+  return s === 'lycee' || s === 'decollage' || s === 'orbite';
 }
 
 export function useStyle(): Style {

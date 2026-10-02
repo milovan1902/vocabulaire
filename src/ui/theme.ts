@@ -38,7 +38,14 @@
  * 'cahier-rose' et 'cahier-bleu' posent le même data-style="cahier" plus
  * data-papier, que lit cahier.css pour la seule teinte du papier.
  */
-export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu' | 'lycee' | 'lycee-clair';
+/*
+ * CHANTIER 171 — deux apparences « Espace », sur la base du SOMBRE et avec
+ * la forme du Lycée (niveau, défi, éventail, tuiles) : « Décollage »
+ * (station orbitale, cyan) et « Orbite » (nébuleuse, violet et or). Elles
+ * posent data-style="decollage" ou "orbite", que lit espace.css.
+ */
+export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
+  | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -62,12 +69,15 @@ export const THEME_LABELS: Record<Theme, string> = {
   'cahier-bleu': 'Cahier bleu',
   lycee: 'Lycée foncé',
   'lycee-clair': 'Lycée clair',
+  decollage: 'Décollage',
+  orbite: 'Orbite',
 };
 
 export function themeChoisi(): Theme {
   const v = localStorage.getItem(CLE);
   return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'cahier-vert'
-    || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair' ? v : 'auto';
+    || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair'
+    || v === 'decollage' || v === 'orbite' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -77,7 +87,7 @@ function systeme(): 'clair' | 'sombre' {
 
 export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (estCahier(t)) return 'clair';
-  if (t === 'lycee') return 'sombre';
+  if (t === 'lycee' || t === 'decollage' || t === 'orbite') return 'sombre';
   if (t === 'lycee-clair') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
@@ -89,6 +99,7 @@ function appliquer(t: Theme) {
   document.documentElement.dataset.theme = e;
   if (estCahier(t)) document.documentElement.dataset.style = 'cahier';
   else if (t === 'lycee' || t === 'lycee-clair') document.documentElement.dataset.style = 'lycee';
+  else if (t === 'decollage' || t === 'orbite') document.documentElement.dataset.style = t;
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

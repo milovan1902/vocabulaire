@@ -30,7 +30,7 @@ import { budgetParler, quandDit, type Budget } from '../data/parler';
 import { minutesPour } from '../engine/tempo';
 import { niveauDe } from '../engine/niveau';
 import { CARTES_PAR_JOUR, cartesDuJour, gainDuJour, serieValidee, xpTotal } from '../engine/xp';
-import { useStyle } from './useStyle';
+import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
@@ -110,6 +110,18 @@ function sousTitre(r: DeckSummary): string {
     : `${r.themesTotal} thèmes · ${r.total} mots`;
 }
 
+/** CHANTIER 171 — la fusée (Lucide « rocket ») de l'apparence Décollage. */
+function Fusee() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </svg>
+  );
+}
+
 export function Today({
   decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler,
 }: {
@@ -138,7 +150,7 @@ export function Today({
   const [budget, setBudget] = useState<Budget | null | 'erreur' | undefined>(undefined);
 
   useEffect(() => {
-    if (style !== 'lycee') return;
+    if (!estLudique(style)) return;
     let alive = true;
     budgetParler()
       .then((b) => { if (alive) setBudget(b); })
@@ -343,13 +355,19 @@ export function Today({
    * que les paquets qui ont des cartes dues ; celui du centre est le paquet
    * choisi, et c'est lui que le bouton lance.
    */
-  if (style === 'lycee' && total > 0) {
+  if (estLudique(style) && total > 0) {
     const iCentre = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));
     const pc = aFaire[iCentre];
     const n = niveauDe(xpTotal(streak));
     const flamme = serieValidee(streak);
     const fr = (v: number) => v.toLocaleString('fr-FR');
     const faits = joursCetteSemaine(streak);
+    /* CHANTIER 171 — les mots changent avec l'apparence, la forme reste. */
+    const mots = style === 'decollage'
+      ? { defi: 'Mission du jour', go: 'Décoller', jour: `carburant ${cartesAuj} / ${CARTES_PAR_JOUR}` }
+      : style === 'orbite'
+        ? { defi: 'Exploration du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+        : { defi: 'Défi du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` };
     let parlerN = '…';
     let parlerSous = '';
     if (budget === null) { parlerN = 'Parler'; parlerSous = 'connecte-toi pour commencer'; }
@@ -375,16 +393,22 @@ export function Today({
             <span className="ly-barre"><i style={{ width: `${Math.round((100 * n.dansNiveau) / n.pourNiveau)}%` }} /></span>
           </span>
           <span className="ly-flamme" aria-label={`Série : ${flamme} jour${flamme > 1 ? 's' : ''} à ${CARTES_PAR_JOUR} cartes`}>
-            <svg viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-            </svg>
+            {style === 'decollage' ? <Fusee /> : style === 'orbite' ? (
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+              </svg>
+            )}
             <b>{flamme}</b>
           </span>
         </div>
 
         <div className="ly-defi">
           <div className="ly-defi-haut">
-            <span>Défi du jour</span>
+            <span>{mots.defi}</span>
             <span className="ly-gain">{gain.valide ? `+${gain.xp} XP ✓` : `+${gain.xp} XP`}</span>
           </div>
           <b className="ly-defi-n">{total} carte{total > 1 ? 's' : ''}</b>
@@ -393,23 +417,43 @@ export function Today({
           </span>
           <span className="ly-defi-jour">
             <span className="ly-barre"><i style={{ width: `${Math.min(100, (100 * cartesAuj) / CARTES_PAR_JOUR)}%` }} /></span>
-            <span>{gain.valide ? 'Journée validée' : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP`}</span>
+            <span>{gain.valide ? 'Journée validée' : mots.jour}</span>
           </span>
         </div>
 
-        <Eventail
-          paquets={aFaire}
-          centre={iCentre}
-          onCentre={(i) => choisir(aFaire[i].deck.id)}
-          onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
-        />
+        <div className="ly-scene">
+          <Eventail
+            paquets={aFaire}
+            centre={iCentre}
+            forme={style === 'orbite' ? 'orbite' : 'eventail'}
+            onCentre={(i) => choisir(aFaire[i].deck.id)}
+            onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
+          />
+          {/* CHANTIER 171 — Décollage : une fusée de chaque côté pour changer de paquet. */}
+          {style === 'decollage' && aFaire.length > 1 && (
+            <>
+              <button
+                className="ly-fusee prec"
+                aria-label="Paquet précédent"
+                disabled={iCentre === 0}
+                onClick={() => choisir(aFaire[iCentre - 1].deck.id)}
+              ><Fusee /></button>
+              <button
+                className="ly-fusee suiv"
+                aria-label="Paquet suivant"
+                disabled={iCentre === aFaire.length - 1}
+                onClick={() => choisir(aFaire[iCentre + 1].deck.id)}
+              ><Fusee /></button>
+            </>
+          )}
+        </div>
         <div className="ly-points" aria-hidden="true">
           {aFaire.map((r, i) => <i key={r.deck.id} className={i === iCentre ? 'on' : ''} />)}
         </div>
         <p className="ly-nom">{pc.deck.name} <span>· {masteryLabel(pc.mastery.percent)}</span></p>
 
         <button className="btn ly-go" onClick={() => onReview(pc.deck.id)}>
-          C’est parti · {Math.min(pc.due, settings.cardsPerSession)} cartes
+          {mots.go} · {Math.min(pc.due, settings.cardsPerSession)} cartes
         </button>
 
         {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,

@@ -529,7 +529,7 @@ export function Account({
             <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
           </div>
           <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee'] as Theme[]).map((t) => {
+            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite'] as Theme[]).map((t) => {
               const libre = estDebloquee(t, xp);
               const seuil = DEBLOCAGE[t] ?? 0;
               return (
@@ -578,6 +578,8 @@ export function Account({
             cahier d’école, sur quatre couleurs de papier.
             « Lycée clair » et « Lycée foncé » ont la même forme — niveaux,
             défi du jour, paquets en éventail — sur fond clair ou sombre.
+            « Décollage » et « Orbite » reprennent cette forme dans l’espace :
+            une station orbitale, ou des paquets en orbite autour d’une planète.
           </p>
         </Tiroir>
       )}

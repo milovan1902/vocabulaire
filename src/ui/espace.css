@@ -1,0 +1,289 @@
+/* ==================================================================
+   CHANTIER 171 — les apparences « Espace » : Décollage et Orbite.
+
+   Actives quand <html> porte data-style="decollage" ou "orbite" (voir
+   theme.ts), toujours avec data-theme="sombre". Elles prennent la FORME
+   du Lycée (Today.tsx et Study.tsx les traitent comme lui, voir
+   `estLudique`) : les classes ly-* et eventail-* de lycee.css servent
+   telles quelles, ce fichier ne fait que les rhabiller.
+
+   Aucune image ni police nouvelle : le ciel est dessiné en CSS (il marche
+   hors ligne), Décollage écrit en Archivo, Orbite en Lexend — toutes deux
+   déjà livrées avec l'application.
+   ================================================================== */
+
+/* ---------- Décollage : station orbitale, cyan sur nuit ---------- */
+[data-style='decollage'] {
+  --paper: #060a16;
+  --panel: #0b1630;
+  --panel-hi: #11214a;
+  --ink: #eaf6ff;
+  --ink-soft: #c5d6ea;
+  --grey: #9fb4cc;
+  --ink-dim: #9fb4cc;
+  --rule: rgba(79, 216, 255, 0.14);
+  --rule-strong: rgba(79, 216, 255, 0.28);
+  --chalk: #4fd8ff;
+  --chalk-ink: #4fd8ff;
+  --on-chalk: #04121f;
+  --good: #5cf2a8;
+  --bad: #ff5a7a;
+  --voile: rgba(159, 180, 204, 0.06);
+  --voile-2: rgba(159, 180, 204, 0.14);
+  --voile-3: rgba(159, 180, 204, 0.22);
+  --bleu: #4fd8ff;
+  --bleu-ink: #9fe6ff;
+  --rouge: #ff5a7a;
+  --orange: #ffb547;
+  --ly-voile: rgba(159, 180, 204, 0.15);
+  --ly-voile-2: rgba(159, 180, 204, 0.3);
+  --ly-tabbar: rgba(4, 8, 18, 0.97);
+  --ly-ombre: rgba(0, 0, 0, 0.6);
+  --ly-pile-1: rgba(11, 22, 48, 0.8);
+  --ly-pile-2: rgba(11, 22, 48, 0.5);
+  --ly-tag: rgba(79, 216, 255, 0.12);
+  --ly-bord-carte: rgba(79, 216, 255, 0.25);
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--bleu);
+}
+
+/* ---------- Orbite : nébuleuse, violet profond et or ---------- */
+[data-style='orbite'] {
+  --paper: #140d2e;
+  --panel: #24184e;
+  --panel-hi: #2e2063;
+  --ink: #f6f0ff;
+  --ink-soft: #d9cbff;
+  --grey: #b9a8e6;
+  --ink-dim: #b9a8e6;
+  --rule: rgba(217, 203, 255, 0.14);
+  --rule-strong: rgba(217, 203, 255, 0.26);
+  --chalk: #ffcf5a;
+  --chalk-ink: #ffcf5a;
+  --on-chalk: #1a1040;
+  --good: #6ee7b7;
+  --bad: #ff6b8b;
+  --voile: rgba(217, 203, 255, 0.06);
+  --voile-2: rgba(217, 203, 255, 0.14);
+  --voile-3: rgba(217, 203, 255, 0.22);
+  --bleu: #a98bff;
+  --bleu-ink: #e6dcff;
+  --rouge: #ff6b8b;
+  --orange: #ffa94d;
+  --ly-voile: rgba(217, 203, 255, 0.15);
+  --ly-voile-2: rgba(217, 203, 255, 0.3);
+  --ly-tabbar: rgba(16, 10, 38, 0.96);
+  --ly-ombre: rgba(0, 0, 0, 0.5);
+  --ly-pile-1: rgba(36, 24, 78, 0.8);
+  --ly-pile-2: rgba(36, 24, 78, 0.5);
+  --ly-tag: rgba(255, 122, 195, 0.16);
+  --ly-bord-carte: rgba(217, 203, 255, 0.28);
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--chalk);
+}
+
+/* ---------- Le ciel ---------- */
+[data-style='decollage'] body {
+  font-family: var(--sans);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(2.5px 2.5px at 40px 60px, #ffffff, transparent),
+    radial-gradient(7px 7px at 40px 60px, rgba(159, 230, 255, 0.35), transparent),
+    radial-gradient(1.5px 1.5px at 130px 30px, rgba(255, 255, 255, 0.93), transparent),
+    radial-gradient(2px 2px at 250px 110px, #ffffff, transparent),
+    radial-gradient(8px 8px at 250px 110px, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1.5px 1.5px at 330px 50px, rgba(223, 246, 255, 0.93), transparent),
+    radial-gradient(1px 1px at 80px 160px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 190px 200px, #ffe9b8, transparent),
+    radial-gradient(1.5px 1.5px at 300px 230px, rgba(255, 255, 255, 0.87), transparent),
+    radial-gradient(1px 1px at 20px 240px, rgba(255, 255, 255, 0.73), transparent),
+    radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.67), transparent),
+    radial-gradient(2.5px 2.5px at 350px 180px, #bfeaff, transparent),
+    radial-gradient(9px 9px at 350px 180px, rgba(79, 216, 255, 0.3), transparent);
+  background-size: 380px 260px;
+  background-attachment: fixed;
+}
+[data-style='orbite'] body {
+  font-family: var(--sans);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(1.5px 1.5px at 30px 40px, #ffffff, transparent),
+    radial-gradient(2px 2px at 250px 70px, #ffe9a8, transparent),
+    radial-gradient(1px 1px at 180px 160px, rgba(255, 255, 255, 0.67), transparent),
+    radial-gradient(1px 1px at 90px 230px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 340px 210px, #ffd6f0, transparent),
+    radial-gradient(60vmax 45vmax at 90% 4%, rgba(255, 122, 195, 0.2), transparent),
+    radial-gradient(70vmax 60vmax at 0% 62%, rgba(122, 92, 255, 0.22), transparent);
+  background-size: 380px 260px, 380px 260px, 380px 260px, 380px 260px, 380px 260px, 100% 100%, 100% 100%;
+  background-repeat: repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat;
+  background-attachment: fixed;
+}
+
+/* ---------- Ce que les deux reprennent du Lycée ---------- */
+:is([data-style='decollage'], [data-style='orbite']) .screen-title,
+:is([data-style='decollage'], [data-style='orbite']) .topbar h1,
+:is([data-style='decollage'], [data-style='orbite']) .welcome-head h1,
+:is([data-style='decollage'], [data-style='orbite']) .done h2,
+:is([data-style='decollage'], [data-style='orbite']) .today-count b {
+  font-family: var(--sans); font-weight: 800; letter-spacing: -0.01em;
+}
+:is([data-style='decollage'], [data-style='orbite']) .tabbar { background: var(--ly-tabbar); border-top-color: var(--rule); }
+:is([data-style='decollage'], [data-style='orbite']) .tabbar button.on::before { display: none; }
+:is([data-style='decollage'], [data-style='orbite']) .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+:is([data-style='decollage'], [data-style='orbite']) .tabbar button.on .tabsvg { background: color-mix(in srgb, var(--chalk) 18%, transparent); }
+
+:is([data-style='decollage'], [data-style='orbite']) .studybg { background-image: none !important; background-color: transparent; }
+:is([data-style='decollage'], [data-style='orbite']) .studybg::after { display: none; }
+:is([data-style='decollage'], [data-style='orbite']) .studystage .tag { border: none; background: var(--ly-tag); font-weight: 700; }
+:is([data-style='decollage'], [data-style='orbite']) .ask { color: var(--orange); font-weight: 800; }
+:is([data-style='decollage'], [data-style='orbite']) .word,
+:is([data-style='decollage'], [data-style='orbite']) .answer { font-family: var(--sans); font-weight: 800; letter-spacing: -0.01em; }
+:is([data-style='decollage'], [data-style='orbite']) .answer { color: var(--chalk); }
+:is([data-style='decollage'], [data-style='orbite']) .example { font-family: var(--sans); font-style: normal; }
+:is([data-style='decollage'], [data-style='orbite']) .speak { border: 1.5px solid var(--chalk); color: var(--chalk); background: none; font-weight: 700; }
+:is([data-style='decollage'], [data-style='orbite']) .progressbar { height: 10px; border-radius: 999px; background: var(--ly-voile); }
+:is([data-style='decollage'], [data-style='orbite']) .progressbar i { border-radius: 999px; }
+:is([data-style='decollage'], [data-style='orbite']) .grades { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+:is([data-style='decollage'], [data-style='orbite']) .grades .grade { min-height: 70px; font-size: 15px; font-weight: 800; }
+:is([data-style='decollage'], [data-style='orbite']) .grades .grade small { font-weight: 500; color: var(--grey); }
+
+/* ==================================================================
+   Décollage
+   ================================================================== */
+[data-style='decollage'] .btn:not(.ghost):not(.google):not(.danger),
+[data-style='decollage'] .reveal { font-weight: 800; border-radius: 12px; }
+[data-style='decollage'] .ly-niv {
+  border: none; border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: var(--panel-hi);
+  box-shadow: inset 0 0 0 2px var(--bleu);
+}
+[data-style='decollage'] .ly-barre i { box-shadow: 0 0 10px var(--bleu); }
+[data-style='decollage'] .ly-flamme {
+  border-radius: 10px; background: rgba(255, 181, 71, 0.1);
+  border: 1px solid var(--orange); color: var(--orange);
+}
+[data-style='decollage'] .ly-flamme b { color: var(--orange); }
+[data-style='decollage'] .ly-defi { position: relative; border-radius: 14px; border: 1px solid var(--rule-strong); background: rgba(11, 22, 48, 0.85); }
+[data-style='decollage'] .ly-defi::before,
+[data-style='decollage'] .ly-defi::after {
+  content: ''; position: absolute; width: 16px; height: 16px; pointer-events: none;
+}
+[data-style='decollage'] .ly-defi::before { left: -1px; top: -1px; border-left: 2px solid var(--bleu); border-top: 2px solid var(--bleu); }
+[data-style='decollage'] .ly-defi::after { right: -1px; bottom: -1px; border-right: 2px solid var(--bleu); border-bottom: 2px solid var(--bleu); }
+[data-style='decollage'] .ly-defi-n { color: var(--bleu); text-shadow: 0 0 20px rgba(79, 216, 255, 0.45); }
+[data-style='decollage'] .ly-defi-jour .ly-barre i { background: linear-gradient(90deg, #ffb547, #ff7a3d); box-shadow: none; }
+[data-style='decollage'] .eventail-carte.centre .eventail-dos { box-shadow: 0 0 24px rgba(79, 216, 255, 0.35), 0 14px 30px var(--ly-ombre); }
+[data-style='decollage'] .eventail-due { background: var(--orange); color: #1a0f00; }
+[data-style='decollage'] .ly-tuile { border-color: var(--rule-strong); background: rgba(11, 22, 48, 0.85); }
+[data-style='decollage'] .ly-segments i.on { background: var(--bleu); }
+
+/* Les deux fusées qui changent de paquet. */
+.ly-scene { position: relative; }
+.ly-fusee {
+  position: absolute; top: 50%; z-index: 20;
+  width: 42px; height: 42px; margin-top: -10px;
+  display: grid; place-items: center;
+  border-radius: 12px; border: 1px solid var(--bleu);
+  background: rgba(79, 216, 255, 0.12); color: var(--bleu);
+  cursor: pointer;
+}
+.ly-fusee.prec { left: 0; }
+.ly-fusee.suiv { right: 0; }
+.ly-fusee svg { width: 22px; height: 22px; }
+.ly-fusee.prec svg { transform: rotate(-135deg); }
+.ly-fusee.suiv svg { transform: rotate(45deg); }
+.ly-fusee:hover { background: rgba(79, 216, 255, 0.22); }
+.ly-fusee:active { transform: scale(0.94); }
+.ly-fusee:focus-visible { outline: 2px solid var(--bleu); outline-offset: 2px; }
+.ly-fusee:disabled { opacity: 0.3; cursor: default; }
+
+/* La révision : coins de visée, notes « robot ». */
+[data-style='decollage'] .studystage {
+  position: relative;
+  margin: 18px 6px 16px; padding: 24px 18px;
+  border-radius: 18px; background: rgba(13, 22, 44, 0.92);
+  border: 1px solid var(--rule-strong);
+  box-shadow: inset 0 0 40px rgba(79, 216, 255, 0.08), 0 20px 40px var(--ly-ombre);
+}
+[data-style='decollage'] .studystage::before,
+[data-style='decollage'] .studystage::after {
+  content: ''; position: absolute; width: 16px; height: 16px; pointer-events: none;
+}
+[data-style='decollage'] .studystage::before { left: 10px; top: 10px; border-left: 2px solid var(--bleu); border-top: 2px solid var(--bleu); }
+[data-style='decollage'] .studystage::after { right: 10px; bottom: 10px; border-right: 2px solid var(--bleu); border-bottom: 2px solid var(--bleu); }
+[data-style='decollage'] .answer { text-shadow: 0 0 18px rgba(79, 216, 255, 0.5); }
+[data-style='decollage'] .grades .grade {
+  border: none; border-radius: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  font-weight: 900; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.08em;
+  font-stretch: 112%;
+}
+[data-style='decollage'] .grades .grade small { text-transform: none; letter-spacing: 0; font-stretch: 100%; }
+[data-style='decollage'] .grades .g-again { background: rgba(255, 90, 122, 0.16); box-shadow: inset 0 2px 0 var(--rouge); color: #ff8aa1; }
+[data-style='decollage'] .grades .g-hard { background: rgba(255, 181, 71, 0.16); box-shadow: inset 0 2px 0 var(--orange); color: #ffc670; }
+[data-style='decollage'] .grades .g-good { background: rgba(79, 216, 255, 0.16); box-shadow: inset 0 2px 0 var(--bleu); color: #7fe3ff; }
+[data-style='decollage'] .grades .g-easy { background: rgba(92, 242, 168, 0.16); box-shadow: inset 0 2px 0 var(--good); color: #7ff5bb; }
+
+/* ==================================================================
+   Orbite
+   ================================================================== */
+[data-style='orbite'] .btn:not(.ghost):not(.google):not(.danger),
+[data-style='orbite'] .reveal { font-weight: 800; border-radius: 999px; }
+[data-style='orbite'] .ly-niv {
+  border: none; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #a98bff, #5a3bd1 70%);
+  box-shadow: 0 0 16px rgba(122, 92, 255, 0.5);
+}
+[data-style='orbite'] .ly-niv small { color: #e6dcff; }
+[data-style='orbite'] .ly-barre i { background: linear-gradient(90deg, #ff7ac3, #ffcf5a); }
+[data-style='orbite'] .ly-flamme { background: var(--chalk); color: var(--on-chalk); }
+[data-style='orbite'] .ly-flamme b { color: var(--on-chalk); }
+[data-style='orbite'] .ly-defi { border-radius: 22px; background: rgba(36, 24, 78, 0.82); border-color: rgba(255, 207, 90, 0.5); }
+[data-style='orbite'] .ly-defi-n { color: var(--chalk); }
+[data-style='orbite'] .ly-tuile { border-radius: 20px; background: rgba(36, 24, 78, 0.82); }
+[data-style='orbite'] .ly-tuile-haut svg { color: #ff9fd3; }
+[data-style='orbite'] .ly-segments { gap: 6px; height: 12px; }
+[data-style='orbite'] .ly-segments i { flex: none; width: 12px; height: 12px; border-radius: 50%; background: transparent; border: 1.5px solid var(--ly-voile-2); }
+[data-style='orbite'] .ly-segments i.on { background: var(--chalk); border-color: var(--chalk); }
+[data-style='orbite'] .eventail-due { background: #ff7ac3; color: #2a0b1e; }
+
+/* L'orbite : une planète, son anneau, les paquets posés dessus. */
+.eventail.orbite { height: 250px; }
+.eventail.orbite::before {
+  content: ''; position: absolute; left: 50%; top: 4px; z-index: 0;
+  width: 124px; height: 124px; margin-left: -62px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #c5b1ff, #6a47e0 55%, #2b1a75 85%);
+  box-shadow: 0 0 50px rgba(122, 92, 255, 0.55);
+  pointer-events: none;
+}
+.eventail.orbite::after {
+  content: ''; position: absolute; left: 6px; right: 6px; top: 42px; z-index: 1;
+  height: 116px; border-radius: 50%;
+  border: 2px solid rgba(255, 207, 90, 0.55);
+  transform: rotate(-6deg);
+  pointer-events: none;
+}
+.eventail.orbite .eventail-carte { top: 74px; width: 112px; margin-left: -56px; }
+.eventail.orbite .eventail-dos { border-radius: 16px; }
+.eventail.orbite .eventail-carte.centre .eventail-dos { box-shadow: 0 14px 30px var(--ly-ombre), 0 0 20px rgba(255, 207, 90, 0.25); }
+
+/* La révision : un hublot, et des notes en pastilles pleines. */
+[data-style='orbite'] .studystage {
+  margin: 18px 6px 16px; padding: 28px 20px;
+  border-radius: 34px; background: rgba(36, 24, 78, 0.9);
+  border: 3px solid rgba(217, 203, 255, 0.28);
+  box-shadow: 0 0 0 8px rgba(36, 24, 78, 0.45), 0 20px 50px var(--ly-ombre);
+}
+[data-style='orbite'] .grades .grade { border: none; border-radius: 20px; }
+[data-style='orbite'] .grades .grade small { color: inherit; opacity: 0.8; }
+[data-style='orbite'] .grades .g-again { background: #ff6b8b; color: #2a0b16; }
+[data-style='orbite'] .grades .g-hard { background: #ffa94d; color: #2b1500; }
+[data-style='orbite'] .grades .g-good { background: #a98bff; color: #170b3a; }
+[data-style='orbite'] .grades .g-easy { background: #6ee7b7; color: #062a1c; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ly-fusee:active { transform: none; }
+}
