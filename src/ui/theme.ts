@@ -25,7 +25,14 @@
  * que lit `lycee.css`. Les écrans qui changent de forme (Aujourd'hui,
  * Révision) lisent le style par `useStyle()`.
  */
-export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'lycee';
+/*
+ * CHANTIER 166 — « Lycée » se dédouble. L'identifiant 'lycee' reste celui
+ * du foncé (rien ne change pour qui l'a déjà choisi) ; 'lycee-clair' pose
+ * la même forme sur la base du CLAIR. Les deux posent data-style="lycee" :
+ * useStyle(), Today et Study n'ont rien à distinguer, seule lycee.css lit
+ * data-theme pour les couleurs.
+ */
+export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'lycee' | 'lycee-clair';
 
 const CLE = 'vocab-theme';
 
@@ -34,12 +41,13 @@ export const THEME_LABELS: Record<Theme, string> = {
   clair: 'Clair',
   sombre: 'Sombre',
   cahier: 'Cahier',
-  lycee: 'Lycée',
+  lycee: 'Lycée foncé',
+  'lycee-clair': 'Lycée clair',
 };
 
 export function themeChoisi(): Theme {
   const v = localStorage.getItem(CLE);
-  return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'lycee' ? v : 'auto';
+  return v === 'clair' || v === 'sombre' || v === 'cahier' || v === 'lycee' || v === 'lycee-clair' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -50,13 +58,15 @@ function systeme(): 'clair' | 'sombre' {
 export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'cahier') return 'clair';
   if (t === 'lycee') return 'sombre';
+  if (t === 'lycee-clair') return 'clair';
   return t === 'auto' ? systeme() : t;
 }
 
 function appliquer(t: Theme) {
   const e = themeEffectif(t);
   document.documentElement.dataset.theme = e;
-  if (t === 'cahier' || t === 'lycee') document.documentElement.dataset.style = t;
+  if (t === 'cahier') document.documentElement.dataset.style = 'cahier';
+  else if (t === 'lycee' || t === 'lycee-clair') document.documentElement.dataset.style = 'lycee';
   else delete document.documentElement.dataset.style;
   /* Prévient les écrans qui changent de forme selon le style (useStyle). */
   window.dispatchEvent(new Event('apparence'));

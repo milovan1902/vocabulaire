@@ -66,7 +66,7 @@ function vert(t: number): string {
 }
 
 export function Progress({
-  decks, active, settings, streak,
+  decks, active, settings, streak, ouvrir,
 }: {
   /** Les paquets possédés : on rend compte de tout ce qu'on a, pas du seul jeu du jour. */
   decks: Deck[];
@@ -74,9 +74,11 @@ export function Progress({
   active: string[];
   settings: Settings;
   streak: Streak;
+  /** CHANTIER 166 — ouvrir directement un écran de détail (depuis Aujourd'hui). */
+  ouvrir?: 'calendrier' | null;
 }) {
   const [stats, setStats] = useState<ProgressStats | null>(null);
-  const [sous, setSous] = useState<Sous>(null);
+  const [sous, setSous] = useState<Sous>(ouvrir ?? null);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
 
   useEffect(() => {

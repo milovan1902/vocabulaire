@@ -214,6 +214,12 @@ export default function App() {
    */
   const [rayon, setRayon] = useState<'travail' | 'collection' | 'catalogue'>('travail');
   const [origine, setOrigine] = useState<Tab>('library');
+  /*
+   * CHANTIER 166 — « Cette semaine », touché sur Aujourd'hui (style Lycée),
+   * ouvre « Mes progrès » directement sur le calendrier. L'onglet du bas,
+   * lui, rouvre toujours la table des matières.
+   */
+  const [progresOuvre, setProgresOuvre] = useState<'calendrier' | null>(null);
   const estOnglet = (n: View['name']): n is Tab =>
     n === 'today' || n === 'library' || n === 'parler'
     || n === 'account' || n === 'progress';
@@ -536,6 +542,8 @@ export default function App() {
             onReview={(id) => void reviewDeck(id)}
             onOpen={(id) => void openDeck(id)}
             onManage={() => setView({ name: 'library' })}
+            onCalendrier={() => { setProgresOuvre('calendrier'); setView({ name: 'progress' }); }}
+            onParler={() => setView({ name: 'parler' })}
           />
         )}
 
@@ -653,6 +661,7 @@ export default function App() {
             active={store.active}
             settings={store.common}
             streak={store.streak}
+            ouvrir={progresOuvre}
           />
         )}
 
@@ -722,7 +731,7 @@ export default function App() {
               key={name}
               className={view.name === name ? 'on' : ''}
               aria-current={view.name === name ? 'page' : undefined}
-              onClick={() => setView({ name })}
+              onClick={() => { if (name === 'progress') setProgresOuvre(null); setView({ name }); }}
             >
               <Icone />
               <span>{label}</span>

@@ -24,7 +24,9 @@ import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
 import { masteryLabel, STATUTS } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
-import { doneToday, lastSeven, liveStreak } from '../engine/streak';
+import { doneToday, lastSeven, liveStreak, shiftDay } from '../engine/streak';
+import { todayKey } from '../engine/session';
+import { budgetParler, quandDit, type Budget } from '../data/parler';
 import { minutesPour } from '../engine/tempo';
 import { repository } from '../data/repository';
 import { niveauDe, xpDe, XP_PAR_REVISION } from '../engine/niveau';
@@ -32,6 +34,22 @@ import { useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+
+/*
+ * CHANTIER 166 — l'assiduité du style Lycée : la semaine du CALENDRIER
+ * (lundi → aujourd'hui), contre un objectif de cinq jours. Cinq et non
+ * sept : deux jours de repos par semaine ne sont pas un échec.
+ */
+const OBJECTIF_SEMAINE = 5;
+
+function joursCetteSemaine(s: Streak): number {
+  const auj = todayKey();
+  const depuisLundi = (new Date().getDay() + 6) % 7;
+  const faits = new Set(s.days);
+  let n = 0;
+  for (let i = 0; i <= depuisLundi; i++) if (faits.has(shiftDay(auj, -i))) n++;
+  return n;
+}
 
 /**
  * Le choix du jour.
@@ -93,7 +111,7 @@ function sousTitre(r: DeckSummary): string {
 }
 
 export function Today({
-  decks, active, settings, streak, onReview, onOpen, onManage,
+  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler,
 }: {
   decks: Deck[];
   /** Paquets en jeu. */
@@ -104,6 +122,10 @@ export function Today({
   onOpen: (id: string) => void;
   /** Vers « Mon travail », quand rien n'est en jeu. */
   onManage: () => void;
+  /** CHANTIER 166 — « Cette semaine » ouvre Mon calendrier. */
+  onCalendrier: () => void;
+  /** CHANTIER 166 — « Parler » ouvre l'onglet Parler. */
+  onParler: () => void;
 }) {
   const [rows, setRows] = useState<DeckSummary[] | null>(null);
   const [dueByDay, setDueByDay] = useState<number[]>([]);
@@ -112,6 +134,18 @@ export function Today({
   /* CHANTIER 165 — style Lycée : la forme de l'écran change, pas seulement ses couleurs. */
   const style = useStyle();
   const [revisions, setRevisions] = useState<number | null>(null);
+  /* CHANTIER 166 — le temps de parole : undefined = en cours de lecture,
+     null = sans compte, 'erreur' = service injoignable (hors ligne…). */
+  const [budget, setBudget] = useState<Budget | null | 'erreur' | undefined>(undefined);
+
+  useEffect(() => {
+    if (style !== 'lycee') return;
+    let alive = true;
+    budgetParler()
+      .then((b) => { if (alive) setBudget(b); })
+      .catch(() => { if (alive) setBudget('erreur'); });
+    return () => { alive = false; };
+  }, [style]);
 
   /*
    * Les XP du style Lycée : 10 par carte révisée, depuis toujours. Rien de
@@ -325,7 +359,20 @@ export function Today({
     const pc = aFaire[iCentre];
     const n = niveauDe(xpDe(revisions ?? 0));
     const fr = (v: number) => v.toLocaleString('fr-FR');
-    const faits = semaine.filter((j) => j.done).length;
+    const faits = joursCetteSemaine(streak);
+    let parlerN = '…';
+    let parlerSous = '';
+    if (budget === null) { parlerN = 'Parler'; parlerSous = 'connecte-toi pour commencer'; }
+    else if (budget === 'erreur') { parlerN = '—'; parlerSous = 'indisponible pour l’instant'; }
+    else if (budget) {
+      const m = Math.max(0, Math.floor(budget.minutes));
+      parlerN = `${m} min`;
+      parlerSous = budget.pause
+        ? 'en pause jusqu’au 1er du mois'
+        : m === 0 || budget.fini
+          ? (budget.periode === 'semaine' ? 'reviennent lundi' : 'reviennent à minuit')
+          : `restante${m > 1 ? 's' : ''} ${quandDit(budget)}`;
+    }
     return (
       <div className="today ly">
         <div className="ly-haut">
@@ -371,12 +418,28 @@ export function Today({
           C’est parti · {Math.min(pc.due, settings.cardsPerSession)} cartes
         </button>
 
-        <div className="ly-semaine">
-          <span>Cette semaine</span>
-          <b>{faits} / 7 jours</b>
-          <span className="ly-segments" aria-hidden="true">
-            {semaine.map((j) => <i key={j.key} className={j.done ? 'on' : ''} />)}
-          </span>
+        {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,
+            le temps de parole ouvre l'onglet Parler. */}
+        <div className="ly-bas">
+          <button className="ly-tuile" onClick={onCalendrier}>
+            <span className="ly-tuile-haut"><span>Cette semaine</span></span>
+            <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE} jours`}</b>
+            <span className="ly-segments" aria-hidden="true">
+              {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? 'on' : ''} />)}
+            </span>
+          </button>
+          <button className="ly-tuile" onClick={onParler}>
+            <span className="ly-tuile-haut">
+              <span>Parler</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" x2="12" y1="19" y2="22" />
+              </svg>
+            </span>
+            <b>{parlerN}</b>
+            <small>{parlerSous}</small>
+          </button>
         </div>
       </div>
     );

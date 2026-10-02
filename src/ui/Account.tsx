@@ -387,8 +387,8 @@ export function Account({
 
       {tiroir === 'apparence' && (
         <Tiroir titre="Apparence" onFermer={() => setTiroir(null)}>
-          <div className="themechoix">
-            {(['auto', 'clair', 'sombre', 'cahier', 'lycee'] as Theme[]).map((t) => (
+          <div className="themechoix themechoix-6">
+            {(['auto', 'clair', 'sombre', 'cahier', 'lycee', 'lycee-clair'] as Theme[]).map((t) => (
               <button
                 key={t}
                 className={theme === t ? 'on' : ''}
@@ -403,8 +403,8 @@ export function Account({
             Le thème reste sur cet appareil : il ne suit pas le compte, et ne
             part pas dans les sauvegardes. « Automatique » suit le système et
             continue de le suivre. « Cahier » est un thème clair, façon cahier
-            d’école. « Lycée » est un thème sombre, avec niveaux, défi du jour
-            et paquets en éventail.
+            d’école. « Lycée foncé » et « Lycée clair » ont la même forme — niveaux,
+            défi du jour, paquets en éventail — sur fond sombre ou clair.
           </p>
         </Tiroir>
       )}
