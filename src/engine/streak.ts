@@ -89,6 +89,10 @@ export function record(s: Streak, today = todayKey()): Streak {
     current,
     best: Math.max(s.best, current),
     days: [...s.days.filter((d) => d !== today), today].sort().slice(-GARDE),
+    /* CHANTIER 168b — les compteurs des jours passés suivent. Sans cette
+       ligne, chaque nouvelle journée les effaçait : les jours d'avant
+       passaient pour « anciens », donc validés d'office. */
+    ...(s.counts ? { counts: s.counts } : {}),
     updatedAt: Date.now(),
   };
 }
