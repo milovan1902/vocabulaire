@@ -1,6 +1,9 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 167 — « Aide » rejoint la liste : une septième ligne, un
+ * septième tiroir (premiers pas, page d'accueil, confidentialité).
+ *
  * CHANTIER 92 — réparation. Le chantier 91 avait ajouté « Revoir les
  * premiers pas » à partir d'une copie de cet écran antérieure au
  * chantier 37 : les six lignes à tiroirs, l'apparence et le choix clair
@@ -146,7 +149,7 @@ function tempsDit(s: Settings): string {
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision';
+type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide';
 
 export function Account({
   settings, auth, onSettings, onHome, onGuide,
@@ -308,32 +311,47 @@ export function Account({
           valeur={valeurs.revision}
           onClick={() => setTiroir('revision')}
         />
+        {/*
+          * CHANTIER 167 — « Aide » devient une ligne comme les autres. Les
+          * trois boutons qui traînaient sous la liste passent dans son
+          * tiroir : même geste pour tous les réglages, quel que soit le thème.
+          */}
+        <Ligne
+          icone="/ico-aide.png"
+          titre="Aide"
+          sous="Premiers pas, accueil, confidentialité."
+          valeur=""
+          onClick={() => setTiroir('aide')}
+        />
       </div>
 
-      <p className="rayon-label" style={{ marginTop: 18 }}>Aide</p>
-      <button className="btn ghost" onClick={onGuide}>
-        Revoir les premiers pas
-      </button>
-      <button className="btn ghost" onClick={onHome}>
-        Revoir la page d’accueil
-      </button>
-      <p className="hint">
-        Les premiers pas : la méthode en une page, puis cinq cartes du paquet
-        en jeu. Ces cartes comptent comme une vraie révision.
-      </p>
-      {/*
-        CHANTIER 138 — la politique de confidentialité, accessible depuis
-        l'application : Google Play l'exige. Un vrai lien, ouvert dans un
-        nouvel onglet, pour que l'élève ne quitte pas sa séance.
-      */}
-      <a
-        className="btn ghost"
-        href="/confidentialite.html"
-        target="_blank"
-        rel="noopener"
-      >
-        Politique de confidentialité
-      </a>
+      {tiroir === 'aide' && (
+        <Tiroir titre="Aide" onFermer={() => setTiroir(null)}>
+          <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
+            Revoir les premiers pas
+          </button>
+          <button className="btn ghost" onClick={() => { setTiroir(null); onHome(); }}>
+            Revoir la page d’accueil
+          </button>
+          {/*
+            CHANTIER 138 — la politique de confidentialité, accessible depuis
+            l'application : Google Play l'exige. Un vrai lien, ouvert dans un
+            nouvel onglet, pour que l'élève ne quitte pas sa séance.
+          */}
+          <a
+            className="btn ghost"
+            href="/confidentialite.html"
+            target="_blank"
+            rel="noopener"
+          >
+            Politique de confidentialité
+          </a>
+          <p className="hint" style={{ marginTop: 14 }}>
+            Les premiers pas : la méthode en une page, puis cinq cartes du paquet
+            en jeu. Ces cartes comptent comme une vraie révision.
+          </p>
+        </Tiroir>
+      )}
 
       {tiroir === 'connexion' && (
         <Tiroir titre="Connexion" onFermer={() => setTiroir(null)}>
