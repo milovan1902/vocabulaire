@@ -79,7 +79,9 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (estCahier(t)) return 'clair';
   if (t === 'lycee') return 'sombre';
   if (t === 'lycee-clair') return 'clair';
-  return t === 'auto' ? systeme() : t;
+  if (t === 'sombre') return 'sombre';
+  if (t === 'clair') return 'clair';
+  return systeme();
 }
 
 function appliquer(t: Theme) {
