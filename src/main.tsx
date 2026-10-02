@@ -29,6 +29,8 @@ import './ui/lycee.css';
 /* CHANTIER 171 — les deux apparences « Espace » (Décollage, Orbite). Aucune
    police nouvelle : elles reprennent Archivo et Lexend, déjà livrées. */
 import './ui/espace.css';
+/* CHANTIER 173 — Tableau vert et Tableau noir (Caveat, déjà livrée). */
+import './ui/tableau.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

@@ -9,11 +9,11 @@
  */
 import { useEffect, useState } from 'react';
 
-export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | null;
+export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | null;
 
 function lire(): Style {
   const s = document.documentElement.dataset.style;
-  return s === 'cahier' || s === 'lycee' || s === 'decollage' || s === 'orbite' ? s : null;
+  return s === 'cahier' || s === 'lycee' || s === 'decollage' || s === 'orbite' || s === 'tableau' ? s : null;
 }
 
 /**
@@ -21,7 +21,7 @@ function lire(): Style {
  * éventail, tuiles, notes courtes). Décollage et Orbite en font partie.
  */
 export function estLudique(s: Style): boolean {
-  return s === 'lycee' || s === 'decollage' || s === 'orbite';
+  return s === 'lycee' || s === 'decollage' || s === 'orbite' || s === 'tableau';
 }
 
 export function useStyle(): Style {

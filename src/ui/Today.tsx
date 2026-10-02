@@ -365,6 +365,8 @@ export function Today({
     /* CHANTIER 171 — les mots changent avec l'apparence, la forme reste. */
     const mots = style === 'decollage'
       ? { defi: 'Mission du jour', go: 'Décoller', jour: `carburant ${cartesAuj} / ${CARTES_PAR_JOUR}` }
+      : style === 'tableau'
+        ? { defi: 'Au tableau aujourd’hui', go: 'Réviser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
       : style === 'orbite'
         ? { defi: 'Exploration du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
         : { defi: 'Défi du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` };
@@ -383,6 +385,13 @@ export function Today({
     }
     return (
       <div className="today ly">
+        {/* CHANTIER 173 — Tableau : la date écrite à la craie et la série, en tête. */}
+        {style === 'tableau' && (
+          <div className="today-head">
+            <p className="today-date">{date}</p>
+            {serie > 0 && <span className="serie-count">{serie} jour{serie > 1 ? 's' : ''} d’affilée</span>}
+          </div>
+        )}
         <div className="ly-haut">
           <span className="ly-niv" aria-hidden="true"><small>NIV.</small><b>{n.niveau}</b></span>
           <span className="ly-xp">
@@ -405,6 +414,20 @@ export function Today({
             <b>{flamme}</b>
           </span>
         </div>
+
+        {style === 'tableau' && (
+          <div className="serie7" aria-label={`Série : ${serie} jours`}>
+            {semaine.map((j, i) => {
+              const nom = JOURS[new Date(j.key + 'T12:00:00').getDay()];
+              return (
+                <span key={j.key} className={`serie7-j${j.done ? ' on' : ''}${i === 6 ? ' auj' : ''}`} aria-current={i === 6 ? 'date' : undefined}>
+                  <small>{nom.charAt(0).toUpperCase()}</small>
+                  <i>{j.done ? '✓' : ''}</i>
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         <div className="ly-defi">
           <div className="ly-defi-haut">
@@ -429,21 +452,22 @@ export function Today({
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
-          {/* CHANTIER 171 — Décollage : une fusée de chaque côté pour changer de paquet. */}
-          {style === 'decollage' && aFaire.length > 1 && (
+          {/* CHANTIER 171 — Décollage : une fusée de chaque côté pour changer de paquet.
+              CHANTIER 173 — Tableau : une craie. */}
+          {(style === 'decollage' || style === 'tableau') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
                 aria-label="Paquet précédent"
                 disabled={iCentre === 0}
                 onClick={() => choisir(aFaire[iCentre - 1].deck.id)}
-              ><Fusee /></button>
+              >{style === 'tableau' ? <i className="craie-baton" /> : <Fusee />}</button>
               <button
                 className="ly-fusee suiv"
                 aria-label="Paquet suivant"
                 disabled={iCentre === aFaire.length - 1}
                 onClick={() => choisir(aFaire[iCentre + 1].deck.id)}
-              ><Fusee /></button>
+              >{style === 'tableau' ? <i className="craie-baton" /> : <Fusee />}</button>
             </>
           )}
         </div>

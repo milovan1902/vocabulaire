@@ -1,0 +1,242 @@
+/* ==================================================================
+   CHANTIER 173 — « Tableau vert » et « Tableau noir ».
+
+   Actifs quand <html> porte data-style="tableau" (voir theme.ts), avec
+   data-theme="sombre" et data-papier="vert" ou "noir" pour la couleur de
+   l'ardoise. Ils prennent la forme du Lycée (voir `estLudique`), plus la
+   date et la semaine du Cahier, écrites à la craie (Caveat, déjà livrée).
+
+   La révision se passe DANS la salle de classe : un mur, le tableau dans
+   son cadre en bois, son rebord avec craies et brosse, et trois chaises
+   d'écolier vues de dos (un petit dessin en data:, autorisé par la CSP).
+   ================================================================== */
+
+[data-style='tableau'] {
+  --ardoise: #2c4536;
+  --ardoise-bas: #22362a;
+  --paper: var(--ardoise);
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-hi: rgba(255, 255, 255, 0.08);
+  --ink: #f2f2ea;
+  --ink-soft: #dfe4dc;
+  --grey: #c9d0c8;
+  --ink-dim: #c9d0c8;
+  --rule: rgba(242, 242, 234, 0.16);
+  --rule-strong: rgba(242, 242, 234, 0.32);
+  --chalk: #f7e08a;
+  --chalk-ink: #f7e08a;
+  --on-chalk: #1e2326;
+  --good: #b5e8a3;
+  --bad: #f5a9c0;
+  --voile: rgba(242, 242, 234, 0.05);
+  --voile-2: rgba(242, 242, 234, 0.12);
+  --voile-3: rgba(242, 242, 234, 0.2);
+  --bleu: #a9d6f5;
+  --bleu-ink: #a9d6f5;
+  --rouge: #f5a9c0;
+  --orange: #f7c58a;
+  --ly-voile: rgba(242, 242, 234, 0.14);
+  --ly-voile-2: rgba(242, 242, 234, 0.3);
+  --ly-tabbar: var(--ardoise-bas);
+  --ly-ombre: rgba(0, 0, 0, 0.45);
+  --ly-tag: transparent;
+  --ly-bord-carte: rgba(0, 0, 0, 0.12);
+  --craie: 'Caveat', 'Segoe Print', cursive;
+  --anneau: var(--bleu);
+  --bois: #9a6b3f;
+  --bois-clair: #b8865a;
+  --bois-fonce: #6e4a2a;
+  --mur: #e9e1cf;
+}
+[data-style='tableau'][data-papier='noir'] { --ardoise: #1e2326; --ardoise-bas: #171b1d; }
+
+/* ---------- l'ardoise ---------- */
+[data-style='tableau'] body {
+  background-color: var(--ardoise);
+  background-image: radial-gradient(260px 110px at 28% 20%, rgba(255,255,255,0.06), transparent), radial-gradient(300px 140px at 76% 58%, rgba(255,255,255,0.05), transparent), radial-gradient(220px 90px at 22% 86%, rgba(255,255,255,0.045), transparent);
+  background-attachment: fixed;
+}
+/* Le haut du cadre en bois. */
+[data-style='tableau'] .app::before {
+  content: ''; position: fixed; left: 0; right: 0; top: 0; height: 8px; z-index: 30;
+  background: var(--bois); box-shadow: 0 2px 0 var(--bois-fonce);
+  pointer-events: none;
+}
+[data-style='tableau'] .tabbar { background: var(--ly-tabbar); border-top-color: var(--rule); }
+[data-style='tableau'] .tabbar button.on::before { display: none; }
+[data-style='tableau'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='tableau'] .tabbar button.on .tabsvg { background: rgba(247, 224, 138, 0.14); }
+
+[data-style='tableau'] .screen-title,
+[data-style='tableau'] .topbar h1,
+[data-style='tableau'] .done h2 { font-family: var(--craie); font-weight: 700; font-size: 34px; letter-spacing: 0; }
+
+/* ---------- les boutons : entourés à la craie ---------- */
+[data-style='tableau'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='tableau'] .reveal {
+  background: transparent; color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 12px 16px 10px 14px;
+  font-family: var(--craie); font-weight: 700; font-size: 26px;
+}
+[data-style='tableau'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):hover { background: rgba(242, 242, 234, 0.08); }
+
+/* ---------- Aujourd'hui ---------- */
+[data-style='tableau'] .today-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: calc(10px + env(safe-area-inset-top)); }
+[data-style='tableau'] .today-date { font-family: var(--craie); font-weight: 700; font-size: 27px; line-height: 1; color: var(--ink); white-space: nowrap; }
+[data-style='tableau'] .today-date::first-letter { text-transform: uppercase; }
+[data-style='tableau'] .serie-count {
+  padding: 3px 12px; border: 2px solid var(--rouge); border-radius: 999px 900px 999px 850px;
+  color: var(--rouge); font-family: var(--craie); font-weight: 700; font-size: 20px;
+  transform: rotate(-3deg); white-space: nowrap;
+}
+[data-style='tableau'] .serie7 { margin-top: 12px; }
+[data-style='tableau'] .serie7-j { color: var(--grey); }
+[data-style='tableau'] .serie7-j i {
+  width: 30px; height: 30px; border-radius: 7px 9px 6px 8px; background: transparent;
+  border: 1.5px solid var(--rule-strong);
+  font-family: var(--craie); font-style: normal; font-weight: 700; font-size: 26px; line-height: 1; color: var(--good);
+}
+[data-style='tableau'] .serie7-j.on i { background: transparent; }
+[data-style='tableau'] .serie7-j.auj { color: var(--chalk); }
+[data-style='tableau'] .serie7-j.auj:not(.on) i { border: 2px dashed var(--chalk); background: transparent; }
+
+[data-style='tableau'] .ly-haut { margin-top: 12px; }
+[data-style='tableau'] .ly-niv { border: 2px solid var(--bleu); border-radius: 50% 46% 52% 48%; background: transparent; }
+[data-style='tableau'] .ly-niv b { font-family: var(--craie); font-size: 24px; }
+[data-style='tableau'] .ly-barre { height: 10px; border-radius: 6px; background: transparent; border: 1.5px solid var(--rule-strong); }
+[data-style='tableau'] .ly-barre i { border-radius: 0; background: repeating-linear-gradient(115deg, #a9d6f5 0 6px, #8cc4ec 6px 9px); }
+/* La série est déjà écrite à côté de la date. */
+[data-style='tableau'] .ly-flamme { display: none; }
+
+[data-style='tableau'] .ly-defi { background: none; border: none; padding: 6px 0 0; margin-top: 10px; }
+[data-style='tableau'] .ly-defi-haut > span:first-child { font-family: var(--craie); font-size: 24px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--chalk); }
+[data-style='tableau'] .ly-gain { background: none; border: 1.5px solid var(--good); color: var(--good); }
+[data-style='tableau'] .ly-defi-n {
+  display: inline-block; font-family: var(--craie); font-weight: 700; font-size: 64px; line-height: 0.9;
+  padding: 0 6px 4px 0; border-bottom: 3px solid var(--chalk); border-radius: 0 0 50% 40%;
+}
+[data-style='tableau'] .ly-defi-jour .ly-barre i { background: repeating-linear-gradient(115deg, #f7e08a 0 6px, #e8cd6c 6px 9px); }
+
+/* Les paquets : des fiches punaisées au tableau. */
+[data-style='tableau'] .eventail-dos { border-radius: 5px; border: none; background: #f4efe2; }
+[data-style='tableau'] .eventail-carte.centre .eventail-dos { border: none; box-shadow: 0 10px 22px var(--ly-ombre); }
+[data-style='tableau'] .eventail-carte.centre::before {
+  content: ''; position: absolute; left: 50%; top: -8px; z-index: 3;
+  width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8f8f, #c0392b 70%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
+}
+[data-style='tableau'] .eventail-due {
+  background: var(--ardoise); color: var(--chalk); border: 2px solid var(--chalk);
+  font-family: var(--craie); font-size: 21px;
+}
+[data-style='tableau'] .ly-points i { background: var(--ly-voile-2); }
+[data-style='tableau'] .ly-points i.on { background: var(--chalk); }
+
+/* Les deux craies qui changent de paquet. */
+[data-style='tableau'] .ly-fusee {
+  width: 48px; height: 48px; margin-top: -14px;
+  border: 1.5px dashed var(--rule-strong); border-radius: 12px; background: transparent;
+}
+[data-style='tableau'] .ly-fusee:hover { background: rgba(242, 242, 234, 0.08); }
+[data-style='tableau'] .ly-fusee:focus-visible { outline-color: var(--chalk); }
+.craie-baton {
+  display: block; width: 34px; height: 11px;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+.ly-fusee.prec .craie-baton { background: #f2f2ea; clip-path: polygon(0 50%, 30% 0, 100% 0, 100% 100%, 30% 100%); transform: rotate(-8deg); }
+.ly-fusee.suiv .craie-baton { background: #f7e08a; clip-path: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%); transform: rotate(8deg); }
+
+/* Les tuiles : encadrées en pointillés, la semaine en bâtons. */
+[data-style='tableau'] .ly-tuile { background: transparent; border: 1.5px dashed var(--rule-strong); border-radius: 14px; }
+[data-style='tableau'] .ly-tuile > b { font-family: var(--craie); font-weight: 700; font-size: 28px; }
+[data-style='tableau'] .ly-segments { gap: 7px; height: 22px; padding-left: 2px; }
+[data-style='tableau'] .ly-segments i { flex: none; width: 4px; height: 22px; border-radius: 2px; background: var(--ly-voile-2); transform: rotate(8deg); }
+[data-style='tableau'] .ly-segments i.on { background: var(--good); }
+
+/* ==================================================================
+   La révision : dans la salle de classe
+   ================================================================== */
+[data-style='tableau'] .studybg {
+  background-color: var(--mur);
+  background-image:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20390%20150%27%3E%3Cpath%20d%3D%27M33%2045.1%20L31.3%20150%20M95%2045.1%20L96.7%20150%27%20stroke%3D%27%2359616b%27%20stroke-width%3D%274.3%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%2F%3E%3Cpath%20d%3D%27M39.9%20107%20L26.2%20150%20M88.1%20107%20L101.8%20150%27%20stroke%3D%27%2359616b%27%20stroke-width%3D%273.4%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%20opacity%3D%270.8%27%2F%3E%3Crect%20x%3D%2722.7%27%20y%3D%27101.8%27%20width%3D%2782.6%27%20height%3D%277.7%27%20rx%3D%272.6%27%20fill%3D%27%23b07a48%27%20opacity%3D%270.9%27%2F%3E%3Crect%20x%3D%2724.4%27%20y%3D%2739.9%27%20width%3D%2779.1%27%20height%3D%2729.2%27%20rx%3D%276%27%20fill%3D%27%23b07a48%27%2F%3E%3Crect%20x%3D%2729.6%27%20y%3D%2744.2%27%20width%3D%2768.8%27%20height%3D%272.6%27%20rx%3D%271.3%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.18%27%2F%3E%3Cpath%20d%3D%27M162%2028%20L160%20150%20M234%2028%20L236%20150%27%20stroke%3D%27%2359616b%27%20stroke-width%3D%275%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%2F%3E%3Cpath%20d%3D%27M170%20100%20L154%20150%20M226%20100%20L242%20150%27%20stroke%3D%27%2359616b%27%20stroke-width%3D%274%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%20opacity%3D%270.8%27%2F%3E%3Crect%20x%3D%27150%27%20y%3D%2794%27%20width%3D%2796%27%20height%3D%279%27%20rx%3D%273%27%20fill%3D%27%23a8703f%27%20opacity%3D%270.9%27%2F%3E%3Crect%20x%3D%27152%27%20y%3D%2722%27%20width%3D%2792%27%20height%3D%2734%27%20rx%3D%277%27%20fill%3D%27%23a8703f%27%2F%3E%3Crect%20x%3D%27158%27%20y%3D%2727%27%20width%3D%2780%27%20height%3D%273%27%20rx%3D%271.5%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.18%27%2F%3E%3Cpath%20d%3D%27M297.6%2040.2%20L295.8%20150%20M362.4%2040.2%20L364.2%20150%27%20stroke%3D%27%2359616b%27%20stroke-width%3D%274.5%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%2F%3E%3Cpath%20d%3D%27M304.8%20105%20L290.4%20150%20M355.2%20105%20L369.6%20150%27%20stroke%3D%27%2359616b%27%20stroke-width%3D%273.6%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27%20opacity%3D%270.8%27%2F%3E%3Crect%20x%3D%27286.8%27%20y%3D%2799.6%27%20width%3D%2786.4%27%20height%3D%278.1%27%20rx%3D%272.7%27%20fill%3D%27%23b48050%27%20opacity%3D%270.9%27%2F%3E%3Crect%20x%3D%27288.6%27%20y%3D%2734.8%27%20width%3D%2782.8%27%20height%3D%2730.6%27%20rx%3D%276.3%27%20fill%3D%27%23b48050%27%2F%3E%3Crect%20x%3D%27294%27%20y%3D%2739.3%27%20width%3D%2772%27%20height%3D%272.7%27%20rx%3D%271.4%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.18%27%2F%3E%3C%2Fsvg%3E"),
+    linear-gradient(to top, #d4c7a9 0, #d4c7a9 92px, #b9a988 92px, #b9a988 96px, transparent 96px) !important;
+  background-repeat: no-repeat, no-repeat;
+  background-position: center bottom, center bottom;
+  background-size: min(100%, 520px) auto, 100% 100%;
+}
+[data-style='tableau'] .studybg::after { display: none; }
+
+[data-style='tableau'] .studytop { color: #2d2a24; }
+[data-style='tableau'] .studytop .pos { color: #2d2a24; font-weight: 700; }
+[data-style='tableau'] .studytop .stop { background: #fff8ea; color: #5a5446; border: 1px solid rgba(0, 0, 0, 0.15); }
+[data-style='tableau'] .progressbar { height: 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.1); }
+[data-style='tableau'] .progressbar i { background: var(--ardoise); border-radius: 999px; }
+[data-style='tableau'] .ly-combo { background: #fde4e1; color: #a52a20; }
+
+/* Le tableau, dans son cadre. */
+[data-style='tableau'] .studystage {
+  position: relative;
+  margin: 16px 0 34px; padding: 22px 16px 26px;
+  border: 12px solid var(--bois); border-radius: 6px;
+  background-color: var(--ardoise);
+  background-image: radial-gradient(260px 110px at 28% 20%, rgba(255,255,255,0.06), transparent), radial-gradient(300px 140px at 76% 58%, rgba(255,255,255,0.05), transparent), radial-gradient(220px 90px at 22% 86%, rgba(255,255,255,0.045), transparent);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 12px 28px rgba(0, 0, 0, 0.3);
+  color: var(--ink);
+}
+/* Le rebord, ses trois craies… */
+[data-style='tableau'] .studystage::after {
+  content: ''; position: absolute; left: -18px; right: -18px; bottom: -30px; height: 16px;
+  border-radius: 0 0 4px 4px;
+  background:
+    linear-gradient(#f2f2ea, #f2f2ea) 30px 0 / 30px 6px no-repeat,
+    linear-gradient(#f7e08a, #f7e08a) 70px 0 / 22px 6px no-repeat,
+    linear-gradient(#f5a9c0, #f5a9c0) 102px 0 / 18px 6px no-repeat,
+    linear-gradient(var(--bois-clair), var(--bois-clair)) 0 0 / 100% 3px no-repeat,
+    var(--bois);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+/* … et la brosse. */
+[data-style='tableau'] .studystage::before {
+  content: ''; position: absolute; right: 20px; bottom: -26px; z-index: 1;
+  width: 58px; height: 14px; border-radius: 4px;
+  background: linear-gradient(180deg, #6b4a2e 0 55%, #d9d4c6 55%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+[data-style='tableau'] .studystage .tag { background: transparent; border: none; color: var(--bleu); font-family: var(--craie); font-weight: 700; font-size: 20px; padding: 0; }
+[data-style='tableau'] .ask { font-family: var(--craie); font-weight: 700; font-size: 24px; color: var(--chalk); }
+[data-style='tableau'] .word { color: var(--ink); font-weight: 700; }
+[data-style='tableau'] .wordsmall { color: var(--grey); }
+[data-style='tableau'] .ruleline { background: var(--rule-strong); }
+[data-style='tableau'] .answer { font-family: var(--craie); font-weight: 700; font-size: 48px; line-height: 1; color: var(--good); }
+[data-style='tableau'] .example { font-style: normal; color: var(--ink-soft); }
+[data-style='tableau'] .speak { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); font-weight: 700; }
+
+/* Sur le mur, les textes et boutons passent à l'encre sombre. */
+[data-style='tableau'] .tap-hint { color: #5a5446; }
+[data-style='tableau'] .reveal { color: var(--ardoise); border-color: var(--ardoise); }
+
+/* Les notes : des étiquettes aimantées. */
+[data-style='tableau'] .grades { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+[data-style='tableau'] .grades .grade {
+  position: relative; min-height: 66px; border: none; border-radius: 10px;
+  font-weight: 700; font-size: 15px; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+[data-style='tableau'] .grades .grade::before {
+  content: ''; position: absolute; left: 50%; top: 5px; width: 8px; height: 8px; margin-left: -4px;
+  border-radius: 50%; background: rgba(0, 0, 0, 0.25);
+}
+[data-style='tableau'] .grades .grade small { color: inherit; opacity: 0.8; font-weight: 400; }
+[data-style='tableau'] .grades .g-again { background: #fde4e1; color: #a52a20; transform: rotate(-2deg); }
+[data-style='tableau'] .grades .g-hard { background: #fdecd2; color: #8a5200; transform: rotate(1.5deg); }
+[data-style='tableau'] .grades .g-good { background: #e0e8fb; color: #2747a8; transform: rotate(-1deg); }
+[data-style='tableau'] .grades .g-easy { background: #dcf2e6; color: #17683f; transform: rotate(2deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='tableau'] .grades .grade,
+  [data-style='tableau'] .serie-count { transform: none; }
+}
