@@ -15,8 +15,11 @@
   --ardoise: #2c4536;
   --ardoise-bas: #22362a;
   --paper: var(--ardoise);
-  --panel: rgba(255, 255, 255, 0.04);
-  --panel-hi: rgba(255, 255, 255, 0.08);
+  /* CHANTIER 175 — OPAQUES : les tiroirs (Réglages, Mes paquets) et les
+     lignes des réglages se posent sur --panel. Transparent, on voyait
+     l'écran au travers et tout se chevauchait. */
+  --panel: #35513f;
+  --panel-hi: #3d5b48;
   --ink: #f2f2ea;
   --ink-soft: #dfe4dc;
   --grey: #c9d0c8;
@@ -48,7 +51,14 @@
   --bois-fonce: #6e4a2a;
   --mur: #e9e1cf;
 }
-[data-style='tableau'][data-papier='noir'] { --ardoise: #1e2326; --ardoise-bas: #171b1d; }
+[data-style='tableau'][data-papier='noir'] { --ardoise: #1e2326; --ardoise-bas: #171b1d; --panel: #2a3033; --panel-hi: #32393c; }
+
+/* Le tiroir : une ardoise posée sur l'ardoise, bord en bois. */
+[data-style='tableau'] .sheet {
+  background-color: var(--panel);
+  border-top: 4px solid var(--bois);
+}
+[data-style='tableau'] .sheet h3 { font-family: var(--craie); font-weight: 700; font-size: 30px; }
 
 /* ---------- l'ardoise ---------- */
 [data-style='tableau'] body {

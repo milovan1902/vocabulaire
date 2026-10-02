@@ -46,8 +46,9 @@
 /* ---------- Néon ---------- */
 [data-style='neon'] {
   --paper: #170a2a;
-  --panel: rgba(23, 10, 42, 0.75);
-  --panel-hi: rgba(43, 20, 72, 0.85);
+  /* CHANTIER 175 — opaques, pour les tiroirs et les lignes des réglages. */
+  --panel: #22113a;
+  --panel-hi: #2c1648;
   --ink: #f4f1ff;
   --ink-soft: #e2d6f7;
   --grey: #cdbfe6;
