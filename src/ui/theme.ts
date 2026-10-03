@@ -46,7 +46,7 @@
  */
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
-  | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop';
+  | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -88,6 +88,7 @@ export const THEME_LABELS: Record<Theme, string> = {
   'carnet-kraft': 'Carnet kraft',
   manga: 'Manga',
   'bd-pop': 'BD pop',
+  jardin: 'Jardin',
 };
 
 export function themeChoisi(): Theme {
@@ -96,7 +97,7 @@ export function themeChoisi(): Theme {
     || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair'
     || v === 'decollage' || v === 'orbite' || v === 'tableau-vert' || v === 'tableau-noir'
     || v === 'arcade' || v === 'neon' || v === 'grand-bleu'
-    || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' ? v : 'auto';
+    || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -111,6 +112,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'lycee-clair') return 'clair';
   /* CHANTIER 178 — les trois nouvelles apparences sont claires. */
   if (t === 'carnet-kraft' || t === 'manga' || t === 'bd-pop') return 'clair';
+  /* CHANTIER 180 — Jardin, clair lui aussi. */
+  if (t === 'jardin') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -130,6 +133,8 @@ function appliquer(t: Theme) {
   else if (t === 'carnet-kraft') document.documentElement.dataset.style = 'voyage';
   else if (t === 'manga') document.documentElement.dataset.style = 'manga';
   else if (t === 'bd-pop') document.documentElement.dataset.style = 'bd';
+  /* CHANTIER 180 — Jardin (jardin.css). */
+  else if (t === 'jardin') document.documentElement.dataset.style = 'jardin';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

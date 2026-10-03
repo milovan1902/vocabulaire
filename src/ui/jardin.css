@@ -1,0 +1,281 @@
+/* ==================================================================
+   CHANTIER 180 — « Jardin » : le potager au soleil (maquette 12a + 13a).
+
+   Actif quand <html> porte data-style="jardin" (theme.ts), avec
+   data-theme="clair". Forme du Lycée (voir `estLudique`) : ce fichier
+   rhabille les classes ly-*, eventail-* et grades. Police déjà livrée :
+   Lexend. Aucune image : la terre, les fleurs et les pots sont en CSS
+   (deux petits dessins en data:, autorisés par la CSP comme au Tableau).
+   ================================================================== */
+
+[data-style='jardin'] {
+  --paper: #f4efe1;
+  --panel: #fffaf0;
+  --panel-hi: #f7f0de;
+  --ink: #2f3a22;
+  --ink-soft: #3f4a31;
+  --grey: #58624a;
+  --ink-dim: #58624a;
+  --rule: rgba(47, 58, 34, 0.14);
+  --rule-strong: rgba(47, 58, 34, 0.28);
+  --chalk: #4f8a3c;
+  --chalk-ink: #3f7a2e;
+  --on-chalk: #ffffff;
+  --good: #3f7a2e;
+  --bad: #c4643c;
+  --voile: rgba(47, 58, 34, 0.05);
+  --voile-2: rgba(47, 58, 34, 0.1);
+  --voile-3: rgba(47, 58, 34, 0.16);
+  --bleu: #4f8a3c;
+  --bleu-ink: #3f7a2e;
+  --rouge: #c4643c;
+  --orange: #d9822b;
+  --ly-voile: rgba(47, 58, 34, 0.1);
+  --ly-voile-2: rgba(47, 58, 34, 0.26);
+  --ly-tabbar: #fffaf0;
+  --ly-ombre: rgba(47, 58, 34, 0.2);
+  --ly-tag: transparent;
+  --ly-bord-carte: #ddd2b6;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --anneau: var(--bleu);
+  --vert: #4f8a3c;
+  --vert-fonce: #3f7a2e;
+  --vert-pale: #e1efd5;
+  --terre: #8b5e3c;
+  --tomette: #a54d27;
+  --bord: #ddd2b6;
+  /* La pousse (Lucide « sprout »), en vert. */
+  --pousse: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%234f8a3c%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M7%2020h10%27%2F%3E%3Cpath%20d%3D%27M10%2020c5.5-2.5.8-6.4%203-10%27%2F%3E%3Cpath%20d%3D%27M9.5%209.4c1.1.8%201.8%202.2%202.3%203.7-2%20.4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2%202.8-.5%204.4%200%205.5.8z%27%2F%3E%3Cpath%20d%3D%27M14.1%206a7%207%200%200%200-1.1%204c1.9-.1%203.3-.6%204.3-1.4%201-1%201.6-2.3%201.7-4.6-2.7.1-4%201-4.9%202z%27%2F%3E%3C%2Fsvg%3E");
+}
+
+/* ---------- le ciel, le soleil ---------- */
+[data-style='jardin'] body {
+  background-color: #f4efe1;
+  background-image:
+    radial-gradient(circle 90px at 90% 5%, rgba(255, 205, 90, 0.55), transparent 70%),
+    linear-gradient(180deg, #e3f0dc 0%, #f4efe1 45%);
+  background-attachment: fixed;
+}
+[data-style='jardin'] .screen-title,
+[data-style='jardin'] .topbar h1,
+[data-style='jardin'] .done h2,
+[data-style='jardin'] .sheet h3 { font-family: var(--sans); font-weight: 800; letter-spacing: -0.01em; }
+[data-style='jardin'] .sheet { border-top: 1px solid var(--bord); }
+
+/* ---------- la barre d'onglets, et la terre posée dessus ---------- */
+[data-style='jardin'] .tabbar { background: #fffaf0; border-top: 1px solid var(--bord); }
+[data-style='jardin'] .tabbar button.on { color: var(--vert-fonce); }
+[data-style='jardin'] .tabbar button.on::before { display: none; }
+[data-style='jardin'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='jardin'] .tabbar button.on .tabsvg { background: var(--vert-pale); }
+/* La bande de terre, et ses petites fleurs de couleur (retouche 13a).
+   Accrochée au-dessus de la barre : elle suit sa hauteur, quelle qu'elle soit. */
+[data-style='jardin'] .tabbar::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 44px; pointer-events: none;
+  background:
+    /* fleurs roses */
+    radial-gradient(circle 2.6px at 23px 8px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 23px 3.5px, #f28b82 98%, transparent),
+    radial-gradient(circle 3.8px at 23px 12.5px, #f28b82 98%, transparent),
+    radial-gradient(circle 3.8px at 18.5px 8px, #f28b82 98%, transparent),
+    radial-gradient(circle 3.8px at 27.5px 8px, #f28b82 98%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) 22px 12px / 2px 10px no-repeat,
+    /* fleurs jaunes */
+    radial-gradient(circle 2.6px at 70px 12px, #c4643c 98%, transparent),
+    radial-gradient(circle 3.8px at 70px 7.5px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 70px 16.5px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 65.5px 12px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 74.5px 12px, #ffd966 98%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) 69px 16px / 2px 6px no-repeat,
+    /* fleurs blanches */
+    radial-gradient(circle 2.6px at 112px 10px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 112px 5.5px, #ffffff 98%, transparent),
+    radial-gradient(circle 3.8px at 112px 14.5px, #ffffff 98%, transparent),
+    radial-gradient(circle 3.8px at 107.5px 10px, #ffffff 98%, transparent),
+    radial-gradient(circle 3.8px at 116.5px 10px, #ffffff 98%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) 111px 14px / 2px 8px no-repeat,
+    /* fleurs mauves */
+    radial-gradient(circle 2.6px at 150px 6px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 150px 1.5px, #b4a7d6 98%, transparent),
+    radial-gradient(circle 3.8px at 150px 10.5px, #b4a7d6 98%, transparent),
+    radial-gradient(circle 3.8px at 145.5px 6px, #b4a7d6 98%, transparent),
+    radial-gradient(circle 3.8px at 154.5px 6px, #b4a7d6 98%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) 149px 10px / 2px 12px no-repeat,
+    /* fleurs orange */
+    radial-gradient(circle 2.6px at 192px 11px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 192px 6.5px, #f6b26b 98%, transparent),
+    radial-gradient(circle 3.8px at 192px 15.5px, #f6b26b 98%, transparent),
+    radial-gradient(circle 3.8px at 187.5px 11px, #f6b26b 98%, transparent),
+    radial-gradient(circle 3.8px at 196.5px 11px, #f6b26b 98%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) 191px 15px / 2px 7px no-repeat,
+    /* fleurs bleues */
+    radial-gradient(circle 2.6px at 232px 8px, #ffd966 98%, transparent),
+    radial-gradient(circle 3.8px at 232px 3.5px, #8ecae6 98%, transparent),
+    radial-gradient(circle 3.8px at 232px 12.5px, #8ecae6 98%, transparent),
+    radial-gradient(circle 3.8px at 227.5px 8px, #8ecae6 98%, transparent),
+    radial-gradient(circle 3.8px at 236.5px 8px, #8ecae6 98%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) 231px 12px / 2px 10px no-repeat;
+  background-size: 260px 22px;
+  background-repeat: repeat-x;
+  background-position: 0 0;
+}
+[data-style='jardin'] .tabbar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 24px; pointer-events: none; z-index: -1;
+  background: radial-gradient(rgba(255, 255, 255, 0.18) 1.5px, transparent 2px) 0 0 / 9px 9px, var(--terre);
+  border-radius: 50% 50% 0 0 / 14px 14px 0 0;
+}
+/* La terre ne doit rien cacher : la fin de l'écran remonte d'autant. */
+[data-style='jardin'] .today.ly { padding-bottom: 48px; }
+
+[data-style='jardin'] .studybg { background-image: none !important; background-color: transparent; }
+[data-style='jardin'] .eventail-carte.centre .eventail-dos { animation: none; }
+
+[data-style='jardin'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='jardin'] .reveal { background: var(--tomette); color: #fff; border: none; border-radius: 999px; font-weight: 800; box-shadow: 0 4px 0 #7d3a1d; }
+[data-style='jardin'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='jardin'] .reveal:active { transform: translateY(2px); box-shadow: 0 2px 0 #7d3a1d; }
+
+/* ---------- Aujourd'hui ---------- */
+[data-style='jardin'] .ly-niv { border-radius: 50%; background: var(--panel); border: 2px solid var(--vert); color: var(--vert); }
+[data-style='jardin'] .ly-niv b { color: var(--ink); }
+[data-style='jardin'] .ly-barre { border-radius: 999px; background: var(--ly-voile); }
+[data-style='jardin'] .ly-barre i { border-radius: 999px; background: linear-gradient(90deg, #6fae4f, #4f8a3c); }
+/* La série : une pousse. */
+[data-style='jardin'] .ly-flamme { height: 40px; padding: 0 12px; gap: 4px; border-radius: 999px; background: var(--vert-pale); color: var(--vert-fonce); border: none; }
+[data-style='jardin'] .ly-flamme svg { display: none; }
+[data-style='jardin'] .ly-flamme::before { content: ''; flex: none; width: 19px; height: 19px; background: var(--pousse) center / contain no-repeat; }
+[data-style='jardin'] .ly-flamme b { font-size: 17px; font-weight: 800; color: var(--ink); }
+[data-style='jardin'] .ly-defi { border-radius: 18px; background: var(--panel); border: 1px solid var(--bord); box-shadow: none; }
+[data-style='jardin'] .ly-defi-haut > span:first-child { font-weight: 700; font-size: 14px; letter-spacing: 0; text-transform: none; color: var(--tomette); }
+[data-style='jardin'] .ly-gain { border-radius: 999px; background: var(--vert-pale); color: var(--vert-fonce); border: none; }
+[data-style='jardin'] .ly-defi-jour .ly-barre i { background: #c4643c; }
+
+/* Les paquets : des sachets de graines. */
+[data-style='jardin'] .eventail-dos {
+  box-sizing: border-box; padding: 30px 5px 6px; border-radius: 12px; border: 1px solid var(--bord);
+  background:
+    repeating-linear-gradient(90deg, #fffaf0 0 6px, transparent 6px 12px) 0 26px / 100% 5px no-repeat,
+    linear-gradient(#c4643c 0 26px, #fffaf0 26px);
+}
+[data-style='jardin'] .eventail-dos > img:not(.dos-illus-img),
+[data-style='jardin'] .eventail-dos > svg { border-radius: 6px; }
+[data-style='jardin'] .eventail-carte.centre .eventail-dos { border: 2px solid var(--vert); box-shadow: 0 12px 24px rgba(47, 58, 34, 0.2); }
+[data-style='jardin'] .eventail-due { background: #c4643c; color: #fff; }
+[data-style='jardin'] .ly-points i { background: var(--ly-voile-2); }
+[data-style='jardin'] .ly-points i.on { background: var(--vert); }
+
+/* Les feuilles qui changent de paquet. */
+[data-style='jardin'] .ly-fusee { width: 48px; height: 48px; border-radius: 50%; background: var(--vert-pale); color: var(--vert-fonce); border: none; }
+[data-style='jardin'] .ly-fusee:hover { background: #d3e8c3; }
+[data-style='jardin'] .ly-fusee:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+[data-style='jardin'] .ly-fusee svg { width: 22px; height: 22px; transform: rotate(10deg); }
+[data-style='jardin'] .ly-fusee.prec svg { transform: scaleX(-1) rotate(10deg); }
+
+/* Les tuiles : la semaine en semis qui sortent de terre. */
+[data-style='jardin'] .ly-tuile { border-radius: 16px; background: var(--panel); border: 1px solid var(--bord); }
+[data-style='jardin'] .ly-tuile:hover { background: var(--panel-hi); }
+[data-style='jardin'] .ly-tuile-haut svg { color: var(--tomette); }
+[data-style='jardin'] .ly-segments { gap: 7px; height: 21px; }
+[data-style='jardin'] .ly-segments i {
+  flex: none; width: 17px; height: 21px; border-radius: 0;
+  background: linear-gradient(var(--terre), var(--terre)) center bottom / 14px 3px no-repeat;
+  opacity: 0.55;
+}
+[data-style='jardin'] .ly-segments i.on {
+  opacity: 1;
+  background: var(--pousse) center top / 17px 17px no-repeat, linear-gradient(var(--terre), var(--terre)) center bottom / 14px 3px no-repeat;
+}
+
+/* ==================================================================
+   La révision : une étiquette plantée dans la terre, des fleurs en pot
+   ================================================================== */
+/* La terre, en bas de l'écran. */
+[data-style='jardin'] .studybg::after {
+  content: ''; display: block; position: absolute; left: 0; right: 0; top: auto; bottom: 0; height: 190px;
+  background: radial-gradient(rgba(255, 255, 255, 0.15) 1.5px, transparent 2px) 0 0 / 9px 9px, var(--terre);
+  border-radius: 50% 50% 0 0 / 22px 22px 0 0; opacity: 1;
+}
+[data-style='jardin'] .studytop .pos { color: var(--grey); font-weight: 700; }
+[data-style='jardin'] .studytop .stop { background: var(--panel); color: var(--grey); border: 1px solid var(--bord); }
+[data-style='jardin'] .progressbar { border-radius: 999px; background: var(--ly-voile); }
+[data-style='jardin'] .progressbar i { border-radius: 999px; background: linear-gradient(90deg, #6fae4f, #4f8a3c); }
+[data-style='jardin'] .ly-combo { background: transparent; color: var(--tomette); font-weight: 800; }
+
+[data-style='jardin'] .studystage {
+  position: relative; margin: 18px 4px 52px; padding: 28px 18px;
+  border-radius: 16px; background: var(--panel); border: 2px solid var(--vert);
+  box-shadow: 0 14px 28px rgba(47, 58, 34, 0.18);
+}
+/* Le piquet de l'étiquette. */
+[data-style='jardin'] .studystage::after {
+  content: ''; position: absolute; left: 50%; bottom: -48px; width: 16px; height: 46px; margin-left: -8px;
+  background: #c49a6c; border-radius: 0 0 4px 4px; pointer-events: none;
+}
+[data-style='jardin'] .studystage .tag { border: none; border-radius: 999px; padding: 4px 12px; background: var(--vert-pale); color: var(--vert-fonce); font-weight: 600; }
+[data-style='jardin'] .ask { font-weight: 700; font-size: 15px; color: var(--tomette); }
+[data-style='jardin'] .word { font-family: var(--sans); font-weight: 800; color: var(--ink); }
+[data-style='jardin'] .wordsmall { color: var(--grey); }
+[data-style='jardin'] .ruleline { background: rgba(79, 138, 60, 0.35); }
+[data-style='jardin'] .answer { font-family: var(--sans); font-weight: 800; color: var(--vert-fonce); }
+[data-style='jardin'] .example { font-style: normal; color: var(--grey); }
+[data-style='jardin'] .speak { background: transparent; border: 1.5px solid var(--vert); border-radius: 999px; color: var(--vert-fonce); font-weight: 700; }
+/* Sous le bouton, la consigne peut tomber sur la terre : une étiquette claire. */
+[data-style='jardin'] .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; border-radius: 999px; background: rgba(255, 250, 240, 0.9); color: var(--grey); }
+
+/* Les notes : une fleur, sa tige, et un pot de la couleur des pétales où
+   s'écrit l'échéance. */
+[data-style='jardin'] .grades { grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: start; }
+[data-style='jardin'] .grades .grade {
+  --c: #f28b82;
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  min-height: 0; padding: 29px 0 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  font-weight: 800; font-size: 11.5px; line-height: 14px; letter-spacing: 0; text-transform: none; color: var(--ink);
+  transition: transform 0.08s ease;
+}
+/* La fleur : huit pétales et un cœur clair qui porte le mot. */
+[data-style='jardin'] .grades .grade::before {
+  content: ''; position: absolute; left: 50%; top: 0; z-index: -1; width: 72px; height: 72px; margin-left: -36px;
+  background:
+    radial-gradient(circle 22px at 50% 50%, #fffaf0 92%, var(--c) 94%, var(--c) 99%, transparent),
+    radial-gradient(circle 11px at 50% 18%, var(--c) 98%, transparent),
+    radial-gradient(circle 11px at 50% 82%, var(--c) 98%, transparent),
+    radial-gradient(circle 11px at 18% 50%, var(--c) 98%, transparent),
+    radial-gradient(circle 11px at 82% 50%, var(--c) 98%, transparent),
+    radial-gradient(circle 9px at 27% 27%, var(--c) 98%, transparent),
+    radial-gradient(circle 9px at 73% 27%, var(--c) 98%, transparent),
+    radial-gradient(circle 9px at 27% 73%, var(--c) 98%, transparent),
+    radial-gradient(circle 9px at 73% 73%, var(--c) 98%, transparent);
+}
+/* La tige et sa feuille. */
+[data-style='jardin'] .grades .grade::after {
+  content: ''; position: absolute; left: 50%; top: 68px; z-index: -1; width: 24px; height: 26px; margin-left: -12px;
+  background:
+    radial-gradient(ellipse 7px 4px at 72% 42%, #6fae4f 96%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) center / 4px 100% no-repeat;
+}
+[data-style='jardin'] .grades .grade:nth-child(even)::after {
+  background:
+    radial-gradient(ellipse 7px 4px at 28% 42%, #6fae4f 96%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) center / 4px 100% no-repeat;
+}
+/* Le pot : un rebord, puis le corps qui s'évase vers le haut. */
+[data-style='jardin'] .grades .grade small {
+  display: grid; place-items: center; box-sizing: border-box;
+  width: 68px; min-height: 50px; margin-top: 51px; padding: 13px 9px 5px;
+  clip-path: polygon(0 0, 100% 0, 100% 22%, 94% 22%, 85% 100%, 15% 100%, 6% 22%, 0 22%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0 3px, transparent 3px 9px, rgba(47, 58, 34, 0.2) 9px 11px, transparent 11px),
+    linear-gradient(90deg, rgba(47, 58, 34, 0.1), transparent 45%, rgba(255, 255, 255, 0.18)),
+    var(--c);
+  font-size: 11px; font-weight: 700; line-height: 1.1; text-align: center; color: var(--ink); opacity: 1;
+}
+[data-style='jardin'] .grades .grade:active { transform: scale(0.95); }
+[data-style='jardin'] .grades .grade:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; border-radius: 8px; }
+[data-style='jardin'] .grades .g-hard { --c: #f6b26b; }
+[data-style='jardin'] .grades .g-good { --c: #ffd966; }
+[data-style='jardin'] .grades .g-easy { --c: #93c47d; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='jardin'] .grades .grade { transition: none; }
+}

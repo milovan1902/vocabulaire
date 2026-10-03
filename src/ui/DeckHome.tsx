@@ -129,7 +129,19 @@ export function DeckHome({
         <div className="stat"><b>{stats.resting}</b><span>en mémoire</span></div>
       </div>
 
+      {/*
+        * CHANTIER 180 — les sous-catégories se replient, comme « Réglages »
+        * juste en dessous : la liste ne s'ouvre qu'au doigt. Le résumé dit
+        * combien sont retenues, pour ne pas avoir à ouvrir pour vérifier.
+        */}
       {themes.length > 1 && (
+        <details className="panelbox souscat">
+          <summary>
+            Voir les sous-catégories
+            <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>
+              {selectedThemes.filter((t) => themes.includes(t)).length} / {themes.length}
+            </span>
+          </summary>
         <div className="rows">
           {themes.map((t) => {
             const on = selectedThemes.includes(t);
@@ -142,6 +154,7 @@ export function DeckHome({
             );
           })}
         </div>
+        </details>
       )}
 
       <details className="panelbox">

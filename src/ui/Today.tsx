@@ -135,6 +135,16 @@ function Eclair() {
   );
 }
 
+/** CHANTIER 180 — la feuille (Lucide « leaf ») : les flèches du Jardin. */
+function Feuille() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    </svg>
+  );
+}
+
 /** CHANTIER 171 — la fusée (Lucide « rocket ») de l'apparence Décollage. */
 function Fusee() {
   return (
@@ -400,6 +410,8 @@ export function Today({
         ? { defi: 'Épisode du jour', go: 'C’est parti !', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} pages` }
       : style === 'bd'
         ? { defi: 'Aventure du jour', go: 'C’est parti !', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cases` }
+      : style === 'jardin'
+        ? { defi: 'Récolte du jour', go: 'Jardiner', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} semis` }
       : style === 'ocean'
         ? { defi: 'Plongée du jour', go: 'Plonger', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} m de profondeur` }
       : style === 'tableau'
@@ -499,9 +511,10 @@ export function Today({
               CHANTIER 173 — Tableau : une craie.
               CHANTIER 174 — Borne arcade : un triangle ; Néon : un chevron lumineux.
               CHANTIER 176 — Grand bleu : un petit poisson.
-              CHANTIER 178 — Carnet kraft : un avion ; Manga : traits de vitesse ; BD pop : un éclair. */}
+              CHANTIER 178 — Carnet kraft : un avion ; Manga : traits de vitesse ; BD pop : un éclair.
+              CHANTIER 180 — Jardin : une feuille. */}
           {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean'
-            || style === 'voyage' || style === 'manga' || style === 'bd') && aFaire.length > 1 && (
+            || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -512,6 +525,7 @@ export function Today({
                 : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
                 : style === 'ocean' ? <Poisson />
                 : style === 'voyage' ? <Avion />
+                : style === 'jardin' ? <Feuille />
                 : style === 'bd' ? <Eclair />
                 : style === 'manga' ? <i className="fleche-manga" />
                 : <Fusee />}</button>
@@ -524,6 +538,7 @@ export function Today({
                 : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
                 : style === 'ocean' ? <Poisson />
                 : style === 'voyage' ? <Avion />
+                : style === 'jardin' ? <Feuille />
                 : style === 'bd' ? <Eclair />
                 : style === 'manga' ? <i className="fleche-manga" />
                 : <Fusee />}</button>

@@ -38,6 +38,8 @@ import './ui/ocean.css';
 /* CHANTIER 178 — Carnet kraft, Manga et BD pop (Lexend, Caveat, Archivo, déjà livrées). */
 import './ui/voyage.css';
 import './ui/bulles.css';
+/* CHANTIER 180 — Jardin (Lexend, déjà livrée). */
+import './ui/jardin.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
