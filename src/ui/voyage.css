@@ -151,7 +151,7 @@
 }
 [data-style='voyage'] .studystage .tag { border: none; background: transparent; padding: 0; font-family: var(--feutre); font-weight: 700; font-size: 20px; color: var(--bleu); }
 [data-style='voyage'] .ask { font-family: var(--feutre); font-weight: 700; font-size: 26px; color: var(--rouge); }
-[data-style='voyage'] .word { font-family: var(--sans); font-weight: 800; }
+[data-style='voyage'] .word { font-family: var(--sans); font-weight: 800; color: var(--ink); }
 [data-style='voyage'] .ruleline { background: repeating-linear-gradient(90deg, #a58a63 0 6px, transparent 6px 10px); }
 [data-style='voyage'] .answer { font-family: var(--feutre); font-weight: 700; font-size: 46px; line-height: 1; color: var(--bleu); }
 [data-style='voyage'] .example { font-style: normal; color: var(--grey); }
@@ -162,21 +162,22 @@
   --c: var(--rouge);
   position: relative; isolation: isolate;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-  min-height: 98px; padding: 27px 0 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  min-height: 108px; padding: 27px 0 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
   font-weight: 800; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c);
+  transform: rotate(var(--r, -8deg)); transition: transform 0.08s ease;
 }
+/* Le tampon (cercle + mot) penche d'un bloc, comme un coup de tampon de douane ; l'échéance reste droite. */
+[data-style='voyage'] .grades .grade:active { transform: rotate(var(--r, -8deg)) scale(0.94); }
 [data-style='voyage'] .grades .grade::before {
   content: ''; position: absolute; left: 50%; top: 0; z-index: -1;
   width: 70px; height: 70px; margin-left: -35px; border-radius: 50%;
   border: 2.5px solid var(--c); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4.5px var(--c);
-  transform: rotate(var(--r, -8deg)); transition: transform 0.08s ease;
 }
-[data-style='voyage'] .grades .grade:active::before { transform: rotate(var(--r, -8deg)) scale(0.94); }
-[data-style='voyage'] .grades .grade small { margin-top: 30px; font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--grey); }
+[data-style='voyage'] .grades .grade small { display: block; margin-top: 40px; transform: rotate(calc(var(--r, -8deg) * -1)); font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--grey); }
 [data-style='voyage'] .grades .g-hard { --c: var(--orange); --r: 6deg; }
 [data-style='voyage'] .grades .g-good { --c: var(--bleu); --r: -4deg; }
 [data-style='voyage'] .grades .g-easy { --c: var(--good); --r: 9deg; }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-style='voyage'] .grades .grade::before { transition: none; }
+  [data-style='voyage'] .grades .grade { transition: none; }
 }
