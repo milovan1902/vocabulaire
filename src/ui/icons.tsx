@@ -32,7 +32,11 @@ import { useStyle } from './useStyle';
  *   — Manga et BD pop (CHANTIER 178) : livre, pile, bulle, curseurs, étoile / éclair ;
  *   — Jardin (CHANTIER 180) : soleil, pousse, bulle, pelle, fleur ;
  *   — Parquet, Pelouse, Mêlée (CHANTIER 181) : le ballon du sport, pile,
- *     bulle, sifflet, coupe.
+ *     bulle, sifflet, coupe ;
+ *   — CHANTIER 182 : Strass (bague, sac, flûte, montre, couronne), Grille de
+ *     départ (formule 1, rallye, moto, kart, prototype), Diner (milk-shake,
+ *     juke-box, micro, radio, patin), TV (téléviseur, téléphone à cadran,
+ *     appareil photo, lampe à lave, fusée jouet).
  * Toujours au trait, en currentColor : l'onglet actif garde sa couleur.
  */
 const TRAIT = {
@@ -51,6 +55,10 @@ const TRAIT = {
 /** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
   const style = useStyle();
+  if (style === 'strass') return <svg {...TRAIT}><circle cx="12" cy="15.5" r="5.5" /><path d="M9.5 6.5 11 3.5h2l1.5 3L12 10z" /></svg>;
+  if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M4 14V10h5l3-2h6l2 2h9v2l-3 2M4 10V6h4" /><circle cx="8" cy="14" r="3" /><circle cx="24" cy="14" r="3" /></svg>;
+  if (style === 'diner') return <svg {...TRAIT}><path d="M7 9h10l-1.5 12h-7z" /><path d="M6 9a6 4 0 0 1 12 0" /><path d="M12.5 5 15 1.5" /></svg>;
+  if (style === 'tv') return <svg {...TRAIT}><rect x="3" y="7" width="18" height="13" rx="3" /><path d="M8 2l4 5 4-5" /><rect x="6" y="10" width="9" height="7" rx="2" /><path d="M18 11v.01M18 15v.01" /></svg>;
   if (style === 'basket') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3v18M5.6 5.6c3 3 3 9.8 0 12.8M18.4 5.6c-3 3-3 9.8 0 12.8" /></svg>;
   if (style === 'foot') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><path d="m12 8 3.8 2.8-1.5 4.4H9.7l-1.5-4.4z" /><path d="M12 3v5M20.6 9.2l-4.8 1.6M17.3 19.3l-3-4.1M6.7 19.3l3-4.1M3.4 9.2l4.8 1.6" /></svg>;
   if (style === 'rugby') return <svg {...TRAIT}><ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(-35 12 12)" /><path d="m8.6 15.4 6.8-6.8M10.2 11.4l2.4 2.4M11.8 9.8l2.4 2.4" /></svg>;
@@ -73,6 +81,10 @@ export function IconAujourdhui() {
 /** Les cartes empilées : la collection. */
 export function IconPaquets() {
   const style = useStyle();
+  if (style === 'strass') return <svg {...TRAIT}><path d="M5 9h14l-1.5 11h-11z" /><path d="M8.5 9V7a3.5 3.5 0 0 1 7 0v2" /></svg>;
+  if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M3 14v-3l3-1 3-4h10l4 4 5 1v3M11 6v4h9" /><circle cx="8" cy="14" r="3" /><circle cx="24" cy="14" r="3" /></svg>;
+  if (style === 'diner') return <svg {...TRAIT}><path d="M5 21V10a7 7 0 0 1 14 0v11z" /><path d="M8 21v-5h8v5M8 11a4 4 0 0 1 8 0" /></svg>;
+  if (style === 'tv') return <svg {...TRAIT}><path d="M3 9c0-3 4-5 9-5s9 2 9 5l-3 1-2-2H8l-2 2z" /><path d="M6 11l-2 9h16l-2-9" /><circle cx="12" cy="15" r="2.5" /></svg>;
   if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m2 12 8.58 3.91a2 2 0 0 0 1.66 0L22 12" /><path d="m2 17 8.58 3.91a2 2 0 0 0 1.66 0L22 17" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><path d="M7 20h10" /><path d="M10 20c5.5-2.5.8-6.4 3-10" /><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" /><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M6 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2" /><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14" /><path d="M10 20h4" /><circle cx="16" cy="20" r="2" /><circle cx="8" cy="20" r="2" /></svg>;
@@ -94,6 +106,10 @@ export function IconPaquets() {
 /** La bulle : la conversation. */
 export function IconParler() {
   const style = useStyle();
+  if (style === 'strass') return <svg {...TRAIT}><path d="M9 2h6l-.5 7a2.5 2.5 0 0 1-5 0z" /><path d="M12 11.5V20M8.5 21h7M11 6h.01M13 4.5h.01" /></svg>;
+  if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><circle cx="6" cy="14" r="4" /><circle cx="26" cy="14" r="4" /><path d="M6 14l5-6h8l3 3h-6l-4 3M22 11l4 3M17 8l2-3h3" /></svg>;
+  if (style === 'diner') return <svg {...TRAIT}><rect x="8" y="2" width="8" height="12" rx="4" /><path d="M8 6h8M8 10h8M12 17v3M8 21h8M5 10a7 7 0 0 0 14 0" /></svg>;
+  if (style === 'tv') return <svg {...TRAIT}><rect x="3" y="7" width="18" height="13" rx="2" /><circle cx="12" cy="13.5" r="4" /><path d="M8 7l1.5-3h5L16 7M6 10h.01" /></svg>;
   if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" /></svg>;
@@ -113,6 +129,10 @@ export function IconParler() {
 /** Les trois curseurs : les réglages. */
 export function IconReglages() {
   const style = useStyle();
+  if (style === 'strass') return <svg {...TRAIT}><circle cx="12" cy="12" r="5" /><path d="M9 7.5 9.5 3h5l.5 4.5M9 16.5l.5 4.5h5l.5-4.5M12 10v2l1.5 1" /></svg>;
+  if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M4 15h24M11 15v-4h4M18 12l3-3" /><circle cx="14" cy="7" r="2.5" /><circle cx="7" cy="15" r="2.5" /><circle cx="25" cy="15" r="2.5" /></svg>;
+  if (style === 'diner') return <svg {...TRAIT}><rect x="3" y="8" width="18" height="12" rx="3" /><path d="M7 8l9-5M6 12h4M6 15h4M6 18h4" /><circle cx="15.5" cy="14" r="3" /></svg>;
+  if (style === 'tv') return <svg {...TRAIT}><path d="M9.5 2h5L18 16H6z" /><path d="M6 16l-1 6h14l-1-6" /><circle cx="12" cy="7" r="1.3" /><circle cx="11" cy="12" r="2" /></svg>;
   if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><circle cx="9" cy="14" r="5" /><path d="M13 11l8-3v5h-6" /><path d="M6 9.5V7a3 3 0 0 1 6 0" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><path d="M2 22v-5l5-5 5 5-5 5z" /><path d="M9.5 14.5 16 8" /><path d="m17 2 5 5-.5.5a3.53 3.53 0 0 1-5 0a3.53 3.53 0 0 1 0-5L17 2" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /><circle cx="12" cy="12" r="10" /></svg>;
@@ -132,6 +152,10 @@ export function IconReglages() {
 /** La courbe qui monte : ce qui progresse. */
 export function IconProgres() {
   const style = useStyle();
+  if (style === 'strass') return <svg {...TRAIT}><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5z" /><path d="M5 21h14" /></svg>;
+  if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M2 14v-2l4-1 5-4h7l5 3 6 1 1 3M6 11V6h3" /><circle cx="8" cy="14" r="3" /><circle cx="24" cy="14" r="3" /></svg>;
+  if (style === 'diner') return <svg {...TRAIT}><path d="M5 3h6v8l6 1.5a3 3 0 0 1 3 3V17H5z" /><circle cx="8" cy="20" r="2" /><circle cx="17" cy="20" r="2" /></svg>;
+  if (style === 'tv') return <svg {...TRAIT}><path d="M12 2c3 3 4 7 4 11l-4 3-4-3c0-4 1-8 4-11z" /><path d="M8 13l-3 4 3 1M16 13l3 4-3 1M10 19l2 3 2-3" /><circle cx="12" cy="9" r="1.5" /></svg>;
   if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><circle cx="12" cy="12" r="3" /><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5" /><path d="M12 7.5V9M7.5 12H9m7.5 0H15m-3 4.5V15M8 8l1.88 1.88M14.12 9.88 16 8M8 16l1.88-1.88M14.12 14.12 16 16" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></svg>;

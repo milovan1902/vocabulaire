@@ -30,7 +30,9 @@
 :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .ly-flamme svg { display: none; }
 :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .word { font-family: var(--sans); color: var(--ink); }
 :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .example { font-style: normal; }
-:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades { grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: start; }
+/* CHANTIER 182 — minmax(0, 1fr) : une colonne ne s'élargit plus à la longueur de
+   « dans 10 min ». Les quatre notes tiennent dans l'écran, centrées. */
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; align-items: start; justify-items: center; padding-inline: 0; }
 :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade {
   position: relative; isolation: isolate;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
@@ -39,7 +41,8 @@
   transition: transform 0.08s ease;
 }
 :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade:active { transform: scale(0.94); }
-:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade small { white-space: nowrap; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; line-height: 1.3; opacity: 1; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade { width: 100%; min-width: 0; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade small { box-sizing: border-box; max-width: 100%; white-space: normal; text-align: center; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 1.25; opacity: 1; }
 /* La consigne sous le bouton : une étiquette, lisible sur n'importe quel sol. */
 :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.9); color: #333; }
 
@@ -278,7 +281,6 @@
 [data-style='foot'] .example { color: #3f5a45; }
 [data-style='foot'] .speak { background: #fff; border: 1.5px solid #1e7a3c; border-radius: 999px; color: #1e7a3c; font-weight: 700; }
 /* Les notes : quatre cibles accrochées dans le filet. */
-[data-style='foot'] .grades { padding: 0 14px; }
 [data-style='foot'] .grades .grade { --c: #d93636; padding: 26px 0 0; color: #12301a; }
 [data-style='foot'] .grades .grade::before {
   content: ''; position: absolute; left: 50%; top: 0; z-index: -1; width: 66px; height: 66px; margin-left: -33px; border-radius: 50%;
@@ -398,6 +400,26 @@
 [data-style='rugby'] .grades .g-good::after { content: '3'; }
 [data-style='rugby'] .grades .g-easy { --c: #3d7a46; }
 [data-style='rugby'] .grades .g-easy::after { content: '4'; }
+
+/* ==================================================================
+   CHANTIER 182 — les autres écrans (Paquets, Réglages, fiche d'un paquet…)
+   Le texte s'y pose à même le sol : sur l'herbe à bandes, il se perdait
+   (gris sur vert). Hors de l'écran « Aujourd'hui » à éventail et de la
+   révision, la pelouse et le terrain passent en teinte pâle : les encres
+   du thème se lisent, et les titres repassent en couleur foncée.
+   ================================================================== */
+[data-style='foot'] body:not(:has(.today.ly)) {
+  background-color: #eaf5e8;
+  background-image: repeating-linear-gradient(180deg, #eef7ec 0 64px, #e2f0df 64px 128px);
+}
+[data-style='rugby'] body:not(:has(.today.ly)) {
+  background-color: #f1ead8;
+  background-image:
+    linear-gradient(180deg, #1f4d36 0 4px, #f1ead8 4px 8px, #8a1f2c 8px 12px, transparent 12px),
+    repeating-linear-gradient(90deg, #f3eddd 0 45px, #ece4cf 45px 90px);
+}
+[data-style='foot'] body:not(:has(.today.ly)) :is(.screen-title, .topbar h1, .done h2) { color: #12301a; text-shadow: none; }
+[data-style='rugby'] body:not(:has(.today.ly)) :is(.screen-title, .topbar h1, .done h2) { color: #1f4d36; text-shadow: none; }
 
 @media (prefers-reduced-motion: reduce) {
   :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade { transition: none; }

@@ -42,6 +42,8 @@ import './ui/bulles.css';
 import './ui/jardin.css';
 /* CHANTIER 181 — Parquet, Pelouse, Mêlée (Lexend, Archivo, déjà livrées). */
 import './ui/sport.css';
+/* CHANTIER 182 — Strass, Grille de départ, Diner, TV (Lexend, Archivo, déjà livrées). */
+import './ui/retro.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

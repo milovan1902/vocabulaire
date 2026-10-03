@@ -9,14 +9,16 @@
  */
 import { useEffect, useState } from 'react';
 
-export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | 'arcade' | 'neon' | 'ocean' | 'voyage' | 'manga' | 'bd' | 'jardin' | 'basket' | 'foot' | 'rugby' | null;
+export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | 'arcade' | 'neon' | 'ocean' | 'voyage' | 'manga' | 'bd' | 'jardin' | 'basket' | 'foot' | 'rugby'
+  | 'strass' | 'circuit' | 'diner' | 'tv' | null;
 
 function lire(): Style {
   const s = document.documentElement.dataset.style;
   return s === 'cahier' || s === 'lycee' || s === 'decollage' || s === 'orbite' || s === 'tableau'
     || s === 'arcade' || s === 'neon' || s === 'ocean'
     || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin'
-    || s === 'basket' || s === 'foot' || s === 'rugby' ? s : null;
+    || s === 'basket' || s === 'foot' || s === 'rugby'
+    || s === 'strass' || s === 'circuit' || s === 'diner' || s === 'tv' ? s : null;
 }
 
 /**
@@ -27,7 +29,8 @@ export function estLudique(s: Style): boolean {
   return s === 'lycee' || s === 'decollage' || s === 'orbite' || s === 'tableau'
     || s === 'arcade' || s === 'neon' || s === 'ocean'
     || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin'
-    || s === 'basket' || s === 'foot' || s === 'rugby';
+    || s === 'basket' || s === 'foot' || s === 'rugby'
+    || s === 'strass' || s === 'circuit' || s === 'diner' || s === 'tv';
 }
 
 export function useStyle(): Style {

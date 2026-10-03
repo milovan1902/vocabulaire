@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -93,6 +93,10 @@ export const THEME_LABELS: Record<Theme, string> = {
   parquet: 'Parquet',
   pelouse: 'Pelouse',
   melee: 'Mêlée',
+  strass: 'Strass',
+  grille: 'Grille de départ',
+  diner: 'Diner',
+  tv: 'TV',
 };
 
 export function themeChoisi(): Theme {
@@ -102,7 +106,8 @@ export function themeChoisi(): Theme {
     || v === 'decollage' || v === 'orbite' || v === 'tableau-vert' || v === 'tableau-noir'
     || v === 'arcade' || v === 'neon' || v === 'grand-bleu'
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
-    || v === 'parquet' || v === 'pelouse' || v === 'melee' ? v : 'auto';
+    || v === 'parquet' || v === 'pelouse' || v === 'melee'
+    || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -121,6 +126,9 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'jardin') return 'clair';
   /* CHANTIER 181 — les trois apparences Sport sont claires. */
   if (t === 'parquet' || t === 'pelouse' || t === 'melee') return 'clair';
+  /* CHANTIER 182 — Strass et Grille de départ sont sombres ; Diner et TV, clairs. */
+  if (t === 'strass' || t === 'grille') return 'sombre';
+  if (t === 'diner' || t === 'tv') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -146,6 +154,11 @@ function appliquer(t: Theme) {
   else if (t === 'parquet') document.documentElement.dataset.style = 'basket';
   else if (t === 'pelouse') document.documentElement.dataset.style = 'foot';
   else if (t === 'melee') document.documentElement.dataset.style = 'rugby';
+  /* CHANTIER 182 — Strass, Grille de départ, Diner, TV (retro.css). */
+  else if (t === 'strass') document.documentElement.dataset.style = 'strass';
+  else if (t === 'grille') document.documentElement.dataset.style = 'circuit';
+  else if (t === 'diner') document.documentElement.dataset.style = 'diner';
+  else if (t === 'tv') document.documentElement.dataset.style = 'tv';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

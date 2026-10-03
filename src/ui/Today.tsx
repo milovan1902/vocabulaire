@@ -416,6 +416,14 @@ export function Today({
         ? { defi: 'Match du jour', go: 'Coup d’envoi', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} passes` }
       : style === 'rugby'
         ? { defi: 'Match du jour', go: 'Coup d’envoi', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} essais` }
+      : style === 'strass'
+        ? { defi: 'Soirée du jour', go: 'Entrer en piste', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} paillettes` }
+      : style === 'circuit'
+        ? { defi: 'Grand Prix du jour', go: 'Feu vert', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} tours` }
+      : style === 'diner'
+        ? { defi: 'Le plat du jour', go: 'Mets une pièce', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} disques` }
+      : style === 'tv'
+        ? { defi: 'Au programme', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} étoiles` }
       : style === 'jardin'
         ? { defi: 'Récolte du jour', go: 'Jardiner', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} semis` }
       : style === 'ocean'
@@ -425,6 +433,24 @@ export function Today({
       : style === 'orbite'
         ? { defi: 'Exploration du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
         : { defi: 'Défi du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` };
+    /* Le dessin des deux boutons qui changent de paquet.
+       CHANTIER 182 — Strass : un diamant ; Grille de départ : un pneu ;
+       Diner : un bouton chromé ; TV : une étoile. */
+    const fleche = style === 'tableau' ? <i className="craie-baton" />
+      : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
+      : style === 'ocean' ? <Poisson />
+      : style === 'voyage' ? <Avion />
+      : style === 'jardin' ? <Feuille />
+      : style === 'basket' ? <i className="ballon-basket" />
+      : style === 'foot' ? <i className="sifflet" />
+      : style === 'rugby' ? <i className="ballon-ovale" />
+      : style === 'strass' ? <i className="diamant" />
+      : style === 'circuit' ? <i className="pneu" />
+      : style === 'diner' ? <i className="chrome" />
+      : style === 'tv' ? <i className="etoile-tv" />
+      : style === 'bd' ? <Eclair />
+      : style === 'manga' ? <i className="fleche-manga" />
+      : <Fusee />;
     let parlerN = '…';
     let parlerSous = '';
     if (budget === null) { parlerN = 'Parler'; parlerSous = 'connecte-toi pour commencer'; }
@@ -519,43 +545,25 @@ export function Today({
               CHANTIER 176 — Grand bleu : un petit poisson.
               CHANTIER 178 — Carnet kraft : un avion ; Manga : traits de vitesse ; BD pop : un éclair.
               CHANTIER 180 — Jardin : une feuille.
-              CHANTIER 181 — Parquet : un ballon ; Pelouse : un sifflet ; Mêlée : un ballon ovale. */}
+              CHANTIER 181 — Parquet : un ballon ; Pelouse : un sifflet ; Mêlée : un ballon ovale.
+              CHANTIER 182 — Strass, Grille de départ, Diner, TV : voir `fleche`. */}
           {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean'
             || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin'
-            || style === 'basket' || style === 'foot' || style === 'rugby') && aFaire.length > 1 && (
+            || style === 'basket' || style === 'foot' || style === 'rugby'
+            || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
                 aria-label="Paquet précédent"
                 disabled={iCentre === 0}
                 onClick={() => choisir(aFaire[iCentre - 1].deck.id)}
-              >{style === 'tableau' ? <i className="craie-baton" />
-                : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
-                : style === 'ocean' ? <Poisson />
-                : style === 'voyage' ? <Avion />
-                : style === 'jardin' ? <Feuille />
-                : style === 'basket' ? <i className="ballon-basket" />
-                : style === 'foot' ? <i className="sifflet" />
-                : style === 'rugby' ? <i className="ballon-ovale" />
-                : style === 'bd' ? <Eclair />
-                : style === 'manga' ? <i className="fleche-manga" />
-                : <Fusee />}</button>
+              >{fleche}</button>
               <button
                 className="ly-fusee suiv"
                 aria-label="Paquet suivant"
                 disabled={iCentre === aFaire.length - 1}
                 onClick={() => choisir(aFaire[iCentre + 1].deck.id)}
-              >{style === 'tableau' ? <i className="craie-baton" />
-                : style === 'arcade' || style === 'neon' ? <i className="fleche-neon" />
-                : style === 'ocean' ? <Poisson />
-                : style === 'voyage' ? <Avion />
-                : style === 'jardin' ? <Feuille />
-                : style === 'basket' ? <i className="ballon-basket" />
-                : style === 'foot' ? <i className="sifflet" />
-                : style === 'rugby' ? <i className="ballon-ovale" />
-                : style === 'bd' ? <Eclair />
-                : style === 'manga' ? <i className="fleche-manga" />
-                : <Fusee />}</button>
+              >{fleche}</button>
             </>
           )}
         </div>

@@ -69,6 +69,9 @@
 [data-style='jardin'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
 [data-style='jardin'] .tabbar button.on .tabsvg { background: var(--vert-pale); }
 /* La bande de terre, et ses petites fleurs de couleur (retouche 13a).
+   CHANTIER 182 — les tiges sont de fines ellipses : écrites en dégradés
+   « 2px … no-repeat », elles prenaient la taille de tuile (260 × 22) imposée
+   à toutes les couches, et couvraient la frise d'une bande verte.
    Accrochée au-dessus de la barre : elle suit sa hauteur, quelle qu'elle soit. */
 [data-style='jardin'] .tabbar::before {
   content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 44px; pointer-events: none;
@@ -79,42 +82,42 @@
     radial-gradient(circle 3.8px at 23px 12.5px, #f28b82 98%, transparent),
     radial-gradient(circle 3.8px at 18.5px 8px, #f28b82 98%, transparent),
     radial-gradient(circle 3.8px at 27.5px 8px, #f28b82 98%, transparent),
-    linear-gradient(#4f8a3c, #4f8a3c) 22px 12px / 2px 10px no-repeat,
+    radial-gradient(ellipse 1.2px 5px at 23px 17px, #4f8a3c 96%, transparent),
     /* fleurs jaunes */
     radial-gradient(circle 2.6px at 70px 12px, #c4643c 98%, transparent),
     radial-gradient(circle 3.8px at 70px 7.5px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 70px 16.5px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 65.5px 12px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 74.5px 12px, #ffd966 98%, transparent),
-    linear-gradient(#4f8a3c, #4f8a3c) 69px 16px / 2px 6px no-repeat,
+    radial-gradient(ellipse 1.2px 3px at 70px 19px, #4f8a3c 96%, transparent),
     /* fleurs blanches */
     radial-gradient(circle 2.6px at 112px 10px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 112px 5.5px, #ffffff 98%, transparent),
     radial-gradient(circle 3.8px at 112px 14.5px, #ffffff 98%, transparent),
     radial-gradient(circle 3.8px at 107.5px 10px, #ffffff 98%, transparent),
     radial-gradient(circle 3.8px at 116.5px 10px, #ffffff 98%, transparent),
-    linear-gradient(#4f8a3c, #4f8a3c) 111px 14px / 2px 8px no-repeat,
+    radial-gradient(ellipse 1.2px 4px at 112px 18px, #4f8a3c 96%, transparent),
     /* fleurs mauves */
     radial-gradient(circle 2.6px at 150px 6px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 150px 1.5px, #b4a7d6 98%, transparent),
     radial-gradient(circle 3.8px at 150px 10.5px, #b4a7d6 98%, transparent),
     radial-gradient(circle 3.8px at 145.5px 6px, #b4a7d6 98%, transparent),
     radial-gradient(circle 3.8px at 154.5px 6px, #b4a7d6 98%, transparent),
-    linear-gradient(#4f8a3c, #4f8a3c) 149px 10px / 2px 12px no-repeat,
+    radial-gradient(ellipse 1.2px 6px at 150px 16px, #4f8a3c 96%, transparent),
     /* fleurs orange */
     radial-gradient(circle 2.6px at 192px 11px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 192px 6.5px, #f6b26b 98%, transparent),
     radial-gradient(circle 3.8px at 192px 15.5px, #f6b26b 98%, transparent),
     radial-gradient(circle 3.8px at 187.5px 11px, #f6b26b 98%, transparent),
     radial-gradient(circle 3.8px at 196.5px 11px, #f6b26b 98%, transparent),
-    linear-gradient(#4f8a3c, #4f8a3c) 191px 15px / 2px 7px no-repeat,
+    radial-gradient(ellipse 1.2px 3.5px at 192px 18.5px, #4f8a3c 96%, transparent),
     /* fleurs bleues */
     radial-gradient(circle 2.6px at 232px 8px, #ffd966 98%, transparent),
     radial-gradient(circle 3.8px at 232px 3.5px, #8ecae6 98%, transparent),
     radial-gradient(circle 3.8px at 232px 12.5px, #8ecae6 98%, transparent),
     radial-gradient(circle 3.8px at 227.5px 8px, #8ecae6 98%, transparent),
     radial-gradient(circle 3.8px at 236.5px 8px, #8ecae6 98%, transparent),
-    linear-gradient(#4f8a3c, #4f8a3c) 231px 12px / 2px 10px no-repeat;
+    radial-gradient(ellipse 1.2px 5px at 232px 17px, #4f8a3c 96%, transparent);
   background-size: 260px 22px;
   background-repeat: repeat-x;
   background-position: 0 0;
