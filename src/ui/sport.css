@@ -1,0 +1,404 @@
+/* ==================================================================
+   CHANTIER 181 — trois apparences « Sport » (maquettes 14a, 15a, 16a).
+
+   « Parquet » (basket), « Pelouse » (football), « Mêlée » (rugby).
+   Actives quand <html> porte data-style="basket", "foot" ou "rugby"
+   (theme.ts), avec data-theme="clair". Forme du Lycée (voir estLudique).
+   Polices déjà livrées (Lexend, Archivo). Les ballons et le sifflet sont
+   de petits dessins en data:, autorisés par la CSP comme au Tableau.
+   ================================================================== */
+
+:root {
+  --ballon-basket: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27%23e8702a%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%3E%3Cpath%20d%3D%27M50%204v92M4%2050h92M19%2017c19%2018%2019%2048%200%2066M81%2017c-19%2018-19%2048%200%2066%27%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%2734%27%20cy%3D%2728%27%20rx%3D%2712%27%20ry%3D%277%27%20fill%3D%27%23fff%27%20opacity%3D%270.22%27%20transform%3D%27rotate(-30%2034%2028)%27%2F%3E%3C%2Fsvg%3E");
+  --ballon-foot: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cdefs%3E%3CclipPath%20id%3D%27c%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%2F%3E%3C%2FclipPath%3E%3CradialGradient%20id%3D%27g%27%20cx%3D%2735%25%27%20cy%3D%2730%25%27%20r%3D%2775%25%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23fff%27%2F%3E%3Cstop%20offset%3D%270.7%27%20stop-color%3D%27%23f1f1f1%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23cfcfcf%27%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27url(%23g)%27%2F%3E%3Cg%20clip-path%3D%27url(%23c)%27%20fill%3D%27%231b1b1b%27%3E%3Cpolygon%20points%3D%2750.0%2C34.0%2065.2%2C45.1%2059.4%2C62.9%2040.6%2C62.9%2034.8%2C45.1%27%2F%3E%3Cpolygon%20points%3D%2750.0%2C23.0%2035.7%2C12.6%2041.2%2C-4.1%2058.8%2C-4.1%2064.3%2C12.6%27%2F%3E%3Cpolygon%20points%3D%2775.7%2C41.7%2081.1%2C24.9%2098.8%2C24.9%20104.2%2C41.7%2089.9%2C52.0%27%2F%3E%3Cpolygon%20points%3D%2765.9%2C71.8%2083.5%2C71.8%2089.0%2C88.6%2074.7%2C99.0%2060.4%2C88.6%27%2F%3E%3Cpolygon%20points%3D%2734.1%2C71.8%2039.6%2C88.6%2025.3%2C99.0%2011.0%2C88.6%2016.5%2C71.8%27%2F%3E%3Cpolygon%20points%3D%2724.3%2C41.7%2010.1%2C52.0%20-4.2%2C41.7%201.2%2C24.9%2018.9%2C24.9%27%2F%3E%3Cpath%20d%3D%27M50.0%2034.0L50.0%2022.0M68.2%2024.9L77.0%2012.8M65.2%2045.1L76.6%2041.3M79.5%2059.6L93.7%2064.2M59.4%2062.9L66.5%2072.7M50.0%2081.0L50.0%2096.0M40.6%2062.9L33.5%2072.7M20.5%2059.6L6.3%2064.2M34.8%2045.1L23.4%2041.3M31.8%2024.9L23.0%2012.8%27%20fill%3D%27none%27%20stroke%3D%27%231b1b1b%27%20stroke-width%3D%272.5%27%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27none%27%20stroke%3D%27%231b1b1b%27%20stroke-width%3D%273%27%2F%3E%3C%2Fsvg%3E");
+  --ballon-ovale: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%2060%27%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2730%27%20rx%3D%2746%27%20ry%3D%2726%27%20fill%3D%27%238b5a2b%27%20stroke%3D%27%232a1a0c%27%20stroke-width%3D%273%27%2F%3E%3Cpath%20d%3D%27M8%2030Q50%206%2092%2030M8%2030Q50%2054%2092%2030%27%20fill%3D%27none%27%20stroke%3D%27%232a1a0c%27%20stroke-width%3D%271.5%27%20opacity%3D%270.35%27%2F%3E%3Cg%20stroke%3D%27%23fff%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M32%2030h36M38%2025v10M44%2025v10M50%2025v10M56%2025v10M62%2025v10%27%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%2734%27%20cy%3D%2718%27%20rx%3D%2712%27%20ry%3D%275%27%20fill%3D%27%23fff%27%20opacity%3D%270.2%27%20transform%3D%27rotate(-12%2034%2018)%27%2F%3E%3C%2Fsvg%3E");
+  --sifflet: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2044%2030%27%3E%3Cdefs%3E%3CradialGradient%20id%3D%27m%27%20cx%3D%2735%25%27%20cy%3D%2730%25%27%20r%3D%2780%25%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27%23fff%27%2F%3E%3Cstop%20offset%3D%270.55%27%20stop-color%3D%27%23c9ced3%27%2F%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27%23868c92%27%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20d%3D%27M7%209a5%205%200%200%201%209%200%27%20fill%3D%27none%27%20stroke%3D%27%232b2f33%27%20stroke-width%3D%272.5%27%2F%3E%3Crect%20x%3D%2718%27%20y%3D%279%27%20width%3D%2724%27%20height%3D%2711%27%20rx%3D%273%27%20fill%3D%27url(%23m)%27%20stroke%3D%27%232b2f33%27%20stroke-width%3D%272%27%2F%3E%3Ccircle%20cx%3D%2714%27%20cy%3D%2718%27%20r%3D%2711%27%20fill%3D%27url(%23m)%27%20stroke%3D%27%232b2f33%27%20stroke-width%3D%272%27%2F%3E%3Ccircle%20cx%3D%2714%27%20cy%3D%2718%27%20r%3D%274%27%20fill%3D%27%232b2f33%27%2F%3E%3C%2Fsvg%3E");
+}
+/* Les flèches qui changent de paquet (Today.tsx). */
+.ballon-basket, .ballon-foot { display: block; width: 40px; height: 40px; background: var(--ballon-basket) center / contain no-repeat; }
+.ballon-foot { background-image: var(--ballon-foot); }
+.ballon-ovale { display: block; width: 44px; height: 27px; background: var(--ballon-ovale) center / contain no-repeat; transform: rotate(-25deg); }
+.ly-fusee.prec .ballon-ovale { transform: rotate(25deg); }
+.sifflet { display: block; width: 36px; height: 25px; background: var(--sifflet) center / contain no-repeat; }
+.ly-fusee.prec .sifflet { transform: scaleX(-1); }
+
+/* ---------- commun aux trois ---------- */
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .studybg { background-image: none !important; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .eventail-carte.centre .eventail-dos { animation: none; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .tabbar button.on::before { display: none; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .ly-flamme svg { display: none; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .word { font-family: var(--sans); color: var(--ink); }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .example { font-style: normal; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades { grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: start; }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade {
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  min-height: 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  font-size: 11px; font-weight: 800; line-height: 14px; letter-spacing: 0; text-transform: none;
+  transition: transform 0.08s ease;
+}
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade:active { transform: scale(0.94); }
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade small { white-space: nowrap; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; line-height: 1.3; opacity: 1; }
+/* La consigne sous le bouton : une étiquette, lisible sur n'importe quel sol. */
+:is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.9); color: #333; }
+
+/* ==================================================================
+   PARQUET (basket)
+   ================================================================== */
+[data-style='basket'] {
+  --paper: #e6bd86; --panel: #fffaf2; --panel-hi: #f5ead8;
+  --ink: #1f1a14; --ink-soft: #3a3027; --grey: #5b4a36; --ink-dim: #5b4a36;
+  --rule: rgba(31, 26, 20, 0.15); --rule-strong: #1f1a14;
+  --chalk: #e8702a; --chalk-ink: #b8501a; --on-chalk: #ffffff;
+  --good: #2f8a4a; --bad: #d63c3c;
+  --voile: rgba(31, 26, 20, 0.05); --voile-2: rgba(31, 26, 20, 0.1); --voile-3: rgba(31, 26, 20, 0.16);
+  --bleu: #e8702a; --bleu-ink: #b8501a; --rouge: #d63c3c; --orange: #e8702a;
+  --ly-voile: rgba(31, 26, 20, 0.15); --ly-voile-2: rgba(31, 26, 20, 0.3);
+  --ly-tabbar: #1f1a14; --ly-ombre: rgba(31, 26, 20, 0.3); --ly-tag: transparent; --ly-bord-carte: #1f1a14;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --anneau: var(--chalk);
+}
+[data-style='basket'] body {
+  background-color: #e6bd86;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(110, 60, 15, 0.14) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(0deg, transparent 0 118px, rgba(110, 60, 15, 0.12) 118px 119px),
+    linear-gradient(90deg, #e2b77d, #ecc893, #ddb075, #eac690, #e4bb82);
+  background-size: auto, 40px 240px, 200px 100%;
+  background-attachment: fixed;
+}
+[data-style='basket'] .screen-title,
+[data-style='basket'] .topbar h1,
+[data-style='basket'] .done h2,
+[data-style='basket'] .sheet h3 { font-family: var(--sans); font-weight: 800; }
+[data-style='basket'] .sheet { border-top: 3px solid #1f1a14; }
+[data-style='basket'] .tabbar { background: #1f1a14; border-top: none; }
+[data-style='basket'] .tabbar button { color: #bba98e; }
+[data-style='basket'] .tabbar button.on { color: #ff8a3d; }
+[data-style='basket'] .tabbar button.on .tabsvg { background: rgba(232, 112, 42, 0.2); }
+[data-style='basket'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='basket'] .reveal { background: #e8702a; color: #fff; border: 2.5px solid #1f1a14; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; box-shadow: 0 4px 0 #1f1a14; }
+[data-style='basket'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='basket'] .reveal:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f1a14; }
+
+[data-style='basket'] .ly-niv { border-radius: 50%; background: #e8702a; color: #fff; border: 2px solid #1f1a14; }
+[data-style='basket'] .ly-niv small { color: #fff; }
+[data-style='basket'] .ly-barre i { background: #e8702a; }
+[data-style='basket'] .ly-flamme { padding: 0 12px 0 6px; gap: 6px; background: #1f1a14; color: #fff; }
+[data-style='basket'] .ly-flamme::before { content: ''; flex: none; width: 28px; height: 28px; background: var(--ballon-basket) center / contain no-repeat; }
+[data-style='basket'] .ly-flamme b { color: #fff; }
+[data-style='basket'] .ly-defi { border-radius: 14px; background: #fffaf2; border: 2px solid #1f1a14; box-shadow: 0 4px 0 #1f1a14; }
+[data-style='basket'] .ly-defi-haut > span:first-child { color: #b8501a; }
+[data-style='basket'] .ly-gain { background: #1f1a14; color: #fff; }
+[data-style='basket'] .ly-defi-jour .ly-barre i { background: #e8702a; }
+/* Les paquets : des ballons. L'illustration du paquet se lit au travers des coutures. */
+[data-style='basket'] .eventail-carte { top: 26px; width: 146px; aspect-ratio: 1; margin-left: -73px; }
+[data-style='basket'] .eventail-dos { border-radius: 50%; border: 7px solid #e8702a; background: #f5ead8; box-shadow: 0 0 0 2.5px #1f1a14, 0 10px 0 rgba(31, 26, 20, 0.25); }
+[data-style='basket'] .eventail-dos > svg { position: absolute; left: 0; top: -20.5%; width: 100%; height: 141%; }
+[data-style='basket'] .eventail-dos .dos-illus-img { left: 20%; top: 20%; width: 60%; }
+[data-style='basket'] .eventail-dos::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; border-radius: 50%; pointer-events: none; opacity: 0.75;
+  background:
+    linear-gradient(90deg, transparent 48%, #1f1a14 48% 52%, transparent 52%),
+    linear-gradient(0deg, transparent 48%, #1f1a14 48% 52%, transparent 52%),
+    radial-gradient(circle at -24% 50%, transparent 0 46%, #1f1a14 46% 49%, transparent 49%),
+    radial-gradient(circle at 124% 50%, transparent 0 46%, #1f1a14 46% 49%, transparent 49%);
+}
+[data-style='basket'] .eventail-carte.centre .eventail-dos { border-color: #e8702a; }
+[data-style='basket'] .eventail-due { right: -6px; top: -6px; background: #1f1a14; color: #fff; }
+[data-style='basket'] .ly-points i.on { background: #e8702a; }
+[data-style='basket'] .ly-fusee { width: 48px; height: 48px; border: none; border-radius: 50%; background: transparent; }
+[data-style='basket'] .ly-fusee:disabled { opacity: 0.3; }
+[data-style='basket'] .ly-fusee:focus-visible { outline: 2px solid #1f1a14; outline-offset: 2px; }
+[data-style='basket'] .ly-tuile { border-radius: 14px; background: #fffaf2; border: 2px solid #1f1a14; }
+[data-style='basket'] .ly-tuile-haut svg { color: #b8501a; }
+[data-style='basket'] .ly-segments { gap: 7px; height: 17px; }
+[data-style='basket'] .ly-segments i { flex: none; width: 17px; height: 17px; border-radius: 50%; background: transparent; border: 2px dashed rgba(31, 26, 20, 0.35); }
+[data-style='basket'] .ly-segments i.on { border: none; background: var(--ballon-basket) center / contain no-repeat; }
+
+/* Révision : le panneau, son cercle et son filet, au-dessus de la raquette. */
+[data-style='basket'] .studybg { background-color: transparent; }
+[data-style='basket'] .studybg::before {
+  content: ''; position: absolute; left: 50%; top: 0; width: 16px; height: 150px; margin-left: -8px;
+  background: linear-gradient(90deg, #6c757d, #adb5bd 45%, #6c757d);
+}
+[data-style='basket'] .studybg::after {
+  content: ''; display: block; position: absolute; left: 50%; top: auto; bottom: 0; width: 180px; height: 230px; margin-left: -90px; opacity: 1;
+  background: #d9692a; border: 3px solid rgba(255, 255, 255, 0.85); border-bottom: none;
+}
+[data-style='basket'] .studytop .pos { color: #1f1a14; font-weight: 700; }
+[data-style='basket'] .studytop .stop { background: #fffaf2; color: #1f1a14; border: 2px solid #1f1a14; }
+[data-style='basket'] .progressbar { border-radius: 999px; background: rgba(31, 26, 20, 0.15); }
+[data-style='basket'] .progressbar i { border-radius: 999px; background: #e8702a; }
+[data-style='basket'] .ly-combo { background: #1f1a14; color: #ff8a3d; }
+[data-style='basket'] .studystage {
+  position: relative; margin: 18px 6px 104px; padding: 26px 18px 92px; border-radius: 4px;
+  border: 7px solid #fbfbfb;
+  background:
+    radial-gradient(circle 3.5px at 8px 8px, #9aa3ad 98%, transparent),
+    radial-gradient(circle 3.5px at calc(100% - 8px) 8px, #9aa3ad 98%, transparent),
+    radial-gradient(circle 3.5px at 8px calc(100% - 8px), #9aa3ad 98%, transparent),
+    radial-gradient(circle 3.5px at calc(100% - 8px) calc(100% - 8px), #9aa3ad 98%, transparent),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.97) 0 40%, rgba(236, 242, 247, 0.95) 40% 55%, rgba(255, 255, 255, 0.97) 55%);
+  box-shadow: 0 0 0 2px #8e99a4, inset 0 0 0 2px #e8702a, 0 10px 18px rgba(31, 26, 20, 0.3);
+}
+/* Le carré de visée. */
+[data-style='basket'] .studystage::before {
+  content: ''; position: absolute; left: 50%; bottom: 10px; width: 110px; height: 68px; margin-left: -55px;
+  border: 4px solid #e8702a; pointer-events: none;
+}
+/* Le cercle, sa fixation et le filet. */
+[data-style='basket'] .studystage::after {
+  content: ''; position: absolute; left: 50%; top: 100%; width: 116px; height: 100px; margin: 2px 0 0 -58px; pointer-events: none;
+  background:
+    linear-gradient(#5b636b, #5b636b) 50% 0 / 14px 9px no-repeat,
+    radial-gradient(ellipse 56px 9px at 50% 17px, transparent 0 62%, #e8702a 66% 96%, transparent 100%),
+    repeating-linear-gradient(62deg, transparent 0 8px, rgba(255, 255, 255, 0.95) 8px 10px) 0 22px / 100% 78px no-repeat,
+    repeating-linear-gradient(-62deg, transparent 0 8px, rgba(255, 255, 255, 0.95) 8px 10px) 0 22px / 100% 78px no-repeat;
+  clip-path: polygon(0 0, 100% 0, 100% 26px, 82% 100%, 18% 100%, 0 26px);
+}
+[data-style='basket'] .studystage .tag { border: none; border-radius: 999px; background: #1f1a14; color: #fff; font-weight: 700; }
+[data-style='basket'] .ask { font-weight: 800; font-size: 15px; color: #b8501a; }
+[data-style='basket'] .word { font-weight: 800; }
+[data-style='basket'] .wordsmall { color: #5b4a36; }
+[data-style='basket'] .ruleline { background: rgba(31, 26, 20, 0.2); }
+[data-style='basket'] .answer { font-family: var(--sans); font-weight: 800; color: #b8501a; }
+[data-style='basket'] .example { color: #5b4a36; }
+[data-style='basket'] .speak { background: #fffaf2; border: 2px solid #1f1a14; border-radius: 999px; color: #1f1a14; font-weight: 700; }
+/* Les notes : quatre ballons de couleur. */
+[data-style='basket'] .grades .grade { --b: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27%23e5484d%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%3E%3Cpath%20d%3D%27M50%204v92M4%2050h92M19%2017c19%2018%2019%2048%200%2066M81%2017c-19%2018-19%2048%200%2066%27%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%2734%27%20cy%3D%2728%27%20rx%3D%2712%27%20ry%3D%277%27%20fill%3D%27%23fff%27%20opacity%3D%270.22%27%20transform%3D%27rotate(-30%2034%2028)%27%2F%3E%3C%2Fsvg%3E"); padding: 25px 0 0; color: #1f1a14; }
+[data-style='basket'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 0; z-index: -1; width: 64px; height: 64px; margin-left: -32px; background: var(--b) center / contain no-repeat; filter: drop-shadow(0 4px 0 rgba(31, 26, 20, 0.25)); }
+[data-style='basket'] .grades .grade::after { content: ''; position: absolute; left: 50%; top: 23px; z-index: -1; width: 56px; height: 18px; margin-left: -28px; border-radius: 999px; background: #fffaf2; border: 1.5px solid #1f1a14; box-sizing: border-box; }
+[data-style='basket'] .grades .grade small { margin-top: 31px; background: #1f1a14; color: #fff; }
+[data-style='basket'] .grades .g-hard { --b: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27%23e8702a%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%3E%3Cpath%20d%3D%27M50%204v92M4%2050h92M19%2017c19%2018%2019%2048%200%2066M81%2017c-19%2018-19%2048%200%2066%27%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%2734%27%20cy%3D%2728%27%20rx%3D%2712%27%20ry%3D%277%27%20fill%3D%27%23fff%27%20opacity%3D%270.22%27%20transform%3D%27rotate(-30%2034%2028)%27%2F%3E%3C%2Fsvg%3E"); }
+[data-style='basket'] .grades .g-good { --b: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27%23f2c230%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%3E%3Cpath%20d%3D%27M50%204v92M4%2050h92M19%2017c19%2018%2019%2048%200%2066M81%2017c-19%2018-19%2048%200%2066%27%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%2734%27%20cy%3D%2728%27%20rx%3D%2712%27%20ry%3D%277%27%20fill%3D%27%23fff%27%20opacity%3D%270.22%27%20transform%3D%27rotate(-30%2034%2028)%27%2F%3E%3C%2Fsvg%3E"); }
+[data-style='basket'] .grades .g-easy { --b: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27%233fa45b%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%231f1a14%27%20stroke-width%3D%274%27%3E%3Cpath%20d%3D%27M50%204v92M4%2050h92M19%2017c19%2018%2019%2048%200%2066M81%2017c-19%2018-19%2048%200%2066%27%2F%3E%3C%2Fg%3E%3Cellipse%20cx%3D%2734%27%20cy%3D%2728%27%20rx%3D%2712%27%20ry%3D%277%27%20fill%3D%27%23fff%27%20opacity%3D%270.22%27%20transform%3D%27rotate(-30%2034%2028)%27%2F%3E%3C%2Fsvg%3E"); }
+
+/* ==================================================================
+   PELOUSE (football)
+   ================================================================== */
+[data-style='foot'] {
+  --paper: #3f9a4a; --panel: #ffffff; --panel-hi: #eef7f0;
+  --ink: #12301a; --ink-soft: #24432c; --grey: #3f5a45; --ink-dim: #3f5a45;
+  --rule: rgba(18, 48, 26, 0.14); --rule-strong: rgba(18, 48, 26, 0.3);
+  --chalk: #1e7a3c; --chalk-ink: #1e7a3c; --on-chalk: #ffffff;
+  --good: #1e7a3c; --bad: #d93636;
+  --voile: rgba(18, 48, 26, 0.05); --voile-2: rgba(18, 48, 26, 0.1); --voile-3: rgba(18, 48, 26, 0.16);
+  --bleu: #1e7a3c; --bleu-ink: #1e7a3c; --rouge: #d93636; --orange: #e0a100;
+  --ly-voile: rgba(18, 48, 26, 0.15); --ly-voile-2: rgba(255, 255, 255, 0.45);
+  --ly-tabbar: #ffffff; --ly-ombre: rgba(0, 0, 0, 0.25); --ly-tag: transparent; --ly-bord-carte: #ffffff;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --anneau: var(--chalk);
+}
+[data-style='foot'] body { background-color: #3f9a4a; background-image: repeating-linear-gradient(180deg, #43a04e 0 64px, #3a9145 64px 128px); background-attachment: fixed; }
+[data-style='foot'] .screen-title,
+[data-style='foot'] .topbar h1,
+[data-style='foot'] .done h2 { font-family: var(--sans); font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
+[data-style='foot'] .sheet h3 { font-family: var(--sans); font-weight: 800; }
+[data-style='foot'] .tabbar { background: #fff; border-top: none; }
+[data-style='foot'] .tabbar button.on { color: #1e7a3c; }
+[data-style='foot'] .tabbar button.on .tabsvg { background: #dff2e3; }
+[data-style='foot'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='foot'] .reveal { background: #ffd400; color: #12301a; border: none; border-radius: 999px; font-weight: 800; box-shadow: 0 4px 0 #b39500; }
+[data-style='foot'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='foot'] .reveal:active { transform: translateY(2px); box-shadow: 0 2px 0 #b39500; }
+
+/* Sur la pelouse, les textes posés à même l'herbe passent en blanc. */
+[data-style='foot'] .ly-xp-txt, [data-style='foot'] .ly-xp-txt b { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
+[data-style='foot'] .ly-nom { width: fit-content; margin-inline: auto; padding: 4px 14px; border-radius: 999px; background: #fff; }
+[data-style='foot'] .ly-niv { border-radius: 50%; background: #fff; color: #12301a; border: 2.5px solid #12301a; }
+[data-style='foot'] .ly-niv small { color: #12301a; }
+[data-style='foot'] .ly-barre { background: rgba(255, 255, 255, 0.3); }
+[data-style='foot'] .ly-barre i { background: #ffd400; }
+[data-style='foot'] .ly-flamme { padding: 0 12px 0 6px; gap: 6px; background: #fff; color: #12301a; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15); }
+[data-style='foot'] .ly-flamme::before { content: ''; flex: none; width: 28px; height: 28px; background: var(--ballon-foot) center / contain no-repeat; }
+[data-style='foot'] .ly-defi { border-radius: 14px; background: #fff; border: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+[data-style='foot'] .ly-defi .ly-barre { background: rgba(18, 48, 26, 0.12); }
+[data-style='foot'] .ly-defi-haut > span:first-child { font-size: 14px; letter-spacing: 0; text-transform: none; color: #1e7a3c; }
+[data-style='foot'] .ly-gain { background: #ffd400; color: #12301a; }
+[data-style='foot'] .ly-defi-jour .ly-barre i { background: #2ea85a; }
+/* Les paquets : des vignettes d'album, cadre blanc. */
+[data-style='foot'] .eventail-dos { border-radius: 8px; border: 6px solid #fff; background: #fff; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25); }
+[data-style='foot'] .eventail-carte.centre .eventail-dos { border-color: #fff; }
+[data-style='foot'] .eventail-dos > img:not(.dos-illus-img), [data-style='foot'] .eventail-dos > svg { border-radius: 3px; }
+[data-style='foot'] .eventail-due { background: #ffd400; color: #12301a; box-shadow: 0 0 0 2px #12301a; }
+[data-style='foot'] .ly-points i.on { background: #fff; }
+[data-style='foot'] .ly-fusee { width: 48px; height: 48px; border: none; border-radius: 50%; background: #fff; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18); }
+[data-style='foot'] .ly-fusee:disabled { opacity: 0.4; }
+[data-style='foot'] .ly-tuile { border-radius: 14px; background: #fff; border: none; }
+[data-style='foot'] .ly-tuile-haut svg { color: #1e7a3c; }
+[data-style='foot'] .ly-segments { gap: 7px; height: 17px; }
+[data-style='foot'] .ly-segments i { flex: none; width: 17px; height: 17px; border-radius: 50%; background: transparent; border: 2px dashed rgba(18, 48, 26, 0.3); }
+[data-style='foot'] .ly-segments i.on { border: none; background: var(--ballon-foot) center / contain no-repeat; }
+
+/* Révision : le penalty. Les tribunes, le but et ses filets, le ballon sur le point. */
+[data-style='foot'] .studybg {
+  background-color: #3f9a4a;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.22) 1.2px, transparent 1.7px),
+    radial-gradient(rgba(255, 200, 80, 0.25) 1.2px, transparent 1.7px),
+    linear-gradient(180deg, #1c2833 0, #2b3a48 112px, transparent 112px),
+    repeating-linear-gradient(180deg, #43a04e 0 64px, #3a9145 64px 128px) !important;
+  background-size: 8px 112px, 11px 112px, auto, auto;
+  background-position: 0 0, 4px 4px, 0 0, 0 0;
+  background-repeat: repeat-x, repeat-x, no-repeat, repeat;
+}
+[data-style='foot'] .studybg::before {
+  content: ''; position: absolute; left: 12px; right: 12px; top: calc(100px + env(safe-area-inset-top)); bottom: 210px;
+  border: 8px solid #fff; border-bottom: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.38) 0 1.5px, transparent 1.5px 13px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.38) 0 1.5px, transparent 1.5px 13px),
+    linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.08));
+}
+[data-style='foot'] .studybg::after {
+  content: ''; display: block; position: absolute; left: 0; right: 0; top: auto; bottom: 0; height: 210px; opacity: 1;
+  background:
+    var(--ballon-foot) 50% 116px / 46px 46px no-repeat,
+    radial-gradient(circle 6px at 50% 158px, #fff 96%, transparent),
+    linear-gradient(#fff, #fff) 70px 0 / 3px 72px no-repeat,
+    linear-gradient(#fff, #fff) calc(100% - 70px) 0 / 3px 72px no-repeat,
+    linear-gradient(#fff, #fff) 70px 69px / calc(100% - 137px) 3px no-repeat,
+    linear-gradient(#fff, #fff) 0 0 / 100% 3px no-repeat;
+}
+[data-style='foot'] .studytop .pos { color: #fff; font-weight: 700; }
+[data-style='foot'] .studytop .stop { background: #fff; color: #12301a; border: none; }
+[data-style='foot'] .progressbar { border-radius: 999px; background: rgba(255, 255, 255, 0.2); }
+[data-style='foot'] .progressbar i { border-radius: 999px; background: #ffd400; }
+[data-style='foot'] .ly-combo { background: transparent; color: #ffd400; }
+[data-style='foot'] .studystage { margin: 34px 16px 16px; padding: 22px 16px; border-radius: 14px; background: #fff; border: none; box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3); }
+[data-style='foot'] .studystage .tag { border: none; border-radius: 999px; background: #12301a; color: #fff; font-weight: 600; }
+[data-style='foot'] .ask { font-weight: 800; font-size: 15px; color: #1e7a3c; }
+[data-style='foot'] .word { font-weight: 800; }
+[data-style='foot'] .wordsmall { color: #3f5a45; }
+[data-style='foot'] .ruleline { background: rgba(18, 48, 26, 0.15); }
+[data-style='foot'] .answer { font-family: var(--sans); font-weight: 800; color: #1e7a3c; }
+[data-style='foot'] .example { color: #3f5a45; }
+[data-style='foot'] .speak { background: #fff; border: 1.5px solid #1e7a3c; border-radius: 999px; color: #1e7a3c; font-weight: 700; }
+/* Les notes : quatre cibles accrochées dans le filet. */
+[data-style='foot'] .grades { padding: 0 14px; }
+[data-style='foot'] .grades .grade { --c: #d93636; padding: 26px 0 0; color: #12301a; }
+[data-style='foot'] .grades .grade::before {
+  content: ''; position: absolute; left: 50%; top: 0; z-index: -1; width: 66px; height: 66px; margin-left: -33px; border-radius: 50%;
+  background: radial-gradient(circle, var(--c) 0 30%, #fff 30% 42%, var(--c) 42% 62%, #fff 62% 74%, var(--c) 74%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+[data-style='foot'] .grades .grade::after { content: ''; position: absolute; left: 50%; top: 24px; z-index: -1; width: 52px; height: 18px; margin-left: -26px; border-radius: 999px; background: #fff; }
+[data-style='foot'] .grades .grade small { margin-top: 32px; background: #12301a; color: #fff; }
+[data-style='foot'] .grades .g-hard { --c: #f5b400; }
+[data-style='foot'] .grades .g-good { --c: #2f6fd6; }
+[data-style='foot'] .grades .g-easy { --c: #2ea85a; }
+
+/* ==================================================================
+   MÊLÉE (rugby)
+   ================================================================== */
+[data-style='rugby'] {
+  --paper: #4f7d33; --panel: #f6f0e0; --panel-hi: #efe6d0;
+  --ink: #1f2a20; --ink-soft: #2f3b30; --grey: #4c5a4d; --ink-dim: #4c5a4d;
+  --rule: rgba(31, 42, 32, 0.15); --rule-strong: #1f2a20;
+  --chalk: #8a1f2c; --chalk-ink: #8a1f2c; --on-chalk: #f1ead8;
+  --good: #1f4d36; --bad: #8a1f2c;
+  --voile: rgba(31, 42, 32, 0.05); --voile-2: rgba(31, 42, 32, 0.1); --voile-3: rgba(31, 42, 32, 0.16);
+  --bleu: #1f4d36; --bleu-ink: #1f4d36; --rouge: #8a1f2c; --orange: #c97a2b;
+  --ly-voile: rgba(31, 42, 32, 0.15); --ly-voile-2: rgba(241, 234, 216, 0.5);
+  --ly-tabbar: #f1ead8; --ly-ombre: rgba(0, 0, 0, 0.3); --ly-tag: transparent; --ly-bord-carte: #1f2a20;
+  --sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --anneau: var(--chalk);
+  --cerceaux: linear-gradient(180deg, #1f4d36 0 14px, #f1ead8 14px 28px, #8a1f2c 28px 42px);
+}
+[data-style='rugby'] body {
+  background-color: #4f7d33;
+  background-image:
+    linear-gradient(180deg, #1f4d36 0 8px, #f1ead8 8px 16px, #8a1f2c 16px 24px, #f1ead8 24px 32px, #1f4d36 32px 40px, transparent 40px),
+    repeating-linear-gradient(90deg, #55843a 0 45px, #4a7630 45px 90px);
+  background-attachment: fixed;
+}
+[data-style='rugby'] .screen-title,
+[data-style='rugby'] .topbar h1,
+[data-style='rugby'] .done h2 { font-family: var(--sans); font-weight: 900; text-transform: uppercase; color: #f1ead8; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+[data-style='rugby'] .sheet h3 { font-family: var(--sans); font-weight: 900; text-transform: uppercase; }
+[data-style='rugby'] .sheet { border-top: 4px solid #1f4d36; }
+[data-style='rugby'] .tabbar { background: #f1ead8; border-top: 4px solid #1f4d36; }
+[data-style='rugby'] .tabbar button.on { color: #8a1f2c; }
+[data-style='rugby'] .tabbar button.on .tabsvg { background: rgba(138, 31, 44, 0.12); }
+[data-style='rugby'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='rugby'] .reveal { background: #8a1f2c; color: #f1ead8; border: none; border-radius: 6px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 0 #5a1219; }
+[data-style='rugby'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='rugby'] .reveal:active { transform: translateY(2px); box-shadow: 0 2px 0 #5a1219; }
+
+[data-style='rugby'] .ly-xp-txt, [data-style='rugby'] .ly-xp-txt b { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
+[data-style='rugby'] .ly-nom { width: fit-content; margin-inline: auto; padding: 4px 14px; border-radius: 999px; background: #f6f0e0; }
+[data-style='rugby'] .ly-niv { border-radius: 50%; background: #f1ead8; color: #1f4d36; border: 3px solid #1f4d36; }
+[data-style='rugby'] .ly-niv small { color: #1f4d36; }
+[data-style='rugby'] .ly-barre { border-radius: 2px; background: rgba(241, 234, 216, 0.35); }
+[data-style='rugby'] .ly-barre i { border-radius: 0; background: repeating-linear-gradient(90deg, #1f4d36 0 10px, #8a1f2c 10px 20px); }
+/* La série : un écusson. */
+[data-style='rugby'] .ly-flamme { width: 46px; height: 52px; padding: 0 0 8px; justify-content: center; border-radius: 0; background: #8a1f2c; clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%); }
+[data-style='rugby'] .ly-flamme b { color: #f1ead8; font-size: 20px; font-weight: 900; }
+[data-style='rugby'] .ly-defi { border-radius: 8px; background: #f6f0e0; border: 2px solid #1f2a20; }
+[data-style='rugby'] .ly-defi .ly-barre { background: rgba(31, 42, 32, 0.15); }
+[data-style='rugby'] .ly-defi-haut > span:first-child { font-weight: 900; font-size: 14px; color: #8a1f2c; }
+[data-style='rugby'] .ly-gain { border-radius: 4px; background: #1f4d36; color: #f1ead8; }
+[data-style='rugby'] .ly-defi-n { font-weight: 900; }
+[data-style='rugby'] .ly-defi-jour .ly-barre i { background: #8a1f2c; }
+/* Les paquets : le haut du maillot, cerclé. */
+[data-style='rugby'] .eventail-dos { box-sizing: border-box; padding-top: 42px; border-radius: 8px; border: 2px solid #1f2a20; background: var(--cerceaux) 0 0 / 100% 42px no-repeat, #f6f0e0; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3); }
+[data-style='rugby'] .eventail-carte.centre .eventail-dos { border-color: #1f2a20; }
+[data-style='rugby'] .eventail-due { background: #8a1f2c; color: #f1ead8; box-shadow: 0 0 0 2px #f1ead8; }
+[data-style='rugby'] .ly-points i.on { background: #f1ead8; }
+[data-style='rugby'] .ly-fusee { width: 48px; height: 48px; border: none; border-radius: 50%; background: transparent; }
+[data-style='rugby'] .ly-fusee:disabled { opacity: 0.35; }
+[data-style='rugby'] .ly-fusee:focus-visible { outline: 2px solid #f1ead8; outline-offset: 2px; }
+[data-style='rugby'] .ly-tuile { border-radius: 8px; background: #f6f0e0; border: 2px solid #1f2a20; }
+[data-style='rugby'] .ly-tuile > b { font-weight: 900; }
+[data-style='rugby'] .ly-tuile-haut svg { color: #8a1f2c; }
+[data-style='rugby'] .ly-segments { gap: 7px; height: 14px; }
+[data-style='rugby'] .ly-segments i { flex: none; width: 21px; height: 13px; border-radius: 50%; background: transparent; border: 2px dashed rgba(31, 42, 32, 0.3); }
+[data-style='rugby'] .ly-segments i.on { border: none; background: var(--ballon-ovale) center / contain no-repeat; transform: rotate(-20deg); }
+
+/* Révision : les poteaux en H derrière la carte, cerclée comme un maillot. */
+[data-style='rugby'] .studybg { background-color: #4f7d33; background-image: repeating-linear-gradient(90deg, #55843a 0 45px, #4a7630 45px 90px) !important; }
+[data-style='rugby'] .studybg::before {
+  content: ''; position: absolute; left: 70px; right: 70px; top: calc(40px + env(safe-area-inset-top)); height: 260px;
+  background:
+    linear-gradient(#f4f4f0, #f4f4f0) 0 0 / 7px 100% no-repeat,
+    linear-gradient(#f4f4f0, #f4f4f0) 100% 0 / 7px 100% no-repeat,
+    linear-gradient(#f4f4f0, #f4f4f0) 0 150px / 100% 7px no-repeat;
+}
+[data-style='rugby'] .studybg::after { content: ''; display: block; position: absolute; left: 0; right: 0; top: auto; bottom: 150px; height: 3px; background: rgba(255, 255, 255, 0.6); opacity: 1; }
+[data-style='rugby'] .studytop .pos { color: #f1ead8; font-weight: 700; }
+[data-style='rugby'] .studytop .stop { background: #f1ead8; color: #1f2a20; border: none; border-radius: 4px; }
+[data-style='rugby'] .progressbar { border-radius: 2px; background: rgba(241, 234, 216, 0.3); }
+[data-style='rugby'] .progressbar i { border-radius: 0; background: repeating-linear-gradient(90deg, #1f4d36 0 10px, #8a1f2c 10px 20px); }
+[data-style='rugby'] .ly-combo { background: transparent; color: #f1ead8; }
+[data-style='rugby'] .studystage { margin: 18px 4px 16px; padding: 56px 18px 26px; border-radius: 8px; border: 2px solid #1f2a20; background: var(--cerceaux) 0 0 / 100% 42px no-repeat, #f6f0e0; box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3); }
+[data-style='rugby'] .studystage .tag { border: none; border-radius: 4px; background: #1f4d36; color: #f1ead8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+[data-style='rugby'] .ask { font-weight: 900; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; color: #8a1f2c; }
+[data-style='rugby'] .word { font-weight: 900; }
+[data-style='rugby'] .wordsmall { color: #4c5a4d; }
+[data-style='rugby'] .ruleline { background: rgba(31, 42, 32, 0.25); }
+[data-style='rugby'] .answer { font-family: var(--sans); font-weight: 900; color: #1f4d36; }
+[data-style='rugby'] .example { color: #4c5a4d; }
+[data-style='rugby'] .speak { background: transparent; border: 2px solid #1f4d36; border-radius: 6px; color: #1f4d36; font-weight: 800; }
+/* Les notes : quatre maillots cerclés, numérotés. */
+[data-style='rugby'] .grades .grade { --c: #b8433a; padding: 13px 0 0; color: #fff; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+[data-style='rugby'] .grades .grade::before {
+  content: ''; position: absolute; left: 50%; top: 0; z-index: -1; width: 76px; height: 70px; margin-left: -38px;
+  background: linear-gradient(180deg, transparent 0 70%, #f1ead8 70% 78%, transparent 78% 85%, #f1ead8 85% 93%, transparent 93%), var(--c);
+  clip-path: polygon(22% 0, 36% 0, 50% 9%, 64% 0, 78% 0, 100% 18%, 88% 38%, 80% 33%, 80% 100%, 20% 100%, 20% 33%, 12% 38%, 0 18%);
+}
+[data-style='rugby'] .grades .grade::after { content: '1'; position: absolute; left: 0; right: 0; top: 28px; text-align: center; font-size: 16px; font-weight: 900; line-height: 1; color: rgba(255, 255, 255, 0.85); }
+[data-style='rugby'] .grades .grade small { margin-top: 49px; border-radius: 4px; background: #f1ead8; color: #1f2a20; font-weight: 800; text-transform: none; letter-spacing: 0; }
+[data-style='rugby'] .grades .g-hard { --c: #c97a2b; }
+[data-style='rugby'] .grades .g-hard::after { content: '2'; }
+[data-style='rugby'] .grades .g-good { --c: #2f5d8a; }
+[data-style='rugby'] .grades .g-good::after { content: '3'; }
+[data-style='rugby'] .grades .g-easy { --c: #3d7a46; }
+[data-style='rugby'] .grades .g-easy::after { content: '4'; }
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-style='basket'], [data-style='foot'], [data-style='rugby']) .grades .grade { transition: none; }
+}

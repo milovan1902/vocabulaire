@@ -46,7 +46,8 @@
  */
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
-  | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin';
+  | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
+  | 'parquet' | 'pelouse' | 'melee';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -89,6 +90,9 @@ export const THEME_LABELS: Record<Theme, string> = {
   manga: 'Manga',
   'bd-pop': 'BD pop',
   jardin: 'Jardin',
+  parquet: 'Parquet',
+  pelouse: 'Pelouse',
+  melee: 'Mêlée',
 };
 
 export function themeChoisi(): Theme {
@@ -97,7 +101,8 @@ export function themeChoisi(): Theme {
     || v === 'cahier-rose' || v === 'cahier-bleu' || v === 'lycee' || v === 'lycee-clair'
     || v === 'decollage' || v === 'orbite' || v === 'tableau-vert' || v === 'tableau-noir'
     || v === 'arcade' || v === 'neon' || v === 'grand-bleu'
-    || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin' ? v : 'auto';
+    || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
+    || v === 'parquet' || v === 'pelouse' || v === 'melee' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -114,6 +119,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'carnet-kraft' || t === 'manga' || t === 'bd-pop') return 'clair';
   /* CHANTIER 180 — Jardin, clair lui aussi. */
   if (t === 'jardin') return 'clair';
+  /* CHANTIER 181 — les trois apparences Sport sont claires. */
+  if (t === 'parquet' || t === 'pelouse' || t === 'melee') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -135,6 +142,10 @@ function appliquer(t: Theme) {
   else if (t === 'bd-pop') document.documentElement.dataset.style = 'bd';
   /* CHANTIER 180 — Jardin (jardin.css). */
   else if (t === 'jardin') document.documentElement.dataset.style = 'jardin';
+  /* CHANTIER 181 — Parquet, Pelouse, Mêlée (sport.css). */
+  else if (t === 'parquet') document.documentElement.dataset.style = 'basket';
+  else if (t === 'pelouse') document.documentElement.dataset.style = 'foot';
+  else if (t === 'melee') document.documentElement.dataset.style = 'rugby';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

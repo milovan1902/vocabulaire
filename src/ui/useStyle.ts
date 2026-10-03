@@ -9,13 +9,14 @@
  */
 import { useEffect, useState } from 'react';
 
-export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | 'arcade' | 'neon' | 'ocean' | 'voyage' | 'manga' | 'bd' | 'jardin' | null;
+export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | 'arcade' | 'neon' | 'ocean' | 'voyage' | 'manga' | 'bd' | 'jardin' | 'basket' | 'foot' | 'rugby' | null;
 
 function lire(): Style {
   const s = document.documentElement.dataset.style;
   return s === 'cahier' || s === 'lycee' || s === 'decollage' || s === 'orbite' || s === 'tableau'
     || s === 'arcade' || s === 'neon' || s === 'ocean'
-    || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin' ? s : null;
+    || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin'
+    || s === 'basket' || s === 'foot' || s === 'rugby' ? s : null;
 }
 
 /**
@@ -25,7 +26,8 @@ function lire(): Style {
 export function estLudique(s: Style): boolean {
   return s === 'lycee' || s === 'decollage' || s === 'orbite' || s === 'tableau'
     || s === 'arcade' || s === 'neon' || s === 'ocean'
-    || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin';
+    || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin'
+    || s === 'basket' || s === 'foot' || s === 'rugby';
 }
 
 export function useStyle(): Style {

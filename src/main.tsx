@@ -40,6 +40,8 @@ import './ui/voyage.css';
 import './ui/bulles.css';
 /* CHANTIER 180 — Jardin (Lexend, déjà livrée). */
 import './ui/jardin.css';
+/* CHANTIER 181 — Parquet, Pelouse, Mêlée (Lexend, Archivo, déjà livrées). */
+import './ui/sport.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

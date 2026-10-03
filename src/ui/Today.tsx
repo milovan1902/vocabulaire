@@ -410,6 +410,12 @@ export function Today({
         ? { defi: 'Épisode du jour', go: 'C’est parti !', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} pages` }
       : style === 'bd'
         ? { defi: 'Aventure du jour', go: 'C’est parti !', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cases` }
+      : style === 'basket'
+        ? { defi: 'Match du jour', go: 'Au panier', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} paniers` }
+      : style === 'foot'
+        ? { defi: 'Match du jour', go: 'Coup d’envoi', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} passes` }
+      : style === 'rugby'
+        ? { defi: 'Match du jour', go: 'Coup d’envoi', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} essais` }
       : style === 'jardin'
         ? { defi: 'Récolte du jour', go: 'Jardiner', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} semis` }
       : style === 'ocean'
@@ -512,9 +518,11 @@ export function Today({
               CHANTIER 174 — Borne arcade : un triangle ; Néon : un chevron lumineux.
               CHANTIER 176 — Grand bleu : un petit poisson.
               CHANTIER 178 — Carnet kraft : un avion ; Manga : traits de vitesse ; BD pop : un éclair.
-              CHANTIER 180 — Jardin : une feuille. */}
+              CHANTIER 180 — Jardin : une feuille.
+              CHANTIER 181 — Parquet : un ballon ; Pelouse : un sifflet ; Mêlée : un ballon ovale. */}
           {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean'
-            || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin') && aFaire.length > 1 && (
+            || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin'
+            || style === 'basket' || style === 'foot' || style === 'rugby') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -526,6 +534,9 @@ export function Today({
                 : style === 'ocean' ? <Poisson />
                 : style === 'voyage' ? <Avion />
                 : style === 'jardin' ? <Feuille />
+                : style === 'basket' ? <i className="ballon-basket" />
+                : style === 'foot' ? <i className="sifflet" />
+                : style === 'rugby' ? <i className="ballon-ovale" />
                 : style === 'bd' ? <Eclair />
                 : style === 'manga' ? <i className="fleche-manga" />
                 : <Fusee />}</button>
@@ -539,6 +550,9 @@ export function Today({
                 : style === 'ocean' ? <Poisson />
                 : style === 'voyage' ? <Avion />
                 : style === 'jardin' ? <Feuille />
+                : style === 'basket' ? <i className="ballon-basket" />
+                : style === 'foot' ? <i className="sifflet" />
+                : style === 'rugby' ? <i className="ballon-ovale" />
                 : style === 'bd' ? <Eclair />
                 : style === 'manga' ? <i className="fleche-manga" />
                 : <Fusee />}</button>

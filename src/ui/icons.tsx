@@ -30,7 +30,9 @@ import { useStyle } from './useStyle';
  *   — Grand bleu (CHANTIER 176) : ancre, coquillage, poisson, boussole, voilier ;
  *   — Carnet kraft (CHANTIER 178) : carte, valise, avion, boussole, drapeau ;
  *   — Manga et BD pop (CHANTIER 178) : livre, pile, bulle, curseurs, étoile / éclair ;
- *   — Jardin (CHANTIER 180) : soleil, pousse, bulle, pelle, fleur.
+ *   — Jardin (CHANTIER 180) : soleil, pousse, bulle, pelle, fleur ;
+ *   — Parquet, Pelouse, Mêlée (CHANTIER 181) : le ballon du sport, pile,
+ *     bulle, sifflet, coupe.
  * Toujours au trait, en currentColor : l'onglet actif garde sa couleur.
  */
 const TRAIT = {
@@ -49,6 +51,9 @@ const TRAIT = {
 /** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
   const style = useStyle();
+  if (style === 'basket') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3v18M5.6 5.6c3 3 3 9.8 0 12.8M18.4 5.6c-3 3-3 9.8 0 12.8" /></svg>;
+  if (style === 'foot') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><path d="m12 8 3.8 2.8-1.5 4.4H9.7l-1.5-4.4z" /><path d="M12 3v5M20.6 9.2l-4.8 1.6M17.3 19.3l-3-4.1M6.7 19.3l3-4.1M3.4 9.2l4.8 1.6" /></svg>;
+  if (style === 'rugby') return <svg {...TRAIT}><ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(-35 12 12)" /><path d="m8.6 15.4 6.8-6.8M10.2 11.4l2.4 2.4M11.8 9.8l2.4 2.4" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /><path d="M15 5.764v15" /><path d="M9 3.236v15" /></svg>;
   if (style === 'manga' || style === 'bd') return <svg {...TRAIT}><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg>;
@@ -68,6 +73,7 @@ export function IconAujourdhui() {
 /** Les cartes empilées : la collection. */
 export function IconPaquets() {
   const style = useStyle();
+  if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m2 12 8.58 3.91a2 2 0 0 0 1.66 0L22 12" /><path d="m2 17 8.58 3.91a2 2 0 0 0 1.66 0L22 17" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><path d="M7 20h10" /><path d="M10 20c5.5-2.5.8-6.4 3-10" /><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" /><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M6 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2" /><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14" /><path d="M10 20h4" /><circle cx="16" cy="20" r="2" /><circle cx="8" cy="20" r="2" /></svg>;
   if (style === 'manga' || style === 'bd') return <svg {...TRAIT}><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" /></svg>;
@@ -88,6 +94,7 @@ export function IconPaquets() {
 /** La bulle : la conversation. */
 export function IconParler() {
   const style = useStyle();
+  if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" /></svg>;
   if (style === 'manga' || style === 'bd') return <svg {...TRAIT}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>;
@@ -106,6 +113,7 @@ export function IconParler() {
 /** Les trois curseurs : les réglages. */
 export function IconReglages() {
   const style = useStyle();
+  if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><circle cx="9" cy="14" r="5" /><path d="M13 11l8-3v5h-6" /><path d="M6 9.5V7a3 3 0 0 1 6 0" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><path d="M2 22v-5l5-5 5 5-5 5z" /><path d="M9.5 14.5 16 8" /><path d="m17 2 5 5-.5.5a3.53 3.53 0 0 1-5 0a3.53 3.53 0 0 1 0-5L17 2" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /><circle cx="12" cy="12" r="10" /></svg>;
   if (style === 'manga' || style === 'bd') return <svg {...TRAIT}><line x1="21" x2="14" y1="4" y2="4" /><line x1="10" x2="3" y1="4" y2="4" /><line x1="21" x2="12" y1="12" y2="12" /><line x1="8" x2="3" y1="12" y2="12" /><line x1="21" x2="16" y1="20" y2="20" /><line x1="12" x2="3" y1="20" y2="20" /><line x1="14" x2="14" y1="2" y2="6" /><line x1="8" x2="8" y1="10" y2="14" /><line x1="16" x2="16" y1="18" y2="22" /></svg>;
@@ -124,6 +132,7 @@ export function IconReglages() {
 /** La courbe qui monte : ce qui progresse. */
 export function IconProgres() {
   const style = useStyle();
+  if (style === 'basket' || style === 'foot' || style === 'rugby') return <svg {...TRAIT}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z" /></svg>;
   if (style === 'jardin') return <svg {...TRAIT}><circle cx="12" cy="12" r="3" /><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5" /><path d="M12 7.5V9M7.5 12H9m7.5 0H15m-3 4.5V15M8 8l1.88 1.88M14.12 9.88 16 8M8 16l1.88-1.88M14.12 14.12 16 16" /></svg>;
   if (style === 'voyage') return <svg {...TRAIT}><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></svg>;
   if (style === 'manga') return <svg {...TRAIT}><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" /></svg>;

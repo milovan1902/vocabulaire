@@ -529,7 +529,7 @@ export function Account({
             <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
           </div>
           <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin'] as Theme[]).map((t) => {
+            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee'] as Theme[]).map((t) => {
               const libre = estDebloquee(t, xp);
               const seuil = DEBLOCAGE[t] ?? 0;
               return (
@@ -585,6 +585,7 @@ export function Account({
             « Grand bleu » : la plongée, sous l’eau.
             « Carnet kraft » : le carnet de voyage. « Manga » et « BD pop » : la bande dessinée.
             « Jardin » : le potager au soleil, où chaque note est une fleur en pot.
+            « Parquet », « Pelouse » et « Mêlée » : le basket, le football et le rugby.
           </p>
         </Tiroir>
       )}
