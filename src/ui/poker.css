@@ -45,7 +45,9 @@
    TAPIS VERT — la table de poker
    ================================================================== */
 [data-style='tapis'] {
-  --paper: #0e3622; --panel: #f7f2e6; --panel-hi: #fbf7ee;
+  /* --panel reste FONCÉ : Réglages, tiroirs et listes y posent le texte
+     clair du thème. Seuls le défi et les tuiles d'Aujourd'hui sont crème. */
+  --paper: #0e3622; --panel: #154a30; --panel-hi: #1b5a3a;
   --ink: #f4ecd8; --ink-soft: #e2e9df; --grey: #c9d8cc; --ink-dim: #c9d8cc;
   --rule: rgba(244, 236, 216, 0.16); --rule-strong: rgba(244, 236, 216, 0.36);
   --chalk: #e0b44a; --chalk-ink: #f0cd73; --on-chalk: #1b1b1b;
