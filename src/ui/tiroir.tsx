@@ -21,7 +21,7 @@
  * le seul écran construit ainsi. « Mes progrès » adopte la même forme :
  * les deux écrans lisent la même ligne et le même tiroir.
  */
-import { createPortal } from 'react-dom';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 /**
@@ -55,36 +55,34 @@ export function Ligne({
 }
 
 /**
- * Le tiroir. Il monte du bas et laisse voir l'écran derrière : le
- * réglage est une parenthèse, pas une destination. On en sort par le
- * fond, par la poignée, ou en choisissant.
+ * CHANTIER 186 — LE TIROIR DEVIENT UNE PAGE.
  *
- * Son balisage n'a pas changé d'une balise : seule sa destination dans
- * le document est différente. Le CSS des chantiers 39 et 46 s'applique
- * donc tel quel, et les neuf tiroirs — six aux Réglages, trois à « Mes
- * progrès » — sont corrigés d'un coup.
+ * Il montait du bas par-dessus l'écran. Il prend maintenant la place de
+ * la liste, comme « Mes mots » et « Mon calendrier » (chantiers 63-64) :
+ * un chevron de retour, le titre, le contenu. Même nom, mêmes props :
+ * les écrans qui l'appellent n'ont qu'à masquer leur liste pendant qu'il
+ * est ouvert. Les règles `.sheet …` qui calaient les contrôles à
+ * l'intérieur sont reprises par `.page-tiroir` (apparence.css).
  */
 export function Tiroir({
-  titre, onFermer, children,
+  titre, onFermer, retour = 'Retour', children,
 }: {
   titre: string;
   onFermer: () => void;
+  /** Le libellé du chevron : l'écran auquel on revient. */
+  retour?: string;
   children: ReactNode;
 }) {
-  return createPortal(
-    <div className="sheet-fond" onClick={onFermer}>
-      <div
-        className="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-label={titre}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button className="sheet-poignee" aria-label="Fermer" onClick={onFermer} />
-        <h3>{titre}</h3>
-        {children}
-      </div>
-    </div>,
-    document.body,
+  /* On arrive en haut de la page, pas à la hauteur où l'on était dans la liste. */
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+  return (
+    <section className="sousecran page-tiroir" aria-label={titre}>
+      <button className="sousecran-retour" onClick={onFermer}>
+        <span aria-hidden="true">‹</span>
+        {retour}
+      </button>
+      <h2 className="screen-title">{titre}</h2>
+      {children}
+    </section>
   );
 }

@@ -280,6 +280,8 @@ export function Account({
 
   return (
     <>
+      {/* CHANTIER 186 — un sous-menu ouvert prend la place de la liste. */}
+      {!tiroir && (<>
       <h2 className="screen-title">Réglages</h2>
 
       <div className="reglist">
@@ -339,9 +341,10 @@ export function Account({
           onClick={() => setTiroir('aide')}
         />
       </div>
+      </>)}
 
       {tiroir === 'aide' && (
-        <Tiroir titre="Aide" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Aide" retour="Réglages" onFermer={() => setTiroir(null)}>
           <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
             Revoir les premiers pas
           </button>
@@ -369,7 +372,7 @@ export function Account({
       )}
 
       {tiroir === 'connexion' && (
-        <Tiroir titre="Connexion" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Connexion" retour="Réglages" onFermer={() => setTiroir(null)}>
           <AccountPanel auth={auth} />
           <p className="hint" style={{ marginTop: 14 }}>
             Sans compte, la progression reste sur cet appareil. Pour la
@@ -392,7 +395,7 @@ export function Account({
       )}
 
       {tiroir === 'classe' && (
-        <Tiroir titre="Ma classe" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Ma classe" retour="Réglages" onFermer={() => setTiroir(null)}>
           <p className="hint">
             Elle range le catalogue en « pour ma classe » et « pour plus tard ».
             Rien ne se ferme : les paquets des classes suivantes restent
@@ -419,7 +422,7 @@ export function Account({
       )}
 
       {tiroir === 'apparence' && (
-        <Tiroir titre="Apparence" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Apparence" retour="Réglages" onFermer={() => setTiroir(null)}>
           {/* CHANTIER 168 — les XP, et ce qu'ils débloquent. */}
           <div className="xp-bloc">
             <span className="xp-ligne">
@@ -494,7 +497,7 @@ export function Account({
       )}
 
       {tiroir === 'rappel' && (
-        <Tiroir titre="Rappel quotidien" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Rappel quotidien" retour="Réglages" onFermer={() => setTiroir(null)}>
           <div className="setting">
             <Toggle
               label="Me rappeler de réviser"
@@ -526,7 +529,7 @@ export function Account({
       )}
 
       {tiroir === 'charge' && (
-        <Tiroir titre="Charge de travail" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Charge de travail" retour="Réglages" onFermer={() => setTiroir(null)}>
           {/* La journée réglée, dite en une phrase : on voit ce qu'on
               fabrique avant de toucher aux curseurs. */}
           <p className="chargephrase">
@@ -564,7 +567,7 @@ export function Account({
       )}
 
       {tiroir === 'revision' && (
-        <Tiroir titre="Révision" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Révision" retour="Réglages" onFermer={() => setTiroir(null)}>
           <Slider
             label="Vitesse de la voix"
             min={0.6} max={1.1} step={0.05} value={settings.speechRate}

@@ -201,3 +201,20 @@ body { font-family: var(--sans); }
 .xpj-frise small { font-size: 11px; line-height: 1.2; }
 .xpj-frise > span.acquis { color: var(--good); }
 .xpj-frise > span.encours { color: var(--chalk-ink, var(--chalk)); }
+
+/* ---------- CHANTIER 186 — les sous-menus deviennent des pages ---------- */
+/* Les contrôles gardent les marges qu'ils avaient dans le tiroir (.sheet …). */
+.page-tiroir .hint { margin: 0 0 14px; }
+.page-tiroir .classrow:last-child { margin-bottom: 0; }
+.page-tiroir .setting { padding: 0; border-top: none; }
+.page-tiroir .themechoix { margin-bottom: 12px; }
+.page-tiroir .btn { margin-top: 8px; }
+.page-tiroir .account { margin: 0; }
+.page-tiroir .chargenote { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); }
+.page-tiroir .prog-tete { margin-top: 0; }
+.page-tiroir .prog-compteurs { margin-top: 0; }
+.page-tiroir .rayon-label { margin: 18px 0 8px; }
+.page-tiroir .prog-liste { margin-top: 0; }
+.page-tiroir .prog-pied { margin-bottom: 0; }
+/* De quoi finir au-dessus de la barre d'onglets. */
+.page-tiroir { padding-bottom: 24px; }

@@ -127,6 +127,8 @@ export function Progress({
 
   return (
     <>
+      {/* CHANTIER 186 — « Mes paquets » et « Mes XP » prennent la place de la liste. */}
+      {!xpOuvert && !tiroirOuvert && (<>
       <h2 className="screen-title">Mes progrès</h2>
 
       <div className="reglist">
@@ -182,15 +184,16 @@ export function Progress({
           onClick={() => setXpOuvert(true)}
         />
       </div>
+      </>)}
 
       {xpOuvert && (
-        <Tiroir titre="Mes XP" onFermer={() => setXpOuvert(false)}>
+        <Tiroir titre="Mes XP" retour="Mes progrès" onFermer={() => setXpOuvert(false)}>
           <MesXp streak={streak} />
         </Tiroir>
       )}
 
       {tiroirOuvert && (
-        <Tiroir titre="Mes paquets" onFermer={() => setTiroirOuvert(false)}>
+        <Tiroir titre="Mes paquets" retour="Mes progrès" onFermer={() => setTiroirOuvert(false)}>
           <div className="prog-liste">
             {stats.rows.map((r) => (
               <span key={r.deck.id} className="prog-ligne">
