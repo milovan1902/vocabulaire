@@ -104,7 +104,6 @@ export function MesXp({ streak }: { streak: Streak }) {
           );
         })}
       </div>
-    </Tiroir>
     </>
   );
 }
