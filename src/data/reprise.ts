@@ -213,6 +213,22 @@ export async function verse(choisis: Proposition[], quandIso?: string): Promise<
       ajoutes++;
     }
     await repository.saveCards(REPRISE_ID, cartes);
+
+    /*
+     * CHANTIER 184 — chaque conversation crée un thème nouveau
+     * (« Conversation du 4 oct. »). Si un choix de thèmes est enregistré
+     * pour ce paquet (fait à la main, ou reçu de l'autre appareil depuis
+     * le chantier 163), ce thème n'y figurait pas : les cartes étaient bien
+     * créées, mais écartées du compte du paquet et de la journée. Le thème
+     * du jour rejoint donc le choix enregistré. Sans choix enregistré, tout
+     * compte déjà : rien à faire.
+     */
+    if (ajoutes > 0) {
+      const retenus = await repository.getThemes(REPRISE_ID);
+      if (retenus && retenus.length > 0 && !retenus.includes(theme)) {
+        await repository.saveThemes(REPRISE_ID, [...retenus, theme]);
+      }
+    }
   }
 
   return { ajoutes, ramenes };

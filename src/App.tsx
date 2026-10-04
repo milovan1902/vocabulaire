@@ -622,6 +622,12 @@ export default function App() {
               await store.addDeck(REPRISE_ID);
               await store.setActive(REPRISE_ID, true);
               await store.refreshAll();
+              /*
+               * CHANTIER 184 — et on synchronise tout de suite, comme en fin
+               * de révision : sans cela, les mots restaient sur ce seul
+               * appareil jusqu'à la prochaine ouverture de l'application.
+               */
+              if (auth.session) void auth.runSync();
             }}
           />
         )}
