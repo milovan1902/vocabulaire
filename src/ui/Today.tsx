@@ -422,6 +422,10 @@ export function Today({
         ? { defi: 'Grand Prix du jour', go: 'Feu vert', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} tours` }
       : style === 'diner'
         ? { defi: 'Le plat du jour', go: 'Mets une pièce', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} disques` }
+      : style === 'tapis'
+        ? { defi: 'Main du jour', go: 'Distribuer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} jetons` }
+      : style === 'salon'
+        ? { defi: 'La mise du jour', go: 'Miser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} jetons` }
       : style === 'tv'
         ? { defi: 'Au programme', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} étoiles` }
       : style === 'jardin'
@@ -448,6 +452,9 @@ export function Today({
       : style === 'circuit' ? <i className="pneu" />
       : style === 'diner' ? <i className="chrome" />
       : style === 'tv' ? <i className="etoile-tv" />
+      /* CHANTIER 183 — Tapis vert : un jeton noir ; Salon privé : un losange doré. */
+      : style === 'tapis' ? <i className="jeton" />
+      : style === 'salon' ? <i className="losange" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -550,7 +557,8 @@ export function Today({
           {(style === 'decollage' || style === 'tableau' || style === 'arcade' || style === 'neon' || style === 'ocean'
             || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin'
             || style === 'basket' || style === 'foot' || style === 'rugby'
-            || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') && aFaire.length > 1 && (
+            || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
+            || style === 'tapis' || style === 'salon') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"

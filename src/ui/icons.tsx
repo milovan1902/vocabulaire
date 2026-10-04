@@ -37,6 +37,8 @@ import { useStyle } from './useStyle';
  *     départ (formule 1, rallye, moto, kart, prototype), Diner (milk-shake,
  *     juke-box, micro, radio, patin), TV (téléviseur, téléphone à cadran,
  *     appareil photo, lampe à lave, fusée jouet).
+ *   — CHANTIER 183 : Tapis vert (jeton, cartes, micro, dé, pile de jetons),
+ *     Salon privé (losange, cartes, verre, roulette, trophée).
  * Toujours au trait, en currentColor : l'onglet actif garde sa couleur.
  */
 const TRAIT = {
@@ -55,6 +57,8 @@ const TRAIT = {
 /** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
   const style = useStyle();
+  if (style === 'tapis') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" /></svg>;
+  if (style === 'salon') return <svg {...TRAIT}><path d="M12 2l8 10-8 10-8-10z" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><circle cx="12" cy="15.5" r="5.5" /><path d="M9.5 6.5 11 3.5h2l1.5 3L12 10z" /></svg>;
   if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M4 14V10h5l3-2h6l2 2h9v2l-3 2M4 10V6h4" /><circle cx="8" cy="14" r="3" /><circle cx="24" cy="14" r="3" /></svg>;
   if (style === 'diner') return <svg {...TRAIT}><path d="M7 9h10l-1.5 12h-7z" /><path d="M6 9a6 4 0 0 1 12 0" /><path d="M12.5 5 15 1.5" /></svg>;
@@ -81,6 +85,8 @@ export function IconAujourdhui() {
 /** Les cartes empilées : la collection. */
 export function IconPaquets() {
   const style = useStyle();
+  if (style === 'tapis') return <svg {...TRAIT}><rect x="3" y="5" width="10" height="15" rx="1.5" transform="rotate(-12 8 12.5)" /><rect x="10" y="4" width="10" height="15" rx="1.5" transform="rotate(10 15 11.5)" /></svg>;
+  if (style === 'salon') return <svg {...TRAIT}><rect x="3" y="5" width="10" height="15" rx="1.5" transform="rotate(-12 8 12.5)" /><rect x="10" y="4" width="10" height="15" rx="1.5" transform="rotate(10 15 11.5)" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><path d="M5 9h14l-1.5 11h-11z" /><path d="M8.5 9V7a3.5 3.5 0 0 1 7 0v2" /></svg>;
   if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M3 14v-3l3-1 3-4h10l4 4 5 1v3M11 6v4h9" /><circle cx="8" cy="14" r="3" /><circle cx="24" cy="14" r="3" /></svg>;
   if (style === 'diner') return <svg {...TRAIT}><path d="M5 21V10a7 7 0 0 1 14 0v11z" /><path d="M8 21v-5h8v5M8 11a4 4 0 0 1 8 0" /></svg>;
@@ -106,6 +112,8 @@ export function IconPaquets() {
 /** La bulle : la conversation. */
 export function IconParler() {
   const style = useStyle();
+  if (style === 'tapis') return <svg {...TRAIT}><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8" /></svg>;
+  if (style === 'salon') return <svg {...TRAIT}><path d="M4 4h16l-8 9z" /><path d="M12 13v8M8 21h8" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><path d="M9 2h6l-.5 7a2.5 2.5 0 0 1-5 0z" /><path d="M12 11.5V20M8.5 21h7M11 6h.01M13 4.5h.01" /></svg>;
   if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><circle cx="6" cy="14" r="4" /><circle cx="26" cy="14" r="4" /><path d="M6 14l5-6h8l3 3h-6l-4 3M22 11l4 3M17 8l2-3h3" /></svg>;
   if (style === 'diner') return <svg {...TRAIT}><rect x="8" y="2" width="8" height="12" rx="4" /><path d="M8 6h8M8 10h8M12 17v3M8 21h8M5 10a7 7 0 0 0 14 0" /></svg>;
@@ -129,6 +137,8 @@ export function IconParler() {
 /** Les trois curseurs : les réglages. */
 export function IconReglages() {
   const style = useStyle();
+  if (style === 'tapis') return <svg {...TRAIT}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8.5 8.5h.01M15.5 15.5h.01M12 12h.01M15.5 8.5h.01M8.5 15.5h.01" strokeWidth="2.6" /></svg>;
+  if (style === 'salon') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /><path d="M12 3v6M12 15v6M3 12h6M15 12h6M5.6 5.6l4.3 4.3M14.1 14.1l4.3 4.3M5.6 18.4l4.3-4.3M14.1 9.9l4.3-4.3" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><circle cx="12" cy="12" r="5" /><path d="M9 7.5 9.5 3h5l.5 4.5M9 16.5l.5 4.5h5l.5-4.5M12 10v2l1.5 1" /></svg>;
   if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M4 15h24M11 15v-4h4M18 12l3-3" /><circle cx="14" cy="7" r="2.5" /><circle cx="7" cy="15" r="2.5" /><circle cx="25" cy="15" r="2.5" /></svg>;
   if (style === 'diner') return <svg {...TRAIT}><rect x="3" y="8" width="18" height="12" rx="3" /><path d="M7 8l9-5M6 12h4M6 15h4M6 18h4" /><circle cx="15.5" cy="14" r="3" /></svg>;
@@ -152,6 +162,8 @@ export function IconReglages() {
 /** La courbe qui monte : ce qui progresse. */
 export function IconProgres() {
   const style = useStyle();
+  if (style === 'tapis') return <svg {...TRAIT}><ellipse cx="12" cy="6" rx="7" ry="2.5" /><path d="M5 6v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 10v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-4M5 14v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-4" /></svg>;
+  if (style === 'salon') return <svg {...TRAIT}><path d="M7 3h10v5a5 5 0 0 1-10 0z" /><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6v4H9z" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5z" /><path d="M5 21h14" /></svg>;
   if (style === 'circuit') return <svg {...TRAIT} viewBox="0 0 32 20"><path d="M2 14v-2l4-1 5-4h7l5 3 6 1 1 3M6 11V6h3" /><circle cx="8" cy="14" r="3" /><circle cx="24" cy="14" r="3" /></svg>;
   if (style === 'diner') return <svg {...TRAIT}><path d="M5 3h6v8l6 1.5a3 3 0 0 1 3 3V17H5z" /><circle cx="8" cy="20" r="2" /><circle cx="17" cy="20" r="2" /></svg>;

@@ -1,0 +1,269 @@
+/* ==================================================================
+   CHANTIER 183 — deux apparences « Poker » : « Tapis vert » (22a) et
+   « Salon privé » (22b).
+
+   Actives quand <html> porte data-style="tapis" ou "salon" (theme.ts).
+   Toutes deux sur la base du SOMBRE, forme du Lycée (voir estLudique).
+   Polices déjà livrées (Lexend ; Newsreader pour les titres en italique,
+   Georgia en secours). Aucune image : jetons, cartes et couleurs
+   (♠ ♥ ♦ ♣) sont en CSS.
+   ================================================================== */
+
+/* ---------- commun aux deux ---------- */
+:is([data-style='tapis'], [data-style='salon']) .studybg { background-image: none !important; }
+:is([data-style='tapis'], [data-style='salon']) .studybg::after { display: none; }
+:is([data-style='tapis'], [data-style='salon']) .eventail-carte.centre .eventail-dos { animation: none; }
+:is([data-style='tapis'], [data-style='salon']) .tabbar button.on::before { display: none; }
+:is([data-style='tapis'], [data-style='salon']) .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+:is([data-style='tapis'], [data-style='salon']) .ly-flamme svg { display: none; }
+:is([data-style='tapis'], [data-style='salon']) .word { font-family: var(--sans); color: var(--ink); }
+:is([data-style='tapis'], [data-style='salon']) .example { font-style: normal; }
+:is([data-style='tapis'], [data-style='salon']) .ly-fusee { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: none; border-radius: 50%; background: transparent; box-shadow: none; }
+:is([data-style='tapis'], [data-style='salon']) .ly-fusee:disabled { opacity: 0.35; }
+:is([data-style='tapis'], [data-style='salon']) .ly-fusee i { font-style: normal; }
+:is([data-style='tapis'], [data-style='salon']) .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; align-items: start; justify-items: center; }
+:is([data-style='tapis'], [data-style='salon']) .grades .grade {
+  position: relative; isolation: isolate; width: 100%; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  min-height: 0; border: none; border-radius: 0; background: transparent; box-shadow: none;
+  font-size: 12.5px; font-weight: 800; line-height: 14px; letter-spacing: 0; text-transform: none;
+  transition: transform 0.08s ease;
+}
+:is([data-style='tapis'], [data-style='salon']) .grades .grade small { box-sizing: border-box; max-width: 100%; white-space: normal; text-align: center; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 1.25; opacity: 1; }
+:is([data-style='tapis'], [data-style='salon']) .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.9); color: #333; }
+/* La semaine : les quatre couleurs du jeu, dans l'ordre. */
+:is([data-style='tapis'], [data-style='salon']) .ly-segments { gap: 7px; height: 18px; align-items: center; }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i { flex: none; width: 16px; height: 18px; display: grid; place-items: center; border-radius: 0; background: transparent; font-style: normal; font-size: 16px; line-height: 1; color: var(--seg-off); }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i::before { content: '♠'; }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i:nth-child(4n+2)::before { content: '♥'; }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i:nth-child(4n+3)::before { content: '♦'; }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i:nth-child(4n)::before { content: '♣'; }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i.on { color: var(--seg-noir); }
+:is([data-style='tapis'], [data-style='salon']) .ly-segments i.on:is(:nth-child(4n+2), :nth-child(4n+3)) { color: var(--seg-rouge); }
+
+/* ==================================================================
+   TAPIS VERT — la table de poker
+   ================================================================== */
+[data-style='tapis'] {
+  --paper: #0e3622; --panel: #f7f2e6; --panel-hi: #fbf7ee;
+  --ink: #f4ecd8; --ink-soft: #e2e9df; --grey: #c9d8cc; --ink-dim: #c9d8cc;
+  --rule: rgba(244, 236, 216, 0.16); --rule-strong: rgba(244, 236, 216, 0.36);
+  --chalk: #e0b44a; --chalk-ink: #f0cd73; --on-chalk: #1b1b1b;
+  --good: #7fe0a6; --bad: #ff7b7b;
+  --voile: rgba(255, 255, 255, 0.06); --voile-2: rgba(255, 255, 255, 0.12); --voile-3: rgba(255, 255, 255, 0.18);
+  --bleu: #e0b44a; --bleu-ink: #f0cd73; --rouge: #ff7b7b; --orange: #f2a93b;
+  --ly-voile: rgba(255, 255, 255, 0.12); --ly-voile-2: rgba(255, 255, 255, 0.25);
+  --ly-tabbar: #3a2010; --ly-ombre: rgba(0, 0, 0, 0.45); --ly-tag: transparent; --ly-bord-carte: #fbf7ee;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --titre: 'Newsreader', Georgia, serif;
+  --anneau: var(--chalk);
+  --seg-off: rgba(27, 27, 27, 0.22); --seg-noir: #1b1b1b; --seg-rouge: #b3263a;
+  --feutre: radial-gradient(ellipse at 50% 38%, #2b8a58, #1a5c3a 55%, #0e3622);
+}
+[data-style='tapis'] body { background-color: #0e3622; background-image: var(--feutre); background-attachment: fixed; }
+[data-style='tapis'] .screen-title, [data-style='tapis'] .topbar h1, [data-style='tapis'] .done h2, [data-style='tapis'] .sheet h3 { font-family: var(--titre); font-style: italic; font-weight: 600; }
+[data-style='tapis'] .sheet { border-top: 3px solid #c9a46a; }
+[data-style='tapis'] .tabbar { background: #3a2010; border-top: 3px solid #c9a46a; }
+[data-style='tapis'] .tabbar button { color: #e6d6b8; }
+[data-style='tapis'] .tabbar button.on { color: #e0b44a; }
+[data-style='tapis'] .tabbar button.on .tabsvg { background: rgba(224, 180, 74, 0.18); }
+[data-style='tapis'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='tapis'] .reveal { background: #e0b44a; color: #1b1b1b; border: none; border-radius: 999px; font-weight: 800; box-shadow: 0 4px 0 #7a5a14; }
+[data-style='tapis'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='tapis'] .reveal:active { transform: translateY(2px); box-shadow: 0 2px 0 #7a5a14; }
+
+/* Le niveau : un jeton rouge. */
+[data-style='tapis'] .ly-niv { box-sizing: border-box; width: 50px; height: 50px; border: none; border-radius: 50%; color: #fff;
+  background: radial-gradient(circle, #b3263a 0 60%, rgba(255, 255, 255, 0.6) 61% 63%, #b3263a 64% 70%, transparent 71%), repeating-conic-gradient(#b3263a 0 30deg, #f4ecd8 30deg 45deg);
+  box-shadow: 0 3px 0 #5e1220; }
+[data-style='tapis'] .ly-niv small, [data-style='tapis'] .ly-niv b { color: #fff; }
+[data-style='tapis'] .ly-barre { background: rgba(0, 0, 0, 0.3); }
+[data-style='tapis'] .ly-barre i { background: #e0b44a; }
+/* La série : une petite carte cœur. */
+[data-style='tapis'] .ly-flamme { height: 40px; padding: 0 13px 0 8px; gap: 7px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); border: 1.5px solid #e0b44a; color: #f4ecd8; }
+[data-style='tapis'] .ly-flamme::before { content: '♥'; flex: none; display: grid; place-items: center; width: 18px; height: 25px; border-radius: 3px; background: #fbf7ee; color: #b3263a; font-size: 14px; line-height: 1; }
+[data-style='tapis'] .ly-flamme b { font-size: 17px; font-weight: 800; color: #f4ecd8; }
+/* Les panneaux : du papier de carte crème, pour rester lisibles. */
+[data-style='tapis'] .ly-defi { border-radius: 10px; background: #f7f2e6; border: none; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35); color: #1b1b1b; --ink: #1b1b1b; --ink-soft: #444; --grey: #555; }
+[data-style='tapis'] .ly-defi-haut > span:first-child { font-family: var(--titre); font-size: 22px; font-style: italic; font-weight: 600; letter-spacing: 0; text-transform: none; color: #b3263a; }
+[data-style='tapis'] .ly-gain { background: #1a5c3a; color: #fff; }
+[data-style='tapis'] .ly-defi .ly-barre { background: rgba(0, 0, 0, 0.12); }
+[data-style='tapis'] .ly-defi-jour .ly-barre i { background: #1a5c3a; }
+/* Le liseré ovale de la table, derrière les paquets. */
+[data-style='tapis'] .ly-scene { position: relative; }
+[data-style='tapis'] .ly-scene::before { content: ''; position: absolute; left: -8px; right: -8px; top: -30px; bottom: -30px; border: 2px solid rgba(243, 226, 170, 0.22); border-radius: 50%; pointer-events: none; }
+/* Les paquets : des dos de cartes rouges. */
+[data-style='tapis'] .eventail-dos {
+  box-sizing: border-box; padding: 6px; border-radius: 9px; border: 4px solid #fbf7ee;
+  background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(0, 0, 0, 0.18) 6px 7px), repeating-linear-gradient(-45deg, #b3263a 0 6px, #9a1f31 6px 12px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.45);
+}
+[data-style='tapis'] .eventail-dos > img:not(.dos-illus-img), [data-style='tapis'] .eventail-dos > svg { border-radius: 4px; }
+[data-style='tapis'] .eventail-dos .dos-illus-img { left: calc(6px + (100% - 12px) * 0.161); top: calc(6px + (100% - 12px) * 0.26); width: calc((100% - 12px) * 0.677); }
+[data-style='tapis'] .eventail-carte.centre .eventail-dos { border-color: #fbf7ee; }
+/* Le compteur : un jeton bleu. */
+[data-style='tapis'] .eventail-due { color: #fff; background: radial-gradient(circle, #22549a 0 62%, transparent 63%), repeating-conic-gradient(#22549a 0 22.5deg, #f4ecd8 22.5deg 45deg); box-shadow: none; }
+[data-style='tapis'] .ly-points i.on { background: #e0b44a; }
+[data-style='tapis'] .ly-nom { width: fit-content; margin-inline: auto; }
+/* Les flèches : des jetons noirs. */
+[data-style='tapis'] .ly-fusee .jeton { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle, #1b1b1b 0 66%, transparent 67%), repeating-conic-gradient(#1b1b1b 0 22.5deg, #f4ecd8 22.5deg 45deg); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4); }
+[data-style='tapis'] .ly-fusee .jeton::after { content: '›'; color: #f4ecd8; font-size: 22px; font-weight: 800; line-height: 1; }
+[data-style='tapis'] .ly-fusee.prec .jeton::after { content: '‹'; }
+[data-style='tapis'] .ly-tuile { border-radius: 10px; background: #f7f2e6; border: none; color: #1b1b1b; --ink: #1b1b1b; --ink-soft: #444; --grey: #555; }
+[data-style='tapis'] .ly-tuile-haut svg { color: #b3263a; }
+
+/* Révision : la carte est un as de pique. */
+[data-style='tapis'] .studybg { background-color: #0e3622; background-image: var(--feutre) !important; }
+[data-style='tapis'] .studytop .pos { color: #f4ecd8; font-weight: 700; }
+[data-style='tapis'] .studytop .stop { background: rgba(0, 0, 0, 0.35); color: #f4ecd8; border: 1.5px solid #e0b44a; }
+[data-style='tapis'] .progressbar { border-radius: 999px; background: rgba(0, 0, 0, 0.3); }
+[data-style='tapis'] .progressbar i { border-radius: 999px; background: #e0b44a; }
+[data-style='tapis'] .ly-combo { background: transparent; color: #e0b44a; }
+[data-style='tapis'] .studystage {
+  --ink: #1b1b1b;
+  position: relative; margin: 22px 10px 18px; padding: 48px 22px 30px; border-radius: 16px; border: none;
+  background: #fbf7ee; color: #1b1b1b;
+  box-shadow: inset 0 0 0 8px #fbf7ee, inset 0 0 0 9px #e3d8bf, 0 14px 28px rgba(0, 0, 0, 0.45);
+}
+[data-style='tapis'] .studystage::before, [data-style='tapis'] .studystage::after {
+  content: 'A\A♠'; white-space: pre; position: absolute; text-align: center; font-family: var(--titre); font-size: 22px; font-weight: 700; line-height: 1.05; color: #1b1b1b; pointer-events: none;
+}
+[data-style='tapis'] .studystage::before { left: 14px; top: 12px; }
+[data-style='tapis'] .studystage::after { right: 14px; bottom: 12px; transform: rotate(180deg); }
+[data-style='tapis'] .studystage .tag { border: none; border-radius: 999px; background: #1a5c3a; color: #fff; font-weight: 700; }
+[data-style='tapis'] .ask { font-family: var(--titre); font-size: 20px; font-style: italic; font-weight: 600; color: #b3263a; }
+[data-style='tapis'] .word { font-weight: 800; color: #1b1b1b; }
+[data-style='tapis'] .wordsmall { color: #555; }
+[data-style='tapis'] .ruleline { height: 2px; background: linear-gradient(90deg, transparent, #c9b98f, transparent); }
+[data-style='tapis'] .answer { font-family: var(--titre); font-style: italic; font-weight: 600; color: #b3263a; }
+[data-style='tapis'] .example { color: #555; }
+[data-style='tapis'] .speak { background: transparent; border: 2px solid #1a5c3a; border-radius: 999px; color: #1a5c3a; font-weight: 700; }
+/* Les notes : quatre jetons de mise — rouge, orange, bleu, noir
+   (le noir remplace le vert, qui se perdrait sur le tapis). */
+[data-style='tapis'] .grades .grade { --c: #b3263a; padding: 26px 0 0; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+[data-style='tapis'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 0; z-index: -1; width: 66px; height: 66px; margin-left: -33px; border-radius: 50%;
+  background: radial-gradient(circle, var(--c) 0 68%, rgba(255, 255, 255, 0.6) 69% 71%, var(--c) 72%), repeating-conic-gradient(var(--c) 0 22.5deg, #f4ecd8 22.5deg 45deg);
+  background-size: 74% 74%, 100% 100%; background-position: center; background-repeat: no-repeat;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4); }
+[data-style='tapis'] .grades .grade small { margin-top: 32px; background: rgba(0, 0, 0, 0.45); color: #fff; text-shadow: none; }
+[data-style='tapis'] .grades .grade:active { transform: scale(0.94); }
+[data-style='tapis'] .grades .g-hard { --c: #b8560c; }
+[data-style='tapis'] .grades .g-good { --c: #22549a; }
+[data-style='tapis'] .grades .g-easy { --c: #1b1b1b; }
+
+/* ==================================================================
+   SALON PRIVÉ — le salon de jeu, noir et or
+   ================================================================== */
+[data-style='salon'] {
+  --paper: #121212; --panel: #1c1a16; --panel-hi: #24211b;
+  --ink: #f1e6c8; --ink-soft: #ddd0b0; --grey: #bfb293; --ink-dim: #bfb293;
+  --rule: rgba(212, 175, 90, 0.2); --rule-strong: rgba(212, 175, 90, 0.45);
+  --chalk: #d4af5a; --chalk-ink: #e6c675; --on-chalk: #121212;
+  --good: #6fd39a; --bad: #ff6b7a;
+  --voile: rgba(255, 255, 255, 0.05); --voile-2: rgba(255, 255, 255, 0.1); --voile-3: rgba(255, 255, 255, 0.16);
+  --bleu: #d4af5a; --bleu-ink: #e6c675; --rouge: #ff6b7a; --orange: #f2a93b;
+  --ly-voile: rgba(255, 255, 255, 0.1); --ly-voile-2: rgba(255, 255, 255, 0.25);
+  --ly-tabbar: #0a0a0a; --ly-ombre: rgba(0, 0, 0, 0.55); --ly-tag: transparent; --ly-bord-carte: #d4af5a;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --titre: 'Newsreader', Georgia, serif;
+  --anneau: var(--chalk);
+  --seg-off: #4a4436; --seg-noir: #e6c675; --seg-rouge: #d8434f;
+  --or: linear-gradient(180deg, #ecd08a, #c09440);
+  --salon:
+    radial-gradient(ellipse 600px 420px at 50% calc(100% + 200px), transparent 0, transparent 100%),
+    repeating-conic-gradient(from -90deg at 50% calc(100% + 120px), rgba(212, 175, 90, 0.08) 0 3deg, transparent 3deg 11deg),
+    radial-gradient(ellipse at 50% -10%, rgba(212, 175, 90, 0.2), transparent 60%),
+    repeating-linear-gradient(135deg, rgba(212, 175, 90, 0.045) 0 2px, transparent 2px 14px);
+}
+[data-style='salon'] body { background-color: #121212; background-image: var(--salon); background-attachment: fixed; }
+/* Ailleurs qu'à l'écran « Aujourd'hui » : sans l'éventail doré, pour lire les listes. */
+[data-style='salon'] body:not(:has(.today.ly)) { background-image: radial-gradient(ellipse at 50% -10%, rgba(212, 175, 90, 0.16), transparent 60%); }
+[data-style='salon'] .screen-title, [data-style='salon'] .topbar h1, [data-style='salon'] .done h2, [data-style='salon'] .sheet h3 { font-family: var(--titre); font-style: italic; font-weight: 600; color: #e6c675; }
+[data-style='salon'] .sheet { border-top: 1px solid #d4af5a; }
+[data-style='salon'] .tabbar { background: #0a0a0a; border-top: 1px solid #d4af5a; }
+[data-style='salon'] .tabbar button { color: #bfb293; }
+[data-style='salon'] .tabbar button.on { color: #e6c675; }
+[data-style='salon'] .tabbar button .tabsvg { border-radius: 0; }
+[data-style='salon'] .tabbar button.on .tabsvg { background: rgba(212, 175, 90, 0.16); }
+[data-style='salon'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='salon'] .reveal { background: var(--or); color: #121212; border: none; border-radius: 2px; font-weight: 800; letter-spacing: 0.02em; box-shadow: 0 4px 0 #5e4818; }
+[data-style='salon'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='salon'] .reveal:active { transform: translateY(2px); box-shadow: 0 2px 0 #5e4818; }
+
+/* Le niveau : un losange doré à double filet. */
+[data-style='salon'] .ly-niv { position: relative; isolation: isolate; box-sizing: border-box; width: 50px; height: 50px; border: none; border-radius: 0; background: transparent; color: #e6c675; }
+[data-style='salon'] .ly-niv::before { content: ''; position: absolute; inset: 7px; z-index: -1; transform: rotate(45deg); background: #1c1a16; border: 1.5px solid #d4af5a; outline: 1px solid rgba(212, 175, 90, 0.4); outline-offset: 3px; }
+[data-style='salon'] .ly-niv small { font-size: 7px; color: #e6c675; }
+[data-style='salon'] .ly-niv b { font-family: var(--titre); font-size: 18px; color: #e6c675; }
+[data-style='salon'] .ly-barre { height: 6px; border-radius: 0; background: rgba(212, 175, 90, 0.18); }
+[data-style='salon'] .ly-barre i { border-radius: 0; background: linear-gradient(90deg, #c09440, #e6c675); }
+/* La série : un carreau rouge. */
+[data-style='salon'] .ly-flamme { height: 40px; padding: 0 13px 0 10px; gap: 7px; border-radius: 0; background: #1c1a16; border: 1px solid #d4af5a; color: #f1e6c8; }
+[data-style='salon'] .ly-flamme::before { content: '♦'; flex: none; font-size: 18px; line-height: 1; color: #d8434f; }
+[data-style='salon'] .ly-flamme b { font-size: 17px; font-weight: 800; color: #f1e6c8; }
+[data-style='salon'] .ly-defi { border-radius: 0; background: #1c1a16; border: 1px solid #d4af5a; outline: 1px solid rgba(212, 175, 90, 0.35); outline-offset: -6px; box-shadow: none; }
+[data-style='salon'] .ly-defi-haut > span:first-child { font-family: var(--titre); font-size: 23px; font-style: italic; font-weight: 600; letter-spacing: 0; text-transform: none; color: #e6c675; }
+[data-style='salon'] .ly-gain { border-radius: 0; background: #d4af5a; color: #121212; }
+[data-style='salon'] .ly-defi-jour .ly-barre i { background: #d4af5a; }
+/* Les paquets : des dos noirs à rayons dorés. */
+[data-style='salon'] .eventail-dos {
+  box-sizing: border-box; padding: 7px; border-radius: 8px; border: 1.5px solid #d4af5a;
+  background: repeating-conic-gradient(from -60deg at 50% 100%, rgba(212, 175, 90, 0.35) 0 3deg, transparent 3deg 10deg), #151515;
+  box-shadow: inset 0 0 0 4px #151515, inset 0 0 0 5px rgba(212, 175, 90, 0.5), 0 12px 24px rgba(0, 0, 0, 0.6);
+}
+[data-style='salon'] .eventail-dos > img:not(.dos-illus-img), [data-style='salon'] .eventail-dos > svg { border-radius: 4px; }
+[data-style='salon'] .eventail-dos .dos-illus-img { left: calc(7px + (100% - 14px) * 0.161); top: calc(7px + (100% - 14px) * 0.26); width: calc((100% - 14px) * 0.677); }
+[data-style='salon'] .eventail-carte.centre .eventail-dos { border-color: #e6c675; }
+[data-style='salon'] .eventail-due { background: #9e1b2c; color: #fff; box-shadow: 0 0 0 1.5px #e6c675; }
+[data-style='salon'] .ly-points i.on { background: #d4af5a; }
+[data-style='salon'] .ly-nom { width: fit-content; margin-inline: auto; }
+/* Les flèches : des losanges dorés. */
+[data-style='salon'] .ly-fusee .losange { position: relative; display: grid; place-items: center; width: 46px; height: 46px; }
+[data-style='salon'] .ly-fusee .losange::before { content: ''; position: absolute; inset: 7px; transform: rotate(45deg); background: #1c1a16; border: 1.5px solid #d4af5a; }
+[data-style='salon'] .ly-fusee .losange::after { content: '›'; position: relative; color: #e6c675; font-size: 22px; font-weight: 800; line-height: 1; }
+[data-style='salon'] .ly-fusee.prec .losange::after { content: '‹'; }
+[data-style='salon'] .ly-tuile { border-radius: 0; background: #1c1a16; border: 1px solid rgba(212, 175, 90, 0.6); }
+[data-style='salon'] .ly-tuile-haut svg { color: #e6c675; }
+
+/* Révision : la carte est un roi de cœur bordé d'or. */
+[data-style='salon'] .studybg { background-color: #121212; background-image: radial-gradient(ellipse at 50% -10%, rgba(212, 175, 90, 0.2), transparent 60%), repeating-linear-gradient(135deg, rgba(212, 175, 90, 0.045) 0 2px, transparent 2px 14px) !important; }
+[data-style='salon'] .studytop .pos { color: #f1e6c8; font-weight: 700; }
+[data-style='salon'] .studytop .stop { background: #1c1a16; color: #f1e6c8; border: 1px solid #d4af5a; border-radius: 0; }
+[data-style='salon'] .progressbar { border-radius: 0; background: rgba(212, 175, 90, 0.18); }
+[data-style='salon'] .progressbar i { border-radius: 0; background: #d4af5a; }
+[data-style='salon'] .ly-combo { background: transparent; color: #e6c675; }
+[data-style='salon'] .studystage {
+  --ink: #1b1b1b;
+  position: relative; margin: 22px 10px 22px; padding: 50px 22px 30px; border-radius: 12px; border: 2px solid #d4af5a;
+  background: #f5efe0; color: #1b1b1b;
+  box-shadow: inset 0 0 0 7px #f5efe0, inset 0 0 0 8px #b8913f, 0 16px 30px rgba(0, 0, 0, 0.6);
+}
+[data-style='salon'] .studystage::before, [data-style='salon'] .studystage::after {
+  content: 'K\A♥'; white-space: pre; position: absolute; text-align: center; font-family: var(--titre); font-size: 22px; font-weight: 700; line-height: 1.05; color: #9e1b2c; pointer-events: none;
+}
+[data-style='salon'] .studystage::before { left: 16px; top: 14px; }
+[data-style='salon'] .studystage::after { right: 16px; bottom: 14px; transform: rotate(180deg); }
+[data-style='salon'] .studystage .tag { border: none; border-radius: 0; background: #121212; color: #e6c675; font-weight: 700; }
+[data-style='salon'] .ask { font-family: var(--titre); font-size: 20px; font-style: italic; font-weight: 600; color: #7a5a14; }
+[data-style='salon'] .word { font-weight: 800; color: #1b1b1b; }
+[data-style='salon'] .wordsmall { color: #555; }
+[data-style='salon'] .ruleline { height: 1px; background: linear-gradient(90deg, transparent, #b8913f 20% 80%, transparent); }
+[data-style='salon'] .answer { font-family: var(--titre); font-style: italic; font-weight: 600; color: #9e1b2c; }
+[data-style='salon'] .example { color: #555; }
+[data-style='salon'] .speak { background: transparent; border: 1px solid #b8913f; border-radius: 0; color: #7a5a14; font-weight: 700; }
+/* Les notes : une main de quatre cartes en éventail, une couleur par note. */
+[data-style='salon'] .grades { gap: 2px; padding-top: 6px; }
+[data-style='salon'] .grades .grade { --c: #c8333a; --s: '♥'; --rot: -9deg; --dy: 8px; height: 104px; padding: 44px 0 0; color: #1b1b1b; transform: translateY(var(--dy)) rotate(var(--rot)); }
+[data-style='salon'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 0; z-index: -1; box-sizing: border-box; width: 68px; height: 98px; margin-left: -34px; border-radius: 8px; background: #f5efe0; border: 3px solid var(--c); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5); }
+[data-style='salon'] .grades .grade::after { content: var(--s); position: absolute; left: 0; right: 0; top: 12px; text-align: center; font-size: 22px; line-height: 1; color: var(--c); }
+[data-style='salon'] .grades .grade small { margin-top: 6px; padding: 0 4px; background: transparent; color: #555; }
+[data-style='salon'] .grades .grade:active { transform: translateY(var(--dy)) rotate(var(--rot)) scale(0.94); }
+[data-style='salon'] .grades .g-hard { --c: #c46a0e; --s: '♦'; --rot: -3deg; --dy: 0px; }
+[data-style='salon'] .grades .g-good { --c: #2a5aa8; --s: '♠'; --rot: 3deg; --dy: 0px; }
+[data-style='salon'] .grades .g-easy { --c: #2f7d4f; --s: '♣'; --rot: 9deg; --dy: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-style='tapis'], [data-style='salon']) .grades .grade { transition: none; }
+}

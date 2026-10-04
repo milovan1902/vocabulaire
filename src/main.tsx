@@ -44,6 +44,8 @@ import './ui/jardin.css';
 import './ui/sport.css';
 /* CHANTIER 182 — Strass, Grille de départ, Diner, TV (Lexend, Archivo, déjà livrées). */
 import './ui/retro.css';
+/* CHANTIER 183 — Tapis vert et Salon privé (Lexend, Newsreader, déjà livrées). */
+import './ui/poker.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

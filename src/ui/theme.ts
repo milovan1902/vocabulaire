@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -97,6 +97,8 @@ export const THEME_LABELS: Record<Theme, string> = {
   grille: 'Grille de départ',
   diner: 'Diner',
   tv: 'TV',
+  'tapis-vert': 'Tapis vert',
+  'salon-prive': 'Salon privé',
 };
 
 export function themeChoisi(): Theme {
@@ -107,7 +109,8 @@ export function themeChoisi(): Theme {
     || v === 'arcade' || v === 'neon' || v === 'grand-bleu'
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
-    || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv' ? v : 'auto';
+    || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
+    || v === 'tapis-vert' || v === 'salon-prive' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -129,6 +132,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   /* CHANTIER 182 — Strass et Grille de départ sont sombres ; Diner et TV, clairs. */
   if (t === 'strass' || t === 'grille') return 'sombre';
   if (t === 'diner' || t === 'tv') return 'clair';
+  /* CHANTIER 183 — les deux apparences Poker sont sombres. */
+  if (t === 'tapis-vert' || t === 'salon-prive') return 'sombre';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -159,6 +164,9 @@ function appliquer(t: Theme) {
   else if (t === 'grille') document.documentElement.dataset.style = 'circuit';
   else if (t === 'diner') document.documentElement.dataset.style = 'diner';
   else if (t === 'tv') document.documentElement.dataset.style = 'tv';
+  /* CHANTIER 183 — Tapis vert et Salon privé (poker.css). */
+  else if (t === 'tapis-vert') document.documentElement.dataset.style = 'tapis';
+  else if (t === 'salon-prive') document.documentElement.dataset.style = 'salon';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;
