@@ -219,7 +219,7 @@ export default function App() {
    * ouvre « Mes progrès » directement sur le calendrier. L'onglet du bas,
    * lui, rouvre toujours la table des matières.
    */
-  const [progresOuvre, setProgresOuvre] = useState<'calendrier' | null>(null);
+  const [progresOuvre, setProgresOuvre] = useState<'calendrier' | 'xp' | null>(null);
   const estOnglet = (n: View['name']): n is Tab =>
     n === 'today' || n === 'library' || n === 'parler'
     || n === 'account' || n === 'progress';
@@ -556,6 +556,7 @@ export default function App() {
             onManage={() => setView({ name: 'library' })}
             onCalendrier={() => { setProgresOuvre('calendrier'); setView({ name: 'progress' }); }}
             onParler={() => setView({ name: 'parler' })}
+            onXp={() => { setProgresOuvre('xp'); setView({ name: 'progress' }); }}
           />
         )}
 

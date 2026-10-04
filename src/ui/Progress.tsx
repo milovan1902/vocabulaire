@@ -45,6 +45,8 @@ import { Anneau, MesMots } from './MesMots';
 import { MonCalendrier } from './MonCalendrier';
 import { MaParole } from './MaParole';
 import { Ligne, Tiroir } from './tiroir';
+import { MesXp } from './MesXp';
+import { xpTotal } from '../engine/xp';
 
 const nb = (n: number) => n.toLocaleString('fr-FR');
 
@@ -74,12 +76,15 @@ export function Progress({
   active: string[];
   settings: Settings;
   streak: Streak;
-  /** CHANTIER 166 — ouvrir directement un écran de détail (depuis Aujourd'hui). */
-  ouvrir?: 'calendrier' | null;
+  /** CHANTIER 166 — ouvrir directement un écran de détail (depuis Aujourd'hui).
+      CHANTIER 185 — ou le tiroir « Mes XP » (appui sur le niveau). */
+  ouvrir?: 'calendrier' | 'xp' | null;
 }) {
   const [stats, setStats] = useState<ProgressStats | null>(null);
-  const [sous, setSous] = useState<Sous>(ouvrir ?? null);
+  const [sous, setSous] = useState<Sous>(ouvrir === 'calendrier' ? 'calendrier' : null);
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
+  /* CHANTIER 185 — « Mes XP », venu des Réglages. */
+  const [xpOuvert, setXpOuvert] = useState(ouvrir === 'xp');
 
   useEffect(() => {
     let alive = true;
@@ -168,7 +173,21 @@ export function Progress({
           valeur={paquetsDits}
           onClick={() => setTiroirOuvert(true)}
         />
+        {/* CHANTIER 185 — les XP : évolution, règles, apparences à gagner. */}
+        <Ligne
+          icone="/ico-xp.png"
+          titre="Mes XP"
+          sous="Évolution, règles et bonus."
+          valeur={`${xpTotal(streak).toLocaleString('fr-FR')} XP`}
+          onClick={() => setXpOuvert(true)}
+        />
       </div>
+
+      {xpOuvert && (
+        <Tiroir titre="Mes XP" onFermer={() => setXpOuvert(false)}>
+          <MesXp streak={streak} />
+        </Tiroir>
+      )}
 
       {tiroirOuvert && (
         <Tiroir titre="Mes paquets" onFermer={() => setTiroirOuvert(false)}>

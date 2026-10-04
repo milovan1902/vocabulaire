@@ -158,7 +158,7 @@ function Fusee() {
 }
 
 export function Today({
-  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler,
+  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler, onXp,
 }: {
   decks: Deck[];
   /** Paquets en jeu. */
@@ -173,6 +173,8 @@ export function Today({
   onCalendrier: () => void;
   /** CHANTIER 166 — « Parler » ouvre l'onglet Parler. */
   onParler: () => void;
+  /** CHANTIER 185 — le niveau ouvre « Mes XP », dans Mes progrès. */
+  onXp: () => void;
 }) {
   const [rows, setRows] = useState<DeckSummary[] | null>(null);
   const [dueByDay, setDueByDay] = useState<number[]>([]);
@@ -480,9 +482,19 @@ export function Today({
             {serie > 0 && <span className="serie-count">{serie} jour{serie > 1 ? 's' : ''} d’affilée</span>}
           </div>
         )}
+        {/* CHANTIER 185 — le niveau et sa barre ouvrent « Mes XP ». Le chiffre
+            est celui du compte : xpTotal(streak), le même calcul que Mes XP. */}
         <div className="ly-haut">
-          <span className="ly-niv" aria-hidden="true"><small>NIV.</small><b>{n.niveau}</b></span>
-          <span className="ly-xp">
+          <span className="ly-niv" aria-hidden="true" onClick={onXp} style={{ cursor: 'pointer' }}><small>NIV.</small><b>{n.niveau}</b></span>
+          <span
+            className="ly-xp"
+            role="button"
+            tabIndex={0}
+            aria-label={`Niveau ${n.niveau}, ${fr(n.xp)} XP : voir le détail`}
+            onClick={onXp}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onXp(); } }}
+            style={{ cursor: 'pointer' }}
+          >
             <span className="ly-xp-txt">
               <b>Niveau {n.niveau}</b>
               <span>{fr(n.dansNiveau)} / {fr(n.pourNiveau)} XP</span>
