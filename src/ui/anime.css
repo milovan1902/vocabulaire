@@ -69,17 +69,26 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
   position: absolute; left: -88px; top: 18px; width: 300px; height: 88px; border-radius: 50%;
   transform: rotate(-8deg); background: var(--disque-argent); clip-path: inset(50% 0 0 0);
 }
-/* Les satellites : trois orbites elliptiques, inclinées comme l'anneau. */
-.orbite-lunes { position: absolute; left: 50%; top: 66px; width: 0; height: 0; z-index: 1; transform: rotate(-8deg); pointer-events: none; }
-.orbite-lunes > i { position: absolute; left: 0; top: 0; animation: fa-ox ease-in-out infinite alternate; }
+/* Les satellites : trois orbites elliptiques, inclinées comme l'anneau.
+   CHANTIER 188 — ils passent DERRIÈRE la planète sur la moitié haute de
+   l'orbite, DEVANT sur la moitié basse. Pour ça, le conteneur ne doit créer
+   aucun empilement (ni z-index, ni transform) : chaque satellite se range
+   alors directement face à la planète (z 1) et à l'anneau avant (z 2).
+   L'inclinaison de l'orbite passe dans le trajet lui-même (fa-ox). */
+.orbite-lunes { position: absolute; left: 50%; top: 66px; width: 0; height: 0; pointer-events: none; }
+.orbite-lunes > i { position: absolute; left: 0; top: 0; z-index: 3; }
 .orbite-lunes > i > i { position: absolute; border-radius: 50%; animation: fa-oy ease-in-out infinite alternate; background: radial-gradient(circle at 35% 30%, #fff, var(--c) 60%); box-shadow: 0 0 10px var(--c); }
-.orbite-lunes > i:nth-child(1) { --rx: 150px; animation-duration: 9s; }
+/* fa-ox : l'aller-retour gauche-droite (une demi-orbite par trajet).
+   fa-oz : devant pendant la première moitié du tour (moitié basse), derrière pendant la seconde. */
+.orbite-lunes > i:nth-child(1) { --rx: 150px; animation: fa-ox 9s ease-in-out 0s infinite alternate, fa-oz 18s step-end 0s infinite; }
 .orbite-lunes > i:nth-child(1) > i { --ry: 44px; --c: #ffcf5a; width: 13px; height: 13px; margin: -6.5px; animation-duration: 9s; animation-delay: -4.5s; }
-.orbite-lunes > i:nth-child(2) { --rx: 118px; animation-duration: 13.5s; animation-delay: -5s; }
+.orbite-lunes > i:nth-child(2) { --rx: 118px; animation: fa-ox 13.5s ease-in-out -5s infinite alternate, fa-oz 27s step-end -5s infinite; }
 .orbite-lunes > i:nth-child(2) > i { --ry: 34px; --c: #e9ecf3; width: 10px; height: 10px; margin: -5px; animation-duration: 13.5s; animation-delay: -11.75s; }
-.orbite-lunes > i:nth-child(3) { --rx: 138px; animation-duration: 20s; animation-delay: -12s; }
+.orbite-lunes > i:nth-child(3) { --rx: 138px; animation: fa-ox 20s ease-in-out -12s infinite alternate, fa-oz 40s step-end -12s infinite; }
 .orbite-lunes > i:nth-child(3) > i { --ry: 52px; --c: #8fe3ff; width: 8px; height: 8px; margin: -4px; animation-duration: 20s; animation-delay: -22s; }
-@keyframes fa-ox { from { transform: translateX(calc(var(--rx) * -1)); } to { transform: translateX(var(--rx)); } }
+/* L'inclinaison de -8° de l'anneau : 0,14 de pente sur le trajet horizontal. */
+@keyframes fa-ox { from { transform: translate(calc(var(--rx) * -1), calc(var(--rx) * 0.14)); } to { transform: translate(var(--rx), calc(var(--rx) * -0.14)); } }
+@keyframes fa-oz { 0% { z-index: 3; } 50% { z-index: 0; } 100% { z-index: 0; } }
 @keyframes fa-oy { from { transform: translateY(calc(var(--ry) * -1)); } to { transform: translateY(var(--ry)); } }
 
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
