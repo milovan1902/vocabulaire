@@ -20,7 +20,7 @@ import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
 import { Onboarding } from './ui/Onboarding';
-import { REPRISE_ID } from './data/reprise';
+import { REPRISE_ID, repareThemesReprise } from './data/reprise';
 import { loadSummaries } from './ui/deckSummary';
 import { scheduleReminder } from './ui/reminder';
 
@@ -269,6 +269,18 @@ export default function App() {
    * Sans cela, la synchronisation n'avait lieu qu'à l'ouverture de
    * l'application, et l'autre appareil restait longtemps en retard.
    */
+  /* CHANTIER 184 — une fois : cocher les dates de reprise restées décochées. */
+  useEffect(() => {
+    if (!store.ready) return;
+    void repareThemesReprise().then((change) => {
+      if (!change) return;
+      void store.refreshAll();
+      if (auth.session) void auth.runSync();
+    });
+    // Une seule fois, quand les données sont prêtes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.ready]);
+
   const endSession = useCallback(async () => {
     await reload();
     if (auth.session) await auth.runSync();

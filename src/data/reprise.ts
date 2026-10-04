@@ -130,6 +130,27 @@ export async function analyse(
   return out;
 }
 
+/**
+ * CHANTIER 184 — réparation, une seule fois par appareil : les dates de
+ * conversation restées décochées (voir `verse`) sont toutes cochées.
+ * Renvoie vrai si quelque chose a changé, pour que l'écran relise.
+ */
+const CLE_REPARE = 'vocab-reprise-themes-184';
+export async function repareThemesReprise(): Promise<boolean> {
+  if (localStorage.getItem(CLE_REPARE)) return false;
+  const retenus = await repository.getThemes(REPRISE_ID);
+  let change = false;
+  if (retenus && retenus.length > 0) {
+    const tous = [...new Set((await repository.getCards(REPRISE_ID)).map((c) => c.theme))];
+    if (tous.some((t) => !retenus.includes(t))) {
+      await repository.saveThemes(REPRISE_ID, tous);
+      change = true;
+    }
+  }
+  try { localStorage.setItem(CLE_REPARE, '1'); } catch { /* tant pis : refait au prochain lancement */ }
+  return change;
+}
+
 export interface Versement {
   /** Cartes créées dans le paquet de reprise. */
   ajoutes: number;
