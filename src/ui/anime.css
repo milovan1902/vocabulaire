@@ -15,7 +15,12 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
 /* Les bulles et les rayons dessinés en fixe sont remplacés par la couche animée. */
 [data-style='ocean'] body { background-image: linear-gradient(180deg, #0b4466 0%, #072c47 40%, #04182b 100%); }
 /* Le ciel de Décollage est désormais dessiné par la couche (étoiles fixes, plus réalistes). */
-[data-style='decollage'] body { background-image: radial-gradient(ellipse at 50% 120%, #102a52 0%, #08122a 45%, #04070f 100%); }
+/* CHANTIER 188 — espace.css posait une taille de motif (380 × 260) pour ses
+   étoiles : le dégradé se répétait en bandes. Une seule couche, sur tout l'écran. */
+[data-style='decollage'] body {
+  background-image: radial-gradient(ellipse at 50% 120%, #102a52 0%, #08122a 45%, #04070f 100%);
+  background-size: 100% 100%; background-repeat: no-repeat; background-attachment: fixed;
+}
 
 /* ---------- Grand bleu ---------- */
 .fa-bulle { animation: fa-monte linear infinite; will-change: transform; }
