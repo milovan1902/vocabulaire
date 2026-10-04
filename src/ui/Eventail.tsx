@@ -65,7 +65,12 @@ export function Eventail({
     >
       {/* CHANTIER 172 — la moitié AVANT de l'anneau, posée devant la planète.
           La moitié arrière est l'anneau entier (::after), caché par la planète. */}
-      {forme === 'orbite' && <i className="orbite-avant" aria-hidden="true" />}
+      {/* CHANTIER 187 — l'anneau devient un disque argenté. La partie avant n'est plus
+          une moitié d'anneau : c'est le seul morceau qui passe DEVANT la planète,
+          découpé à sa forme. Plus de jonction visible entre deux moitiés. */}
+      {forme === 'orbite' && <i className="orbite-avant" aria-hidden="true"><i /></i>}
+      {/* CHANTIER 187 — trois satellites en orbite autour de la planète. */}
+      {forme === 'orbite' && <span className="orbite-lunes" aria-hidden="true"><i><i /></i><i><i /></i><i><i /></i></span>}
       {paquets.map((r, i) => {
         const o = i - centre;
         const a = Math.abs(o);

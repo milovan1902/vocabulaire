@@ -601,10 +601,26 @@ export function Today({
         <div className="ly-bas">
           <button className="ly-tuile" onClick={onCalendrier}>
             <span className="ly-tuile-haut"><span>Cette semaine</span></span>
-            <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE} jours`}</b>
-            <span className="ly-segments" aria-hidden="true">
-              {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? 'on' : ''} />)}
-            </span>
+            {/* CHANTIER 187 — Décollage et Orbite : la semaine en phases de lune (maquette 26b).
+                0 jour : contour seul ; 1 : nouvelle lune ; 2 : premier croissant ;
+                3 : demi-lune ; 4 : lune gibbeuse ; 5 : pleine lune. 6 et 7 jours :
+                un halo, plus vif le 7e. La règle du compteur ne change pas. */}
+            {style === 'decollage' || style === 'orbite' ? (
+              <>
+                <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE}`}</b>
+                <i
+                  className={`ly-lune p${Math.min(faits, OBJECTIF_SEMAINE)}${faits > OBJECTIF_SEMAINE ? ` b${Math.min(faits, 7)}` : ''}`}
+                  aria-hidden="true"
+                />
+              </>
+            ) : (
+              <>
+                <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE} jours`}</b>
+                <span className="ly-segments" aria-hidden="true">
+                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? 'on' : ''} />)}
+                </span>
+              </>
+            )}
           </button>
           <button className="ly-tuile" onClick={onParler}>
             <span className="ly-tuile-haut">
