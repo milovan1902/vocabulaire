@@ -59,7 +59,8 @@
  *     pelouse avec un « plop ! ». Au toucher, une éclaboussure de boue.
  *
  * CHANTIER 199 — Strass (maquette 34a), sur « Aujourd'hui » seulement : une
- *     boule à facettes dans le coin en haut à droite (une vraie sphère de petits
+ *     boule à facettes (CHANTIER 201 : au centre, plus grosse, voilée, derrière la
+ *     ligne du niveau ; une vraie sphère de petits
  *     miroirs, un tour en 20 s) et une cinquantaine de reflets blancs ou dorés
  *     qui glissent sur le fond et s'étirent en s'éloignant d'elle. Dessinés sur
  *     une toile (canvas), 30 images/s au plus, et plus rien quand elle est
@@ -867,12 +868,13 @@ function spriteReflet(rgb: string): HTMLCanvasElement {
 }
 const bruit = (i: number, j: number) => { const v = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453; return v - Math.floor(v); };
 function dessineStrass(g: CanvasRenderingContext2D, w: number, h: number, t: number, CY: number, spots: Spot[], blanc: HTMLCanvasElement, or: HTMLCanvasElement) {
-  const R = 28, CX = w - 44;
+  /* CHANTIER 201 — au centre, plus grosse, en arrière-plan derrière la ligne du niveau. */
+  const R = 50, CX = w / 2, VOILE = 0.5;
   g.clearRect(0, 0, w, h);
   /* Le halo. */
-  const halo = g.createRadialGradient(CX, CY, R * 0.6, CX, CY, 150);
-  halo.addColorStop(0, 'rgba(255,236,190,0.22)'); halo.addColorStop(1, 'rgba(255,236,190,0)');
-  g.fillStyle = halo; g.fillRect(CX - 150, 0, 300, CY + 150);
+  const halo = g.createRadialGradient(CX, CY, R * 0.6, CX, CY, 190);
+  halo.addColorStop(0, 'rgba(255,236,190,0.2)'); halo.addColorStop(1, 'rgba(255,236,190,0)');
+  g.fillStyle = halo; g.fillRect(CX - 190, 0, 380, CY + 190);
   /* Les reflets : ils glissent tous dans le même sens et s'étirent en s'éloignant de la boule. */
   g.globalCompositeOperation = 'lighter';
   for (const s of spots) {
@@ -889,7 +891,8 @@ function dessineStrass(g: CanvasRenderingContext2D, w: number, h: number, t: num
   }
   g.globalAlpha = 1;
   g.globalCompositeOperation = 'source-over';
-  /* Le fil. */
+  /* Le fil, puis la boule : voilés, pour que le texte du niveau reste lisible par-dessus. */
+  g.globalAlpha = VOILE;
   if (CY - R > 0) { g.strokeStyle = 'rgba(240,211,136,0.6)'; g.lineWidth = 1; g.beginPath(); g.moveTo(CX, 0); g.lineTo(CX, CY - R); g.stroke(); }
   /* La boule : des rangées de petits miroirs sur une sphère, vue un peu d'en dessous. */
   const rot = t * 0.32, ti = -0.35, ct = Math.cos(ti), st = Math.sin(ti);
@@ -901,10 +904,10 @@ function dessineStrass(g: CanvasRenderingContext2D, w: number, h: number, t: num
   const S = (p: [number, number, number]): [number, number] => [CX + p[0] * R, CY - p[1] * R];
   g.save();
   g.beginPath(); g.arc(CX, CY, R, 0, Math.PI * 2); g.fillStyle = '#1b1820'; g.fill(); g.clip();
-  const RANGS = 12, eclats: Array<[number, number, number]> = [];
+  const RANGS = 16, eclats: Array<[number, number, number]> = [];
   for (let i = 0; i < RANGS; i++) {
     const la0 = -Math.PI / 2 + (i * Math.PI) / RANGS, la1 = la0 + Math.PI / RANGS, lm = (la0 + la1) / 2;
-    const M = Math.max(6, Math.round(26 * Math.cos(lm))), dl = (la1 - la0) * 0.09;
+    const M = Math.max(6, Math.round(34 * Math.cos(lm))), dl = (la1 - la0) * 0.09;
     for (let j = 0; j < M; j++) {
       const lo0 = (j * 2 * Math.PI) / M + rot + (i % 2) * (Math.PI / M), lo1 = lo0 + (2 * Math.PI) / M, dlo = (lo1 - lo0) * 0.09;
       const n = P(lm, (lo0 + lo1) / 2);
@@ -927,20 +930,20 @@ function dessineStrass(g: CanvasRenderingContext2D, w: number, h: number, t: num
   g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineWidth = 1;
   for (const [x, y, s] of eclats.slice(0, 4)) {
     const l = 4 + s * 7;
-    g.strokeStyle = `rgba(255,250,235,${0.5 + s * 0.5})`;
+    g.strokeStyle = `rgba(255,250,235,${(0.5 + s * 0.5) * 0.7})`;
     g.beginPath(); g.moveTo(x - l, y); g.lineTo(x + l, y); g.moveTo(x, y - l); g.lineTo(x, y + l); g.stroke();
     const gl = g.createRadialGradient(x, y, 0, x, y, 5);
     gl.addColorStop(0, 'rgba(255,255,255,0.9)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = gl; g.fillRect(x - 5, y - 5, 10, 10);
   }
+  g.globalAlpha = 1;
   g.globalCompositeOperation = 'source-over';
 }
-/* La boule se pose juste au-dessus de la ligne du niveau et de la série (sous l'encoche
-   si le téléphone en a une, à moitié hors de l'écran sinon). */
+/* CHANTIER 201 — la boule se centre sur la ligne du niveau et de la série (sous l'encoche, plus derrière la batterie). */
 function hauteurBoule(): number {
-  const tops = Array.from(document.querySelectorAll<HTMLElement>('.today.ly .ly-niv, .today.ly .ly-flamme')).map((e) => e.getBoundingClientRect().top).filter((v) => v > 0);
-  const haut = tops.length ? Math.min(...tops) : 64;
-  return Math.min(30, Math.max(-10, haut - 28 - 6));
+  const el = document.querySelector<HTMLElement>('.today.ly .ly-niv');
+  const r = el?.getBoundingClientRect();
+  return r && r.height ? r.top + r.height / 2 : 87;
 }
 function Strass() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -949,7 +952,7 @@ function Strass() {
     const g = c?.getContext('2d');
     if (!c || !g) return;
     const blanc = spriteReflet('255,246,226'), or = spriteReflet('240,211,136');
-    let w = 0, h = 0, cy = 30, spots: Spot[] = [];
+    let w = 0, h = 0, cy = 87, spots: Spot[] = [];
     const taille = () => {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       w = window.innerWidth; h = window.innerHeight;
