@@ -38,6 +38,10 @@
  *     puis restent à leur taille ; elles repartent petites à chaque
  *     ouverture de l'appli (rien n'est stocké). Au toucher, une fleur éclot.
  *
+ * CHANTIER 193 — Jardin : le cycle ne part plus du début (une minute de
+ *     soleil avant le premier nuage) mais d'un point pris au hasard vers la
+ *     fin du beau temps : les nuages arrivent 5 à 25 s après l'ouverture.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -483,6 +487,10 @@ const AZURE = { '--c1': '#bfe3f7', '--c2': '#6f8fe0', '--bord': '#2f3a5a', '--co
 /* Les fleurs de la bande de terre : posées DANS la barre d'onglets, au-dessus
    d'elle, comme l'était le dessin fixe (jardin.css). La barre peut disparaître
    (Révision) puis revenir : la pousse reprend où elle en était. */
+/* CHANTIER 193 — où l'on entre dans le cycle (en secondes), le même pour tout le Jardin. */
+const CYCLE_J = 150;
+const DECAL_J = CYCLE_J * (0.36 - Math.random() * 0.13);
+
 function FleursJardin({ t0 }: { t0: number }) {
   const [barre, setBarre] = useState<HTMLElement | null>(() => document.querySelector<HTMLElement>('.tabbar'));
   useEffect(() => {
@@ -493,7 +501,7 @@ function FleursJardin({ t0 }: { t0: number }) {
     return () => { obs.disconnect(); cancelAnimationFrame(attente); };
   }, []);
   if (!barre) return null;
-  const ecoule = (performance.now() - t0) / 1000;
+  const ecoule = (performance.now() - t0) / 1000 + DECAL_J;
   const n = Math.max(6, Math.round(window.innerWidth / 40));
   return createPortal(
     <span className="fa-j-fleurs" aria-hidden="true">
@@ -538,7 +546,7 @@ function Jardin() {
     };
   }, []);
   return (
-    <>
+    <span className="fa-j" style={{ '--decal-j': `${-DECAL_J}s` } as Css}>
       <i className="fa-j-gris" />
       <i className="fa-j-soleil" />
       {NUAGES_J.map(([x, y, l], i) => (
@@ -557,7 +565,7 @@ function Jardin() {
         ))}
       </span>
       <FleursJardin t0={t0} />
-    </>
+    </span>
   );
 }
 const PETALES = [0, 60, 120, 180, 240, 300];
