@@ -31,6 +31,13 @@
  *     une bulle (POW!, ZAP!, BOOM!…) surgit en haut ou en bas puis éclate.
  *     Au toucher, une explosion en étoile et des points de trame qui giclent.
  *
+ * CHANTIER 192 — Jardin (maquette 30a) : le temps qu'il fait, en cycle de
+ *     2 min 30. Beau (soleil, pollen, deux papillons), ça se couvre (nuages,
+ *     ciel gris, les fleurs se balancent), averse, éclaircie. Les fleurs de
+ *     la bande de terre doublent après la 1re averse, triplent après la 2e,
+ *     puis restent à leur taille ; elles repartent petites à chaque
+ *     ouverture de l'appli (rien n'est stocké). Au toucher, une fleur éclot.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -466,6 +473,109 @@ function CoupsBd() {
   );
 }
 
+/* ---------- CHANTIER 192 — Jardin : le temps qu'il fait ---------- */
+const FLEURS_J: Array<[string, number]> = [['#f28b82', 12], ['#ffd966', 9], ['#ffffff', 11], ['#b4a7d6', 14], ['#f6b26b', 9], ['#8ecae6', 12]];
+const coeurDe = (c: string) => (c === '#ffd966' ? '#c4643c' : '#ffd966');
+const NUAGES_J: Array<[number, number, number]> = [[11, 9, 150], [53, 16, 120], [-5, 25, 130]];
+const MONARQUE = { '--c1': '#ffb347', '--c2': '#e2691b', '--bord': '#3b2615', '--corps': '#2a1d12', '--bat': '0.19s' };
+const AZURE = { '--c1': '#bfe3f7', '--c2': '#6f8fe0', '--bord': '#2f3a5a', '--corps': '#232a40', '--bat': '0.15s' };
+
+/* Les fleurs de la bande de terre : posées DANS la barre d'onglets, au-dessus
+   d'elle, comme l'était le dessin fixe (jardin.css). La barre peut disparaître
+   (Révision) puis revenir : la pousse reprend où elle en était. */
+function FleursJardin({ t0 }: { t0: number }) {
+  const [barre, setBarre] = useState<HTMLElement | null>(() => document.querySelector<HTMLElement>('.tabbar'));
+  useEffect(() => {
+    let attente = 0;
+    const chercher = () => { attente = 0; setBarre(document.querySelector<HTMLElement>('.tabbar')); };
+    const obs = new MutationObserver(() => { if (!attente) attente = requestAnimationFrame(chercher); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => { obs.disconnect(); cancelAnimationFrame(attente); };
+  }, []);
+  if (!barre) return null;
+  const ecoule = (performance.now() - t0) / 1000;
+  const n = Math.max(6, Math.round(window.innerWidth / 40));
+  return createPortal(
+    <span className="fa-j-fleurs" aria-hidden="true">
+      {Array.from({ length: n }, (_, i) => {
+        const [coul, h] = FLEURS_J[i % FLEURS_J.length];
+        return (
+          <span key={i} className="fa-j-fleur" style={{ left: `${((i + 0.5) * 100) / n}%`, animationDelay: `${-ecoule - i * 0.15}s` }}>
+            <i className="fa-j-tige" style={{ height: h, animationDelay: `${-ecoule}s` }} />
+            <i className="fa-j-tete" style={{ bottom: h - 1, '--c': coul, '--coeur': coeurDe(coul), '--h': `${h}px`, animationDelay: `${-ecoule}s` } as Css} />
+          </span>
+        );
+      })}
+    </span>,
+    barre,
+  );
+}
+
+function Papillon({ couleurs, chemin, dur, del }: { couleurs: Record<string, string>; chemin: string; dur: number; del: number }) {
+  const ailes = <><i /><i /></>;
+  return (
+    <span className="fa-papillon" style={{ offsetPath: `path("${chemin}")`, animationDuration: `${dur}s`, animationDelay: `${del}s`, ...couleurs } as Css}>
+      <span className="fa-aile g">{ailes}</span>
+      <span className="fa-aile d"><span>{ailes}</span></span>
+      <i className="fa-corps" /><i className="fa-tete" /><i className="fa-antenne g" /><i className="fa-antenne d" />
+    </span>
+  );
+}
+
+function Jardin() {
+  const [t0] = useState(() => performance.now());
+  const { pollen, pluie, chemins } = useMemo(() => {
+    const r = hasard(23);
+    const w = window.innerWidth, h = window.innerHeight;
+    const X = (f: number) => (f * w).toFixed(0), Y = (f: number) => (f * h).toFixed(0);
+    return {
+      pollen: Array.from({ length: 14 }, () => ({ x: 10 + r() * 84, y: 12 + r() * 58, t: 3 + r() * 2.5, dur: 6 + r() * 4, del: -r() * 10, dx: (r() - 0.3) * 50 })),
+      pluie: Array.from({ length: 44 }, () => ({ x: r() * 112, haut: -30 - r() * 60, l: 12 + r() * 10, dur: 0.8 + r() * 0.4, del: -r() * 1.2 })),
+      chemins: [
+        `M -30 ${Y(0.39)} C ${X(0.17)} ${Y(0.29)}, ${X(0.33)} ${Y(0.5)}, ${X(0.53)} ${Y(0.37)} S ${X(0.83)} ${Y(0.26)}, ${w + 40} ${Y(0.34)}`,
+        `M ${w + 40} ${Y(0.24)} C ${X(0.83)} ${Y(0.34)}, ${X(0.69)} ${Y(0.16)}, ${X(0.47)} ${Y(0.26)} S ${X(0.17)} ${Y(0.39)}, -30 ${Y(0.28)}`,
+      ],
+    };
+  }, []);
+  return (
+    <>
+      <i className="fa-j-gris" />
+      <i className="fa-j-soleil" />
+      {NUAGES_J.map(([x, y, l], i) => (
+        <span key={i} className="fa-j-nuage" style={{ left: `${x}%`, top: `${y}%`, width: l, height: l * 0.42 }}><i /><i /><i /></span>
+      ))}
+      <span className="fa-j-beau">
+        {pollen.map((p, i) => (
+          <i key={i} className="fa-j-pollen" style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.t, height: p.t, '--dx': `${p.dx}px`, animationDuration: `${p.dur}s`, animationDelay: `${p.del}s` } as Css} />
+        ))}
+        <Papillon couleurs={MONARQUE} chemin={chemins[0]} dur={13} del={-2} />
+        <Papillon couleurs={AZURE} chemin={chemins[1]} dur={17} del={-9} />
+      </span>
+      <span className="fa-j-pluie">
+        {pluie.map((g, i) => (
+          <i key={i} className="fa-j-goutte" style={{ left: `${g.x}%`, top: g.haut, height: g.l, animationDuration: `${g.dur}s`, animationDelay: `${g.del}s` }} />
+        ))}
+      </span>
+      <FleursJardin t0={t0} />
+    </>
+  );
+}
+const PETALES = [0, 60, 120, 180, 240, 300];
+function CoupsJardin() {
+  const coups = useCoups(1500, (x, y) => ({ x, y, c: auHasard(['#f28b82', '#ffd966', '#b4a7d6', '#f6b26b', '#8ecae6', '#ffffff']) }));
+  if (!coups.length) return null;
+  return (
+    <div className="fa-eclats" aria-hidden="true">
+      {coups.map((k) => (
+        <span key={k.id} className="fa-eclot" style={{ left: k.x - 22, top: k.y - 22, '--c': k.c, '--coeur': coeurDe(k.c) } as Css}>
+          {PETALES.map((a) => <i key={a} style={{ transform: `rotate(${a}deg)` }} />)}
+          <b />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -509,7 +619,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -522,6 +632,7 @@ export function FondAnime() {
         {style === 'voyage' && <Carnet />}
         {style === 'manga' && <Manga />}
         {style === 'bd' && <BdPop />}
+        {style === 'jardin' && <Jardin />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
@@ -529,6 +640,7 @@ export function FondAnime() {
       {style === 'voyage' && <Tampons />}
       {style === 'manga' && <CoupsManga />}
       {style === 'bd' && <CoupsBd />}
+      {style === 'jardin' && <CoupsJardin />}
     </>,
     document.body,
   );

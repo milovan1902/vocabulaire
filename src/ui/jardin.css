@@ -129,6 +129,8 @@
 }
 /* La terre ne doit rien cacher : la fin de l'écran remonte d'autant. */
 [data-style='jardin'] .today.ly { padding-bottom: 48px; }
+/* CHANTIER 192 — les fleurs grandissent jusqu'à ×3 : un peu plus de marge en bas. */
+[data-style='jardin'] .today.ly { padding-bottom: 96px; }
 
 [data-style='jardin'] .studybg { background-image: none !important; background-color: transparent; }
 [data-style='jardin'] .eventail-carte.centre .eventail-dos { animation: none; }
@@ -178,15 +180,35 @@
 [data-style='jardin'] .ly-tuile { border-radius: 16px; background: var(--panel); border: 1px solid var(--bord); }
 [data-style='jardin'] .ly-tuile:hover { background: var(--panel-hi); }
 [data-style='jardin'] .ly-tuile-haut svg { color: var(--tomette); }
-[data-style='jardin'] .ly-segments { gap: 7px; height: 21px; }
-[data-style='jardin'] .ly-segments i {
-  flex: none; width: 17px; height: 21px; border-radius: 0;
-  background: linear-gradient(var(--terre), var(--terre)) center bottom / 14px 3px no-repeat;
-  opacity: 0.55;
+/* CHANTIER 192 — la semaine en cinq pots : chaque jour travaillé, une fleur y pousse (maquette 30a). */
+[data-style='jardin'] .ly-segments { gap: 4px; height: 38px; justify-content: space-between; align-items: flex-end; }
+[data-style='jardin'] .ly-segments i { position: relative; flex: 1 1 0; min-width: 0; max-width: 24px; height: 38px; border-radius: 0; background: none; opacity: 0.5; --coeur: #ffd966; }
+[data-style='jardin'] .ly-segments i.on { opacity: 1; }
+[data-style='jardin'] .ly-segments i:nth-child(1) { --c: #f28b82; }
+[data-style='jardin'] .ly-segments i:nth-child(2) { --c: #ffd966; --coeur: #c4643c; }
+[data-style='jardin'] .ly-segments i:nth-child(3) { --c: #b4a7d6; }
+[data-style='jardin'] .ly-segments i:nth-child(4) { --c: #8ecae6; }
+[data-style='jardin'] .ly-segments i:nth-child(5) { --c: #f6b26b; }
+/* Le pot : rebord, corps évasé, terre. */
+[data-style='jardin'] .ly-segments i::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 16px;
+  clip-path: polygon(0 0, 100% 0, 100% 30%, 94% 30%, 84% 100%, 16% 100%, 6% 30%, 0 30%);
+  background:
+    radial-gradient(ellipse 8px 1.6px at 50% 2.5px, #5a3b22 96%, transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0 2px, transparent 2px 5px, rgba(47, 58, 34, 0.2) 5px 6px, transparent 6px),
+    #c4643c;
 }
-[data-style='jardin'] .ly-segments i.on {
-  opacity: 1;
-  background: var(--pousse) center top / 17px 17px no-repeat, linear-gradient(var(--terre), var(--terre)) center bottom / 14px 3px no-repeat;
+/* La fleur : tige, feuille, quatre pétales et un cœur. */
+[data-style='jardin'] .ly-segments i.on::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 14px; height: 24px;
+  background:
+    radial-gradient(circle 2.6px at 50% 8px, var(--coeur) 96%, transparent),
+    radial-gradient(circle 3.6px at 50% 4px, var(--c) 96%, transparent),
+    radial-gradient(circle 3.6px at 50% 12px, var(--c) 96%, transparent),
+    radial-gradient(circle 3.6px at calc(50% - 4px) 8px, var(--c) 96%, transparent),
+    radial-gradient(circle 3.6px at calc(50% + 4px) 8px, var(--c) 96%, transparent),
+    radial-gradient(ellipse 3px 1.8px at calc(50% + 3.5px) 17px, #6fae4f 96%, transparent),
+    linear-gradient(#4f8a3c, #4f8a3c) center 10px / 2px 14px no-repeat;
 }
 
 /* ==================================================================
