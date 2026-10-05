@@ -4,6 +4,7 @@
 
    Chargée en DERNIER (main.tsx) : à sélecteur égal, elle l'emporte sur
    ocean.css et espace.css. Le décor lui-même est dans FondAnime.tsx.
+   CHANTIER 190 — + Carnet kraft (maquette 28a) : l'avion et le tampon.
    ================================================================== */
 
 /* ---------- la couche du fond : derrière tout, jamais touchable ---------- */
@@ -120,6 +121,36 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
   40% { opacity: 0.55; filter: saturate(0.5); } 46% { opacity: 1; filter: none; }
 }
 
+/* ---------- CHANTIER 190 — Carnet kraft : l'avion en papier et ses pointillés ---------- */
+.fond-anime .fa-vol { position: absolute; inset: 0; animation: fa-efface linear forwards; }
+.fa-route { position: absolute; left: 0; top: 0; overflow: visible; }
+.fa-trace { animation: fa-trace ease-in-out forwards; }
+.fond-anime .fa-avion { left: 0; top: 0; width: 26px; height: 26px; offset-rotate: auto; offset-anchor: center; animation: fa-vole ease-in-out forwards; }
+.fond-anime .fa-avion > span { position: static; transform: rotate(40deg); filter: drop-shadow(1px 2px 1px rgba(58, 42, 26, 0.3)); }
+.fa-avion svg { display: block; }
+@keyframes fa-vole { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes fa-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes fa-efface { 0%, 72% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Le coup de tampon : double cercle, encre un peu grenée, penché au hasard. */
+.fa-tampon {
+  position: absolute; display: grid; place-items: center; width: 68px; height: 68px; box-sizing: border-box;
+  border-radius: 50%; color: var(--c); border: 2.5px solid var(--c);
+  box-shadow: inset 0 0 0 3px rgba(233, 220, 192, 0.9), inset 0 0 0 4.5px var(--c);
+  -webkit-mask-image: radial-gradient(rgba(0, 0, 0, 0.55) 0.8px, #000 1.4px); -webkit-mask-size: 4px 4px;
+  mask-image: radial-gradient(rgba(0, 0, 0, 0.55) 0.8px, #000 1.4px); mask-size: 4px 4px;
+  animation: fa-tampon 1.2s ease-out forwards;
+}
+.fa-tampon b { font-family: var(--sans); font-weight: 800; font-size: 20px; letter-spacing: 0.06em; }
+.fa-tampon svg { display: block; }
+@keyframes fa-tampon {
+  0% { transform: rotate(var(--r)) scale(1.5); opacity: 0; }
+  14% { transform: rotate(var(--r)) scale(0.9); opacity: 0.9; }
+  24% { transform: rotate(var(--r)) scale(1); opacity: 0.85; }
+  70% { opacity: 0.8; }
+  100% { transform: rotate(var(--r)) scale(1); opacity: 0; }
+}
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -161,6 +192,7 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
   .fa-filante, .fa-eclats, .fa-goutte, .fa-rond { display: none; }
   .fa-lutin, .fa-patte-a, .fa-reflet, [data-style='neon'] .fa-gresille { animation: none; }
   .fa-patte-b { display: none; }
+  .fa-vol, .fa-tampon { display: none; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }

@@ -16,6 +16,12 @@
  *   — Néon : une pluie fine et des reflets sur le sol quadrillé ; et toutes
  *     les 4 à 9 s, UNE enseigne lumineuse prise au hasard grésille.
  *
+ * CHANTIER 190 — Carnet kraft (maquette 28a) : toutes les 6 à 12 s (le
+ *     premier au bout d'une seconde), un petit avion en papier traverse le
+ *     fond en courbe, d'un bord à l'autre, et laisse derrière lui une ligne
+ *     de pointillés qui s'efface. Au toucher, un coup de tampon encreur
+ *     (« VU », une étoile ou un avion ; rouge, bleu ou vert).
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -227,6 +233,100 @@ function Neon() {
   );
 }
 
+/* ---------- CHANTIER 190 — Carnet kraft : l'avion en papier ---------- */
+type Vol = { id: number; d: string; w: number; h: number; dur: number };
+/* Une courbe d'un bord à l'autre, en pixels de l'écran (comme la maquette, à l'échelle). */
+function routeAuHasard(): Vol {
+  const w = window.innerWidth, h = window.innerHeight;
+  const g = Math.random() > 0.5;
+  const y0 = h * (0.14 + Math.random() * 0.63), y3 = h * (0.14 + Math.random() * 0.63);
+  const x0 = g ? -40 : w + 40, x3 = g ? w + 40 : -40;
+  const c1x = w * (g ? 0.25 + Math.random() * 0.17 : 0.75 - Math.random() * 0.17);
+  const c2x = w * (g ? 0.58 + Math.random() * 0.17 : 0.42 - Math.random() * 0.17);
+  const c1y = y0 + (Math.random() - 0.5) * h * 0.47, c2y = y3 + (Math.random() - 0.5) * h * 0.47;
+  const f = (n: number) => n.toFixed(0);
+  return { id: Date.now(), w, h, dur: 5 + Math.random() * 2, d: `M ${f(x0)} ${f(y0)} C ${f(c1x)} ${f(c1y)}, ${f(c2x)} ${f(c2y)}, ${f(x3)} ${f(y3)}` };
+}
+function Carnet() {
+  const [vol, setVol] = useState<Vol | null>(null);
+  useEffect(() => {
+    if (calme()) return;
+    let fini = false;
+    let minuteur = 0;
+    const suivant = (delai: number) => {
+      minuteur = window.setTimeout(() => {
+        if (fini) return;
+        if (!enRevision() && document.visibilityState === 'visible') setVol(routeAuHasard());
+        suivant(6000 + Math.random() * 6000);
+      }, delai);
+    };
+    suivant(1000);
+    return () => { fini = true; window.clearTimeout(minuteur); };
+  }, []);
+  if (!vol) return null;
+  const m = `fa-m${vol.id}`;
+  return (
+    <div key={vol.id} className="fa-vol" style={{ animationDuration: `${vol.dur + 2.5}s` }}
+      onAnimationEnd={(e) => { if (e.target === e.currentTarget) setVol(null); }}>
+      <svg className="fa-route" width={vol.w} height={vol.h} viewBox={`0 0 ${vol.w} ${vol.h}`}>
+        <defs>
+          <mask id={m} maskUnits="userSpaceOnUse" x={0} y={0} width={vol.w} height={vol.h}>
+            <path className="fa-trace" d={vol.d} fill="none" stroke="#fff" strokeWidth={8} pathLength={1} strokeDasharray={1} strokeDashoffset={1} style={{ animationDuration: `${vol.dur}s` }} />
+          </mask>
+        </defs>
+        <path d={vol.d} fill="none" stroke="#6b5640" strokeOpacity={0.55} strokeWidth={1.6} strokeDasharray="3 7" strokeLinecap="round" mask={`url(#${m})`} />
+      </svg>
+      <span className="fa-avion" style={{ offsetPath: `path("${vol.d}")`, animationDuration: `${vol.dur}s` } as Css}>
+        <span>
+          <svg width="26" height="26" viewBox="0 0 24 24">
+            <path d="M2 11.5 22 3l-6.5 18-4.2-6.8z" fill="#fbf6ea" stroke="#2f5d8a" strokeWidth={1.6} strokeLinejoin="round" />
+            <path d="M22 3 11.3 14.2 10 20.5l3.4-3.6" fill="none" stroke="#2f5d8a" strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" />
+          </svg>
+        </span>
+      </span>
+    </div>
+  );
+}
+
+/* ---------- CHANTIER 190 — Carnet kraft : le coup de tampon au toucher ---------- */
+type Tampon = { id: number; x: number; y: number; motif: 'vu' | 'etoile' | 'avion'; c: string; r: number };
+const MOTIFS: Tampon['motif'][] = ['vu', 'etoile', 'avion'];
+const ENCRES = ['#b5452f', '#2f5d8a', '#3d7a46'];
+function Tampons() {
+  const [tampons, setTampons] = useState<Tampon[]>([]);
+  useEffect(() => {
+    let n = 0;
+    const toucher = (e: PointerEvent) => {
+      if (calme() || enRevision()) return;
+      const id = ++n;
+      const t: Tampon = {
+        id, x: e.clientX, y: e.clientY,
+        motif: MOTIFS[Math.floor(Math.random() * MOTIFS.length)],
+        c: ENCRES[Math.floor(Math.random() * ENCRES.length)],
+        r: -16 + Math.random() * 32,
+      };
+      setTampons((l) => [...l.slice(-3), t]);
+      window.setTimeout(() => setTampons((l) => l.filter((b) => b.id !== id)), 1300);
+    };
+    document.addEventListener('pointerdown', toucher, { passive: true });
+    return () => document.removeEventListener('pointerdown', toucher);
+  }, []);
+  if (!tampons.length) return null;
+  return (
+    <div className="fa-eclats" aria-hidden="true">
+      {tampons.map((t) => (
+        <span key={t.id} className="fa-tampon" style={{ left: t.x - 34, top: t.y - 34, '--c': t.c, '--r': `${t.r}deg` } as Css}>
+          {t.motif === 'vu' ? <b>VU</b> : (
+            <svg width="28" height="28" viewBox="0 0 24 24">
+              <path fill={t.c} d={t.motif === 'etoile' ? 'M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z' : 'M2 11.5 22 3l-6.5 18-4.2-6.8z'} />
+            </svg>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -270,8 +370,8 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon') return null;
-  const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage') return null;
+  const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
       <div className={`fond-anime ${style}`} aria-hidden="true">
@@ -280,9 +380,12 @@ export function FondAnime() {
         {style === 'orbite' && <Scintille />}
         {style === 'arcade' && <Arcade />}
         {style === 'neon' && <Neon />}
+        {style === 'voyage' && <Carnet />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
+      {/* Carnet kraft : un coup de tampon à la place de la gerbe. */}
+      {style === 'voyage' && <Tampons />}
     </>,
     document.body,
   );
