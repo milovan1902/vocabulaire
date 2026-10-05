@@ -42,6 +42,11 @@
  *     soleil avant le premier nuage) mais d'un point pris au hasard vers la
  *     fin du beau temps : les nuages arrivent 5 à 25 s après l'ouverture.
  *
+ * CHANTIER 196 — Parquet (maquette 31a) : la salle tamisée, trois projecteurs
+ *     de scène qui balaient le terrain (faisceau + flaque de lumière), des
+ *     flashs de photographes toutes les 3 à 7 s ; et sur « Aujourd'hui », un
+ *     petit tableau d'affichage : chrono des 24 s, sirène et « +2 » à zéro.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -585,6 +590,68 @@ function CoupsJardin() {
   );
 }
 
+/* ---------- CHANTIER 196 — Parquet : la salle et le match ---------- */
+const PROJOS: Array<{ x: number; a: number; b: number; dur: number; del: number; c: string }> = [
+  { x: 14, a: -26, b: 8, dur: 11, del: -3, c: '255,244,214' },
+  { x: 50, a: 20, b: -20, dur: 8.5, del: -6, c: '255,206,150' },
+  { x: 86, a: -6, b: 28, dur: 13, del: -1, c: '214,228,255' },
+];
+type Flash = { id: number; x: number; y: number; d: number; t: number };
+function Salle() {
+  const [salve, setSalve] = useState<{ id: number; flashs: Flash[] } | null>(null);
+  useCadence(1500, 3000, 4000, () => {
+    const id = Date.now();
+    const n = 2 + Math.floor(Math.random() * 3);
+    setSalve({ id, flashs: Array.from({ length: n }, (_, i) => ({ id: id + i, x: 5 + Math.random() * 90, y: 2 + Math.random() * 11, d: i * (60 + Math.random() * 120), t: 10 + Math.random() * 8 })) });
+  });
+  return (
+    <>
+      <i className="fa-p-nuit" />
+      {PROJOS.map((p, i) => (
+        <span key={i} className="fa-projo" style={{ left: `${p.x}%`, '--a': `${p.a}deg`, '--b': `${p.b}deg`, '--c': p.c, animationDuration: `${p.dur}s`, animationDelay: `${p.del}s` } as Css}>
+          <span className="fa-faisceau" style={{ animationDuration: `${2.6 + i * 0.7}s` }}><i /></span>
+          <i className="fa-flaque" />
+          <i className="fa-lampe" />
+        </span>
+      ))}
+      {salve && (
+        <span key={salve.id} className="fa-salve">
+          <i className="fa-salve-ecran" />
+          {salve.flashs.map((f) => (
+            <span key={f.id} className="fa-flash" style={{ left: `${f.x}%`, top: `${f.y}%`, '--t': `${f.t}px`, animationDelay: `${f.d}ms` } as Css}><i /><i /><i /></span>
+          ))}
+        </span>
+      )}
+      <Tableau />
+    </>
+  );
+}
+/* Le tableau d'affichage : visible seulement sur « Aujourd'hui » (anime.css). */
+function Tableau() {
+  const [m, setM] = useState({ chrono: 24, dom: 42, vis: 38, sirene: 0, marque: 0 });
+  useEffect(() => {
+    if (calme()) return;
+    const h = window.setInterval(() => {
+      if (enRevision() || document.visibilityState !== 'visible') return;
+      setM((s) => {
+        if (s.chrono > 1) return { ...s, chrono: s.chrono - 1 };
+        const dom = Math.random() > 0.4;
+        return { chrono: 24, dom: s.dom + (dom ? 2 : 0), vis: s.vis + (dom ? 0 : 2), sirene: Date.now(), marque: dom ? 0 : 1 };
+      });
+    }, 1000);
+    return () => window.clearInterval(h);
+  }, []);
+  return (
+    <span className="fa-tableau">
+      {m.sirene > 0 && <i key={`s${m.sirene}`} className="fa-sirene" />}
+      <span className="fa-equipe"><small>DOM</small><b>{m.dom}</b></span>
+      <span className={`fa-chrono${m.chrono <= 5 ? ' fin' : ''}`}><b>{String(m.chrono).padStart(2, '0')}</b></span>
+      <span className="fa-equipe"><small>VIS</small><b>{m.vis}</b></span>
+      {m.sirene > 0 && <b key={`p${m.sirene}`} className={`fa-plus2${m.marque ? ' vis' : ''}`}>+2</b>}
+    </span>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -628,7 +695,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'basket') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -642,6 +709,7 @@ export function FondAnime() {
         {style === 'manga' && <Manga />}
         {style === 'bd' && <BdPop />}
         {style === 'jardin' && <Jardin />}
+        {style === 'basket' && <Salle />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}

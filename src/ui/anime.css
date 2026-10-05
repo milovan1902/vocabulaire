@@ -8,6 +8,7 @@
    CHANTIER 191 — + Manga (29a) : le jet de carte ; BD pop (29b) : la trame et les bulles.
    CHANTIER 192 — + Jardin (30a) : le cycle beau temps, nuages, averse, éclaircie.
    CHANTIER 193 — Jardin : on entre dans le cycle vers la fin du beau temps.
+   CHANTIER 196 — + Parquet (31a) : projecteurs, flashs, tableau d'affichage.
    ================================================================== */
 
 /* ---------- la couche du fond : derrière tout, jamais touchable ---------- */
@@ -331,6 +332,48 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
 .fa-eclot b { position: absolute; display: block; left: 15px; top: 15px; width: 14px; height: 14px; border-radius: 50%; background: var(--coeur); box-shadow: inset 0 0 0 1.5px rgba(47, 58, 34, 0.25); }
 @keyframes fa-j-eclot { 0% { transform: scale(0) rotate(-60deg); opacity: 1; } 30% { transform: scale(1.12) rotate(0deg); } 42%, 72% { transform: scale(1) rotate(0deg); opacity: 1; } 100% { transform: translateY(8px) scale(0.85); opacity: 0; } }
 
+/* ---------- CHANTIER 196 — Parquet : la salle et le match ---------- */
+.fa-p-nuit { inset: 0; background: radial-gradient(ellipse 120% 80% at 50% 45%, rgba(40, 22, 8, 0.12), rgba(40, 22, 8, 0.38)); }
+/* Un projecteur accroché en haut : il balaie le terrain. Le faisceau est flouté
+   par son enveloppe (le découpage en cône garde sinon des bords nets). */
+.fond-anime .fa-projo { top: -6px; width: 0; height: 0; transform-origin: 0 0; transform: rotate(calc((var(--a) + var(--b)) / 2)); animation: fa-balaye ease-in-out infinite alternate; }
+.fond-anime .fa-faisceau { left: -110px; top: 0; width: 220px; height: 80vh; filter: blur(5px); mix-blend-mode: screen; animation: fa-vibre ease-in-out infinite; }
+.fa-faisceau i { inset: 0; clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, rgba(var(--c), 0.55), rgba(var(--c), 0.2) 55%, rgba(var(--c), 0.06) 100%); }
+.fa-flaque { left: -105px; top: calc(80vh - 52px); width: 210px; height: 84px; border-radius: 50%; mix-blend-mode: screen; background: radial-gradient(ellipse at 50% 50%, rgba(var(--c), 0.75), rgba(var(--c), 0.32) 42%, rgba(var(--c), 0) 70%); }
+.fa-lampe { left: -9px; top: -6px; width: 18px; height: 14px; border-radius: 0 0 6px 6px; background: #1f1a14; box-shadow: 0 6px 10px rgba(var(--c), 0.9); }
+@keyframes fa-balaye { from { transform: rotate(var(--a)); } to { transform: rotate(var(--b)); } }
+@keyframes fa-vibre { 0%, 100% { opacity: 1; } 50% { opacity: 0.82; } }
+
+/* Les flashs des photographes. */
+.fond-anime .fa-salve { inset: 0; }
+.fa-salve-ecran { inset: 0; background: #fff; opacity: 0; animation: fa-flash-ecran 0.5s ease-out forwards; }
+.fond-anime .fa-flash { width: 40px; height: 40px; margin: -20px 0 0 -20px; opacity: 0; animation: fa-flash 0.45s ease-out forwards; }
+.fa-flash i:nth-child(1) { inset: 0; border-radius: 50%; background: radial-gradient(circle, #fff 0 12%, rgba(255, 255, 240, 0.7) 22%, rgba(255, 255, 240, 0) 60%); }
+.fa-flash i:nth-child(2) { left: calc(20px - var(--t)); top: 19.25px; width: calc(var(--t) * 2); height: 1.5px; background: linear-gradient(90deg, transparent, #fff, transparent); }
+.fa-flash i:nth-child(3) { top: calc(20px - var(--t)); left: 19.25px; height: calc(var(--t) * 2); width: 1.5px; background: linear-gradient(180deg, transparent, #fff, transparent); }
+@keyframes fa-flash { 0% { opacity: 0; transform: scale(0.3); } 14% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
+@keyframes fa-flash-ecran { 0% { opacity: 0; } 10% { opacity: 0.16; } 100% { opacity: 0; } }
+
+/* Le tableau d'affichage, en haut d'« Aujourd'hui » seulement. */
+.fond-anime .fa-tableau {
+  left: 50%; top: calc(env(safe-area-inset-top) + 10px); transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; padding: 5px 10px; border-radius: 8px;
+  background: rgba(31, 26, 20, 0.88); box-shadow: 0 0 0 1.5px #3a3027;
+  font-family: var(--sans); font-variant-numeric: tabular-nums;
+}
+body:not(:has(.today.ly)) .fa-tableau { display: none; }
+.fond-anime .fa-equipe { position: static; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fa-equipe small { font-size: 7.5px; font-weight: 700; letter-spacing: 0.1em; color: #bba98e; }
+.fa-equipe b, .fa-chrono b { font-weight: 800; line-height: 1; color: #ffd166; text-shadow: 0 0 6px #ffd166; font-size: 15px; }
+.fond-anime .fa-chrono { position: static; display: grid; place-items: center; width: 34px; height: 26px; border-radius: 4px; background: #0d0a07; box-shadow: inset 0 0 0 1px #3a3027; }
+.fa-chrono b { font-size: 17px; color: #ff8a3d; text-shadow: 0 0 6px #ff8a3d; }
+.fa-chrono.fin b { color: #ff5a3d; text-shadow: 0 0 6px #ff5a3d; }
+.fa-sirene { inset: 0; border-radius: 8px; animation: fa-sirene 1.3s linear forwards; }
+.fa-plus2 { position: absolute; top: 6px; left: -30px; font-weight: 800; font-size: 18px; color: #e8702a; text-shadow: 0 2px 0 #1f1a14, 0 0 1px #1f1a14; opacity: 0; animation: fa-plus2 1.4s ease-out forwards; }
+.fa-plus2.vis { left: auto; right: -30px; }
+@keyframes fa-sirene { 0%, 100% { box-shadow: 0 0 0 1.5px #3a3027; } 15%, 35%, 55% { box-shadow: 0 0 0 2px #ff5a3d, 0 0 20px rgba(255, 90, 61, 0.9); } 25%, 45% { box-shadow: 0 0 0 1.5px #3a3027; } }
+@keyframes fa-plus2 { 0% { transform: translateY(0) scale(0.6); opacity: 0; } 15% { transform: translateY(0) scale(1.15); opacity: 1; } 70% { opacity: 1; } 100% { transform: translateY(-26px) scale(1); opacity: 0; } }
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -378,6 +421,9 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
   /* Jardin : beau temps figé, fleurs à leur taille d'origine. */
   .fa-j-gris, .fa-j-nuage, .fa-j-beau, .fa-j-pluie { display: none; }
   .fa-j-soleil, .fa-j-fleur, .fa-j-tige, .fa-j-tete { animation: none; }
+  /* Parquet : projecteurs immobiles, pas de flash ; le chrono reste sur 24. */
+  .fa-projo, .fa-faisceau { animation: none; }
+  .fa-salve, .fa-sirene, .fa-plus2 { display: none; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }
