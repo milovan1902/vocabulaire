@@ -52,6 +52,12 @@
  *     de joueurs sur des trajectoires au hasard) et la tribune en haut (ola
  *     toutes les 8 à 12 s, puis parfois un fumigène ou des confettis).
  *
+ * CHANTIER 198 — Mêlée (maquette 33a), sur « Aujourd'hui » seulement : une
+ *     pluie fine et oblique, des flaques où se forment des ronds, une brume
+ *     rase ; toutes les 7 à 11 s, une mêlée surgit au hasard du terrain (deux
+ *     packs de huit vus de dessus), pousse, se relève et disparaît sous la
+ *     pelouse avec un « plop ! ». Au toucher, une éclaboussure de boue.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -756,6 +762,86 @@ function Tribune() {
   );
 }
 
+/* ---------- CHANTIER 198 — Mêlée : la pluie et la mêlée ---------- */
+const RANGS_M: Array<[number, number]> = [[0, -14], [0, 0], [0, 14], [-14, -21], [-14, -7], [-14, 7], [-14, 21], [-28, 0]];
+type Melee = { id: number; x: number; y: number; r: number };
+function JoueurM({ x, y, i, peau }: { x: number; y: number; i: number; peau: string }) {
+  return (
+    <span className="fa-m-j" style={{ left: x, top: y }}>
+      <i className="fa-m-trou" style={{ animationDelay: `${4.25 + i * 0.07}s` }} />
+      <span className="fa-m-debout">
+        <span className="fa-m-plouf" style={{ animationDelay: `${4.3 + i * 0.07}s` }}>
+          <i className="fa-m-dos" style={{ animationDelay: `${i * 0.02}s` }} />
+          <i className="fa-m-tete" style={{ background: peau }} />
+        </span>
+      </span>
+    </span>
+  );
+}
+function Rugby() {
+  const { pluie, flaques } = useMemo(() => {
+    const r = hasard(59);
+    return {
+      pluie: Array.from({ length: 50 }, () => ({ x: r() * 140, haut: -40 - r() * 60, l: 14 + r() * 12, dur: 0.7 + r() * 0.4, del: -r() * 1.1 })),
+      flaques: [[11, 55, 90], [61, 43, 70], [69, 80, 100], [19, 87, 60], [42, 68, 54]].map(([x, y, w]) => ({ x, y, w, ronds: [0, 1, 2].map(() => ({ x: 20 + r() * 60, y: 25 + r() * 50, dur: 1.1 + r() * 0.8, del: -r() * 2 })) })),
+    };
+  }, []);
+  const [melee, setMelee] = useState<Melee | null>(null);
+  useCadence(1500, 7000, 4000, () => {
+    const w = window.innerWidth, h = window.innerHeight;
+    setMelee({ id: Date.now(), x: w * (0.19 + Math.random() * 0.62), y: h * (0.33 + Math.random() * 0.5), r: (Math.random() - 0.5) * 50 });
+  });
+  return (
+    <span className="fa-rugby">
+      <i className="fa-r-ciel" />
+      {melee && (
+        <span key={melee.id} className="fa-melee" style={{ left: melee.x, top: melee.y, transform: `rotate(${melee.r}deg)` }}>
+          <span className="fa-m-groupe">
+            <i className="fa-m-ombre" />
+            <span className="fa-m-pousse">
+              <span className="fa-m-pack a">{RANGS_M.map(([x, y], i) => <JoueurM key={i} x={-8 + x} y={y} i={i} peau={i % 3 ? '#e0b48a' : '#8d5a3b'} />)}</span>
+              <span className="fa-m-pack b">{RANGS_M.map(([x, y], i) => <JoueurM key={i} x={8 - x} y={y} i={i + 0.5} peau={i % 3 === 1 ? '#8d5a3b' : '#e0b48a'} />)}</span>
+            </span>
+            <b className="fa-m-plop" style={{ transform: `rotate(${-melee.r}deg)` }}>plop !</b>
+          </span>
+        </span>
+      )}
+      {flaques.map((f, i) => (
+        <span key={i} className="fa-flaque" style={{ left: `${f.x}%`, top: `${f.y}%`, width: f.w, height: f.w * 0.32 }}>
+          {f.ronds.map((o, j) => <i key={j} style={{ left: `${o.x}%`, top: `${o.y}%`, animationDuration: `${o.dur}s`, animationDelay: `${o.del}s` }} />)}
+        </span>
+      ))}
+      <i className="fa-brume" style={{ top: '40%', '--a': 0.16, animationDuration: '26s' } as Css} />
+      <i className="fa-brume" style={{ top: '74%', '--a': 0.12, animationDuration: '34s', animationDelay: '-12s' } as Css} />
+      {pluie.map((g, i) => (
+        <i key={i} className="fa-r-goutte" style={{ left: `${g.x}%`, top: g.haut, height: g.l, animationDuration: `${g.dur}s`, animationDelay: `${g.del}s` }} />
+      ))}
+    </span>
+  );
+}
+function CoupsRugby() {
+  const coups = useCoups(1300, (x, y) => ({
+    x, y,
+    gouttes: Array.from({ length: 11 }, (_, i) => {
+      const a = Math.PI + (Math.PI * i) / 10 + (Math.random() - 0.5) * 0.3, d = 26 + Math.random() * 40;
+      return { dx: Math.cos(a) * d, dy: Math.sin(a) * d * 0.9 - 10, t: 4 + Math.random() * 7 };
+    }),
+    mottes: Array.from({ length: 2 + Math.floor(Math.random() * 2) }, () => ({ dx: (Math.random() - 0.5) * 110, dy: -60 - Math.random() * 40 })),
+  }));
+  if (!coups.length) return null;
+  return (
+    <div className="fa-eclats boue" aria-hidden="true">
+      {coups.map((k) => (
+        <span key={k.id} className="fa-boue" style={{ left: k.x, top: k.y }}>
+          <i className="fa-tache" />
+          {k.gouttes.map((g, i) => <i key={i} className="fa-boue-g" style={{ left: -g.t / 2, top: -g.t / 2, width: g.t, height: g.t, background: i % 3 ? '#5a3d22' : '#6b4a2b', '--dx': `${g.dx}px`, '--dy': `${g.dy}px` } as Css} />)}
+          {k.mottes.map((m, i) => <i key={`m${i}`} className="fa-motte" style={{ '--dx': `${m.dx}px`, '--dy': `${m.dy}px` } as Css} />)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -799,7 +885,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'basket') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -814,6 +900,7 @@ export function FondAnime() {
         {style === 'bd' && <BdPop />}
         {style === 'jardin' && <Jardin />}
         {style === 'foot' && <Stade />}
+        {style === 'rugby' && <Rugby />}
         {style === 'basket' && <Salle />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
@@ -823,6 +910,7 @@ export function FondAnime() {
       {style === 'manga' && <CoupsManga />}
       {style === 'bd' && <CoupsBd />}
       {style === 'jardin' && <CoupsJardin />}
+      {style === 'rugby' && <CoupsRugby />}
     </>,
     document.body,
   );

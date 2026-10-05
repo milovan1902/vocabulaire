@@ -387,9 +387,15 @@
 [data-style='rugby'] .ly-tuile { border-radius: 8px; background: #f6f0e0; border: 2px solid #1f2a20; }
 [data-style='rugby'] .ly-tuile > b { font-weight: 900; }
 [data-style='rugby'] .ly-tuile-haut svg { color: #8a1f2c; }
-[data-style='rugby'] .ly-segments { gap: 7px; height: 14px; }
-[data-style='rugby'] .ly-segments i { flex: none; width: 21px; height: 13px; border-radius: 50%; background: transparent; border: 2px dashed rgba(31, 42, 32, 0.3); }
-[data-style='rugby'] .ly-segments i.on { border: none; background: var(--ballon-ovale) center / contain no-repeat; transform: rotate(-20deg); }
+/* CHANTIER 198 — la semaine sur la ligne d'en-but : chaque jour travaillé, un ballon y est aplati (maquette 33a). */
+[data-style='rugby'] .ly-segments {
+  gap: 4px; height: 22px; padding: 0 1px 5px; box-sizing: border-box; justify-content: space-between; align-items: flex-end;
+  background: linear-gradient(#55843a, #55843a) 0 100% / 100% 5px no-repeat, linear-gradient(#fff, #fff) 0 calc(100% - 5px) / 100% 2px no-repeat;
+}
+[data-style='rugby'] .ly-segments i { flex: 0 0 22px; height: 12px; border-radius: 50%; background: transparent; border: 2px dashed rgba(31, 42, 32, 0.4); box-sizing: border-box; transform: none; }
+[data-style='rugby'] .ly-segments i.on { height: 13px; border: none; background: var(--ballon-ovale) center / contain no-repeat; transform: scaleY(0.82); transform-origin: 50% 100%; }
+[data-style='rugby'] .ly-segments i.on:nth-child(2) { transform: scaleY(0.82) rotate(-6deg); }
+[data-style='rugby'] .ly-segments i.on:nth-child(3) { transform: scaleY(0.82) rotate(4deg); }
 
 /* Révision : les poteaux en H derrière la carte, cerclée comme un maillot. */
 [data-style='rugby'] .studybg { background-color: #4f7d33; background-image: repeating-linear-gradient(90deg, #55843a 0 45px, #4a7630 45px 90px) !important; }
