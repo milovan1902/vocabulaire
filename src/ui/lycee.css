@@ -178,6 +178,15 @@
   font-size: 15px; font-weight: 900; display: grid; place-items: center;
   box-shadow: 0 4px 12px var(--ly-ombre);
 }
+/* CHANTIER 200 — la classe du paquet du centre, au bord bas (Eventail.tsx). Couleurs du thème. */
+.eventail-carte .classdot.eventail-classe {
+  position: absolute; left: 50%; right: auto; top: auto; bottom: -8px; z-index: 2; transform: translateX(-50%);
+  box-sizing: border-box; min-width: 34px; height: 24px; margin: 0; padding: 0 9px; border-radius: 999px;
+  display: grid; place-items: center; white-space: nowrap;
+  background: var(--panel); color: var(--ink); border: 1.5px solid var(--chalk);
+  font-family: var(--sans); font-size: 12px; font-weight: 800; line-height: 1; letter-spacing: 0;
+  box-shadow: 0 3px 8px var(--ly-ombre); pointer-events: none;
+}
 .ly-points { display: flex; justify-content: center; gap: 6px; margin-top: 2px; }
 .ly-points i { width: 6px; height: 6px; border-radius: 999px; background: var(--ly-voile-2); transition: width 0.25s ease; }
 .ly-points i.on { width: 20px; background: var(--chalk); }

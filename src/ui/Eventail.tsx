@@ -100,6 +100,12 @@ export function Eventail({
               <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
             </span>
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
+            {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
+                paquet mis en avant : sœur du dos, pas fille, pour ne pas être rognée. Au bord bas ;
+                le nombre de cartes dues reste au coin haut. */}
+            {a === 0 && (r.deck.classeFrom || r.deck.sansCategorie) && (
+              <span className="classdot eventail-classe">{r.deck.classeFrom ?? 'SC'}</span>
+            )}
           </div>
         );
       })}
