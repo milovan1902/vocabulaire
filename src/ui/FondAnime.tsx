@@ -73,6 +73,12 @@
  *     sur un vibreur en 2,2 s, avec un long panache de fumée. Au toucher, un
  *     burn-out (traces de pneu et fumée).
  *
+ * CHANTIER 203 — Diner (maquette 36a), sur « Aujourd'hui » seulement : le
+ *     45-tours derrière le paquet du centre tourne (retro.css, anime.css) ; des
+ *     notes montent sur ses côtés ; toutes les 10 à 14 s, on change de disque ;
+ *     toutes les 10 à 15 s, une serveuse en patins traverse le sol. Au toucher,
+ *     une bulle de chewing-gum. À 5 / 5, une gerbe de notes sur la semaine.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -1140,9 +1146,114 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
   );
 }
 
+/* ---------- CHANTIER 203 — Diner : le juke-box joue ---------- */
+const ETIQUETTES = ['#d7263d', '#2f6fbf', '#f3c84b', '#23854a'];
+type NoteD = { id: number; x: number; y: number; dx: number; double: boolean; c: string; d: number; sorte: 'monte' | 'gerbe' };
+function NoteDiner({ n }: { n: NoteD }) {
+  return (
+    <span className={`fa-note ${n.sorte}${n.double ? ' double' : ''}`} style={{ left: n.x, top: n.y, '--dx': `${n.dx}px`, '--c': n.c, animationDelay: `${n.d}s` } as Css}>
+      <span>{n.double ? <><i /><i /><i /><i /><i /></> : <><i /><i /><i /></>}</span>
+    </span>
+  );
+}
+/* [gauche, haut, largeur, hauteur, couleur, arrondi, découpe] : la serveuse en patins, de profil, vers la droite. */
+const PEAU = '#f1c6a0', ROUGE_D = '#d7263d', CREME = '#fff8ec';
+const SERVEUSE: Array<[number, number, number, number, string, string | number, string?]> = [
+  [5, 3, 7, 12, '#3b2414', '50%'], [11, 3, 11, 11, PEAU, '50%'], [10, 1, 13, 6, '#3b2414', '6px 6px 2px 2px'], [12, -1, 9, 3, CREME, 2],
+  [11, 15, 2.5, 9, PEAU, 1], [12, 14, 10, 10, ROUGE_D, '3px 3px 1px 1px'], [13, 14, 8, 3, CREME, 2], [22, 6, 2.5, 10, PEAU, 1],
+  [19, 4, 14, 2, '#9aa1a8', 1], [23, -6, 6, 10, '#ffc2cf', 0, 'polygon(0 0,100% 0,80% 100%,20% 100%)'], [22.5, -9, 7, 4, CREME, 3], [25, -12, 3, 3, ROUGE_D, '50%'],
+  [8, 23, 18, 11, ROUGE_D, 0, 'polygon(25% 0,75% 0,100% 100%,0 100%)'], [13, 24, 8, 8, CREME, '1px 1px 3px 3px'],
+  [13, 34, 2, 7, PEAU, 1], [19, 34, 2, 7, PEAU, 1], [11, 40, 7, 4, CREME, '3px 3px 1px 1px'], [18, 40, 7, 4, CREME, '3px 3px 1px 1px'],
+  [11.5, 44, 2.5, 2.5, ROUGE_D, '50%'], [15, 44, 2.5, 2.5, ROUGE_D, '50%'], [18.5, 44, 2.5, 2.5, ROUGE_D, '50%'], [22, 44, 2.5, 2.5, ROUGE_D, '50%'],
+];
+const disqueCentre = () => document.querySelector<HTMLElement>('.today.ly .eventail-carte.centre');
+function Diner() {
+  const [notes, setNotes] = useState<NoteD[]>([]);
+  const [serveuse, setServeuse] = useState<{ id: number; droite: boolean; bas: number } | null>(null);
+  /* Toutes les 2 à 3 s, deux ou trois notes montent sur les côtés du paquet du centre. */
+  useCadence(800, 2000, 1000, () => {
+    const r = disqueCentre()?.getBoundingClientRect();
+    if (!r || !r.width) return;
+    const base = Date.now(), n = 2 + Math.floor(Math.random() * 2);
+    const lot: NoteD[] = Array.from({ length: n }, (_, i) => {
+      const g = Math.random() > 0.5;
+      return { id: base + i, x: g ? r.left - 30 - Math.random() * 50 : r.right + 14 + Math.random() * 50, y: r.top + r.height * 0.85, dx: (g ? -1 : 1) * (8 + Math.random() * 20), double: Math.random() > 0.6, c: Math.random() > 0.5 ? '#d7263d' : '#2f9e83', d: i * 0.35, sorte: 'monte' };
+    });
+    setNotes((l) => [...l.slice(-6), ...lot]);
+    window.setTimeout(() => setNotes((l) => l.filter((x) => x.id < base || x.id >= base + n)), 3600);
+  });
+  /* Toutes les 10 à 14 s, on change de disque : il sort à droite, un autre entre par la gauche. */
+  useCadence(4000, 10000, 4000, () => {
+    const el = disqueCentre();
+    if (!el) return;
+    const avant = el.style.getPropertyValue('--etiquette') || ETIQUETTES[0];
+    const c = auHasard(ETIQUETTES.filter((x) => x !== avant));
+    el.classList.remove('fa-d-change');
+    void el.offsetWidth; // relance l'animation
+    el.classList.add('fa-d-change');
+    window.setTimeout(() => el.style.setProperty('--etiquette', c), 540); // disque hors de vue
+    window.setTimeout(() => el.classList.remove('fa-d-change'), 1600);
+  });
+  /* Toutes les 10 à 15 s, la serveuse traverse le sol, juste au-dessus de la barre d'onglets. */
+  useCadence(2000, 10000, 5000, () => {
+    const barre = document.querySelector<HTMLElement>('.tabbar');
+    const s = { id: Date.now(), droite: Math.random() > 0.5, bas: barre ? barre.getBoundingClientRect().top : window.innerHeight };
+    setServeuse(s);
+    window.setTimeout(() => setServeuse((x) => (x && x.id === s.id ? null : x)), 6200);
+  });
+  return (
+    <>
+      {notes.map((n) => <NoteDiner key={n.id} n={n} />)}
+      {serveuse && (
+        <span key={serveuse.id} className={`fa-serveuse${serveuse.droite ? ' droite' : ''}`} style={{ top: serveuse.bas - 50 }}>
+          <span><span>
+            {SERVEUSE.map(([l, t, w, hh, bg, br, clip], i) => <i key={i} style={{ left: l, top: t, width: w, height: hh, background: bg, borderRadius: br, clipPath: clip }} />)}
+          </span></span>
+        </span>
+      )}
+    </>
+  );
+}
+function CoupsDiner() {
+  const coups = useCoups(1300, (x, y) => ({
+    x, y,
+    parts: Array.from({ length: 8 }, (_, i) => {
+      const a = (Math.PI * 2 * i) / 8 + Math.random() * 0.5, d = 24 + Math.random() * 16;
+      return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, rt: (Math.random() - 0.5) * 300, w: 5 + Math.random() * 5 };
+    }),
+  }));
+  /* « Cette semaine » à 5 / 5 : une gerbe de notes jaillit des disques, une fois par arrivée sur l'écran. */
+  const [gerbe, setGerbe] = useState<NoteD[]>([]);
+  useEffect(() => {
+    if (calme()) return;
+    const vus = new WeakSet<Element>();
+    const h = window.setInterval(() => {
+      const el = document.querySelector('.today.ly .ly-segments.plein');
+      if (!el || vus.has(el)) return;
+      vus.add(el);
+      const r = el.getBoundingClientRect(), base = Date.now();
+      setGerbe(Array.from({ length: 6 }, (_, i) => ({ id: base + i, x: r.left + 8 + i * 20, y: r.top + 4, dx: (i - 2.5) * 6, double: i % 3 === 1, c: i % 2 ? '#2f9e83' : '#d7263d', d: 0.1 + i * 0.12, sorte: 'gerbe' })));
+      window.setTimeout(() => setGerbe([]), 2400);
+    }, 700);
+    return () => window.clearInterval(h);
+  }, []);
+  if (!coups.length && !gerbe.length) return null;
+  return (
+    <div className="fa-eclats diner" aria-hidden="true">
+      {gerbe.map((n) => <NoteDiner key={n.id} n={n} />)}
+      {coups.map((k) => (
+        <span key={k.id} className="fa-gum" style={{ left: k.x, top: k.y }}>
+          <i className="fa-gum-bulle" />
+          {k.parts.map((p, i) => <i key={i} className="fa-gum-bout" style={{ left: -p.w / 2, top: -p.w / 3, width: p.w, height: p.w * 0.66, background: i % 2 ? '#f25f93' : '#ff8fb4', '--dx': `${p.dx}px`, '--dy': `${p.dy}px`, '--rt': `${p.rt}deg` } as Css} />)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -1161,6 +1272,7 @@ export function FondAnime() {
         {style === 'basket' && <Salle />}
         {style === 'strass' && <Strass />}
         {style === 'circuit' && <Circuit />}
+        {style === 'diner' && <Diner />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
@@ -1172,6 +1284,7 @@ export function FondAnime() {
       {style === 'rugby' && <CoupsRugby />}
       {style === 'strass' && <EclatsStrass />}
       {style === 'circuit' && <CoupsCircuit />}
+      {style === 'diner' && <CoupsDiner />}
     </>,
     document.body,
   );

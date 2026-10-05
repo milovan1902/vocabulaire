@@ -543,6 +543,63 @@ body:not(:has(.today.ly)) .fond-anime.circuit, body:not(:has(.today.ly)) .fa-ecl
 @keyframes fa-c-trace { 0% { opacity: 0; } 12% { opacity: 0.9; } 65% { opacity: 0.75; } 100% { opacity: 0; } }
 @keyframes fa-c-bouffee { 0% { transform: translate(0, 0) scale(0.3); opacity: 0; } 15% { opacity: 0.75; } 100% { transform: translate(var(--dx), var(--dy)) scale(2.4); opacity: 0; } }
 
+/* ---------- CHANTIER 203 — Diner : le juke-box joue (maquette 36a) ---------- */
+body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclats.diner { display: none; }
+/* Le 45-tours du paquet du centre (le dessin de base : retro.css) : il tourne sous un reflet fixe ;
+   un repère sur l'étiquette et des sillons inégaux font voir qu'il tourne. */
+[data-style='diner'] .eventail-carte.centre::before {
+  background:
+    linear-gradient(rgba(255, 248, 236, 0.85), rgba(255, 248, 236, 0.85)) 55px 31px / 2px 8px no-repeat,
+    radial-gradient(circle, #f7f2e6 0 4%, var(--etiquette, #d7263d) 4.5% 27%, transparent 27.5%),
+    conic-gradient(rgba(255, 255, 255, 0.1) 0 14deg, transparent 14deg 70deg, rgba(255, 255, 255, 0.06) 70deg 96deg, transparent 96deg 200deg, rgba(255, 255, 255, 0.08) 200deg 230deg, transparent 230deg),
+    repeating-radial-gradient(circle, #161616 0 2px, #2a2a2a 2px 4px);
+  animation: fa-d-tourne 1.8s linear infinite;
+}
+[data-style='diner'] .eventail-carte.centre::after {
+  content: ''; position: absolute; left: 50%; top: -24px; z-index: -1; width: 112px; height: 112px; margin-left: -56px; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from 320deg, transparent 0, rgba(255, 255, 255, 0.16) 18deg, transparent 36deg, transparent 180deg, rgba(255, 255, 255, 0.1) 198deg, transparent 216deg);
+}
+/* Le changement de disque : il sort à droite, un autre entre par la gauche avec un rebond
+   (la couleur de l'étiquette change pendant qu'il est hors de vue : FondAnime.tsx). */
+[data-style='diner'] .eventail-carte.centre.fa-d-change::before { animation: fa-d-tourne 1.8s linear infinite, fa-d-change 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+[data-style='diner'] .eventail-carte.centre.fa-d-change::after { animation: fa-d-change 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+@keyframes fa-d-tourne { to { transform: rotate(360deg); } }
+@keyframes fa-d-change { 0% { translate: 0 0; opacity: 1; } 35% { translate: 160px 0; opacity: 0; } 36% { translate: -160px 0; opacity: 0; } 80% { translate: 6px 0; opacity: 1; } 90% { translate: -3px 0; } 100% { translate: 0 0; opacity: 1; } }
+/* « Cette semaine » : les disques des jours travaillés tournent ; à 5 / 5, ils accélèrent un moment. */
+[data-style='diner'] .ly-segments i.on { background: conic-gradient(rgba(255, 255, 255, 0.45) 0 26deg, transparent 26deg), radial-gradient(circle, #f7f2e6 0 8%, #d7263d 10% 32%, #1c1c1c 34%); animation: fa-d-tourne 1.8s linear infinite; }
+[data-style='diner'] .ly-segments.plein i.on { animation: fa-d-tourne 0.35s linear 5, fa-d-tourne 1.8s linear 1.75s infinite; }
+/* Les notes de musique (♪ et ♫ dessinées). */
+.fa-note, .fa-note span, .fa-note i { position: absolute; display: block; }
+.fa-note { width: 0; height: 0; }
+.fa-note.monte { animation: fa-d-monte 2.6s ease-out both; }
+.fa-note.gerbe { animation: fa-d-gerbe 1.4s ease-out both; }
+.fa-note > span { left: -6px; top: -20px; width: 22px; height: 24px; animation: fa-d-ondule 0.7s ease-in-out infinite alternate; }
+.fa-note i { background: var(--c); }
+.fa-note i:nth-child(1), .fa-note.double i:nth-child(3) { left: 0; top: 15px; width: 9px; height: 7px; border-radius: 50%; transform: rotate(-22deg); }
+.fa-note i:nth-child(2) { left: 7.4px; top: 0; width: 1.8px; height: 18px; border-radius: 1px; }
+.fa-note:not(.double) i:nth-child(3) { left: 8px; top: 0; width: 6px; height: 9px; box-sizing: border-box; background: transparent; border-top: 2px solid var(--c); border-right: 2px solid var(--c); border-radius: 0 8px 0 0; }
+.fa-note.double i:nth-child(3) { left: 13px; top: 17px; }
+.fa-note.double i:nth-child(4) { left: 20.4px; top: 2px; width: 1.8px; height: 18px; border-radius: 1px; }
+.fa-note.double i:nth-child(5) { left: 7.4px; top: 0; width: 14.8px; height: 3px; border-radius: 1px; transform: skewY(-6deg); }
+@keyframes fa-d-monte { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 80% { opacity: 0.9; } 100% { transform: translate(var(--dx), -110px) scale(1); opacity: 0; } }
+@keyframes fa-d-gerbe { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), -54px) scale(1); opacity: 0; } }
+@keyframes fa-d-ondule { from { transform: translateX(-5px) rotate(-8deg); } to { transform: translateX(5px) rotate(8deg); } }
+/* La serveuse en patins, sur le sol en damier, derrière les tuiles. */
+.fond-anime .fa-serveuse { left: 0; width: 36px; height: 48px; animation: fa-d-serveuse 6s linear both; }
+.fond-anime .fa-serveuse.droite { animation-direction: reverse; }
+.fond-anime .fa-serveuse > span { inset: 0; transform-origin: 50% 100%; transform: scale(0.68); }
+.fond-anime .fa-serveuse.droite > span { transform: scaleX(-1) scale(0.68); }
+.fond-anime .fa-serveuse > span > span { inset: 0; transform-origin: 50% 100%; animation: fa-d-dehanche 0.45s ease-in-out infinite alternate; }
+@keyframes fa-d-serveuse { from { transform: translateX(-50px); } to { transform: translateX(calc(100vw + 14px)); } }
+@keyframes fa-d-dehanche { from { transform: rotate(-4deg) translateY(0); } to { transform: rotate(4deg) translateY(-1.5px); } }
+/* Au toucher : la bulle de chewing-gum. */
+.fa-gum { position: absolute; display: block; width: 0; height: 0; }
+.fa-gum i { position: absolute; display: block; }
+.fa-gum-bulle { left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffd6e3 0 14%, #ff8fb4 40%, #f25f93 75%); box-shadow: inset -3px -4px 6px rgba(160, 30, 80, 0.25); animation: fa-d-gum 0.9s ease-out forwards; }
+.fa-gum-bout { border-radius: 40% 60% 50% 45%; animation: fa-d-lambeau 0.55s ease-out 0.58s both; }
+@keyframes fa-d-gum { 0% { transform: scale(0.1); opacity: 1; } 50% { transform: scale(1); } 56% { transform: scale(1.06, 0.94); } 62% { transform: scale(0.96, 1.05); } 66% { transform: scale(1.08); opacity: 1; } 68%, 100% { transform: scale(1.25); opacity: 0; } }
+@keyframes fa-d-lambeau { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 22px)) rotate(var(--rt)) scale(1); opacity: 0; } }
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -606,6 +663,9 @@ body:not(:has(.today.ly)) .fond-anime.circuit, body:not(:has(.today.ly)) .fa-ecl
   /* Grille de départ : l'aiguille immobile au ralenti, ni passage ni extinction des feux. */
   [data-style='circuit'] .ly-scene::after, [data-style='circuit'] .ly-scene::before, [data-style='circuit'] .ly-segments.plein, [data-style='circuit'] .ly-segments.plein i { animation: none; }
   .fa-passage { display: none; }
+  /* Diner : le disque et les petits disques immobiles, sans notes ni serveuse. */
+  [data-style='diner'] .eventail-carte.centre::before, [data-style='diner'] .ly-segments i.on { animation: none; }
+  .fa-note, .fa-serveuse { display: none; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }
