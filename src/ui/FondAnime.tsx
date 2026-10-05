@@ -32,7 +32,7 @@
  *     Au toucher, une explosion en étoile et des points de trame qui giclent.
  *
  * CHANTIER 192 — Jardin (maquette 30a) : le temps qu'il fait, en cycle de
- *     2 min 30. Beau (soleil, pollen, deux papillons), ça se couvre (nuages,
+ *     37,5 s (CHANTIER 195 ; 2 min 30 au départ). Beau (soleil, pollen, deux papillons), ça se couvre (nuages,
  *     ciel gris, les fleurs se balancent), averse, éclaircie. Les fleurs de
  *     la bande de terre doublent après la 1re averse, triplent après la 2e,
  *     puis restent à leur taille ; elles repartent petites à chaque
@@ -488,7 +488,8 @@ const AZURE = { '--c1': '#bfe3f7', '--c2': '#6f8fe0', '--bord': '#2f3a5a', '--co
    d'elle, comme l'était le dessin fixe (jardin.css). La barre peut disparaître
    (Révision) puis revenir : la pousse reprend où elle en était. */
 /* CHANTIER 193 — où l'on entre dans le cycle (en secondes), le même pour tout le Jardin. */
-const CYCLE_J = 150;
+/* CHANTIER 195 — quatre fois plus rapide : 37,5 s (à garder égal à --cycle-j, anime.css). */
+const CYCLE_J = 37.5;
 const DECAL_J = CYCLE_J * (0.36 - Math.random() * 0.13);
 
 function FleursJardin({ t0 }: { t0: number }) {

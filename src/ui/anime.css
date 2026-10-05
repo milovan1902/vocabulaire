@@ -261,7 +261,8 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
 
 /* ---------- CHANTIER 192 — Jardin : le temps qu'il fait ---------- */
 /* Un cycle : beau 0-40 %, ça se couvre 40-50 %, averse 50-72 %, éclaircie 72-82 %, beau. */
-[data-style='jardin'] { --cycle-j: 150s; }
+/* CHANTIER 195 — 37,5 s (150 s au départ). À garder égal à CYCLE_J, FondAnime.tsx. */
+[data-style='jardin'] { --cycle-j: 37.5s; }
 /* CHANTIER 193 — tous les éléments du cycle partent du même point (FondAnime.tsx, DECAL_J). */
 .fond-anime .fa-j { inset: 0; }
 /* Le soleil est dessiné par la couche (il pâlit sous les nuages). */
