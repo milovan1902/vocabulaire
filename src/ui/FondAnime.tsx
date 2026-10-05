@@ -67,6 +67,12 @@
  *     masquée. Toutes les 8 à 10 s, un éclat en croix sur un objet brillant
  *     (diamant de la série, paquet, bouton, niveau). Au toucher, des paillettes.
  *
+ * CHANTIER 202 — Grille de départ (maquette 35a), sur « Aujourd'hui » seulement :
+ *     l'aiguille du compte-tours (retro.css) oscille au ralenti ; toutes les 7 à
+ *     10 s, elle monte en zone rouge (qui clignote) pendant qu'une monoplace file
+ *     sur un vibreur en 2,2 s, avec un long panache de fumée. Au toucher, un
+ *     burn-out (traces de pneu et fumée).
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -1025,6 +1031,76 @@ function EclatsStrass() {
 
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
+/* ---------- CHANTIER 202 — Grille de départ : le compteur et le passage ---------- */
+const DUREE_PASSAGE = 2.2;
+/* [gauche, haut, largeur, hauteur, couleur, arrondi] : la monoplace vue de dessus, nez en haut. */
+const PIECES_F1: Array<[number, number, number, number, string, string | number]> = [
+  [-7, 8, 1.5, 90, 'linear-gradient(180deg, rgba(255,255,255,0.5), transparent)', 1],
+  [30, 14, 1.5, 70, 'linear-gradient(180deg, rgba(255,255,255,0.4), transparent)', 1],
+  [-1, 6, 6, 10, '#0d0d0d', 2], [19, 6, 6, 10, '#0d0d0d', 2],
+  [-2, 38, 7, 12, '#0d0d0d', 2], [19, 38, 7, 12, '#0d0d0d', 2],
+  [1, 0, 22, 4, '#16171a', 1.5],
+  [9.5, 2, 5, 17, '#e10600', '3px 3px 1px 1px'],
+  [5, 17, 14, 28, '#e10600', '6px 6px 4px 4px'],
+  [11, 30, 2, 15, '#f4f4f4', 1],
+  [9, 21, 6, 8, '#111', 3],
+  [3, 52, 18, 5, '#16171a', 1],
+  [3, 52, 18, 1.5, '#e10600', 1],
+];
+type Passage = { id: number; droite: boolean; h: number; fumees: Array<{ y: number; d: number; dx: number; t: number }> };
+function passageAuHasard(): Passage {
+  const h = window.innerHeight, droite = Math.random() > 0.5, trajet = h + 360;
+  /* Une bouffée tous les 30 px, lâchée quand l'arrière de la voiture passe à sa hauteur. */
+  const fumees: Passage['fumees'] = [];
+  for (let y = h + 20; y > -40; y -= 30) fumees.push({ y, d: ((h + 100 - y) / trajet) * DUREE_PASSAGE, dx: (droite ? -1 : 1) * (14 + Math.random() * 30), t: 32 + Math.random() * 20 });
+  return { id: Date.now(), droite, h, fumees };
+}
+function Circuit() {
+  const [p, setP] = useState<Passage | null>(null);
+  useCadence(1500, 7000, 3000, () => {
+    if (!document.querySelector('.today.ly')) return;
+    const scene = document.querySelector<HTMLElement>('.today.ly .ly-scene');
+    if (scene) {
+      scene.classList.remove('fa-rev');
+      void scene.offsetWidth; // relance l'animation
+      scene.classList.add('fa-rev');
+      window.setTimeout(() => scene.classList.remove('fa-rev'), 1900);
+    }
+    const n = passageAuHasard();
+    setP(n);
+    window.setTimeout(() => setP((c) => (c && c.id === n.id ? null : c)), (0.35 + DUREE_PASSAGE + 1.9) * 1000);
+  });
+  if (!p) return null;
+  return (
+    <span key={p.id} className={`fa-passage${p.droite ? ' droite' : ''}`} style={{ '--h': `${p.h}px` } as Css}>
+      {p.fumees.map((f, i) => (
+        <i key={i} className="fa-c-fumee" style={{ top: f.y, width: f.t, height: f.t, marginLeft: -f.t / 2, marginTop: -f.t / 2, '--dx': `${f.dx}px`, animationDelay: `${(0.35 + f.d).toFixed(2)}s` } as Css} />
+      ))}
+      <span className="fa-monoplace">
+        <i className="fa-c-sillage" />
+        {PIECES_F1.map(([l, t, w, hh, bg, br], i) => <i key={i} style={{ left: l, top: t, width: w, height: hh, background: bg, borderRadius: br }} />)}
+      </span>
+    </span>
+  );
+}
+function CoupsCircuit() {
+  const coups = useCoups(1400, (x, y) => ({
+    x, y, r: (Math.random() - 0.5) * 80,
+    fumee: Array.from({ length: 6 }, () => ({ dx: (Math.random() - 0.5) * 60, dy: -12 - Math.random() * 34, t: 16 + Math.random() * 12, d: Math.random() * 0.15 })),
+  }));
+  if (!coups.length) return null;
+  return (
+    <div className="fa-eclats circuit" aria-hidden="true">
+      {coups.map((k) => (
+        <span key={k.id} className="fa-burn" style={{ left: k.x, top: k.y }}>
+          <span className="fa-traces" style={{ transform: `rotate(${k.r}deg)` }}><i /><i /></span>
+          {k.fumee.map((f, i) => <i key={i} className="fa-burn-f" style={{ left: -f.t / 2, top: -f.t / 2, width: f.t, height: f.t, '--dx': `${f.dx}px`, '--dy': `${f.dy}px`, animationDelay: `${f.d}s` } as Css} />)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
 
 function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel' }) {
@@ -1066,7 +1142,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -1084,6 +1160,7 @@ export function FondAnime() {
         {style === 'rugby' && <Rugby />}
         {style === 'basket' && <Salle />}
         {style === 'strass' && <Strass />}
+        {style === 'circuit' && <Circuit />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
@@ -1094,6 +1171,7 @@ export function FondAnime() {
       {style === 'jardin' && <CoupsJardin />}
       {style === 'rugby' && <CoupsRugby />}
       {style === 'strass' && <EclatsStrass />}
+      {style === 'circuit' && <CoupsCircuit />}
     </>,
     document.body,
   );

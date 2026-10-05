@@ -501,6 +501,48 @@ body:not(:has(.today.ly)) .fond-anime.strass, body:not(:has(.today.ly)) .fa-ecla
 }
 @keyframes fa-s-trinque { 0% { transform: translateX(0) rotate(0deg); } 35%, 58% { transform: translateX(var(--tx)) rotate(var(--rt)); } 44% { transform: translateX(calc(var(--tx) * 0.85)) rotate(var(--rt)); } 100% { transform: translateX(0) rotate(0deg); } }
 
+/* ---------- CHANTIER 202 — Grille de départ : le compteur et le passage (maquette 35a) ---------- */
+/* Seulement sur « Aujourd'hui » : ailleurs, le bitume reste calme. */
+body:not(:has(.today.ly)) .fond-anime.circuit, body:not(:has(.today.ly)) .fa-eclats.circuit { display: none; }
+/* L'aiguille au ralenti ; au passage (FondAnime.tsx ajoute .fa-rev), elle monte en zone rouge,
+   tremble, retombe au passage de rapport, revient au ralenti. La zone rouge clignote. */
+[data-style='circuit'] .ly-scene::after { animation: fa-c-ralenti 0.45s ease-in-out infinite alternate; }
+[data-style='circuit'] .ly-scene.fa-rev::after { animation: fa-c-rev 1.8s ease-in-out both; }
+[data-style='circuit'] .ly-scene.fa-rev::before { animation: fa-c-rouge 1.8s linear both; }
+@keyframes fa-c-ralenti { from { transform: rotate(-104deg); } to { transform: rotate(-96deg); } }
+@keyframes fa-c-rev { 0% { transform: rotate(-100deg); } 30% { transform: rotate(112deg); } 36% { transform: rotate(106deg); } 42% { transform: rotate(114deg); } 48% { transform: rotate(107deg); } 54% { transform: rotate(113deg); } 64% { transform: rotate(-40deg); } 72% { transform: rotate(15deg); } 100% { transform: rotate(-100deg); } }
+@keyframes fa-c-rouge {
+  0%, 31% { background-image: var(--cpt-grad), var(--cpt-rouge); }
+  32%, 36% { background-image: var(--cpt-grad), var(--cpt-vif); }
+  37%, 41% { background-image: var(--cpt-grad), var(--cpt-rouge); }
+  42%, 46% { background-image: var(--cpt-grad), var(--cpt-vif); }
+  47%, 51% { background-image: var(--cpt-grad), var(--cpt-rouge); }
+  52%, 58% { background-image: var(--cpt-grad), var(--cpt-vif); }
+  59%, 100% { background-image: var(--cpt-grad), var(--cpt-rouge); }
+}
+/* La monoplace, vue de dessus, sur un vibreur ; elle laisse un long panache de fumée. */
+.fond-anime .fa-passage { left: 0; top: 0; bottom: 0; width: 24px; }
+.fond-anime .fa-passage.droite { left: auto; right: 0; }
+.fond-anime .fa-monoplace { left: 0; top: 0; width: 24px; height: 60px; filter: blur(0.4px); animation: fa-c-passe 2.2s linear 0.35s both; }
+@keyframes fa-c-passe { from { transform: translateY(calc(var(--h) + 40px)); } to { transform: translateY(-320px); } }
+.fa-c-sillage { left: -10px; top: 54px; width: 44px; height: 280px; border-radius: 22px; background: linear-gradient(180deg, rgba(205, 207, 213, 0.6), rgba(205, 207, 213, 0.25) 45%, rgba(205, 207, 213, 0)); filter: blur(7px); }
+.fond-anime .fa-c-fumee { left: 12px; border-radius: 50%; background: radial-gradient(circle, rgba(205, 207, 213, 0.75), rgba(205, 207, 213, 0) 70%); filter: blur(5px); opacity: 0; animation: fa-c-fumee 1.8s ease-out both; }
+@keyframes fa-c-fumee { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 8% { opacity: 0.8; } 100% { transform: translate(var(--dx), -30px) scale(3.2); opacity: 0; } }
+/* « Cette semaine » : à 5 / 5, les cinq feux s'éteignent d'un coup, un éclair vert, ils se rallument. */
+[data-style='circuit'] .ly-segments.plein { animation: fa-c-vert 2.6s ease-out 0.4s both; }
+[data-style='circuit'] .ly-segments.plein i { animation: fa-c-feu 2.6s linear 0.4s both; }
+@keyframes fa-c-feu { 0%, 30% { filter: none; } 31%, 82% { background: #26272b; box-shadow: inset 0 0 0 2px #3a3c41; } 83%, 100% { background: radial-gradient(circle at 40% 35%, #ff7a70, #e10600 60%); box-shadow: 0 0 9px #e10600; } }
+@keyframes fa-c-vert { 0%, 31% { box-shadow: none; border-color: #3a3c41; background: #0e0f11; } 35% { box-shadow: 0 0 22px rgba(43, 217, 107, 0.9), inset 0 0 12px rgba(43, 217, 107, 0.6); border-color: #2bd96b; background: #0f2a1a; } 70%, 100% { box-shadow: none; border-color: #3a3c41; background: #0e0f11; } }
+/* Au toucher : le burn-out. */
+.fa-burn, .fa-traces { position: absolute; display: block; width: 0; height: 0; }
+.fa-burn i { position: absolute; display: block; }
+.fa-traces i { top: -26px; width: 7px; height: 52px; border-radius: 40%; background: linear-gradient(180deg, transparent, rgba(10, 10, 12, 0.85) 28%, rgba(10, 10, 12, 0.85) 72%, transparent); transform: skewX(10deg); animation: fa-c-trace 1.3s ease-out forwards; }
+.fa-traces i:nth-child(1) { left: -13px; }
+.fa-traces i:nth-child(2) { left: 6px; }
+.fa-burn-f { border-radius: 50%; background: radial-gradient(circle, rgba(205, 206, 212, 0.75), rgba(205, 206, 212, 0) 70%); filter: blur(2px); animation: fa-c-bouffee 1.25s ease-out both; }
+@keyframes fa-c-trace { 0% { opacity: 0; } 12% { opacity: 0.9; } 65% { opacity: 0.75; } 100% { opacity: 0; } }
+@keyframes fa-c-bouffee { 0% { transform: translate(0, 0) scale(0.3); opacity: 0; } 15% { opacity: 0.75; } 100% { transform: translate(var(--dx), var(--dy)) scale(2.4); opacity: 0; } }
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -561,6 +603,9 @@ body:not(:has(.today.ly)) .fond-anime.strass, body:not(:has(.today.ly)) .fa-ecla
      les flûtes restent pleines, sans bulles ni toast. */
   [data-style='strass'] .ly-segments i::before, [data-style='strass'] .ly-segments i::after, [data-style='strass'] .ly-segments.plein::after { display: none; }
   [data-style='strass'] .ly-segments.plein i { animation: none; }
+  /* Grille de départ : l'aiguille immobile au ralenti, ni passage ni extinction des feux. */
+  [data-style='circuit'] .ly-scene::after, [data-style='circuit'] .ly-scene::before, [data-style='circuit'] .ly-segments.plein, [data-style='circuit'] .ly-segments.plein i { animation: none; }
+  .fa-passage { display: none; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }
