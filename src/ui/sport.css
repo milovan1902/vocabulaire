@@ -245,9 +245,25 @@
 [data-style='foot'] .ly-fusee:disabled { opacity: 0.4; }
 [data-style='foot'] .ly-tuile { border-radius: 14px; background: #fff; border: none; }
 [data-style='foot'] .ly-tuile-haut svg { color: #1e7a3c; }
-[data-style='foot'] .ly-segments { gap: 7px; height: 17px; }
-[data-style='foot'] .ly-segments i { flex: none; width: 17px; height: 17px; border-radius: 50%; background: transparent; border: 2px dashed rgba(18, 48, 26, 0.3); }
-[data-style='foot'] .ly-segments i.on { border: none; background: var(--ballon-foot) center / contain no-repeat; }
+/* CHANTIER 197 — la semaine en cinq petits buts : chaque jour travaillé, le ballon est au fond des filets (maquette 32a). */
+[data-style='foot'] .ly-segments { gap: 4px; height: 26px; justify-content: space-between; align-items: flex-end; }
+[data-style='foot'] .ly-segments i {
+  position: relative; flex: 0 0 22px; height: 24px; border: none; border-radius: 0; opacity: 0.45;
+  background:
+    linear-gradient(#3fa45b, #3fa45b) 0 100% / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, rgba(18, 48, 26, 0.2) 0 1px, transparent 1px 5px) 3px 3px / calc(100% - 6px) 19px no-repeat,
+    repeating-linear-gradient(0deg, rgba(18, 48, 26, 0.2) 0 1px, transparent 1px 5px) 3px 3px / calc(100% - 6px) 19px no-repeat;
+}
+[data-style='foot'] .ly-segments i.on { opacity: 1; }
+/* Le ballon, au fond des filets (un peu ailleurs dans chaque but). */
+[data-style='foot'] .ly-segments i.on::before { content: ''; position: absolute; left: 7px; bottom: 2px; width: 12px; height: 12px; background: var(--ballon-foot) center / contain no-repeat; }
+[data-style='foot'] .ly-segments i.on:nth-child(2)::before { left: 3px; }
+[data-style='foot'] .ly-segments i.on:nth-child(3)::before { left: 6px; bottom: 6px; }
+[data-style='foot'] .ly-segments i.on:nth-child(4)::before { left: 8px; }
+/* Les poteaux et la barre. */
+[data-style='foot'] .ly-segments i::after { content: ''; position: absolute; inset: 0 0 2px 0; box-sizing: border-box; border: 2.5px solid #3f5a45; border-bottom: none; border-radius: 2px 2px 0 0; }
+/* La tribune du stade (anime.css) s'installe au-dessus de l'écran. */
+[data-style='foot'] .today.ly { margin-top: 70px; }
 
 /* Révision : le penalty. Les tribunes, le but et ses filets, le ballon sur le point. */
 [data-style='foot'] .studybg {

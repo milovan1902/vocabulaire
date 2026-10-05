@@ -47,6 +47,11 @@
  *     flashs de photographes toutes les 3 à 7 s ; et sur « Aujourd'hui », un
  *     petit tableau d'affichage : chrono des 24 s, sirène et « +2 » à zéro.
  *
+ * CHANTIER 197 — Pelouse (maquette 32a), sur « Aujourd'hui » seulement : le
+ *     stade de nuit (quatre pylônes, cônes de lumière, jusqu'à trois ombres
+ *     de joueurs sur des trajectoires au hasard) et la tribune en haut (ola
+ *     toutes les 8 à 12 s, puis parfois un fumigène ou des confettis).
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -652,6 +657,105 @@ function Tableau() {
   );
 }
 
+/* ---------- CHANTIER 197 — Pelouse : le stade de nuit et la tribune ---------- */
+/* [gauche, haut, rotation, longueur du cône] — gauche en %, haut et longueur en fraction de hauteur ; null = sous la tribune. */
+const PYLONES: Array<{ x: string; y: string; r: number; l: string }> = [
+  { x: '14px', y: 'calc(env(safe-area-inset-top) + 46px)', r: -32, l: '74vh' },
+  { x: 'calc(100% - 14px)', y: 'calc(env(safe-area-inset-top) + 46px)', r: 32, l: '74vh' },
+  { x: '-6px', y: '43vh', r: -78, l: '44vh' },
+  { x: 'calc(100% + 6px)', y: '43vh', r: 78, l: '44vh' },
+];
+type Joueur = { id: number; d: string; dur: number };
+function joueurAuHasard(): Joueur {
+  const w = window.innerWidth, h = window.innerHeight;
+  const bord = (sauf: number) => {
+    let k: number;
+    do { k = Math.floor(Math.random() * 4); } while (k === sauf);
+    const p = k === 0 ? [-50, h * (0.16 + Math.random() * 0.74)] : k === 1 ? [w + 50, h * (0.16 + Math.random() * 0.74)] : k === 2 ? [Math.random() * w, h * 0.1] : [Math.random() * w, h + 30];
+    return { k, p };
+  };
+  const a = bord(-1), b = bord(a.k);
+  const cx = () => (w * (0.1 + Math.random() * 0.8)).toFixed(0), cy = () => (h * (0.24 + Math.random() * 0.58)).toFixed(0);
+  const f = (n: number) => n.toFixed(0);
+  const lg = Math.hypot(b.p[0] - a.p[0], b.p[1] - a.p[1]);
+  return { id: Date.now() + Math.random(), d: `M ${f(a.p[0])} ${f(a.p[1])} C ${cx()} ${cy()}, ${cx()} ${cy()}, ${f(b.p[0])} ${f(b.p[1])}`, dur: Math.max(2.6, lg / (110 + Math.random() * 60)) };
+}
+const OMBRES = [-150, 150, -35, 35];
+function Stade() {
+  const [joueurs, setJoueurs] = useState<Joueur[]>([]);
+  useCadence(800, 1200, 3000, () => {
+    setJoueurs((l) => {
+      if (l.length >= 3) return l;
+      const j = joueurAuHasard();
+      window.setTimeout(() => setJoueurs((x) => x.filter((y) => y.id !== j.id)), j.dur * 1000 + 100);
+      return [...l, j];
+    });
+  });
+  return (
+    <span className="fa-stade">
+      <i className="fa-s-nuit" />
+      {PYLONES.map((p, i) => (
+        <span key={i} className="fa-pylone" style={{ left: p.x, top: p.y, transform: `rotate(${p.r}deg)` }}>
+          <span className="fa-cone" style={{ height: p.l, animationDuration: `${5 + i * 1.3}s` }}><i /></span>
+          <i className="fa-c-flaque" style={{ top: `calc(${p.l} - 60px)` }} />
+        </span>
+      ))}
+      {PYLONES.slice(2).map((p, i) => <i key={`m${i}`} className="fa-mat" style={{ left: p.x, top: p.y }} />)}
+      {joueurs.map((j) => (
+        <span key={j.id} className="fa-joueur" style={{ offsetPath: `path("${j.d}")`, animationDuration: `${j.dur}s` }}>
+          {OMBRES.map((r, i) => <i key={i} style={{ '--r': `${r}deg`, animationDelay: `${-i * 0.08}s` } as Css} />)}
+          <b />
+        </span>
+      ))}
+      <Tribune />
+    </span>
+  );
+}
+const COUL_FOULE = ['#ffd400', '#ffffff', '#2ea85a', '#d93636', '#2f6fd6', '#ffd400', '#ffffff'];
+type Fete = { id: number; sorte: 'fumee' | 'confettis'; g: boolean; confettis: Array<{ x: number; y: number; c: string; dx: number; rt: number; dur: number; del: number }> };
+function Tribune() {
+  const foule = useMemo(() => {
+    const r = hasard(31);
+    const cols = Math.max(20, Math.floor((window.innerWidth - 60) / 7.5));
+    return Array.from({ length: cols * 3 }, (_, i) => ({ col: i % cols, rang: Math.floor(i / cols), c: COUL_FOULE[Math.floor(r() * COUL_FOULE.length)] }));
+  }, []);
+  const [ola, setOla] = useState(0);
+  const [fete, setFete] = useState<Fete | null>(null);
+  useCadence(2000, 8000, 4000, () => {
+    const id = Date.now();
+    setOla(id);
+    const r = Math.random();
+    const w = window.innerWidth;
+    setFete(r < 0.25 ? { id, sorte: 'fumee', g: Math.random() > 0.5, confettis: [] }
+      : r < 0.5 ? { id, sorte: 'confettis', g: false, confettis: Array.from({ length: 30 }, () => ({ x: Math.random() * w, y: 30 + Math.random() * 40, c: auHasard(['#ffd400', '#2ea85a', '#ffffff']), dx: (Math.random() - 0.5) * 80, rt: (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 540), dur: 2.4 + Math.random() * 1.4, del: Math.random() * 0.6 })) }
+      : null);
+  });
+  return (
+    <>
+      <span className="fa-tribune">
+        {foule.map((p, i) => (
+          <i key={`${ola}-${i}`} className={ola ? 'ola' : ''} style={{ left: 30 + p.col * 7.5, top: `calc(env(safe-area-inset-top) + ${26 + p.rang * 11}px)`, background: p.c, opacity: 0.55 + p.rang * 0.12, animationDelay: `${p.col * 0.045 + p.rang * 0.02}s` }} />
+        ))}
+        {PYLONES.slice(0, 2).map((p, i) => <i key={`m${i}`} className="fa-mat" style={{ left: p.x, top: p.y }} />)}
+      </span>
+      {fete?.sorte === 'fumee' && (
+        <span key={fete.id} className="fa-fumee" style={{ left: fete.g ? 24 : 'calc(100% - 60px)' }}>
+          {Array.from({ length: 9 }, (_, i) => (
+            <i key={i} style={{ background: i % 2 ? 'rgba(255, 212, 0, 0.7)' : 'rgba(46, 168, 90, 0.7)', '--dx': `${(fete.g ? 1 : -1) * (10 + i * 6)}px`, animationDelay: `${i * 0.22}s` } as Css} />
+          ))}
+        </span>
+      )}
+      {fete?.sorte === 'confettis' && (
+        <span key={fete.id} className="fa-confettis">
+          {fete.confettis.map((k, i) => (
+            <i key={i} style={{ left: k.x, top: k.y, background: k.c, '--dx': `${k.dx}px`, '--rt': `${k.rt}deg`, animationDuration: `${k.dur}s`, animationDelay: `${k.del}s` } as Css} />
+          ))}
+        </span>
+      )}
+    </>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -695,7 +799,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'basket') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'basket') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -709,6 +813,7 @@ export function FondAnime() {
         {style === 'manga' && <Manga />}
         {style === 'bd' && <BdPop />}
         {style === 'jardin' && <Jardin />}
+        {style === 'foot' && <Stade />}
         {style === 'basket' && <Salle />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
