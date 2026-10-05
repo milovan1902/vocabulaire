@@ -22,6 +22,15 @@
  *     de pointillés qui s'efface. Au toucher, un coup de tampon encreur
  *     (« VU », une étoile ou un avion ; rouge, bleu ou vert).
  *
+ * CHANTIER 191 — Manga et BD pop (maquettes 29a, 29b) :
+ *   — Manga : toutes les 5 à 9 s, une carte est lancée comme une attaque :
+ *     elle tourne, laisse des traits de vitesse et se plante dans le décor
+ *     avec un éclat « ズバッ! ». Au toucher, des traits de vitesse
+ *     convergent vers le doigt et une onomatopée (ドン!, バン!, ズン!) tremble ;
+ *   — BD pop : la trame de points respire lentement ; toutes les 5 à 10 s,
+ *     une bulle (POW!, ZAP!, BOOM!…) surgit en haut ou en bas puis éclate.
+ *     Au toucher, une explosion en étoile et des points de trame qui giclent.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -327,6 +336,136 @@ function Tampons() {
   );
 }
 
+/* ---------- CHANTIER 191 — outils communs à Manga et BD pop ---------- */
+/* Un tir toutes les `min` à `min + ecart` ms (le premier après `premier`), jamais en Révision ni onglet caché. */
+function useCadence(premier: number, min: number, ecart: number, tir: () => void) {
+  useEffect(() => {
+    if (calme()) return;
+    let fini = false;
+    let minuteur = 0;
+    const suivant = (delai: number) => {
+      minuteur = window.setTimeout(() => {
+        if (fini) return;
+        if (!enRevision() && document.visibilityState === 'visible') tir();
+        suivant(min + Math.random() * ecart);
+      }, delai);
+    };
+    suivant(premier);
+    return () => { fini = true; window.clearTimeout(minuteur); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+}
+/* Les effets au toucher : 4 au plus à l'écran, chacun retiré après `duree` ms. */
+function useCoups<T>(duree: number, fabrique: (x: number, y: number) => T): Array<T & { id: number }> {
+  const [liste, setListe] = useState<Array<T & { id: number }>>([]);
+  useEffect(() => {
+    let n = 0;
+    const toucher = (e: PointerEvent) => {
+      if (calme() || enRevision()) return;
+      const id = ++n;
+      const coup = { ...fabrique(e.clientX, e.clientY), id };
+      setListe((l) => [...l.slice(-3), coup]);
+      window.setTimeout(() => setListe((l) => l.filter((b) => b.id !== id)), duree);
+    };
+    document.addEventListener('pointerdown', toucher, { passive: true });
+    return () => document.removeEventListener('pointerdown', toucher);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return liste;
+}
+const auHasard = <T,>(l: T[]): T => l[Math.floor(Math.random() * l.length)];
+
+/* ---------- CHANTIER 191 — Manga : le jet de carte ---------- */
+type Jet = { id: number; sx: number; sy: number; th: number; d: number; tr: number };
+function jetAuHasard(): Jet {
+  const w = window.innerWidth, h = window.innerHeight, k = Math.min(w / 360, 1.6);
+  const g = Math.random() > 0.5;
+  const a = (Math.random() - 0.5) * 40;
+  const th = g ? a : 180 + a;
+  const ex = w * (g ? 0.6 + Math.random() * 0.25 : 0.14 + Math.random() * 0.25);
+  const ey = h * (0.17 + Math.random() * 0.63);
+  const d = (260 + Math.random() * 80) * k;
+  const r = (th * Math.PI) / 180;
+  return { id: Date.now(), sx: ex - d * Math.cos(r), sy: ey - d * Math.sin(r), th, d, tr: -th + (Math.random() - 0.5) * 24 };
+}
+function Manga() {
+  const [jet, setJet] = useState<Jet | null>(null);
+  useCadence(1500, 5000, 4000, () => setJet(jetAuHasard()));
+  if (!jet) return null;
+  return (
+    <span key={jet.id} className="fa-jet" style={{ left: jet.sx, top: jet.sy, transform: `rotate(${jet.th}deg)` }}
+      onAnimationEnd={(e) => { if ((e.target as HTMLElement).classList.contains('fa-carte')) setJet(null); }}>
+      <i className="fa-trainee" style={{ width: jet.d }} />
+      <span className="fa-impact" style={{ left: jet.d - 46 }}><i /><i /><b style={{ transform: `rotate(${jet.tr}deg)` }}>ズバッ!</b></span>
+      <span className="fa-carte" style={{ '--d': `${jet.d}px` } as Css}><i /><i /></span>
+    </span>
+  );
+}
+function CoupsManga() {
+  const coups = useCoups(1000, (x, y) => ({ x, y, mot: auHasard(['ドン!', 'バン!', 'ズン!']), r: -12 + Math.random() * 24 }));
+  if (!coups.length) return null;
+  return (
+    <div className="fa-eclats" aria-hidden="true">
+      {coups.map((c) => (
+        <span key={c.id} className="fa-don" style={{ left: c.x, top: c.y }}><i /><b style={{ '--r': `${c.r}deg` } as Css}>{c.mot}</b></span>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- CHANTIER 191 — BD pop : la trame et les bulles ---------- */
+type BulleBd = { id: number; x: number; y: number; mot: string; f: string; r: number };
+const GICLES = Array.from({ length: 8 }, (_, i) => { const a = (Math.PI * 2 * i) / 8; return { dx: Math.cos(a) * 90, dy: Math.sin(a) * 60, c: i % 2 ? '#e63946' : '#1d4ed8' }; });
+function bulleAuHasard(): BulleBd {
+  const w = window.innerWidth, h = window.innerHeight;
+  const haut = Math.random() > 0.5;
+  return {
+    id: Date.now(),
+    x: w * 0.05 + Math.random() * Math.max(0, w * 0.9 - 140),
+    y: h * (haut ? 0.2 + Math.random() * 0.08 : 0.74 + Math.random() * 0.09),
+    mot: auHasard(['POW!', 'ZAP!', 'BOOM!', 'WHAM!', 'BAM!']),
+    f: auHasard(['#e63946', '#1d4ed8', '#ffffff']),
+    r: -14 + Math.random() * 28,
+  };
+}
+function BdPop() {
+  const [bulle, setBulle] = useState<BulleBd | null>(null);
+  useCadence(2200, 5000, 5000, () => setBulle(bulleAuHasard()));
+  return (
+    <>
+      <i className="fa-trame" />
+      {bulle && (
+        <span key={bulle.id} className="fa-bd-bulle" style={{ left: bulle.x, top: bulle.y }}>
+          <span className={`fa-bd-ovale${bulle.f === '#ffffff' ? ' clair' : ''}`} style={{ background: bulle.f, '--r': `${bulle.r}deg` } as Css}><i /><b>{bulle.mot}</b></span>
+          {GICLES.map((g, i) => (
+            <i key={i} className="fa-bd-gicle" style={{ background: g.c, '--dx': `${g.dx}px`, '--dy': `${g.dy}px` } as Css} />
+          ))}
+        </span>
+      )}
+    </>
+  );
+}
+function CoupsBd() {
+  const coups = useCoups(1000, (x, y) => ({
+    x, y, mot: auHasard(['POW!', 'BAM!', 'ZAP!']), r: -12 + Math.random() * 24,
+    parts: Array.from({ length: 10 }, (_, i) => {
+      const a = (Math.PI * 2 * i) / 10 + Math.random() * 0.4, d = 60 + Math.random() * 40;
+      return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, c: i % 2 ? '#e63946' : '#1d4ed8', t: 8 + Math.random() * 6 };
+    }),
+  }));
+  if (!coups.length) return null;
+  return (
+    <div className="fa-eclats" aria-hidden="true">
+      {coups.map((c) => (
+        <span key={c.id} className="fa-boum-lieu" style={{ left: c.x, top: c.y }}>
+          {c.parts.map((p, i) => (
+            <i key={i} className="fa-boum-pt" style={{ left: -p.t / 2, top: -p.t / 2, width: p.t, height: p.t, background: p.c, '--dx': `${p.dx}px`, '--dy': `${p.dy}px` } as Css} />
+          ))}
+          <span className="fa-boum" style={{ '--r': `${c.r}deg` } as Css}><i /><i /><i /><b>{c.mot}</b></span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -370,7 +509,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -381,11 +520,15 @@ export function FondAnime() {
         {style === 'arcade' && <Arcade />}
         {style === 'neon' && <Neon />}
         {style === 'voyage' && <Carnet />}
+        {style === 'manga' && <Manga />}
+        {style === 'bd' && <BdPop />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
       {/* Carnet kraft : un coup de tampon à la place de la gerbe. */}
       {style === 'voyage' && <Tampons />}
+      {style === 'manga' && <CoupsManga />}
+      {style === 'bd' && <CoupsBd />}
     </>,
     document.body,
   );

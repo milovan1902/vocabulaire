@@ -5,6 +5,7 @@
    Chargée en DERNIER (main.tsx) : à sélecteur égal, elle l'emporte sur
    ocean.css et espace.css. Le décor lui-même est dans FondAnime.tsx.
    CHANTIER 190 — + Carnet kraft (maquette 28a) : l'avion et le tampon.
+   CHANTIER 191 — + Manga (29a) : le jet de carte ; BD pop (29b) : la trame et les bulles.
    ================================================================== */
 
 /* ---------- la couche du fond : derrière tout, jamais touchable ---------- */
@@ -151,6 +152,111 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
   100% { transform: rotate(var(--r)) scale(1); opacity: 0; }
 }
 
+/* ---------- CHANTIER 191 — Manga et BD pop ---------- */
+:root { --etoile-bd: polygon(50% 0%, 61% 18%, 82% 8%, 79% 30%, 100% 36%, 84% 52%, 98% 70%, 76% 72%, 74% 95%, 56% 82%, 40% 100%, 34% 78%, 12% 86%, 18% 64%, 0% 54%, 16% 40%, 4% 20%, 26% 22%, 30% 2%); }
+
+/* Manga : la carte lancée, sa traînée, son impact. */
+.fond-anime .fa-jet { width: 0; height: 0; }
+.fa-trainee {
+  left: 0; top: -26px; height: 52px; transform-origin: 0 50%;
+  background: repeating-linear-gradient(180deg, #111 0 1.5px, transparent 1.5px 8px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 85%); mask-image: linear-gradient(90deg, transparent, #000 85%);
+  animation: fa-trainee 2.2s forwards;
+}
+.fa-impact { top: -44px; width: 92px; height: 88px; animation: fa-impact 2.2s ease-out forwards; }
+.fa-impact i { inset: 0; background: #111; clip-path: var(--etoile-bd); }
+.fa-impact i + i { inset: 5px; background: var(--rouge); }
+.fa-impact b {
+  position: absolute; inset: 0; display: grid; place-items: center; white-space: nowrap;
+  font-family: var(--sans); font-weight: 900; font-style: italic; font-size: 18px; color: #fff;
+  text-shadow: -2px -2px 0 #111, 2px -2px 0 #111, -2px 2px 0 #111, 2px 2px 0 #111;
+}
+.fa-carte {
+  left: -22px; top: -31px; width: 44px; height: 62px; box-sizing: border-box;
+  border: 3px solid #111; border-radius: 3px; background: #fff; box-shadow: 3px 3px 0 rgba(17, 17, 17, 0.25);
+  animation: fa-jet 2.2s forwards;
+}
+.fa-carte i:first-child { inset: 1px; background: radial-gradient(#111 1px, transparent 1.4px) 0 0 / 5px 5px; }
+.fa-carte i + i { left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px; box-sizing: border-box; background: var(--rouge); border: 2px solid #111; transform: rotate(45deg); }
+@keyframes fa-jet {
+  0% { transform: translateX(0) rotate(0deg); opacity: 1; animation-timing-function: cubic-bezier(0.15, 0.6, 0.35, 1); }
+  24% { transform: translateX(var(--d)) rotate(790deg); }
+  27% { transform: translateX(calc(var(--d) - 6px)) rotate(790deg); }
+  30%, 78% { transform: translateX(var(--d)) rotate(790deg); opacity: 1; }
+  100% { transform: translateX(var(--d)) rotate(790deg); opacity: 0; }
+}
+@keyframes fa-trainee { 0% { transform: scaleX(0); opacity: 1; animation-timing-function: cubic-bezier(0.15, 0.6, 0.35, 1); } 24% { transform: scaleX(1); opacity: 0.9; } 55%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes fa-impact { 0%, 23% { transform: scale(0); opacity: 0; } 27% { transform: scale(1.25); opacity: 1; } 36%, 75% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.1); opacity: 0; } }
+
+/* Manga, au toucher : traits de vitesse et onomatopée qui tremble. */
+.fa-don { position: absolute; display: block; width: 0; height: 0; }
+.fa-don i {
+  position: absolute; display: block; left: -100px; top: -100px; width: 200px; height: 200px; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #111 0 1.5deg, transparent 1.5deg 8deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 28%, #000 32%, transparent 70%); mask-image: radial-gradient(circle, transparent 28%, #000 32%, transparent 70%);
+  animation: fa-concentre 0.8s ease-out forwards;
+}
+.fa-don b {
+  position: absolute; display: block; left: -70px; top: -26px; width: 140px; text-align: center;
+  font-family: var(--sans); font-weight: 900; font-style: italic; font-size: 40px; line-height: 1; color: #111;
+  text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 5px 5px 0 var(--rouge);
+  animation: fa-secousse 0.9s ease-out forwards;
+}
+@keyframes fa-concentre { 0% { transform: scale(0.4); opacity: 0; } 15% { opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
+@keyframes fa-secousse {
+  0% { transform: rotate(var(--r)) scale(1.8); opacity: 0; }
+  12% { transform: rotate(var(--r)) scale(0.95); opacity: 1; }
+  18% { transform: rotate(var(--r)) translate(-3px, 1px); }
+  24% { transform: rotate(var(--r)) translate(3px, -1px); }
+  30% { transform: rotate(var(--r)) translate(-2px, 0); }
+  36%, 75% { transform: rotate(var(--r)) translate(0, 0); opacity: 1; }
+  100% { transform: rotate(var(--r)) translateY(-8px); opacity: 0; }
+}
+
+/* BD pop : la trame est dessinée par la couche (elle respire), plus par le fond. */
+[data-style='bd'] body { background-image: none; }
+.fa-trame {
+  inset: -6%; background-image: radial-gradient(rgba(230, 57, 70, 0.32) 2.2px, transparent 2.7px); background-size: 12px 12px;
+  animation: fa-trame 7s ease-in-out infinite alternate; will-change: transform;
+}
+@keyframes fa-trame { from { transform: scale(1); opacity: 0.7; } to { transform: scale(1.07); opacity: 1; } }
+.fond-anime .fa-bd-bulle { width: 140px; height: 86px; }
+.fond-anime .fa-bd-ovale {
+  inset: 0; display: grid; place-items: center; box-sizing: border-box;
+  border-radius: 50%; border: 3px solid #1a1a1a; box-shadow: 5px 5px 0 #1a1a1a;
+  animation: fa-surgit 1.8s ease-out forwards;
+}
+.fa-bd-ovale i { left: 26px; bottom: -18px; width: 22px; height: 18px; background: #1a1a1a; clip-path: polygon(0 0, 100% 0, 10% 100%); }
+.fa-bd-ovale b, .fa-boum b {
+  font-family: var(--sans); font-weight: 900; font-size: 32px; line-height: 1; letter-spacing: -0.01em; white-space: nowrap;
+  color: #fff; -webkit-text-stroke: 1.5px #1a1a1a; paint-order: stroke fill;
+}
+.fa-bd-ovale.clair b, .fa-boum b { color: var(--rouge); }
+.fa-bd-gicle { left: 64px; top: 37px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 2px solid #1a1a1a; opacity: 0; animation: fa-gicle 0.5s ease-out 1.35s forwards; }
+@keyframes fa-surgit {
+  0% { transform: rotate(var(--r)) scale(0); }
+  10% { transform: rotate(var(--r)) scale(1.18); }
+  18%, 72% { transform: rotate(var(--r)) scale(1); opacity: 1; }
+  76% { transform: rotate(var(--r)) scale(1.12); opacity: 1; }
+  82%, 100% { transform: rotate(var(--r)) scale(1.35); opacity: 0; }
+}
+@keyframes fa-gicle { 0% { transform: translate(0, 0) scale(0.5); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; } }
+
+/* BD pop, au toucher : l'explosion en étoile. */
+.fa-boum-lieu { position: absolute; display: block; width: 0; height: 0; }
+.fa-boum-pt { position: absolute; display: block; box-sizing: border-box; border-radius: 50%; border: 2px solid #1a1a1a; animation: fa-gicle 0.8s ease-out forwards; }
+.fa-boum { position: absolute; display: block; left: -66px; top: -60px; width: 132px; height: 120px; animation: fa-explose 0.9s ease-out forwards; }
+.fa-boum i { position: absolute; display: block; inset: 0; background: #1a1a1a; clip-path: var(--etoile-bd); }
+.fa-boum i:nth-child(2) { inset: 5px; background: var(--rouge); }
+.fa-boum i:nth-child(3) { inset: 18px; background: #ffd23f; }
+.fa-boum b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; }
+@keyframes fa-explose {
+  0% { transform: rotate(var(--r)) scale(0.2); opacity: 1; }
+  15% { transform: rotate(var(--r)) scale(1.15); }
+  25%, 70% { transform: rotate(var(--r)) scale(1); opacity: 1; }
+  100% { transform: rotate(var(--r)) scale(1.05); opacity: 0; }
+}
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -193,6 +299,8 @@ body:has(.studybg) .fond-anime { opacity: 0.4; }
   .fa-lutin, .fa-patte-a, .fa-reflet, [data-style='neon'] .fa-gresille { animation: none; }
   .fa-patte-b { display: none; }
   .fa-vol, .fa-tampon { display: none; }
+  .fa-jet, .fa-bd-bulle { display: none; }
+  .fa-trame { animation: none; opacity: 1; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }
