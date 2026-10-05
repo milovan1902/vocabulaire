@@ -455,6 +455,52 @@ body:not(:has(.today.ly)) .fond-anime.rugby, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-boue { 0% { transform: translate(0, 0) scale(0.4); opacity: 1; } 55% { transform: translate(calc(var(--dx) * 0.8), var(--dy)) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 40px)) scale(0.9); opacity: 0; } }
 @keyframes fa-motte { 0% { transform: translate(0, 0) rotate(0deg); opacity: 1; } 50% { transform: translate(calc(var(--dx) * 0.6), var(--dy)) rotate(200deg); opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 70px)) rotate(420deg); opacity: 0; } }
 
+/* ---------- CHANTIER 199 — Strass : la boule à facettes (maquette 34a) ---------- */
+/* Seulement sur « Aujourd'hui » : ailleurs, le fond est sobre (retro.css) et le texte doit s'y lire.
+   Masquée, la toile ne se redessine plus (FondAnime.tsx). */
+body:not(:has(.today.ly)) .fond-anime.strass, body:not(:has(.today.ly)) .fa-eclats.strass { display: none; }
+.fond-anime .fa-s-toile { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+/* Le scintillement : un éclat en croix sur un objet brillant. */
+.fa-s-croix { position: absolute; display: block; width: 36px; height: 36px; margin: -18px 0 0 -18px; animation: fa-s-eclat 1.1s ease-out forwards; }
+.fa-s-croix i, .fa-s-croix b { position: absolute; display: block; }
+.fa-s-croix i:nth-child(1) { left: 0; top: 17px; width: 36px; height: 2px; background: linear-gradient(90deg, transparent, #fff, transparent); }
+.fa-s-croix i:nth-child(2) { left: 17px; top: 0; width: 2px; height: 36px; background: linear-gradient(180deg, transparent, #fff, transparent); }
+.fa-s-croix i:nth-child(3), .fa-s-croix i:nth-child(4) { left: 10px; top: 17.25px; width: 16px; height: 1.5px; background: linear-gradient(90deg, transparent, #fff1c2, transparent); transform: rotate(45deg); }
+.fa-s-croix i:nth-child(4) { transform: rotate(-45deg); }
+.fa-s-croix b { left: 14px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 3px rgba(255, 241, 194, 0.9); }
+@keyframes fa-s-eclat { 0% { transform: scale(0) rotate(0deg); opacity: 0; } 30% { transform: scale(1.15) rotate(15deg); opacity: 1; } 60% { transform: scale(0.85) rotate(30deg); opacity: 1; } 100% { transform: scale(0) rotate(45deg); opacity: 0; } }
+/* Au toucher : les paillettes, qui passent du mat au brillant en tournant. */
+.fa-s-lieu { position: absolute; display: block; width: 0; height: 0; }
+.fa-paillette { position: absolute; display: block; animation: fa-s-jet 1.2s cubic-bezier(0.2, 0.7, 0.4, 1) forwards; }
+.fa-paillette i { display: block; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff 0 20%, var(--c) 45%); animation: fa-s-flip linear infinite; }
+@keyframes fa-s-jet { 0% { transform: translate(0, 0); opacity: 1; } 40% { transform: translate(var(--dx), var(--dy)); opacity: 1; } 100% { transform: translate(calc(var(--dx) * 1.15), calc(var(--dy) + 80px)); opacity: 0; } }
+@keyframes fa-s-flip { 0%, 100% { transform: scaleX(1); filter: brightness(1.5); } 50% { transform: scaleX(0.15); filter: brightness(0.6); } }
+/* « Cette semaine » : les bulles dans les flûtes pleines (le dessin des flûtes : retro.css). */
+[data-style='strass'] .ly-segments i.on::before, [data-style='strass'] .ly-segments i.on::after {
+  content: ''; position: absolute; top: 14px; width: 1.6px; height: 1.6px; border-radius: 50%; background: rgba(255, 255, 255, 0.85);
+  animation: fa-s-bulle 1.6s linear infinite;
+}
+[data-style='strass'] .ly-segments i.on::before { left: 6px; }
+[data-style='strass'] .ly-segments i.on::after { left: 9px; animation-delay: -0.8s; }
+[data-style='strass'] .ly-segments i.on:nth-child(2n)::before { animation-delay: -0.37s; }
+[data-style='strass'] .ly-segments i.on:nth-child(3n)::after { animation-delay: -1.2s; }
+@keyframes fa-s-bulle { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-12px); opacity: 0; } }
+/* Les cinq sont pleines : elles trinquent (une fois, à l'arrivée sur l'écran), un éclat jaillit au centre. */
+[data-style='strass'] .ly-segments.plein i:nth-child(1) { --tx: 26px; --rt: 12deg; }
+[data-style='strass'] .ly-segments.plein i:nth-child(2) { --tx: 11px; --rt: 7deg; }
+[data-style='strass'] .ly-segments.plein i:nth-child(4) { --tx: -11px; --rt: -7deg; }
+[data-style='strass'] .ly-segments.plein i:nth-child(5) { --tx: -26px; --rt: -12deg; }
+[data-style='strass'] .ly-segments.plein i:not(:nth-child(3)) { animation: fa-s-trinque 1.6s ease-in-out 0.4s 1 both; }
+[data-style='strass'] .ly-segments.plein::after {
+  content: ''; position: absolute; left: 50%; top: -8px; width: 30px; height: 30px; margin-left: -15px; pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, #fff, transparent) center / 100% 2px no-repeat,
+    linear-gradient(180deg, transparent, #fff, transparent) center / 2px 100% no-repeat,
+    radial-gradient(circle, #fff 0 2px, rgba(255, 241, 194, 0.6) 3px, transparent 7px);
+  animation: fa-s-eclat 0.9s ease-out 0.95s both;
+}
+@keyframes fa-s-trinque { 0% { transform: translateX(0) rotate(0deg); } 35%, 58% { transform: translateX(var(--tx)) rotate(var(--rt)); } 44% { transform: translateX(calc(var(--tx) * 0.85)) rotate(var(--rt)); } 100% { transform: translateX(0) rotate(0deg); } }
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -511,6 +557,10 @@ body:not(:has(.today.ly)) .fond-anime.rugby, body:not(:has(.today.ly)) .fa-eclat
   /* Parquet : projecteurs immobiles, pas de flash ; le chrono reste sur 24. */
   .fa-projo, .fa-faisceau { animation: none; }
   .fa-salve, .fa-sirene, .fa-plus2 { display: none; }
+  /* Strass : la boule et les reflets sont dessinés une fois, immobiles (FondAnime.tsx) ;
+     les flûtes restent pleines, sans bulles ni toast. */
+  [data-style='strass'] .ly-segments i::before, [data-style='strass'] .ly-segments i::after, [data-style='strass'] .ly-segments.plein::after { display: none; }
+  [data-style='strass'] .ly-segments.plein i { animation: none; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }

@@ -616,7 +616,8 @@ export function Today({
             ) : (
               <>
                 <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE} jours`}</b>
-                <span className="ly-segments" aria-hidden="true">
+                {/* CHANTIER 199 — « plein » : la semaine est faite (Strass : les flûtes trinquent). */}
+                <span className={`ly-segments${faits >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
                   {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? 'on' : ''} />)}
                 </span>
               </>

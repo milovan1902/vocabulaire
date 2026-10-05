@@ -58,6 +58,14 @@
  *     packs de huit vus de dessus), pousse, se relève et disparaît sous la
  *     pelouse avec un « plop ! ». Au toucher, une éclaboussure de boue.
  *
+ * CHANTIER 199 — Strass (maquette 34a), sur « Aujourd'hui » seulement : une
+ *     boule à facettes dans le coin en haut à droite (une vraie sphère de petits
+ *     miroirs, un tour en 20 s) et une cinquantaine de reflets blancs ou dorés
+ *     qui glissent sur le fond et s'étirent en s'éloignant d'elle. Dessinés sur
+ *     une toile (canvas), 30 images/s au plus, et plus rien quand elle est
+ *     masquée. Toutes les 8 à 10 s, un éclat en croix sur un objet brillant
+ *     (diamant de la série, paquet, bouton, niveau). Au toucher, des paillettes.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -65,7 +73,7 @@
  * figé et il n'y a ni étoile filante ni gerbe. En Révision, le fond est
  * atténué, sans étoile filante ni gerbe : on y lit et on réfléchit.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 import { useStyle } from './useStyle';
@@ -842,6 +850,176 @@ function CoupsRugby() {
   );
 }
 
+/* ---------- CHANTIER 199 — Strass : la boule à facettes et ses reflets ---------- */
+type Spot = { x0: number; y: number; v: number; r: number; o: number; f: number; p: number; or: boolean };
+/* Un reflet tout prêt (cœur net, bord flou), dessiné une fois puis recopié. */
+function spriteReflet(rgb: string): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  if (g) {
+    const d = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    d.addColorStop(0, 'rgba(255,255,255,1)'); d.addColorStop(0.28, `rgba(${rgb},0.75)`); d.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = d; g.fillRect(0, 0, 64, 64);
+    g.fillStyle = '#fff'; g.fillRect(26, 26, 12, 12);
+  }
+  return c;
+}
+const bruit = (i: number, j: number) => { const v = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453; return v - Math.floor(v); };
+function dessineStrass(g: CanvasRenderingContext2D, w: number, h: number, t: number, CY: number, spots: Spot[], blanc: HTMLCanvasElement, or: HTMLCanvasElement) {
+  const R = 28, CX = w - 44;
+  g.clearRect(0, 0, w, h);
+  /* Le halo. */
+  const halo = g.createRadialGradient(CX, CY, R * 0.6, CX, CY, 150);
+  halo.addColorStop(0, 'rgba(255,236,190,0.22)'); halo.addColorStop(1, 'rgba(255,236,190,0)');
+  g.fillStyle = halo; g.fillRect(CX - 150, 0, 300, CY + 150);
+  /* Les reflets : ils glissent tous dans le même sens et s'étirent en s'éloignant de la boule. */
+  g.globalCompositeOperation = 'lighter';
+  for (const s of spots) {
+    const x = ((s.x0 + t * s.v) % (w + 80)) - 40;
+    const bord = Math.max(0, Math.min(1, (x + 40) / 70, (w + 40 - x) / 70));
+    const al = s.o * (0.55 + 0.45 * Math.sin(t * s.f + s.p)) * bord;
+    if (al < 0.03) continue;
+    const dx = x - CX, dy = s.y - CY, rr = s.r * 3.2;
+    g.save();
+    g.translate(x, s.y); g.rotate(Math.atan2(dy, dx)); g.scale(1 + Math.hypot(dx, dy) / 420, 1);
+    g.globalAlpha = al;
+    g.drawImage(s.or ? or : blanc, -rr, -rr, rr * 2, rr * 2);
+    g.restore();
+  }
+  g.globalAlpha = 1;
+  g.globalCompositeOperation = 'source-over';
+  /* Le fil. */
+  if (CY - R > 0) { g.strokeStyle = 'rgba(240,211,136,0.6)'; g.lineWidth = 1; g.beginPath(); g.moveTo(CX, 0); g.lineTo(CX, CY - R); g.stroke(); }
+  /* La boule : des rangées de petits miroirs sur une sphère, vue un peu d'en dessous. */
+  const rot = t * 0.32, ti = -0.35, ct = Math.cos(ti), st = Math.sin(ti);
+  const Ln = Math.hypot(-0.5, 0.62, 0.6), L = [-0.5 / Ln, 0.62 / Ln, 0.6 / Ln];
+  const P = (la: number, lo: number): [number, number, number] => {
+    const x = Math.cos(la) * Math.sin(lo), y = Math.sin(la), z = Math.cos(la) * Math.cos(lo);
+    return [x, y * ct - z * st, y * st + z * ct];
+  };
+  const S = (p: [number, number, number]): [number, number] => [CX + p[0] * R, CY - p[1] * R];
+  g.save();
+  g.beginPath(); g.arc(CX, CY, R, 0, Math.PI * 2); g.fillStyle = '#1b1820'; g.fill(); g.clip();
+  const RANGS = 12, eclats: Array<[number, number, number]> = [];
+  for (let i = 0; i < RANGS; i++) {
+    const la0 = -Math.PI / 2 + (i * Math.PI) / RANGS, la1 = la0 + Math.PI / RANGS, lm = (la0 + la1) / 2;
+    const M = Math.max(6, Math.round(26 * Math.cos(lm))), dl = (la1 - la0) * 0.09;
+    for (let j = 0; j < M; j++) {
+      const lo0 = (j * 2 * Math.PI) / M + rot + (i % 2) * (Math.PI / M), lo1 = lo0 + (2 * Math.PI) / M, dlo = (lo1 - lo0) * 0.09;
+      const n = P(lm, (lo0 + lo1) / 2);
+      if (n[2] <= 0.03) continue;
+      const ndl = n[0] * L[0] + n[1] * L[1] + n[2] * L[2];
+      const spec = Math.pow(Math.max(0, 2 * ndl * n[2] - L[2]), 26);
+      const k = bruit(i, j), base = 52 + Math.max(0, ndl) * 120 + k * 46, chaud = k > 0.82 ? 1 : 0;
+      const r = Math.min(255, base + spec * 190 + chaud * 34), v = Math.min(255, base + spec * 175 + chaud * 16), b = Math.min(255, base + 14 + spec * 120);
+      const a = S(P(la0 + dl, lo0 + dlo)), bq = S(P(la0 + dl, lo1 - dlo)), cq = S(P(la1 - dl, lo1 - dlo)), d = S(P(la1 - dl, lo0 + dlo));
+      g.fillStyle = `rgb(${r | 0},${v | 0},${b | 0})`;
+      g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(bq[0], bq[1]); g.lineTo(cq[0], cq[1]); g.lineTo(d[0], d[1]); g.closePath(); g.fill();
+      if (spec > 0.5 && k > 0.45) eclats.push([...S(n), spec]);
+    }
+  }
+  const ombre = g.createRadialGradient(CX - R * 0.35, CY - R * 0.3, R * 0.1, CX, CY, R);
+  ombre.addColorStop(0, 'rgba(255,255,255,0.1)'); ombre.addColorStop(0.68, 'rgba(0,0,0,0)'); ombre.addColorStop(1, 'rgba(0,0,0,0.5)');
+  g.fillStyle = ombre; g.fillRect(CX - R, CY - R, R * 2, R * 2);
+  g.restore();
+  /* Les miroirs qui renvoient la lumière : un petit éclat en croix. */
+  g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineWidth = 1;
+  for (const [x, y, s] of eclats.slice(0, 4)) {
+    const l = 4 + s * 7;
+    g.strokeStyle = `rgba(255,250,235,${0.5 + s * 0.5})`;
+    g.beginPath(); g.moveTo(x - l, y); g.lineTo(x + l, y); g.moveTo(x, y - l); g.lineTo(x, y + l); g.stroke();
+    const gl = g.createRadialGradient(x, y, 0, x, y, 5);
+    gl.addColorStop(0, 'rgba(255,255,255,0.9)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gl; g.fillRect(x - 5, y - 5, 10, 10);
+  }
+  g.globalCompositeOperation = 'source-over';
+}
+/* La boule se pose juste au-dessus de la ligne du niveau et de la série (sous l'encoche
+   si le téléphone en a une, à moitié hors de l'écran sinon). */
+function hauteurBoule(): number {
+  const tops = Array.from(document.querySelectorAll<HTMLElement>('.today.ly .ly-niv, .today.ly .ly-flamme')).map((e) => e.getBoundingClientRect().top).filter((v) => v > 0);
+  const haut = tops.length ? Math.min(...tops) : 64;
+  return Math.min(30, Math.max(-10, haut - 28 - 6));
+}
+function Strass() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const g = c?.getContext('2d');
+    if (!c || !g) return;
+    const blanc = spriteReflet('255,246,226'), or = spriteReflet('240,211,136');
+    let w = 0, h = 0, cy = 30, spots: Spot[] = [];
+    const taille = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = window.innerWidth; h = window.innerHeight;
+      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.max(30, Math.min(90, Math.round((52 * w * h) / (360 * 760))));
+      spots = Array.from({ length: n }, () => ({ x0: Math.random() * (w + 80), y: 72 + Math.random() * Math.max(100, h - 120), v: 16 + Math.random() * 9, r: 1.4 + Math.random() * 2.4, o: 0.3 + Math.random() * 0.6, f: 0.8 + Math.random() * 2.6, p: Math.random() * 6.28, or: Math.random() < 0.4 }));
+    };
+    taille();
+    let t = Math.random() * 20, avant = performance.now(), dernier = 0, place = 0, raf = 0;
+    const dessine = () => dessineStrass(g, w, h, t, cy, spots, blanc, or);
+    const pas = (now: number) => {
+      raf = requestAnimationFrame(pas);
+      if (now - dernier < 33) return; // 30 images/s au plus
+      const dt = Math.min(0.1, (now - avant) / 1000);
+      avant = now; dernier = now;
+      if (!c.getClientRects().length) return; // masquée : hors « Aujourd'hui »
+      if (now - place > 1000) { cy = hauteurBoule(); place = now; }
+      t += dt;
+      dessine();
+    };
+    const surTaille = () => { taille(); cy = hauteurBoule(); dessine(); };
+    window.addEventListener('resize', surTaille);
+    if (calme()) {
+      /* Réduire les animations : une seule image, immobile (redessinée si l'écran change de taille). */
+      const attente = window.setTimeout(() => { cy = hauteurBoule(); dessine(); }, 300);
+      return () => { window.clearTimeout(attente); window.removeEventListener('resize', surTaille); };
+    }
+    raf = requestAnimationFrame(pas);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', surTaille); };
+  }, []);
+  return <canvas ref={ref} className="fa-s-toile" />;
+}
+const BRILLANTS = '.today.ly .ly-flamme, .today.ly .eventail-carte.centre .eventail-dos, .today.ly .btn.ly-go, .today.ly .ly-niv';
+const PAILLETTES = ['#f0d388', '#fff1c2', '#c9962f', '#ffffff'];
+function EclatsStrass() {
+  const [eclat, setEclat] = useState<{ id: number; x: number; y: number } | null>(null);
+  useCadence(2000, 8000, 2000, () => {
+    const el = auHasard(Array.from(document.querySelectorAll<HTMLElement>(BRILLANTS)));
+    const r = el?.getBoundingClientRect();
+    if (!el || !r || !r.width) return;
+    const flamme = el.classList.contains('ly-flamme');
+    setEclat({ id: Date.now(), x: flamme ? r.left + 21 : r.right - 10, y: flamme ? r.top + r.height / 2 : r.top + 10 });
+  });
+  const coups = useCoups(1300, (x, y) => ({
+    x, y,
+    parts: Array.from({ length: 16 }, () => {
+      const a = Math.random() * Math.PI * 2, d = 20 + Math.random() * 52;
+      return { dx: Math.cos(a) * d, dy: Math.sin(a) * d - 24, t: 4 + Math.random() * 4, c: auHasard(PAILLETTES), f: 0.16 + Math.random() * 0.2 };
+    }),
+  }));
+  if (!eclat && !coups.length) return null;
+  return (
+    <div className="fa-eclats strass" aria-hidden="true">
+      {eclat && (
+        <span key={eclat.id} className="fa-s-croix" style={{ left: eclat.x, top: eclat.y }} onAnimationEnd={() => setEclat(null)}><i /><i /><i /><i /><b /></span>
+      )}
+      {coups.map((k) => (
+        <span key={k.id} className="fa-s-lieu" style={{ left: k.x, top: k.y }}>
+          {k.parts.map((p, i) => (
+            <span key={i} className="fa-paillette" style={{ left: -p.t / 2, top: -p.t / 2, width: p.t, height: p.t, '--dx': `${p.dx}px`, '--dy': `${p.dy}px` } as Css}>
+              <i style={{ '--c': p.c, animationDuration: `${p.f}s` } as Css} />
+            </span>
+          ))}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 type Eclat = { id: number; x: number; y: number; parts: Array<{ dx: number; dy: number; t: number }> };
 
 const COULEURS_PIXEL = ['#ff3ea5', '#29f0ff', '#ffe14d', '#3dff8b', '#ffffff'];
@@ -885,7 +1063,7 @@ function Eclats({ forme }: { forme: 'bulle' | 'etincelle' | 'poussiere' | 'pixel
 
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -902,6 +1080,7 @@ export function FondAnime() {
         {style === 'foot' && <Stade />}
         {style === 'rugby' && <Rugby />}
         {style === 'basket' && <Salle />}
+        {style === 'strass' && <Strass />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
@@ -911,6 +1090,7 @@ export function FondAnime() {
       {style === 'bd' && <CoupsBd />}
       {style === 'jardin' && <CoupsJardin />}
       {style === 'rugby' && <CoupsRugby />}
+      {style === 'strass' && <EclatsStrass />}
     </>,
     document.body,
   );

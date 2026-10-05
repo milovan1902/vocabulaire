@@ -118,9 +118,19 @@
 [data-style='strass'] .ly-fusee.prec .diamant { transform: rotate(90deg); }
 [data-style='strass'] .ly-tuile { border-radius: 14px; background: rgba(28, 20, 32, 0.86); border: 1px solid rgba(232, 196, 106, 0.6); }
 [data-style='strass'] .ly-tuile-haut svg { color: #f0d388; }
-[data-style='strass'] .ly-segments { gap: 7px; height: 14px; }
-[data-style='strass'] .ly-segments i { flex: none; width: 16px; height: 14px; border-radius: 0; background: rgba(255, 255, 255, 0.15); clip-path: polygon(22% 0, 78% 0, 100% 32%, 50% 100%, 0 32%); }
-[data-style='strass'] .ly-segments i.on { background: var(--gemme), #f0d388; }
+/* CHANTIER 199 — La semaine : cinq flûtes de champagne ; chaque jour travaillé en remplit une
+   (les bulles et le toast quand les cinq sont pleines : anime.css). */
+[data-style='strass'] .ly-segments { position: relative; gap: 7px; height: 32px; align-items: flex-end; }
+[data-style='strass'] .ly-segments i {
+  position: relative; overflow: hidden; flex: none; width: 16px; height: 32px; border-radius: 0; transform-origin: 50% 100%;
+  background: rgba(255, 255, 255, 0.2);
+  clip-path: polygon(2px 0, 14px 0, 12.6px 13px, 9.5px 18px, 8.75px 18px, 8.75px 28.5px, 13px 28.5px, 13px 31px, 3px 31px, 3px 28.5px, 7.25px 28.5px, 7.25px 18px, 6.5px 18px, 3.4px 13px);
+}
+[data-style='strass'] .ly-segments i.on {
+  background:
+    linear-gradient(90deg, transparent 4px, rgba(255, 255, 255, 0.45) 4px 5px, transparent 5px) 0 4px / 100% 12px no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0 4px, #f6dc8c 4px, #c9962f 18px, #e8c46a 18px);
+}
 
 /* Révision : un carton d'invitation sous la boule à facettes. */
 [data-style='strass'] .studybg {
