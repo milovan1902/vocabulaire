@@ -485,9 +485,20 @@
 [data-style='tv'] .ly-fusee.prec .etoile-tv::after { content: '‹'; }
 [data-style='tv'] .ly-tuile { border-radius: 20px 6px 20px 6px; background: #fffaf0; border: 2px solid #3d2c22; }
 [data-style='tv'] .ly-tuile-haut svg { color: #b5452a; }
-[data-style='tv'] .ly-segments { gap: 7px; height: 18px; }
-[data-style='tv'] .ly-segments i { flex: none; width: 18px; height: 18px; border-radius: 0; background: rgba(61, 44, 34, 0.2); clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); }
-[data-style='tv'] .ly-segments i.on { background: #2a9d8f; }
+/* CHANTIER 205 — « Cette semaine » : une télécommande par jour. Allumée (voyant vert) le jour travaillé,
+   en pointillé le jour vide. L'animation à 5 / 5 est dans anime.css. */
+[data-style='tv'] .ly-segments { gap: 10px; height: 24px; align-items: flex-end; }
+[data-style='tv'] .ly-segments i { position: relative; flex: none; width: 13px; height: 22px; box-sizing: border-box; border-radius: 4px 4px 5px 5px; background: transparent; border: 1.5px dashed rgba(61, 44, 34, 0.35); transform-origin: 50% 100%; }
+[data-style='tv'] .ly-segments i.on {
+  border: none;
+  background:
+    radial-gradient(circle 1.6px at 4px 11.5px, #e9b44c 90%, transparent),
+    radial-gradient(circle 1.6px at 9px 11.5px, #e76f51 90%, transparent),
+    radial-gradient(circle 1.6px at 4px 16.5px, #f4ead5 90%, transparent),
+    radial-gradient(circle 1.6px at 9px 16.5px, #f4ead5 90%, transparent),
+    #3d2c22;
+}
+[data-style='tv'] .ly-segments i.on::before { content: ''; position: absolute; left: 4.5px; top: 3px; width: 4px; height: 4px; border-radius: 50%; background: #5cff8a; box-shadow: 0 0 4px #1fd65a; }
 
 /* Révision : la carte est l'écran du poste. */
 [data-style='tv'] .studybg { background-color: #f4ead5; background-image: var(--ciel-tv), radial-gradient(rgba(61, 44, 34, 0.07) 1px, transparent 1.4px) !important; background-size: 220px 260px, 7px 7px; }

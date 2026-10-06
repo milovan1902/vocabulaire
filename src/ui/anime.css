@@ -602,6 +602,61 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-d-gum { 0% { transform: scale(0.1); opacity: 1; } 50% { transform: scale(1); } 56% { transform: scale(1.06, 0.94); } 62% { transform: scale(0.96, 1.05); } 66% { transform: scale(1.08); opacity: 1; } 68%, 100% { transform: scale(1.25); opacity: 0; } }
 @keyframes fa-d-lambeau { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 22px)) rotate(var(--rt)) scale(1); opacity: 0; } }
 
+/* ---------- CHANTIER 205 — TV : allumage, réception et zapping (maquette 37a) ---------- */
+/* L'allumage : écran noir, un trait blanc qui s'ouvre puis s'étire, l'image apparaît (FondAnime.tsx pose .fa-tv-allume). */
+[data-style='tv'] .eventail-dos.fa-tv-allume::before, [data-style='tv'] .eventail-dos.fa-tv-allume::after { content: ''; position: absolute; inset: 11px 32px 11px 11px; border-radius: 20% / 14%; pointer-events: none; }
+[data-style='tv'] .eventail-dos.fa-tv-allume::after { z-index: 3; background: #1d1612; animation: fa-tv-noir 1.1s ease-in both; }
+[data-style='tv'] .eventail-dos.fa-tv-allume::before { z-index: 4; background: #fffdf6; box-shadow: 0 0 12px #fffdf6; animation: fa-tv-ligne 1.1s ease-out both; }
+@keyframes fa-tv-noir { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fa-tv-ligne { 0% { transform: scale(0, 0.02); opacity: 1; } 28% { transform: scale(1, 0.02); opacity: 1; } 52% { transform: scale(1, 1); opacity: 1; } 100% { transform: scale(1, 1); opacity: 0; } }
+/* Les antennes du paquet du centre (à la place du dessin fixe, retro.css) : elles oscillent ; avant le zapping, elles s'agitent et émettent des ondes. */
+[data-style='tv'] .eventail-carte.centre:has(> .fa-tv-antennes)::before { display: none; }
+.fa-tv-antennes { position: absolute; left: 50%; top: 1px; width: 0; height: 0; display: block; pointer-events: none; }
+.fa-tv-antennes i { position: absolute; display: block; left: -1.25px; bottom: 0; width: 2.5px; height: 28px; border-radius: 2px; background: #3d2c22; transform-origin: 50% 100%; transform: rotate(var(--a)); animation: fa-tv-antenne 3.2s ease-in-out infinite alternate; }
+.fa-tv-antennes i:nth-child(2) { animation-delay: -1.4s; }
+.fa-tv-antennes.agite i { animation: fa-tv-antenne-fort 0.16s ease-in-out infinite alternate; }
+.fa-tv-antennes b { position: absolute; display: block; left: -9px; top: -12px; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; border: 2px solid transparent; border-top-color: #2a9d8f; opacity: 0; animation: fa-tv-onde 0.9s ease-out infinite; }
+.fa-tv-antennes b.or { border-top-color: #e9b44c; }
+@keyframes fa-tv-antenne { from { transform: rotate(calc(var(--a) - 4deg)); } to { transform: rotate(calc(var(--a) + 4deg)); } }
+@keyframes fa-tv-antenne-fort { from { transform: rotate(calc(var(--a) - 8deg)); } to { transform: rotate(calc(var(--a) + 8deg)); } }
+@keyframes fa-tv-onde { 0% { transform: scale(0.4); opacity: 0; } 15% { opacity: 1; } 100% { transform: scale(2.3); opacity: 0; } }
+/* L'écran pendant le zapping : la neige, la mire, le « CH n ». */
+.fa-tv-ecran { position: absolute; inset: 11px 32px 11px 11px; z-index: 3; display: block; overflow: hidden; border-radius: 20% / 14%; pointer-events: none; }
+.fa-tv-ecran i, .fa-tv-ecran b { position: absolute; display: block; }
+.fa-tv-ecran.neige { background-color: #5a5048; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0.9 0.9 0.9 0 -0.9 0.9 0.9 0.9 0 -0.9 0.9 0.9 0.9 0 -0.9 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 120px 120px; animation: fa-tv-neige 0.24s steps(1) infinite; }
+.fa-tv-ecran.neige i { left: 0; right: 0; top: 0; height: 28%; background: linear-gradient(180deg, transparent, rgba(255, 250, 240, 0.45), transparent); animation: fa-tv-roule 0.5s linear infinite; }
+.fa-tv-ecran.mire { background: linear-gradient(180deg, transparent 72%, #3d2c22 72% 76%, transparent 76%), linear-gradient(90deg, #fffaf0 0 14.3%, #e9b44c 0 28.6%, #2a9d8f 0 42.9%, #7fae5a 0 57.1%, #c86b8f 0 71.4%, #b5452a 0 85.7%, #2f5d8a 0); }
+.fa-tv-ecran.mire i:nth-child(1) { left: 50%; top: 40%; width: 36px; height: 36px; margin: -18px 0 0 -18px; box-sizing: border-box; border-radius: 50%; border: 2px solid #fffaf0; box-shadow: 0 0 0 1.5px #3d2c22; }
+.fa-tv-ecran.mire i:nth-child(2) { left: 50%; top: 40%; width: 1.5px; height: 36px; margin-top: -18px; background: #fffaf0; }
+.fa-tv-ecran.mire i:nth-child(3) { left: 50%; top: 40%; width: 36px; height: 1.5px; margin-left: -18px; background: #fffaf0; }
+.fa-tv-ecran.ch i { inset: 0; background: #fffdf6; animation: fa-tv-retour 0.3s ease-out both; }
+.fa-tv-ecran.ch b { left: 7px; top: 6px; font-family: var(--sans); font-size: 13px; font-weight: 800; letter-spacing: 0.04em; color: #5cff8a; text-shadow: 0 0 4px #1fd65a, 1px 1px 0 #1d3b25; animation: fa-tv-ch 1.4s ease both; }
+@keyframes fa-tv-neige { 0% { background-position: 0 0; } 25% { background-position: 37px 61px; } 50% { background-position: -53px 17px; } 75% { background-position: 21px -44px; } }
+@keyframes fa-tv-roule { from { transform: translateY(-120%); } to { transform: translateY(420%); } }
+@keyframes fa-tv-retour { from { opacity: 0.85; } to { opacity: 0; } }
+@keyframes fa-tv-ch { 0% { opacity: 0; } 8%, 80% { opacity: 1; } 100% { opacity: 0; } }
+/* « Cette semaine » à 5 / 5 : les télécommandes (retro.css) zappent en chenillard, trois passages,
+   puis le panneau « APPLAUDISSEZ ! » s'allume au-dessus de la tuile et clignote. */
+[data-style='tv'] .ly-tuile:has(.ly-segments) { position: relative; overflow: visible; }
+[data-style='tv'] .ly-segments.plein i.on { animation: fa-tv-chenille 0.75s ease-in-out var(--d, 0s) 3; }
+[data-style='tv'] .ly-segments.plein i.on::before { animation: fa-tv-led 0.75s ease-in-out var(--d, 0s) 3; }
+[data-style='tv'] .ly-segments.plein i.on::after { content: ''; position: absolute; left: -3.5px; top: -12px; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; border: 2px solid transparent; border-top-color: #e76f51; opacity: 0; animation: fa-tv-infra 0.75s ease-out var(--d, 0s) 3; }
+[data-style='tv'] .ly-segments.plein i:nth-child(2) { --d: 0.15s; }
+[data-style='tv'] .ly-segments.plein i:nth-child(3) { --d: 0.3s; }
+[data-style='tv'] .ly-segments.plein i:nth-child(4) { --d: 0.45s; }
+[data-style='tv'] .ly-segments.plein i:nth-child(5) { --d: 0.6s; }
+[data-style='tv'] .ly-segments.plein::after {
+  content: 'APPLAUDISSEZ !'; position: absolute; left: 50%; top: -22px; z-index: 2; white-space: nowrap; pointer-events: none;
+  padding: 5px 11px; border-radius: 6px; background: #b5452a; color: #fffaf0; font-family: var(--sans); font-size: 11.5px; font-weight: 800; letter-spacing: 0.14em;
+  outline: 2px dotted #e9b44c; outline-offset: 2px; box-shadow: 0 0 0 2px #3d2c22; opacity: 0;
+  animation: fa-tv-panneau 2.8s ease-out 2.3s both, fa-tv-clignote 0.4s steps(1) 2.5s 6;
+}
+@keyframes fa-tv-chenille { 0%, 100% { transform: translateY(0) rotate(0deg); } 22% { transform: translateY(-4px) rotate(-8deg); } }
+@keyframes fa-tv-led { 0%, 100% { background: #5cff8a; box-shadow: 0 0 4px #1fd65a; } 22% { background: #fff6a8; box-shadow: 0 0 8px 3px #ffe14d; } }
+@keyframes fa-tv-infra { 0% { transform: scale(0.3); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes fa-tv-panneau { 0% { transform: translateX(-50%) scale(0.5); opacity: 0; } 8% { transform: translateX(-50%) scale(1.1); opacity: 1; } 13%, 85% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(1); opacity: 0; } }
+@keyframes fa-tv-clignote { 0%, 49% { background: #e76f51; box-shadow: 0 0 0 2px #3d2c22, 0 0 16px 2px rgba(231, 111, 81, 0.85); } 50%, 100% { background: #b5452a; box-shadow: 0 0 0 2px #3d2c22; } }
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -668,6 +723,9 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
   /* Diner : le disque et les petits disques immobiles, sans notes ni serveuse. */
   [data-style='diner'] .eventail-carte.centre::before, [data-style='diner'] .ly-segments i.on { animation: none; }
   .fa-note { display: none; }
+  /* TV : ni allumage ni zapping, antennes immobiles ; les télécommandes restent allumées, sans panneau. */
+  .fa-tv-antennes i, [data-style='tv'] .ly-segments.plein i.on, [data-style='tv'] .ly-segments.plein i.on::before { animation: none; }
+  .fa-tv-ecran, [data-style='tv'] .eventail-dos.fa-tv-allume::before, [data-style='tv'] .eventail-dos.fa-tv-allume::after, [data-style='tv'] .ly-segments.plein::after, [data-style='tv'] .ly-segments.plein i.on::after { display: none; }
   /* La serveuse reste posée en haut de l'encart, immobile. */
   .fa-tour .fa-serveuse { animation: none; offset-distance: 12%; }
   .fa-tour .fa-serveuse > span > span { animation: none; }

@@ -80,6 +80,14 @@
  *     « Le plat du jour », les patins sur son cadre chromé. Au toucher,
  *     une bulle de chewing-gum. À 5 / 5, une gerbe de notes sur la semaine.
  *
+ * CHANTIER 205 — TV (maquette 37a), sur « Aujourd'hui » seulement : à chaque
+ *     arrivée sur l'écran, les postes s'allument comme un tube cathodique. Les
+ *     antennes du paquet du centre oscillent doucement ; toutes les 8 à 12 s,
+ *     elles s'agitent et émettent des ondes, puis l'écran se brouille (neige,
+ *     une fois sur deux une mire) et revient avec un « CH n ». À 5 / 5, les
+ *     télécommandes de « Cette semaine » zappent en chenillard puis le panneau
+ *     « APPLAUDISSEZ ! » clignote (anime.css). Pas d'effet au toucher.
+ *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
  * ne gêne aucun toucher et ne connaît aucun écran. Rien n'est stocké.
  *
@@ -1280,9 +1288,75 @@ function CoupsDiner() {
   );
 }
 
+/* ---------- CHANTIER 205 — TV : allumage, réception et zapping ---------- */
+type Zap = { id: number; phase: 'ondes' | 'neige' | 'mire' | 'ch' | 'calme'; ch: number };
+function Tele() {
+  const [centre, setCentre] = useState<HTMLElement | null>(null);
+  const [zap, setZap] = useState<Zap | null>(null);
+  const minuteurs = useRef<number[]>([]);
+  /* Le paquet du centre change quand on fait glisser l'éventail : on le suit. À chaque arrivée
+     sur « Aujourd'hui », tous les postes s'allument une fois. */
+  useEffect(() => {
+    let attente = 0;
+    const vus = new WeakSet<Element>();
+    const allumer = () => requestAnimationFrame(() => {
+      document.querySelectorAll<HTMLElement>('.today.ly .eventail-dos').forEach((el) => {
+        el.classList.remove('fa-tv-allume');
+        void el.offsetWidth; // relance l'animation
+        el.classList.add('fa-tv-allume');
+        window.setTimeout(() => el.classList.remove('fa-tv-allume'), 1300);
+      });
+    });
+    const chercher = () => {
+      attente = 0;
+      setCentre(document.querySelector<HTMLElement>('.today.ly .eventail-carte.centre'));
+      const ecran = document.querySelector('.today.ly');
+      if (ecran && !vus.has(ecran)) { vus.add(ecran); if (!calme()) allumer(); }
+    };
+    chercher();
+    const obs = new MutationObserver(() => { if (!attente) attente = requestAnimationFrame(chercher); });
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    return () => { obs.disconnect(); cancelAnimationFrame(attente); minuteurs.current.forEach((m) => window.clearTimeout(m)); };
+  }, []);
+  /* Toutes les 8 à 12 s : ondes (1,5 s), neige, parfois une mire, puis « CH n ». */
+  useCadence(3000, 8000, 4000, () => {
+    if (!document.querySelector('.today.ly .eventail-carte.centre')) return;
+    minuteurs.current.forEach((m) => window.clearTimeout(m));
+    const id = Date.now(), ch = 2 + Math.floor(Math.random() * 11);
+    const pas: Array<[Zap['phase'], number]> = Math.random() > 0.5
+      ? [['ondes', 0], ['neige', 1500], ['mire', 1950], ['neige', 2650], ['ch', 2800], ['calme', 4200]]
+      : [['ondes', 0], ['neige', 1500], ['ch', 2050], ['calme', 3450]];
+    minuteurs.current = pas.map(([phase, d]) => window.setTimeout(() => setZap({ id, phase, ch }), d));
+  });
+  const ph = zap?.phase ?? 'calme';
+  const dos = centre?.querySelector<HTMLElement>('.eventail-dos') ?? null;
+  return (
+    <>
+      {centre && createPortal(
+        <span className={`fa-tv-antennes${ph === 'ondes' ? ' agite' : ''}`} aria-hidden="true">
+          {[-38, 38].map((ang) => (
+            <i key={ang} style={{ '--a': `${ang}deg` } as Css}>
+              {ph === 'ondes' && zap && [0, 1, 2].map((k) => <b key={`${zap.id}-${k}`} className={k === 1 ? 'or' : ''} style={{ animationDelay: `${k * 0.3}s` }} />)}
+            </i>
+          ))}
+        </span>,
+        centre,
+      )}
+      {dos && zap && (ph === 'neige' || ph === 'mire' || ph === 'ch') && createPortal(
+        <span key={`${zap.id}-${ph}`} className={`fa-tv-ecran ${ph}`} aria-hidden="true">
+          {ph === 'neige' && <i />}
+          {ph === 'mire' && <><i /><i /><i /></>}
+          {ph === 'ch' && <><i /><b>CH {zap.ch}</b></>}
+        </span>,
+        dos,
+      )}
+    </>
+  );
+}
+
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -1302,6 +1376,7 @@ export function FondAnime() {
         {style === 'strass' && <Strass />}
         {style === 'circuit' && <Circuit />}
         {style === 'diner' && <Diner />}
+        {style === 'tv' && <Tele />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
