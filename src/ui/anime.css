@@ -584,13 +584,15 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-d-monte { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 80% { opacity: 0.9; } 100% { transform: translate(var(--dx), -110px) scale(1); opacity: 0; } }
 @keyframes fa-d-gerbe { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), -54px) scale(1); opacity: 0; } }
 @keyframes fa-d-ondule { from { transform: translateX(-5px) rotate(-8deg); } to { transform: translateX(5px) rotate(8deg); } }
-/* La serveuse en patins, sur le sol en damier, derrière les tuiles. */
-.fond-anime .fa-serveuse { left: 0; width: 36px; height: 48px; animation: fa-d-serveuse 6s linear both; }
-.fond-anime .fa-serveuse.droite { animation-direction: reverse; }
-.fond-anime .fa-serveuse > span { inset: 0; transform-origin: 50% 100%; transform: scale(0.68); }
-.fond-anime .fa-serveuse.droite > span { transform: scaleX(-1) scale(0.68); }
-.fond-anime .fa-serveuse > span > span { inset: 0; transform-origin: 50% 100%; animation: fa-d-dehanche 0.45s ease-in-out infinite alternate; }
-@keyframes fa-d-serveuse { from { transform: translateX(-50px); } to { transform: translateX(calc(100vw + 14px)); } }
+/* CHANTIER 204 — la serveuse en patins fait sans fin le tour de l'encart « Le plat du jour » :
+   le trajet (FondAnime.tsx) suit le bord extérieur du cadre chromé, patins dessus, tête dehors. */
+[data-style='diner'] .today.ly .ly-defi { position: relative; }
+.fa-tour { position: absolute; inset: -4px; display: block; pointer-events: none; z-index: 2; }
+.fa-tour span, .fa-tour i { position: absolute; display: block; }
+.fa-tour .fa-serveuse { left: 0; top: 0; width: 36px; height: 48px; offset-rotate: auto; offset-anchor: 50% 100%; animation: fa-d-tour linear infinite; }
+.fa-tour .fa-serveuse > span { inset: 0; transform-origin: 50% 100%; transform: scale(0.58); }
+.fa-tour .fa-serveuse > span > span { inset: 0; transform-origin: 50% 100%; animation: fa-d-dehanche 0.45s ease-in-out infinite alternate; }
+@keyframes fa-d-tour { from { offset-distance: 0%; } to { offset-distance: 100%; } }
 @keyframes fa-d-dehanche { from { transform: rotate(-4deg) translateY(0); } to { transform: rotate(4deg) translateY(-1.5px); } }
 /* Au toucher : la bulle de chewing-gum. */
 .fa-gum { position: absolute; display: block; width: 0; height: 0; }
@@ -665,7 +667,10 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
   .fa-passage { display: none; }
   /* Diner : le disque et les petits disques immobiles, sans notes ni serveuse. */
   [data-style='diner'] .eventail-carte.centre::before, [data-style='diner'] .ly-segments i.on { animation: none; }
-  .fa-note, .fa-serveuse { display: none; }
+  .fa-note { display: none; }
+  /* La serveuse reste posée en haut de l'encart, immobile. */
+  .fa-tour .fa-serveuse { animation: none; offset-distance: 12%; }
+  .fa-tour .fa-serveuse > span > span { animation: none; }
   /* Les satellites restent posés sur leur orbite, immobiles. */
   .orbite-lunes > i:nth-child(1) { transform: translateX(140px); }
   .orbite-lunes > i:nth-child(1) > i { transform: translateY(16px); }

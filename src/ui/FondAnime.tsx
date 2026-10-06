@@ -76,7 +76,8 @@
  * CHANTIER 203 — Diner (maquette 36a), sur « Aujourd'hui » seulement : le
  *     45-tours derrière le paquet du centre tourne (retro.css, anime.css) ; des
  *     notes montent sur ses côtés ; toutes les 10 à 14 s, on change de disque ;
- *     toutes les 10 à 15 s, une serveuse en patins traverse le sol. Au toucher,
+ *     une serveuse en patins (CHANTIER 204) fait sans fin le tour de l'encart
+ *     « Le plat du jour », les patins sur son cadre chromé. Au toucher,
  *     une bulle de chewing-gum. À 5 / 5, une gerbe de notes sur la semaine.
  *
  * Posé à la racine du document, DERRIÈRE tout (z-index -1, anime.css) : il
@@ -1166,10 +1167,51 @@ const SERVEUSE: Array<[number, number, number, number, string, string | number, 
   [13, 34, 2, 7, PEAU, 1], [19, 34, 2, 7, PEAU, 1], [11, 40, 7, 4, CREME, '3px 3px 1px 1px'], [18, 40, 7, 4, CREME, '3px 3px 1px 1px'],
   [11.5, 44, 2.5, 2.5, ROUGE_D, '50%'], [15, 44, 2.5, 2.5, ROUGE_D, '50%'], [18.5, 44, 2.5, 2.5, ROUGE_D, '50%'], [22, 44, 2.5, 2.5, ROUGE_D, '50%'],
 ];
+/* CHANTIER 204 — la serveuse fait le tour de l'encart « Le plat du jour » (.ly-defi), dans le
+   sens des aiguilles d'une montre, les patins posés sur le bord extérieur du cadre chromé, la
+   tête vers l'extérieur. Posée DANS l'encart (portail), au-dessus de son cadre ; le trajet est
+   recalculé si l'encart change de taille. Vitesse constante : environ 55 px/s. */
+function ServeuseTour() {
+  const [encart, setEncart] = useState<HTMLElement | null>(() => document.querySelector<HTMLElement>('.today.ly .ly-defi'));
+  const [tour, setTour] = useState<{ d: string; dur: number } | null>(null);
+  useEffect(() => {
+    let attente = 0;
+    const chercher = () => { attente = 0; setEncart(document.querySelector<HTMLElement>('.today.ly .ly-defi')); };
+    const obs = new MutationObserver(() => { if (!attente) attente = requestAnimationFrame(chercher); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => { obs.disconnect(); cancelAnimationFrame(attente); };
+  }, []);
+  useEffect(() => {
+    if (!encart) { setTour(null); return; }
+    const BORD = 4; // 3 px de chrome + 1 px de filet (retro.css)
+    const mesure = () => {
+      const w = encart.offsetWidth + BORD * 2, h = encart.offsetHeight + BORD * 2;
+      if (!w || !h) return;
+      const r = Math.min((parseFloat(getComputedStyle(encart).borderTopLeftRadius) || 16) + BORD, w / 2, h / 2);
+      const d = `M ${r} 0 H ${w - r} A ${r} ${r} 0 0 1 ${w} ${r} V ${h - r} A ${r} ${r} 0 0 1 ${w - r} ${h} H ${r} A ${r} ${r} 0 0 1 0 ${h - r} V ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`;
+      const lg = 2 * (w + h) - (8 - 2 * Math.PI) * r;
+      setTour({ d, dur: lg / 55 });
+    };
+    mesure();
+    const ro = new ResizeObserver(mesure);
+    ro.observe(encart);
+    return () => ro.disconnect();
+  }, [encart]);
+  if (!encart || !tour) return null;
+  return createPortal(
+    <span className="fa-tour" aria-hidden="true">
+      <span className="fa-serveuse" style={{ offsetPath: `path("${tour.d}")`, animationDuration: `${tour.dur.toFixed(1)}s` } as Css}>
+        <span><span>
+          {SERVEUSE.map(([l, t, w, hh, bg, br, clip], i) => <i key={i} style={{ left: l, top: t, width: w, height: hh, background: bg, borderRadius: br, clipPath: clip }} />)}
+        </span></span>
+      </span>
+    </span>,
+    encart,
+  );
+}
 const disqueCentre = () => document.querySelector<HTMLElement>('.today.ly .eventail-carte.centre');
 function Diner() {
   const [notes, setNotes] = useState<NoteD[]>([]);
-  const [serveuse, setServeuse] = useState<{ id: number; droite: boolean; bas: number } | null>(null);
   /* Toutes les 2 à 3 s, deux ou trois notes montent sur les côtés du paquet du centre. */
   useCadence(800, 2000, 1000, () => {
     const r = disqueCentre()?.getBoundingClientRect();
@@ -1194,23 +1236,10 @@ function Diner() {
     window.setTimeout(() => el.style.setProperty('--etiquette', c), 540); // disque hors de vue
     window.setTimeout(() => el.classList.remove('fa-d-change'), 1600);
   });
-  /* Toutes les 10 à 15 s, la serveuse traverse le sol, juste au-dessus de la barre d'onglets. */
-  useCadence(2000, 10000, 5000, () => {
-    const barre = document.querySelector<HTMLElement>('.tabbar');
-    const s = { id: Date.now(), droite: Math.random() > 0.5, bas: barre ? barre.getBoundingClientRect().top : window.innerHeight };
-    setServeuse(s);
-    window.setTimeout(() => setServeuse((x) => (x && x.id === s.id ? null : x)), 6200);
-  });
   return (
     <>
       {notes.map((n) => <NoteDiner key={n.id} n={n} />)}
-      {serveuse && (
-        <span key={serveuse.id} className={`fa-serveuse${serveuse.droite ? ' droite' : ''}`} style={{ top: serveuse.bas - 50 }}>
-          <span><span>
-            {SERVEUSE.map(([l, t, w, hh, bg, br, clip], i) => <i key={i} style={{ left: l, top: t, width: w, height: hh, background: bg, borderRadius: br, clipPath: clip }} />)}
-          </span></span>
-        </span>
-      )}
+      <ServeuseTour />
     </>
   );
 }
