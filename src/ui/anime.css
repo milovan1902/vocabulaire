@@ -657,6 +657,42 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-tv-panneau { 0% { transform: translateX(-50%) scale(0.5); opacity: 0; } 8% { transform: translateX(-50%) scale(1.1); opacity: 1; } 13%, 85% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(1); opacity: 0; } }
 @keyframes fa-tv-clignote { 0%, 49% { background: #e76f51; box-shadow: 0 0 0 2px #3d2c22, 0 0 16px 2px rgba(231, 111, 81, 0.85); } 50%, 100% { background: #b5452a; box-shadow: 0 0 0 2px #3d2c22; } }
 
+/* ---------- CHANTIER 209 — Salon privé : reflet doré, cigare, quinte flush (maquette 39a) ---------- */
+body:not(:has(.today.ly)) .fa-eclats.salon { display: none; }
+[data-style='salon'] .today.ly :is(.ly-defi, .ly-tuile) { position: relative; }
+/* Le reflet doré : un éclat qui balaie le cadre en diagonale, comme sur une plaque de laiton. */
+.fa-sl-reflet { position: absolute; inset: 0; z-index: 1; display: block; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.fa-sl-reflet i { position: absolute; display: block; top: -20%; bottom: -20%; left: 0; width: 38%; opacity: 0; mix-blend-mode: screen; background: linear-gradient(90deg, transparent, rgba(255, 236, 180, 0.08) 30%, rgba(255, 240, 195, 0.42) 50%, rgba(255, 236, 180, 0.08) 70%, transparent); animation: fa-sl-reflet 1.1s ease-in-out both; }
+@keyframes fa-sl-reflet { 0% { transform: translateX(-160%) skewX(-20deg); opacity: 0; } 12%, 88% { opacity: 1; } 100% { transform: translateX(360%) skewX(-20deg); opacity: 0; } }
+/* Le cigare : il entre par la droite au premier plan, la braise rougit, la fumée dense monte, il repart. */
+.fa-sl-cigare { position: absolute; left: calc(50% - 30px); width: 260px; height: 48px; display: block; }
+.fa-sl-cigare i, .fa-sl-cigare b, .fa-sl-cigare span { position: absolute; display: block; }
+.fa-sl-cigare .fumee { border-radius: 50%; opacity: 0; filter: blur(5px); background: radial-gradient(circle, rgba(234, 230, 218, 0.9), rgba(225, 220, 205, 0.4) 45%, rgba(225, 220, 205, 0) 70%); animation: fa-sl-fumee 5.4s ease-out both; }
+.fa-sl-cigare .tabac { left: 0; top: 0; width: 260px; height: 48px; transform-origin: 30px 24px; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.7)); animation: fa-sl-entre 4.6s cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+.fa-sl-cigare .corps { left: 52px; top: 4px; width: 220px; height: 40px; border-radius: 6px 0 0 6px; background: repeating-linear-gradient(100deg, rgba(0, 0, 0, 0) 0 14px, rgba(40, 20, 8, 0.25) 14px 15px), linear-gradient(180deg, #a06a3c, #7a4c28 35%, #5a361b 70%, #3a2210); }
+.fa-sl-cigare .bague { left: 108px; top: 2px; width: 34px; height: 44px; background: linear-gradient(180deg, #f2d690, #c09440 50%, #8a6a2a); border-left: 2px solid #5e4818; border-right: 2px solid #5e4818; }
+.fa-sl-cigare .tabac > b { left: 108px; top: 2px; width: 38px; height: 44px; display: grid; place-items: center; color: #9e1b2c; font-size: 16px; line-height: 1; }
+.fa-sl-cigare .braise { left: 41px; top: 4px; width: 13px; height: 40px; border-radius: 2px; background: linear-gradient(90deg, #ffb070, #ff3d1f 35%, #d4140c 70%, #5a1a0e); animation: fa-sl-braise 4.6s ease-in-out both; }
+.fa-sl-cigare .cendre { left: 8px; top: 5px; width: 38px; height: 38px; border-radius: 14px 3px 3px 14px; background: repeating-linear-gradient(90deg, #8e8a84 0 3px, #b9b3a9 3px 6px, #a19c93 6px 8px); animation: fa-sl-cendre 4.6s ease-in-out both; }
+@keyframes fa-sl-entre { 0% { transform: translate(260px, 40px) rotate(-16deg); } 18% { transform: translate(0, 0) rotate(-16deg); } 72% { transform: translate(-6px, -4px) rotate(-17deg); } 100% { transform: translate(280px, 50px) rotate(-14deg); } }
+@keyframes fa-sl-braise { 0%, 22% { filter: brightness(0.85); box-shadow: 0 0 8px 3px rgba(255, 50, 20, 0.55); } 38% { filter: brightness(1.7); box-shadow: 0 0 28px 11px rgba(255, 60, 25, 0.95), 0 0 64px 22px rgba(230, 30, 10, 0.45); } 60% { filter: brightness(1.3); box-shadow: 0 0 18px 7px rgba(255, 55, 25, 0.85); } 100% { filter: brightness(1); box-shadow: 0 0 10px 4px rgba(255, 50, 20, 0.6); } }
+@keyframes fa-sl-cendre { 0%, 22% { box-shadow: inset 6px 0 6px rgba(255, 60, 25, 0.3); } 38% { box-shadow: inset 12px 0 14px rgba(255, 60, 25, 0.95); } 100% { box-shadow: inset 7px 0 7px rgba(255, 60, 25, 0.4); } }
+@keyframes fa-sl-fumee { 0% { transform: translate(0, 0) scale(0.3); opacity: 0; } 12% { opacity: var(--o); } 50% { transform: translate(var(--dx), -150px) scale(1.7); opacity: var(--o); } 100% { transform: translate(calc(var(--dx) * -0.8), -370px) scale(3.4); opacity: 0; } }
+/* « Cette semaine » à 5 / 5 : la tuile s'assombrit, cinq cartes s'y déploient (10, V, D, R, As de carreau),
+   un liseré doré en fait le tour, puis « Quinte flush ! » s'écrit en italique. */
+.fa-sl-quinte { position: absolute; inset: 0; z-index: 3; display: block; overflow: hidden; border-radius: inherit; background: #1c1a16; pointer-events: none; animation: fa-sl-voile 5.6s ease both; }
+.fa-sl-quinte i, .fa-sl-quinte b, .fa-sl-quinte span { position: absolute; display: block; }
+.fa-sl-quinte .lisere { inset: 4px; border: 1.5px solid #d4af5a; outline: 1px solid rgba(212, 175, 90, 0.35); outline-offset: -5px; clip-path: inset(0 100% 100% 0); animation: fa-sl-lisere 5.6s ease-in-out both; }
+.fa-sl-quinte > b { left: 12px; top: 10px; white-space: nowrap; font-family: var(--titre); font-style: italic; font-weight: 600; font-size: 19px; line-height: 1; color: #e6c675; clip-path: inset(0 100% 0 0); animation: fa-sl-ecrit 5.6s ease-out both; }
+.fa-sl-quinte .carte { left: calc(50% - 14px); bottom: 10px; width: 28px; height: 40px; box-sizing: border-box; border-radius: 3px; background: #f6eedb; border: 1px solid #d4af5a; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); color: #c62f3d; transform-origin: 50% 140%; opacity: 0; animation: fa-sl-eventail 5.6s cubic-bezier(0.3, 0.8, 0.4, 1) both; }
+.fa-sl-quinte .carte b { left: 3px; top: 2px; font-family: var(--sans); font-size: 11px; font-weight: 800; line-height: 1; }
+.fa-sl-quinte .carte b.dix { font-size: 10px; letter-spacing: -0.06em; }
+.fa-sl-quinte .carte i { left: 0; right: 0; bottom: 5px; text-align: center; font-style: normal; font-size: 16px; line-height: 1; }
+@keyframes fa-sl-voile { 0% { opacity: 0; } 6%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fa-sl-eventail { 0% { transform: translate(var(--sx), 12px) rotate(0) scale(0.6); opacity: 0; } 12% { opacity: 1; } 30%, 100% { transform: translate(var(--fx), 0) rotate(var(--r)) scale(1); opacity: 1; } }
+@keyframes fa-sl-lisere { 0%, 26% { clip-path: inset(0 100% 100% 0); } 40% { clip-path: inset(0 0 100% 0); } 48%, 100% { clip-path: inset(0 0 0 0); } }
+@keyframes fa-sl-ecrit { 0%, 46% { clip-path: inset(0 100% 0 0); } 64%, 100% { clip-path: inset(0 0 0 0); } }
+
 /* ---------- CHANTIER 207 — Tapis vert : lampe, croupier, paquet battu (maquette 38a) ---------- */
 body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclats.tapis { display: none; }
 /* La lampe de table, en haut au centre : son cône se balance très lentement ; la fumée monte dans le faisceau. */
@@ -779,6 +815,8 @@ body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclat
   /* TV : ni allumage ni zapping, antennes immobiles ; les télécommandes restent allumées, sans panneau. */
   .fa-tv-antennes i, [data-style='tv'] .ly-segments.plein i.on, [data-style='tv'] .ly-segments.plein i.on::before { animation: none; }
   .fa-tv-ecran, [data-style='tv'] .eventail-dos.fa-tv-allume::before, [data-style='tv'] .eventail-dos.fa-tv-allume::after, [data-style='tv'] .ly-segments.plein::after, [data-style='tv'] .ly-segments.plein i.on::after { display: none; }
+  /* Salon privé : ni reflet, ni cigare, ni quinte flush. */
+  .fa-sl-reflet, .fa-sl-cigare, .fa-sl-quinte { display: none; }
   /* Tapis vert : la lampe éclaire sans bouger, sans fumée ; la pile de jetons reste posée, sans croupier ni battage. */
   .fond-anime .fa-tp-lampe, [data-style='tapis'] .ly-segments.plein i { animation: none; }
   .fa-tp-lampe .fumee, .fa-tp-rateau, .fa-tp-riffle { display: none; }

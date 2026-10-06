@@ -80,6 +80,13 @@
  *     « Le plat du jour », les patins sur son cadre chromé. Au toucher,
  *     une bulle de chewing-gum. À 5 / 5, une gerbe de notes sur la semaine.
  *
+ * CHANTIER 209 — Salon privé (maquette 39a), sur « Aujourd'hui » seulement :
+ *     toutes les 8 à 12 s, un reflet doré balaie les cadres (encart, paquet du
+ *     centre, tuiles). Toutes les 6 à 10 s, le bout d'un gros cigare entre au
+ *     premier plan en bas à droite : la braise rougit, une fumée dense monte et
+ *     se dissout. À 5 / 5, une quinte flush royale se déploie dans la tuile
+ *     « Cette semaine ». Pas d'effet au toucher.
+ *
  * CHANTIER 207 — Tapis vert (maquette 38a), sur « Aujourd'hui » seulement : une
  *     lampe de table balance lentement son cône de lumière, la fumée y monte.
  *     Toutes les 10 à 15 s, le paquet du centre est battu (riffle) ; toutes les
@@ -1456,9 +1463,83 @@ function TapisCinq() {
   );
 }
 
+/* ---------- CHANTIER 209 — Salon privé : reflet doré, cigare, quinte flush ---------- */
+const FUMEE_SL: Array<[number, number, number, number, number]> = Array.from({ length: 20 }, (_, k) => [
+  1.0 + k * 0.1, 52 + (k % 4) * 18, (k % 2 ? -1 : 1) * (10 + (k % 5) * 7), 0.58 + (k % 3) * 0.12, (k % 3) * 9 - 9,
+]);
+const RANGS_SL = ['10', 'V', 'D', 'R', 'A'];
+function Salon() {
+  const [reflet, setReflet] = useState<{ id: number; cibles: HTMLElement[] } | null>(null);
+  const [cigare, setCigare] = useState<{ id: number; bas: number } | null>(null);
+  const [quinte, setQuinte] = useState<{ id: number; tuile: HTMLElement } | null>(null);
+  /* Le reflet : encart, paquet du centre, puis les tuiles, l'un après l'autre. */
+  useCadence(2000, 8000, 4000, () => {
+    const q = (s: string) => Array.from(document.querySelectorAll<HTMLElement>(s));
+    const cibles = [...q('.today.ly .ly-defi'), ...q('.today.ly .eventail-carte.centre .eventail-dos'), ...q('.today.ly .ly-tuile')];
+    if (!cibles.length) return;
+    const id = Date.now();
+    setReflet({ id, cibles });
+    window.setTimeout(() => setReflet((r) => (r && r.id === id ? null : r)), 2200);
+  });
+  /* Le cigare : au premier plan, en bas à droite, au-dessus de la barre d'onglets. */
+  useCadence(3500, 6000, 4000, () => {
+    if (!document.querySelector('.today.ly')) return;
+    const barre = document.querySelector<HTMLElement>('.tabbar');
+    const bas = (barre ? window.innerHeight - barre.getBoundingClientRect().top : 64) + 127;
+    const id = Date.now();
+    setCigare({ id, bas });
+    window.setTimeout(() => setCigare((c) => (c && c.id === id ? null : c)), 6800);
+  });
+  /* La quinte flush : une fois à chaque arrivée sur l'écran, quand la semaine est pleine. */
+  useEffect(() => {
+    if (calme()) return;
+    const vus = new WeakSet<Element>();
+    const h = window.setInterval(() => {
+      const seg = document.querySelector('.today.ly .ly-segments.plein');
+      const tuile = seg?.closest<HTMLElement>('.ly-tuile');
+      if (!seg || !tuile || vus.has(seg)) return;
+      vus.add(seg);
+      const id = Date.now();
+      setQuinte({ id, tuile });
+      window.setTimeout(() => setQuinte((x) => (x && x.id === id ? null : x)), 5800);
+    }, 700);
+    return () => window.clearInterval(h);
+  }, []);
+  return (
+    <>
+      {reflet && reflet.cibles.map((el, i) => el.isConnected && createPortal(
+        <span key={`${reflet.id}-${i}`} className="fa-sl-reflet" aria-hidden="true"><i style={{ animationDelay: `${Math.min(i, 3) * 0.25}s` }} /></span>,
+        el,
+      ))}
+      {quinte && quinte.tuile.isConnected && createPortal(
+        <span key={quinte.id} className="fa-sl-quinte" aria-hidden="true">
+          <i className="lisere" />
+          <b>Quinte flush !</b>
+          {RANGS_SL.map((r, i) => (
+            <span key={r} className="carte" style={{ '--sx': `${(i - 2) * 23}px`, '--fx': `${(i - 2) * 17}px`, '--r': `${(i - 2) * 9}deg`, animationDelay: `${i * 0.08}s`, zIndex: 2 + i } as Css}>
+              <b className={r === '10' ? 'dix' : ''}>{r}</b><i>♦</i>
+            </span>
+          ))}
+        </span>,
+        quinte.tuile,
+      )}
+      {cigare && (
+        <div className="fa-eclats salon" aria-hidden="true">
+          <span key={cigare.id} className="fa-sl-cigare" style={{ bottom: cigare.bas }}>
+            {FUMEE_SL.map(([d, s, dx, o, ox], k) => (
+              <i key={k} className="fumee" style={{ left: 18 + ox - s / 2, top: 24 - s / 2, width: s, height: s, animationDelay: `${d.toFixed(2)}s`, '--dx': `${dx}px`, '--o': o } as Css} />
+            ))}
+            <span className="tabac"><i className="corps" /><i className="bague" /><b>♦</b><i className="braise" /><i className="cendre" /></span>
+          </span>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv' && style !== 'tapis') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv' && style !== 'tapis' && style !== 'salon') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -1493,6 +1574,7 @@ export function FondAnime() {
       {style === 'circuit' && <CoupsCircuit />}
       {style === 'diner' && <CoupsDiner />}
       {style === 'tapis' && <TapisCinq />}
+      {style === 'salon' && <Salon />}
     </>,
     document.body,
   );
