@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -99,6 +99,7 @@ export const THEME_LABELS: Record<Theme, string> = {
   tv: 'TV',
   'tapis-vert': 'Tapis vert',
   'salon-prive': 'Salon privé',
+  station: 'Station 1936',
 };
 
 export function themeChoisi(): Theme {
@@ -110,7 +111,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -134,6 +135,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'diner' || t === 'tv') return 'clair';
   /* CHANTIER 183 — les deux apparences Poker sont sombres. */
   if (t === 'tapis-vert' || t === 'salon-prive') return 'sombre';
+  /* CHANTIER 210 — Station 1936 : claire (panneaux crème). */
+  if (t === 'station') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -167,6 +170,8 @@ function appliquer(t: Theme) {
   /* CHANTIER 183 — Tapis vert et Salon privé (poker.css). */
   else if (t === 'tapis-vert') document.documentElement.dataset.style = 'tapis';
   else if (t === 'salon-prive') document.documentElement.dataset.style = 'salon';
+  /* CHANTIER 210 — Station 1936 (montagne.css). */
+  else if (t === 'station') document.documentElement.dataset.style = 'station';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

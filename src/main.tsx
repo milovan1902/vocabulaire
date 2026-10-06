@@ -47,6 +47,8 @@ import './ui/sport.css';
 import './ui/retro.css';
 /* CHANTIER 183 — Tapis vert et Salon privé (Lexend, Newsreader, déjà livrées). */
 import './ui/poker.css';
+/* CHANTIER 210 — Station 1936 (Lexend, Archivo, déjà livrées). */
+import './ui/montagne.css';
 /* CHANTIER 187 — fonds animés (Grand bleu, Décollage, Orbite) et lune de la semaine. Posée en dernier. */
 import './ui/anime.css';
 

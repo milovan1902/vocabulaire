@@ -657,6 +657,74 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-tv-panneau { 0% { transform: translateX(-50%) scale(0.5); opacity: 0; } 8% { transform: translateX(-50%) scale(1.1); opacity: 1; } 13%, 85% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(1); opacity: 0; } }
 @keyframes fa-tv-clignote { 0%, 49% { background: #e76f51; box-shadow: 0 0 0 2px #3d2c22, 0 0 16px 2px rgba(231, 111, 81, 0.85); } 50%, 100% { background: #b5452a; box-shadow: 0 0 0 2px #3d2c22; } }
 
+/* ---------- CHANTIER 210 — Station 1936 : soleil, skieur, télécabines, poudreuse (maquette 41a) ---------- */
+body:not(:has(.today.ly)) .fa-st-anime, body:not(:has(.today.ly)) .fa-eclats.station { display: none; }
+.fond-anime .fa-st-scene { position: absolute; left: 0; bottom: 0; width: 360px; height: 640px; display: block; transform-origin: 0 100%; }
+.fa-st-scene span, .fa-st-scene i { position: absolute; display: block; }
+.fa-st-scene .fa-st-anime { inset: 0; }
+/* Le soleil, au-dessus de la crête de gauche : le halo respire, les rayons tournent très lentement. */
+.fa-st-soleil { left: 14px; top: 124px; width: 52px; height: 52px; }
+.fa-st-soleil .rayons { inset: -36px; border-radius: 50%; background: repeating-conic-gradient(rgba(246, 201, 107, 0.4) 0 6deg, transparent 6deg 18deg); -webkit-mask-image: radial-gradient(circle, #000 34%, transparent 70%); mask-image: radial-gradient(circle, #000 34%, transparent 70%); animation: fa-st-rayons 60s linear infinite; }
+.fa-st-soleil .disque { inset: 0; border-radius: 50%; background: #f6c96b; box-shadow: 0 0 0 10px rgba(246, 201, 107, 0.2); animation: fa-st-halo 5s ease-in-out infinite alternate; }
+@keyframes fa-st-rayons { to { transform: rotate(360deg); } }
+@keyframes fa-st-halo { from { box-shadow: 0 0 0 8px rgba(246, 201, 107, 0.22), 0 0 18px 6px rgba(246, 201, 107, 0.25); } to { box-shadow: 0 0 0 16px rgba(246, 201, 107, 0.14), 0 0 34px 14px rgba(246, 201, 107, 0.38); } }
+/* Les scintillements sur les sommets, tour à tour. */
+.fa-st-scintille { width: 12px; height: 12px; background: #fff; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); opacity: 0; animation: fa-st-scintille 6s ease-in-out infinite; }
+@keyframes fa-st-scintille { 0%, 70%, 100% { transform: scale(0) rotate(0); opacity: 0; } 78% { transform: scale(1.1) rotate(45deg); opacity: 1; } 88% { transform: scale(0.4) rotate(90deg); opacity: 0.6; } }
+/* Le skieur descend en S, laisse sa trace, qui s'efface ensuite. */
+.fa-st-descente { inset: 0; animation: fa-st-fondu 1.6s ease 5.2s both; }
+.fa-st-descente .trace { position: absolute; left: 0; top: 0; overflow: visible; }
+.fa-st-descente .trace path { fill: none; stroke: #aebcd6; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: fa-st-trace 4.2s linear both; }
+.fa-st-descente .glisse { left: 0; top: 0; width: 14px; height: 21px; offset-rotate: 0deg; offset-anchor: 50% 100%; animation: fa-st-descente 4.2s linear both; }
+.fa-st-descente .penche { inset: 0; transform-origin: 50% 100%; animation: fa-st-penche 0.7s ease-in-out infinite alternate; }
+@keyframes fa-st-fondu { to { opacity: 0; } }
+@keyframes fa-st-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes fa-st-descente { 0% { offset-distance: 0%; opacity: 0; } 6%, 92% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+@keyframes fa-st-penche { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+/* Le petit skieur (bonnet bleu, veste rouge), dessiné en CSS. */
+.fa-st-skieur { position: absolute; inset: 0; display: block; }
+.fa-st-skieur i { position: absolute; display: block; }
+.fa-st-skieur .ski { left: -2px; bottom: 0; width: 18px; height: 2.2px; border-radius: 2px; background: #1a2238; }
+.fa-st-skieur .jambe { left: 5px; bottom: 2px; width: 3.5px; height: 6px; border-radius: 1px; background: #1a2238; transform: skewX(18deg); }
+.fa-st-skieur .corps { left: 4px; bottom: 7.5px; width: 7px; height: 7px; border-radius: 3px 3px 2px 2px; background: #d1453b; }
+.fa-st-skieur .baton { left: 2px; bottom: 4px; width: 1.2px; height: 11px; background: #1a2238; transform: rotate(-24deg); }
+.fa-st-skieur .tete { left: 5.5px; bottom: 14.5px; width: 5px; height: 5px; border-radius: 50%; background: #f7efe0; box-shadow: 0 0 0 1.2px #1a2238; }
+.fa-st-skieur .bonnet { left: 5px; bottom: 18.5px; width: 6px; height: 2.5px; border-radius: 3px 3px 0 0; background: #2f6fd1; }
+/* Les télécabines : elles se balancent ; au départ, elles partent à droite et reviennent par la gauche (3 s). */
+[data-style='station'] .today.ly .eventail-carte { animation: fa-st-balance 3.4s ease-in-out infinite alternate; }
+[data-style='station'] .today.ly .eventail-carte:nth-child(2n) { animation-duration: 3.9s; animation-delay: -1.1s; }
+[data-style='station'] .today.ly .eventail-carte:nth-child(3n) { animation-duration: 4.4s; animation-delay: -2.2s; }
+[data-style='station'] .today.ly .eventail.fa-st-depart { animation: fa-st-depart 3s both; }
+[data-style='station'] .today.ly .eventail.fa-st-depart .eventail-carte { animation: fa-st-balance-fort 3s ease-in-out both; }
+@keyframes fa-st-balance { from { rotate: -1.6deg; } to { rotate: 1.6deg; } }
+@keyframes fa-st-balance-fort { 0% { rotate: 0deg; } 14% { rotate: 8deg; } 36% { rotate: -4deg; } 45% { rotate: -2deg; } 55% { rotate: 5deg; } 80% { rotate: -6deg; } 92% { rotate: 2deg; } 100% { rotate: 0deg; } }
+@keyframes fa-st-depart {
+  0% { translate: 0 0; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.6); }
+  45% { translate: 100vw -9vw; }
+  45.1% { translate: -100vw 9vw; animation-timing-function: cubic-bezier(0.2, 0.4, 0.3, 1); }
+  100% { translate: 0 0; }
+}
+/* La poudreuse, au toucher et autour du saut. */
+.fa-st-poudre { position: absolute; width: 0; height: 0; display: block; }
+.fa-st-poudre i { position: absolute; display: block; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(64, 97, 143, 0.45); opacity: 0; animation: fa-st-poudre 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) both; }
+@keyframes fa-st-poudre { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 6% { opacity: 1; } 45% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 1; } 100% { transform: translate(calc(var(--dx) * 1.1), calc(var(--dy) + 26px)) scale(0.7); opacity: 0; } }
+/* « Cette semaine » à 5 / 5 : les pistes se tracent une à une, de haut en bas ; la noire s'illumine. */
+[data-style='station'] .ly-segments.plein i { animation: fa-st-trace-piste 0.4s ease-out both; }
+[data-style='station'] .ly-segments.plein i:nth-child(2) { animation-delay: 0.4s; }
+[data-style='station'] .ly-segments.plein i:nth-child(3) { animation-delay: 0.8s; }
+[data-style='station'] .ly-segments.plein i:nth-child(4) { animation-delay: 1.2s; }
+[data-style='station'] .ly-segments.plein i:nth-child(5) { animation: fa-st-trace-piste 0.4s ease-out 1.6s both, fa-st-lueur 0.7s ease-in-out 2s 2; }
+@keyframes fa-st-trace-piste { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes fa-st-lueur { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(233, 162, 59, 0)); } 50% { transform: scale(1.25); filter: drop-shadow(0 0 5px rgba(233, 162, 59, 1)); } }
+/* Puis un skieur saute au-dessus de la tuile (un tour complet), et « GRAND CHELEM ! ». */
+.fa-st-saut { position: absolute; width: 0; height: 0; display: block; }
+.fa-st-saut .sauteur { position: absolute; left: -16px; top: -26px; width: 14px; height: 21px; display: block; transform-origin: 50% 60%; opacity: 0; animation: fa-st-saut 1.3s cubic-bezier(0.3, 0.5, 0.6, 1) 2.4s both; }
+.fa-st-saut .depart { left: -6px; top: -4px; }
+.fa-st-saut .arrivee { left: 134px; top: -4px; }
+.fa-st-saut b { position: absolute; left: -6px; top: -56px; width: 148px; box-sizing: border-box; padding: 5px 0; text-align: center; border-radius: 4px; background: #d1453b; color: #f7efe0; border: 2px solid #1a2238; box-shadow: 3px 3px 0 #1a2238; font-family: var(--titre); font-stretch: 80%; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; opacity: 0; animation: fa-st-banniere 2.6s ease-out 3.3s both; }
+@keyframes fa-st-saut { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 6% { opacity: 1; } 50% { transform: translate(76px, -46px) rotate(-180deg); } 92% { opacity: 1; } 100% { transform: translate(150px, 0) rotate(-360deg); opacity: 0; } }
+@keyframes fa-st-banniere { 0% { transform: scale(0.5); opacity: 0; } 12% { transform: scale(1.08); opacity: 1; } 18%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
 /* ---------- CHANTIER 209 — Salon privé : reflet doré, cigare, quinte flush (maquette 39a) ---------- */
 body:not(:has(.today.ly)) .fa-eclats.salon { display: none; }
 [data-style='salon'] .today.ly :is(.ly-defi, .ly-tuile) { position: relative; }
@@ -815,6 +883,9 @@ body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclat
   /* TV : ni allumage ni zapping, antennes immobiles ; les télécommandes restent allumées, sans panneau. */
   .fa-tv-antennes i, [data-style='tv'] .ly-segments.plein i.on, [data-style='tv'] .ly-segments.plein i.on::before { animation: none; }
   .fa-tv-ecran, [data-style='tv'] .eventail-dos.fa-tv-allume::before, [data-style='tv'] .eventail-dos.fa-tv-allume::after, [data-style='tv'] .ly-segments.plein::after, [data-style='tv'] .ly-segments.plein i.on::after { display: none; }
+  /* Station 1936 : le soleil reste fixe ; ni skieur, ni départ des cabines, ni poudreuse, ni saut. */
+  .fa-st-soleil .rayons, .fa-st-soleil .disque, [data-style='station'] .today.ly .eventail-carte, [data-style='station'] .today.ly .eventail.fa-st-depart, [data-style='station'] .ly-segments.plein i { animation: none !important; }
+  .fa-st-anime, .fa-eclats.station { display: none; }
   /* Salon privé : ni reflet, ni cigare, ni quinte flush. */
   .fa-sl-reflet, .fa-sl-cigare, .fa-sl-quinte { display: none; }
   /* Tapis vert : la lampe éclaire sans bouger, sans fumée ; la pile de jetons reste posée, sans croupier ni battage. */

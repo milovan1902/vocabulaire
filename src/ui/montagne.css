@@ -1,0 +1,136 @@
+/* ==================================================================
+   CHANTIER 210 — « Station 1936 » (maquettes 40b et 41a) : l'affiche de
+   ski des années 30. Ciel d'aube en aplats, sommets enneigés, forfait de
+   remontée, paquets en télécabines, semaine en pistes de couleur.
+
+   Active quand <html> porte data-style="station" (theme.ts). Base CLAIRE,
+   forme du Lycée (voir estLudique). Polices déjà livrées : Lexend pour le
+   texte, Archivo (resserrée, en capitales) pour les titres d'affiche.
+   Les animations sont dans FondAnime.tsx et anime.css.
+   ================================================================== */
+[data-style='station'] {
+  --paper: #f7efe0; --panel: #fbf6ec; --panel-hi: #efe5d2;
+  --ink: #1a2238; --ink-soft: #33405e; --grey: #4d5672; --ink-dim: #4d5672;
+  --rule: rgba(26, 34, 56, 0.14); --rule-strong: rgba(26, 34, 56, 0.28);
+  --chalk: #d1453b; --chalk-ink: #b5352c; --on-chalk: #f7efe0;
+  --good: #2f9e55; --bad: #d1453b;
+  --voile: rgba(26, 34, 56, 0.06); --voile-2: rgba(26, 34, 56, 0.12); --voile-3: rgba(26, 34, 56, 0.18);
+  --bleu: #2f6fd1; --bleu-ink: #1d3557; --rouge: #d1453b; --orange: #c47a12;
+  --ly-voile: rgba(26, 34, 56, 0.1); --ly-voile-2: rgba(26, 34, 56, 0.22);
+  --ly-tabbar: #1d3557; --ly-ombre: rgba(26, 34, 56, 0.3); --ly-tag: #f7efe0; --ly-bord-carte: #1a2238;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: var(--sans);
+  --titre: 'Archivo Variable', 'Archivo', 'Arial Narrow', sans-serif;
+  --anneau: var(--bleu);
+  --ciel: linear-gradient(180deg, #1d3557 0%, #40618f 28%, #e5a69a 54%, #f6dcc0 72%, #f7efe0 100%);
+  --montagnes: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20360%20640'%20width%3D'360'%20height%3D'640'%3E%3Cpolygon%20fill%3D'%23c9d6ea'%20points%3D'0%2C291%2079%2C168%20130%2C224%20223%2C45%20295%2C179%20360%2C123%20360%2C640%200%2C640'%2F%3E%3Cpolygon%20fill%3D'%238ea7cb'%20points%3D'223%2C45%20295%2C179%20360%2C123%20360%2C640%20252%2C640%20238%2C224'%2F%3E%3Cpolygon%20fill%3D'%23f7f4ee'%20points%3D'0%2C403%20108%2C258%20173%2C336%20266%2C224%20360%2C325%20360%2C640%200%2C640'%2F%3E%3Cpolygon%20fill%3D'%23d9e1ee'%20points%3D'108%2C258%20173%2C336%20266%2C224%20223%2C640%20144%2C640%20130%2C336'%2F%3E%3C%2Fsvg%3E");
+}
+/* Le fond : le ciel d'aube et les sommets, calés en bas de l'écran (même géométrie que FondAnime.tsx). */
+[data-style='station'] body { font-family: var(--sans); background-color: #f7efe0; background-image: var(--montagnes), var(--ciel); background-size: 100% auto, 100% 100%; background-position: center bottom, center; background-repeat: no-repeat; background-attachment: fixed; }
+/* Hors d'« Aujourd'hui » : le papier crème, les sommets seuls, pour que les listes restent lisibles. */
+[data-style='station'] body:not(:has(.today.ly)) { background-image: var(--montagnes); }
+[data-style='station'] .screen-title, [data-style='station'] .topbar h1, [data-style='station'] .welcome-head h1, [data-style='station'] .done h2, [data-style='station'] .sheet h3, [data-style='station'] .today-count b {
+  font-family: var(--titre); font-stretch: 78%; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #1d3557;
+}
+[data-style='station'] .sheet { border-top: 3px solid #1a2238; }
+[data-style='station'] .tabbar { background: #1d3557; border-top: 3px solid #f7efe0; box-shadow: 0 -5px 0 #d1453b; }
+[data-style='station'] .tabbar button { color: #c9d6ea; }
+[data-style='station'] .tabbar button.on { color: #f7efe0; }
+[data-style='station'] .tabbar button.on::before { display: none; }
+[data-style='station'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 4px; }
+[data-style='station'] .tabbar button.on .tabsvg { background: rgba(247, 239, 224, 0.16); }
+[data-style='station'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='station'] .reveal { background: #1d3557; color: #f7efe0; border: 2px solid #1a2238; border-radius: 6px; font-family: var(--titre); font-stretch: 80%; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 4px 4px 0 #1a2238; }
+[data-style='station'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='station'] .reveal:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #1a2238; }
+
+/* ---------- Aujourd'hui : l'en-tête, sur le ciel ---------- */
+[data-style='station'] .ly-niv { width: 48px; height: 48px; box-sizing: border-box; border-radius: 50%; background: #2f6fd1; border: 2.5px solid #f7efe0; box-shadow: 0 0 0 2px #1a2238; color: #f7efe0; }
+[data-style='station'] .ly-niv small { font-family: var(--titre); font-size: 8px; letter-spacing: 0.1em; color: #f7efe0; }
+[data-style='station'] .ly-niv b { font-family: var(--titre); font-size: 19px; font-weight: 800; color: #f7efe0; }
+[data-style='station'] .ly-xp-txt { color: #dbe4f3; }
+[data-style='station'] .ly-xp-txt b { color: #f7efe0; }
+[data-style='station'] .ly-barre { height: 6px; border-radius: 0; background: rgba(247, 239, 224, 0.25); }
+[data-style='station'] .ly-barre i { border-radius: 0; background: #e9a23b; }
+[data-style='station'] .ly-flamme { height: 40px; padding: 0 12px 0 10px; gap: 7px; border-radius: 4px; background: #f7efe0; border: 2px solid #1a2238; color: #1a2238; }
+[data-style='station'] .ly-flamme svg { display: none; }
+[data-style='station'] .ly-flamme::before { content: ''; flex: none; width: 12px; height: 14px; background: #d1453b; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+[data-style='station'] .ly-flamme b { font-family: var(--titre); font-size: 18px; font-weight: 800; color: #1a2238; }
+
+/* ---------- le forfait du jour, avec son talon ---------- */
+[data-style='station'] .ly-defi { position: relative; overflow: hidden; padding: 12px 14px 12px 50px; border-radius: 6px; background: #f7efe0; border: 2px solid #1a2238; box-shadow: 4px 4px 0 #1a2238; color: #1a2238; }
+[data-style='station'] .ly-defi::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 34px; background: #d1453b; border-right: 2px dashed #f7efe0; }
+[data-style='station'] .ly-defi::after { content: 'FORFAIT'; position: absolute; left: 0; top: 0; bottom: 0; width: 36px; display: grid; place-items: center; writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--titre); font-stretch: 80%; font-size: 13px; font-weight: 700; letter-spacing: 0.22em; color: #f7efe0; }
+[data-style='station'] .ly-defi-haut > span:first-child { font-family: var(--titre); font-stretch: 80%; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: #1d3557; }
+[data-style='station'] .ly-gain { border-radius: 3px; background: #1d3557; color: #f7efe0; }
+[data-style='station'] .ly-defi-n { font-family: var(--titre); font-stretch: 78%; font-size: 42px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.01em; color: #1a2238; }
+[data-style='station'] .ly-defi-sous { color: #4d5672; }
+[data-style='station'] .ly-defi .ly-barre { background: rgba(26, 34, 56, 0.12); }
+[data-style='station'] .ly-defi-jour .ly-barre i { background: #1d3557; }
+
+/* ---------- les paquets : des télécabines pendues au câble ---------- */
+[data-style='station'] .ly-scene { position: relative; }
+[data-style='station'] .ly-scene::before { content: ''; position: absolute; left: -30px; right: -30px; top: 30px; height: 2px; background: #1a2238; transform: rotate(-5deg); pointer-events: none; }
+[data-style='station'] .eventail-carte::before { content: ''; position: absolute; left: 50%; top: -38px; width: 16px; height: 40px; margin-left: -8px; pointer-events: none;
+  background: linear-gradient(#1a2238, #1a2238) center 0 / 16px 9px no-repeat, linear-gradient(#1a2238, #1a2238) center 6px / 2.5px 34px no-repeat; border-radius: 5px 5px 0 0; }
+[data-style='station'] .eventail-carte::after { content: ''; position: absolute; left: 12%; right: 12%; top: -7px; height: 8px; box-sizing: border-box; pointer-events: none; border-radius: 6px 6px 0 0; background: #d1453b; border: 2px solid #1a2238; border-bottom: none; }
+[data-style='station'] .eventail-dos { box-sizing: border-box; padding: 14px 7px 7px; border-radius: 16px 16px 10px 10px; border: 3px solid #1a2238; background: linear-gradient(180deg, #d1453b 0 12px, #f7efe0 12px); box-shadow: 0 12px 22px rgba(26, 34, 56, 0.3); }
+[data-style='station'] .eventail-dos > img:not(.dos-illus-img), [data-style='station'] .eventail-dos > svg { box-sizing: border-box; border: 2px solid #1a2238; border-radius: 8px; background: #e8e2d4; }
+[data-style='station'] .eventail-dos .dos-illus-img { left: calc(7px + (100% - 14px) * 0.161); top: calc(14px + (100% - 21px) * 0.26); width: calc((100% - 14px) * 0.677); }
+[data-style='station'] .eventail-carte.centre .eventail-dos { border-color: #1a2238; animation: none; }
+[data-style='station'] .eventail-due { background: #d1453b; color: #f7efe0; border: 2px solid #1a2238; box-shadow: 2px 2px 0 #1a2238; }
+[data-style='station'] .eventail-carte .classdot.eventail-classe { background: #f7efe0; color: #1a2238; border: 2px solid #1a2238; box-shadow: 2px 2px 0 #1a2238; }
+[data-style='station'] .ly-points i { background: rgba(26, 34, 56, 0.25); }
+[data-style='station'] .ly-points i.on { background: #d1453b; }
+[data-style='station'] .ly-nom { width: fit-content; margin-inline: auto; padding: 4px 14px; border-radius: 4px; background: #f7efe0; border: 2px solid #1a2238; }
+[data-style='station'] .ly-nom span { color: #4d5672; }
+[data-style='station'] .btn.ly-go { font-size: 19px; }
+/* Les flèches : une plaque émaillée ronde. */
+[data-style='station'] .ly-fusee { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: none; border-radius: 50%; background: transparent; box-shadow: none; }
+[data-style='station'] .ly-fusee:disabled { opacity: 0.35; }
+[data-style='station'] .ly-fusee .plaque { display: grid; place-items: center; width: 40px; height: 40px; box-sizing: border-box; border-radius: 50%; background: #f7efe0; border: 2px solid #1a2238; box-shadow: 2px 2px 0 #1a2238; font-style: normal; }
+[data-style='station'] .ly-fusee .plaque::after { content: '›'; color: #1d3557; font-size: 24px; font-weight: 800; line-height: 1; margin-top: -2px; }
+[data-style='station'] .ly-fusee.prec .plaque::after { content: '‹'; }
+
+/* ---------- les tuiles, et la semaine en pistes ---------- */
+[data-style='station'] .ly-tuile { border-radius: 6px; background: #f7efe0; border: 2px solid #1a2238; color: #1a2238; }
+[data-style='station'] .ly-tuile:hover { background: #efe5d2; }
+[data-style='station'] .ly-tuile-haut { color: #4d5672; }
+[data-style='station'] .ly-tuile-haut svg { color: #d1453b; }
+/* Une piste en S par jour, ouverte en haut et en bas : crème, verte, bleue, rouge, noire. */
+[data-style='station'] .ly-segments { gap: 9px; height: 28px; align-items: flex-end; }
+[data-style='station'] .ly-segments i { flex: none; width: 22px; height: 28px; border-radius: 0; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'-2%20-2%2024%2030'%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'rgba(26%2C34%2C56%2C0.3)'%20stroke-width%3D'2'%20stroke-dasharray%3D'3%203'%2F%3E%3C%2Fsvg%3E") center / contain no-repeat; }
+[data-style='station'] .ly-segments i.on:nth-child(1) { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'-2%20-2%2024%2030'%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%231a2238'%20stroke-width%3D'7'%2F%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%23f7efe0'%20stroke-width%3D'4'%2F%3E%3C%2Fsvg%3E"); }
+[data-style='station'] .ly-segments i.on:nth-child(2) { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'-2%20-2%2024%2030'%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%231a2238'%20stroke-width%3D'7'%2F%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%232f9e55'%20stroke-width%3D'4'%2F%3E%3C%2Fsvg%3E"); }
+[data-style='station'] .ly-segments i.on:nth-child(3) { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'-2%20-2%2024%2030'%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%231a2238'%20stroke-width%3D'7'%2F%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%232f6fd1'%20stroke-width%3D'4'%2F%3E%3C%2Fsvg%3E"); }
+[data-style='station'] .ly-segments i.on:nth-child(4) { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'-2%20-2%2024%2030'%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%231a2238'%20stroke-width%3D'7'%2F%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%23d1453b'%20stroke-width%3D'4'%2F%3E%3C%2Fsvg%3E"); }
+[data-style='station'] .ly-segments i.on:nth-child(5) { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'-2%20-2%2024%2030'%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%231a2238'%20stroke-width%3D'7'%2F%3E%3Cpath%20d%3D'M15%202C3%203%203%2010%2010%2013S17%2023%205%2024'%20fill%3D'none'%20stroke%3D'%23111'%20stroke-width%3D'4'%2F%3E%3C%2Fsvg%3E"); }
+
+/* ---------- Révision : l'affiche, et les notes en pistes ---------- */
+[data-style='station'] .studybg { background-color: #f7efe0; background-image: var(--montagnes), var(--ciel) !important; background-size: 100% auto, 100% 100%; background-position: center bottom, center; background-repeat: no-repeat; }
+[data-style='station'] .studybg::after { display: none; }
+[data-style='station'] .studytop .pos { font-family: var(--titre); letter-spacing: 0.08em; color: #f7efe0; }
+[data-style='station'] .studytop .stop { background: transparent; color: #f7efe0; border: 2px solid #f7efe0; border-radius: 4px; }
+[data-style='station'] .progressbar { height: 6px; border-radius: 0; background: rgba(247, 239, 224, 0.25); }
+[data-style='station'] .progressbar i { border-radius: 0; background: #e9a23b; }
+[data-style='station'] .ly-combo { border-radius: 4px; background: #f7efe0; color: #d1453b; border: 2px solid #1a2238; }
+[data-style='station'] .studystage { --ink: #1a2238; position: relative; margin: 20px 8px 16px; padding: 48px 18px 24px; border-radius: 8px; border: 3px solid #1a2238; background: #f7efe0; color: #1a2238; box-shadow: 6px 6px 0 #1a2238; overflow: hidden; }
+[data-style='station'] .studystage::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 32px; background: #1d3557; pointer-events: none; }
+[data-style='station'] .studystage .tag { position: relative; border: none; border-radius: 3px; background: #f7efe0; color: #1d3557; font-family: var(--titre); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+[data-style='station'] .ask { font-family: var(--titre); font-stretch: 80%; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b5352c; }
+[data-style='station'] .word { font-family: var(--titre); font-stretch: 78%; font-weight: 800; text-transform: uppercase; letter-spacing: 0.01em; color: #1a2238; }
+[data-style='station'] .wordsmall { color: #4d5672; }
+[data-style='station'] .ruleline { height: 0; border-top: 2px solid #d1453b; background: none; }
+[data-style='station'] .answer { font-family: var(--titre); font-stretch: 78%; font-weight: 800; text-transform: uppercase; letter-spacing: 0.01em; color: #b5352c; }
+[data-style='station'] .example { font-family: var(--sans); font-style: italic; color: #4d5672; }
+[data-style='station'] .speak { background: transparent; border: 2px solid #1a2238; border-radius: 4px; color: #1a2238; font-family: var(--titre); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+[data-style='station'] .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; border-radius: 4px; background: rgba(247, 239, 224, 0.92); color: #1a2238; }
+[data-style='station'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+[data-style='station'] .grades .grade { position: relative; min-height: 66px; padding-top: 22px; border-radius: 6px; border: 2px solid #1a2238; background: #f7efe0; color: #1a2238; font-family: var(--titre); font-stretch: 80%; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; box-shadow: none; }
+[data-style='station'] .grades .grade small { font-family: var(--sans); font-stretch: 100%; font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; color: #4d5672; }
+[data-style='station'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 9px; width: 14px; height: 14px; margin-left: -7px; }
+[data-style='station'] .grades .g-again::before { width: 11px; height: 11px; margin-left: -14px; top: 10px; border-radius: 2px; background: #111; transform: rotate(45deg); box-shadow: 11.3px -11.3px 0 #111; }
+[data-style='station'] .grades .g-hard::before { border-radius: 2px; background: #d1453b; }
+[data-style='station'] .grades .g-good::before { border-radius: 50%; background: #2f6fd1; }
+[data-style='station'] .grades .g-easy::before { border-radius: 50%; background: #2f9e55; }
+[data-style='station'] .grades .grade:active { transform: translate(1px, 1px); }

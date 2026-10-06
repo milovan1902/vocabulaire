@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 
 export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | 'arcade' | 'neon' | 'ocean' | 'voyage' | 'manga' | 'bd' | 'jardin' | 'basket' | 'foot' | 'rugby'
-  | 'strass' | 'circuit' | 'diner' | 'tv' | 'tapis' | 'salon' | null;
+  | 'strass' | 'circuit' | 'diner' | 'tv' | 'tapis' | 'salon' | 'station' | null;
 
 function lire(): Style {
   const s = document.documentElement.dataset.style;
@@ -19,7 +19,7 @@ function lire(): Style {
     || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin'
     || s === 'basket' || s === 'foot' || s === 'rugby'
     || s === 'strass' || s === 'circuit' || s === 'diner' || s === 'tv'
-    || s === 'tapis' || s === 'salon' ? s : null;
+    || s === 'tapis' || s === 'salon' || s === 'station' ? s : null;
 }
 
 /**
@@ -32,7 +32,7 @@ export function estLudique(s: Style): boolean {
     || s === 'voyage' || s === 'manga' || s === 'bd' || s === 'jardin'
     || s === 'basket' || s === 'foot' || s === 'rugby'
     || s === 'strass' || s === 'circuit' || s === 'diner' || s === 'tv'
-    || s === 'tapis' || s === 'salon';
+    || s === 'tapis' || s === 'salon' || s === 'station';
 }
 
 export function useStyle(): Style {

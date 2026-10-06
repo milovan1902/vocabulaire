@@ -80,6 +80,14 @@
  *     « Le plat du jour », les patins sur son cadre chromé. Au toucher,
  *     une bulle de chewing-gum. À 5 / 5, une gerbe de notes sur la semaine.
  *
+ * CHANTIER 210 — Station 1936 (maquette 41a) : le soleil respire au-dessus
+ *     de la crête, des scintillements s'allument sur les sommets. Sur
+ *     « Aujourd'hui » : les télécabines se balancent ; toutes les 10 à 15 s,
+ *     elles partent à droite et reviennent par la gauche (3 s). Toutes les
+ *     9 à 14 s, un skieur descend en S la montagne. Au toucher : de la
+ *     poudreuse. À 5 / 5 : les pistes se tracent, un skieur saute au-dessus
+ *     de la tuile, « GRAND CHELEM ! ».
+ *
  * CHANTIER 209 — Salon privé (maquette 39a), sur « Aujourd'hui » seulement :
  *     toutes les 8 à 12 s, un reflet doré balaie les cadres (encart, paquet du
  *     centre, tuiles). Toutes les 6 à 10 s, le bout d'un gros cigare entre au
@@ -1537,9 +1545,91 @@ function Salon() {
   );
 }
 
+/* ---------- CHANTIER 210 — Station 1936 : soleil, sommets, skieur, télécabines ---------- */
+/* La scène fait 360 × 640, calée en bas et mise à la largeur de l'écran : la même géométrie que
+   les sommets peints dans le fond (montagne.css). */
+const PISTE_ST = 'M 262 110 C 240 130, 290 146, 262 168 S 222 198, 246 224 S 272 252, 240 268';
+const SOMMETS_ST: Array<[number, number, number]> = [[79, 168, 0], [223, 45, 1.6], [352, 126, 3.1], [266, 224, 4.4]];
+function Skieur() {
+  return <span className="fa-st-skieur"><i className="ski" /><i className="jambe" /><i className="corps" /><i className="baton" /><i className="tete" /><i className="bonnet" /></span>;
+}
+function Station() {
+  const [k, setK] = useState(() => window.innerWidth / 360);
+  const [ski, setSki] = useState(0);
+  useEffect(() => {
+    const maj = () => setK(window.innerWidth / 360);
+    window.addEventListener('resize', maj);
+    return () => window.removeEventListener('resize', maj);
+  }, []);
+  /* Le skieur : toutes les 9 à 14 s (le premier vers 1,5 s). */
+  useCadence(1500, 9000, 5000, () => { if (document.querySelector('.today.ly')) setSki(Date.now()); });
+  /* Les télécabines : toutes les 10 à 15 s (la première fois vers 3 s), 3 s aller-retour. */
+  useCadence(3000, 10000, 5000, () => {
+    const ev = document.querySelector<HTMLElement>('.today.ly .eventail');
+    if (!ev) return;
+    ev.classList.remove('fa-st-depart');
+    void ev.offsetWidth; // relance l'animation
+    ev.classList.add('fa-st-depart');
+    window.setTimeout(() => ev.classList.remove('fa-st-depart'), 3100);
+  });
+  return (
+    <span className="fa-st-scene" style={{ transform: `scale(${k})` }}>
+      <span className="fa-st-soleil"><i className="rayons" /><i className="disque" /></span>
+      <span className="fa-st-anime">
+        {SOMMETS_ST.map(([x, y, d], i) => <i key={i} className="fa-st-scintille" style={{ left: x - 6, top: y - 6, animationDelay: `${d}s` }} />)}
+        {ski > 0 && (
+          <span key={ski} className="fa-st-descente" onAnimationEnd={(e) => { if (e.target === e.currentTarget) setSki(0); }}>
+            <svg className="trace" viewBox="0 0 360 640" width="360" height="640"><path d={PISTE_ST} pathLength={1} /></svg>
+            <span className="glisse" style={{ offsetPath: `path("${PISTE_ST}")` } as Css}><span className="penche"><Skieur /></span></span>
+          </span>
+        )}
+      </span>
+    </span>
+  );
+}
+/* La poudreuse : des grains de neige en éventail vers le haut, qui retombent. */
+function gerbeSt(n: number, rayon: number, delai: number) {
+  return Array.from({ length: n }, (_, k) => {
+    const ang = -Math.PI * (0.06 + 0.88 * (k / (n - 1))), d = rayon + (k % 3) * rayon * 0.55, s = 4 + (k % 3) * 2;
+    return <i key={k} style={{ left: -s / 2, top: -s / 2, width: s, height: s, animationDelay: `${delai}s`, '--dx': `${(Math.cos(ang) * d).toFixed(0)}px`, '--dy': `${(Math.sin(ang) * d).toFixed(0)}px` } as Css} />;
+  });
+}
+function EclatsStation() {
+  const coups = useCoups(1100, (x, y) => ({ x, y }));
+  /* « Cette semaine » à 5 / 5 : une fois à chaque arrivée sur l'écran. */
+  const [saut, setSaut] = useState<{ id: number; x: number; y: number } | null>(null);
+  useEffect(() => {
+    if (calme()) return;
+    const vus = new WeakSet<Element>();
+    const h = window.setInterval(() => {
+      const el = document.querySelector('.today.ly .ly-segments.plein');
+      if (!el || vus.has(el)) return;
+      vus.add(el);
+      const r = el.getBoundingClientRect(), id = Date.now();
+      setSaut({ id, x: r.left, y: r.top });
+      window.setTimeout(() => setSaut((s) => (s && s.id === id ? null : s)), 6200);
+    }, 700);
+    return () => window.clearInterval(h);
+  }, []);
+  if (!coups.length && !saut) return null;
+  return (
+    <div className="fa-eclats station" aria-hidden="true">
+      {coups.map((c) => <span key={c.id} className="fa-st-poudre" style={{ left: c.x, top: c.y }}>{gerbeSt(12, 22, 0)}</span>)}
+      {saut && (
+        <span key={saut.id} className="fa-st-saut" style={{ left: saut.x, top: saut.y }}>
+          <span className="sauteur"><Skieur /></span>
+          <span className="fa-st-poudre depart">{gerbeSt(9, 14, 2.4)}</span>
+          <span className="fa-st-poudre arrivee">{gerbeSt(9, 14, 3.65)}</span>
+          <b>GRAND CHELEM !</b>
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv' && style !== 'tapis' && style !== 'salon') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv' && style !== 'tapis' && style !== 'salon' && style !== 'station') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -1561,6 +1651,7 @@ export function FondAnime() {
         {style === 'diner' && <Diner />}
         {style === 'tv' && <Tele />}
         {style === 'tapis' && <Tapis />}
+        {style === 'station' && <Station />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
@@ -1575,6 +1666,7 @@ export function FondAnime() {
       {style === 'diner' && <CoupsDiner />}
       {style === 'tapis' && <TapisCinq />}
       {style === 'salon' && <Salon />}
+      {style === 'station' && <EclatsStation />}
     </>,
     document.body,
   );

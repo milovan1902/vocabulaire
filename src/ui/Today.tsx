@@ -428,6 +428,9 @@ export function Today({
         ? { defi: 'Main du jour', go: 'Distribuer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} jetons` }
       : style === 'salon'
         ? { defi: 'La mise du jour', go: 'Miser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} jetons` }
+      /* CHANTIER 210 — Station 1936 : le forfait de remontée. */
+      : style === 'station'
+        ? { defi: 'Forfait du jour', go: 'Monter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
       : style === 'tv'
         ? { defi: 'Au programme', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} étoiles` }
       : style === 'jardin'
@@ -457,6 +460,8 @@ export function Today({
       /* CHANTIER 183 — Tapis vert : un jeton noir ; Salon privé : un losange doré. */
       : style === 'tapis' ? <i className="jeton" />
       : style === 'salon' ? <i className="losange" />
+      /* CHANTIER 210 — Station 1936 : une plaque émaillée. */
+      : style === 'station' ? <i className="plaque" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -570,7 +575,7 @@ export function Today({
             || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin'
             || style === 'basket' || style === 'foot' || style === 'rugby'
             || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
-            || style === 'tapis' || style === 'salon') && aFaire.length > 1 && (
+            || style === 'tapis' || style === 'salon' || style === 'station') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
