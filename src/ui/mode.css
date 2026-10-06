@@ -6,13 +6,22 @@
    Active quand <html> porte data-style="fashion" (theme.ts). Base SOMBRE,
    forme du Lycée (voir estLudique). Polices déjà livrées : Lexend pour le
    texte. CHANTIER 214 — Pinyon Script (écriture à la plume) pour les grands
-   textes, chargée par index.html ; repli sur Newsreader puis Georgia.
+   textes, livrée dans public/fonts (CHANTIER 215) ; repli sur Georgia.
    - Les paquets : des housses pendues à un portant (Eventail.tsx, forme
      'portant') ; elles se décrochent au changement de paquet.
    - Le fond : podium et mannequins (Defile.tsx).
    - « Cette semaine » : cinq escarpins à talon aiguille, gris puis rouges
      (CHANTIER 214 : silhouette de profil réaliste, en masque SVG).
    ================================================================== */
+/* CHANTIER 215 — Pinyon Script, livrée avec l'app (public/fonts) : la règle de sécurité du site
+   (public/_headers, font-src 'self') bloquait la police de Google. Marche aussi hors ligne. */
+@font-face {
+  font-family: 'Pinyon Script';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/pinyon-script-latin.woff2') format('woff2');
+}
 [data-style='fashion'] {
   --paper: #0d0d0d; --panel: #1a1a1a; --panel-hi: #262626;
   --ink: #f6f4f0; --ink-soft: #e4e1db; --grey: #b5b0a8; --ink-dim: #b5b0a8;
@@ -32,7 +41,7 @@
   --argent: #dfe3ea;
   --projos: radial-gradient(ellipse 60% 38% at 22% 0%, rgba(255, 255, 255, 0.2), transparent 70%), radial-gradient(ellipse 60% 38% at 78% 0%, rgba(255, 255, 255, 0.2), transparent 70%), radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255, 255, 255, 0.1), transparent 70%);
   /* CHANTIER 214 — l'escarpin à talon aiguille, de profil : contrefort haut, décolleté profond, bout pointu. */
-  --escarpin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48'%3E%3Cpath d='M15 3C17 3 18 5 20 9C25 19 33 27 42 31C50 34.5 58 37 62 39.5C63 40.5 62.5 41.5 61 41.5C54 41.5 46 41 40 39.5C32 37.5 24 31 19 25L16.2 24L13.6 46L12.4 46L13 22.5C12 14 12.6 6 15 3Z'/%3E%3C/svg%3E");
+  --escarpin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48'%3E%3Cpath d='M16 2C18.5 2 19.5 4.5 21.5 9C26 19 33.5 26.5 42.5 30.5C50.5 34 58 36.5 62.5 39C64 40 63.5 41.8 61.5 41.8C54 41.8 46 41.2 40 39.6C32 37.6 24.5 31.5 19.5 25.5L16.8 24.5L14.2 46.5L12 46.5L12.6 22.8C11.4 14 12.4 5 16 2Z'/%3E%3C/svg%3E");
 }
 [data-style='fashion'] body { font-family: var(--sans); color: var(--ink); background-color: #0d0d0d; background-image: var(--projos); background-repeat: no-repeat; background-attachment: fixed; }
 [data-style='fashion'] .screen-title, [data-style='fashion'] .topbar h1, [data-style='fashion'] .welcome-head h1, [data-style='fashion'] .done h2, [data-style='fashion'] .sheet h3, [data-style='fashion'] .today-count b {
@@ -131,11 +140,11 @@
 [data-style='fashion'] .ly-tuile > b { font-family: var(--titre); font-style: normal; font-size: 27px; font-weight: 400; line-height: 1.15; letter-spacing: 0; color: #0d0d0d; }
 [data-style='fashion'] .ly-tuile > small { color: #555; }
 /* Un escarpin de profil par jour : gris tant que le jour n'est pas fait, rouge une fois validé. */
-[data-style='fashion'] .ly-segments { align-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: end; gap: 2px; height: 26px; }
-[data-style='fashion'] .ly-segments i { width: 100%; max-width: 34px; height: 26px; border-radius: 0;
+[data-style='fashion'] .ly-segments { align-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: end; gap: 0; height: 34px; }
+[data-style='fashion'] .ly-segments i { width: 100%; max-width: 46px; height: 34px; border-radius: 0;
   -webkit-mask: var(--escarpin) center bottom / contain no-repeat; mask: var(--escarpin) center bottom / contain no-repeat;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.35) 0 16%, transparent 30%), linear-gradient(180deg, #b9b9b9, #7d7d7d); }
-[data-style='fashion'] .ly-segments i.on { background: linear-gradient(160deg, rgba(255, 255, 255, 0.4) 0 16%, transparent 30%), linear-gradient(180deg, #e8264f, #a50a2c); }
+  background: linear-gradient(180deg, #a8a8a8, #7a7a7a); }
+[data-style='fashion'] .ly-segments i.on { background: linear-gradient(180deg, #e01a44, #a50a2c); }
 
 /* ---------- Révision : l'invitation au défilé ---------- */
 [data-style='fashion'] .studybg { background-color: #0d0d0d; background-image: var(--projos) !important; background-size: 100% 100%; background-repeat: no-repeat; }
