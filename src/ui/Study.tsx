@@ -27,31 +27,65 @@ const GRADES: Array<{ key: Grade; label: string; className: string }> = [
   { key: 'easy', label: 'Facile', className: 'grade easy' },
 ];
 
-/* CHANTIER 208 — le mot et la réponse ne dépassent plus du cadre. Selon l'apparence, le cadre
-   (cadran, écran de TV, arche du juke-box…) est plus ou moins large et la police plus ou moins
-   grande : si un mot ne tient pas sur la largeur, on réduit la taille, 2 px par 2 px, jusqu'à
-   20 px. En dernier recours, le mot se coupe (anime.css). Recalculé à chaque carte et quand
-   l'écran change de taille. */
+/* CHANTIER 208 — le mot et la réponse ne dépassent plus du cadre.
+   CHANTIER 212 — un mot n'est plus jamais coupé. L'ancienne mesure (largeur du paragraphe)
+   ne voyait pas toujours le débordement : la césure automatique et le chargement tardif de
+   la police laissaient passer « BACKPA / CK ». On mesure maintenant chaque mot, seul et sur
+   une ligne, et on réduit la police jusqu'à ce que le plus long tienne dans la largeur de la
+   carte. Les mots peuvent toujours passer à la ligne ENTRE eux, jamais au milieu.
+   Recalculé à chaque carte, quand la carte change de largeur et quand les polices arrivent.
+   En tout dernier recours (sous 12 px), le mot se coupe. */
+const TAILLE_MIN = 12;
+
 function useAjuste(texte: string) {
   const ref = useRef<HTMLParagraphElement>(null);
-  const [largeur, setLargeur] = useState(() => window.innerWidth);
+  const [passe, setPasse] = useState(0);
   useEffect(() => {
-    const maj = () => setLargeur(window.innerWidth);
-    window.addEventListener('resize', maj);
-    return () => window.removeEventListener('resize', maj);
-  }, []);
+    const el = ref.current;
+    if (!el) return;
+    let derniere = -1;
+    const cible = el.parentElement ?? el;
+    const ro = new ResizeObserver(() => {
+      const l = cible.clientWidth;
+      if (l !== derniere) { derniere = l; setPasse((p) => p + 1); }
+    });
+    ro.observe(cible);
+    let actif = true;
+    document.fonts?.ready.then(() => { if (actif) setPasse((p) => p + 1); });
+    return () => { actif = false; ro.disconnect(); };
+  }, [texte]);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.style.fontSize = '';
+    el.style.hyphens = 'manual';
     el.style.overflowWrap = 'normal';
-    let fs = parseFloat(getComputedStyle(el).fontSize) || 32;
-    while (el.scrollWidth > el.clientWidth + 1 && fs > 20) {
-      fs -= 2;
+    el.style.wordBreak = 'normal';
+    const cs = getComputedStyle(el);
+    const dispo = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) - 2;
+    if (dispo <= 0) return;
+    const mots = texte.split(/\s+/).filter(Boolean);
+    if (!mots.length) return;
+    /* La sonde hérite de toute la typo du paragraphe (police, graisse, capitales, espacement). */
+    const sonde = document.createElement('span');
+    Object.assign(sonde.style, { position: 'absolute', left: '-9999px', top: '0', visibility: 'hidden', whiteSpace: 'nowrap' });
+    el.appendChild(sonde);
+    const plusLong = () => Math.max(...mots.map((m) => { sonde.textContent = m; return sonde.offsetWidth; }));
+    let fs = parseFloat(cs.fontSize) || 32;
+    let l = plusLong();
+    if (l > dispo) {
+      fs = Math.max(TAILLE_MIN, Math.floor((fs * dispo) / l));
       el.style.fontSize = `${fs}px`;
+      l = plusLong();
+      while (l > dispo && fs > TAILLE_MIN) {
+        fs -= 1;
+        el.style.fontSize = `${fs}px`;
+        l = plusLong();
+      }
     }
-    el.style.overflowWrap = '';
-  }, [texte, largeur]);
+    sonde.remove();
+    if (l > dispo) el.style.overflowWrap = 'anywhere';
+  }, [texte, passe]);
   return ref;
 }
 
