@@ -657,6 +657,59 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-tv-panneau { 0% { transform: translateX(-50%) scale(0.5); opacity: 0; } 8% { transform: translateX(-50%) scale(1.1); opacity: 1; } 13%, 85% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(1); opacity: 0; } }
 @keyframes fa-tv-clignote { 0%, 49% { background: #e76f51; box-shadow: 0 0 0 2px #3d2c22, 0 0 16px 2px rgba(231, 111, 81, 0.85); } 50%, 100% { background: #b5452a; box-shadow: 0 0 0 2px #3d2c22; } }
 
+/* ---------- CHANTIER 207 — Tapis vert : lampe, croupier, paquet battu (maquette 38a) ---------- */
+body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclats.tapis { display: none; }
+/* La lampe de table, en haut au centre : son cône se balance très lentement ; la fumée monte dans le faisceau. */
+.fond-anime .fa-tp-lampe { left: 50%; top: calc(env(safe-area-inset-top) - 6px); width: 0; height: 0; transform-origin: 0 0; animation: fa-tp-lampe 9s ease-in-out infinite alternate; }
+.fa-tp-lampe .cone { left: -170px; top: 22px; width: 340px; height: 78vh; clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, rgba(255, 226, 150, 0.3), rgba(255, 226, 150, 0.1) 60%, rgba(255, 226, 150, 0)); mix-blend-mode: screen; }
+.fa-tp-lampe .flaque { left: -150px; top: calc(78vh - 140px); width: 300px; height: 120px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 226, 150, 0.18), transparent 70%); mix-blend-mode: screen; }
+.fa-tp-lampe .fumee { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, rgba(235, 235, 225, 0.55), rgba(235, 235, 225, 0) 70%); filter: blur(4px); opacity: 0; animation: fa-tp-fumee 8.8s ease-out infinite; }
+.fa-tp-lampe .fil { left: -1px; top: -40px; width: 2px; height: 44px; background: #2a1a0e; }
+.fa-tp-lampe .abat { left: -40px; top: 2px; width: 80px; height: 24px; background: linear-gradient(180deg, #24563a, #123522); clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%); border-bottom: 2px solid #c9a46a; }
+.fa-tp-lampe .ampoule { left: -14px; top: 20px; width: 28px; height: 8px; border-radius: 0 0 50% 50%; background: #fff3c8; box-shadow: 0 0 14px 6px rgba(255, 226, 150, 0.55); }
+@keyframes fa-tp-lampe { from { transform: rotate(-3.5deg); } to { transform: rotate(3.5deg); } }
+@keyframes fa-tp-fumee { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 20% { opacity: 0.55; } 100% { transform: translate(var(--dx), -150px) scale(1.9); opacity: 0; } }
+/* Le croupier : la pile de jetons au-dessus de la barre d'onglets ; le râteau entre par la droite, ramasse, repart. */
+.fond-anime .fa-tp-croupier { left: 0; right: 0; height: 30px; }
+.fond-anime .fa-tp-jetons { left: calc(50% - 60px); bottom: 6px; width: 100px; height: 30px; }
+.fa-tp-jetons.ramasse { animation: fa-tp-jetons 4s ease-in-out both; }
+.fond-anime .fa-tp-jetons .pile { bottom: 0; width: 28px; }
+.fa-tp-jetons .pile i { left: 0; width: 28px; height: 9px; border-radius: 50%; background: repeating-linear-gradient(90deg, var(--c) 0 5px, #f4ecd8 5px 8px); box-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.45); }
+.fa-tp-jetons .pile i.dessus { background: radial-gradient(ellipse, var(--c) 0 55%, #f4ecd8 57% 62%, var(--c) 64%); box-shadow: none; }
+.fond-anime .fa-tp-rateau { left: calc(50% - 72px); bottom: 2px; width: 300px; height: 30px; transform-origin: 0 100%; animation: fa-tp-rateau 4s ease-in-out both; }
+.fa-tp-rateau i { bottom: 0; }
+.fa-tp-rateau .pelle { left: 0; width: 4px; height: 27px; border-radius: 2px; background: #6b4423; box-shadow: 1px 0 0 #3a2010; }
+.fa-tp-rateau .manche { left: 3px; bottom: 12px; width: 184px; height: 3px; border-radius: 2px; background: linear-gradient(180deg, #a87445, #6b4423); }
+.fa-tp-rateau .main { left: 157px; bottom: 6px; width: 21px; height: 16px; border-radius: 8px 10px 7px 7px; background: #e8b994; box-shadow: inset -3px -2px 0 #c99572; }
+.fa-tp-rateau .manchette { left: 174px; bottom: 4px; width: 11px; height: 21px; border-radius: 3px; background: #fbf7ee; }
+.fa-tp-rateau .bouton { left: 178px; bottom: 12px; width: 4px; height: 4px; border-radius: 50%; background: #e0b44a; }
+.fa-tp-rateau .veste { left: 184px; bottom: 2px; width: 120px; height: 26px; border-radius: 6px 0 0 6px; background: #1b1b1b; }
+@keyframes fa-tp-rateau { 0% { transform: translateX(100vw); } 30%, 42% { transform: translateX(0); } 78% { transform: translateX(calc(50vw + 72px)); } 100% { transform: translateX(100vw); } }
+@keyframes fa-tp-jetons { 0%, 42% { transform: translateX(0); opacity: 1; } 78% { transform: translateX(calc(50vw + 72px)); opacity: 1; } 78.1%, 86% { transform: translateY(-14px); opacity: 0; } 94% { transform: translateY(2px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+/* Le paquet du centre est battu : deux moitiés s'écartent, les cartes s'entrecroisent, le paquet se tasse. */
+[data-style='tapis'] .eventail-carte.fa-tp-bat .eventail-dos { visibility: hidden; }
+[data-style='tapis'] .eventail-carte.fa-tp-tasse .eventail-dos { transform-origin: 50% 100%; animation: fa-tp-tasse 0.3s ease-out both; }
+.fa-tp-riffle { position: absolute; inset: 0; display: block; pointer-events: none; z-index: 1; }
+.fa-tp-riffle i { position: absolute; display: block; box-sizing: border-box; border-radius: 9px; border: 4px solid #fbf7ee; background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(0, 0, 0, 0.18) 6px 7px), repeating-linear-gradient(-45deg, #b3263a 0 6px, #9a1f31 6px 12px); }
+.fa-tp-riffle .g, .fa-tp-riffle .d { inset: 8% 6%; transform-origin: 50% 100%; z-index: 1; box-shadow: 0 2px 0 #e3d8bf, 0 4px 0 #fbf7ee, 0 10px 18px rgba(0, 0, 0, 0.4); animation: fa-tp-coupe-g 1.8s ease-in-out both; }
+.fa-tp-riffle .d { animation-name: fa-tp-coupe-d; }
+.fa-tp-riffle .feuille { inset: 8% 6%; box-shadow: 0 1px 0 #e3d8bf; opacity: 0; animation: fa-tp-feuille 0.3s ease-in both; }
+@keyframes fa-tp-coupe-g { 0% { transform: translate(0, 0) rotate(0); } 22%, 60% { transform: translate(-42px, 8px) rotate(-10deg); } 80%, 100% { transform: translate(0, 0) rotate(0); } }
+@keyframes fa-tp-coupe-d { 0% { transform: translate(0, 0) rotate(0); } 22%, 60% { transform: translate(42px, 8px) rotate(10deg); } 80%, 100% { transform: translate(0, 0) rotate(0); } }
+@keyframes fa-tp-feuille { from { transform: translate(var(--x), 8px) rotate(var(--r)); opacity: 0; } 30% { opacity: 1; } to { transform: translate(0, 0) rotate(0); opacity: 1; } }
+@keyframes fa-tp-tasse { 0% { transform: scale(1, 1); } 40% { transform: scale(1.03, 0.96); } 100% { transform: scale(1, 1); } }
+/* « Cette semaine » à 5 / 5 : les couleurs s'effacent, les jetons s'empilent, « Tapis ! », la pluie de jetons (FondAnime.tsx). */
+[data-style='tapis'] .ly-segments.plein i { animation: fa-tp-efface 4.8s ease both; }
+.fa-tp-cinq { position: absolute; width: 0; height: 0; display: block; }
+.fa-tp-cinq i, .fa-tp-cinq b { position: absolute; display: block; }
+.fa-tp-cinq .pousse { top: -4px; width: 22px; height: 8px; border-radius: 50%; background: repeating-linear-gradient(90deg, var(--c) 0 4px, #f4ecd8 4px 7px); box-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.45); opacity: 0; animation: fa-tp-pousse 3s ease-in-out both; }
+.fa-tp-cinq .pluie { left: 46px; top: -16px; width: 14px; height: 14px; border-radius: 50%; z-index: 8; background: radial-gradient(circle, var(--c) 0 55%, transparent 56%), repeating-conic-gradient(var(--c) 0 30deg, #f4ecd8 30deg 45deg); opacity: 0; animation: fa-tp-pluie 1.5s cubic-bezier(0.2, 0.7, 0.4, 1) 3s both; }
+.fa-tp-cinq b { left: 54px; top: -96px; z-index: 9; white-space: nowrap; padding: 4px 14px; border-radius: 6px; background: #1b1b1b; color: #e0b44a; border: 1.5px solid #e0b44a; outline: 1px solid rgba(224, 180, 74, 0.4); outline-offset: 2px; font-family: var(--titre); font-style: italic; font-size: 20px; font-weight: 700; opacity: 0; animation: fa-tp-banniere 1.8s ease-out 1.5s both; }
+@keyframes fa-tp-efface { 0% { opacity: 1; } 8%, 85% { opacity: 0.15; } 100% { opacity: 1; } }
+@keyframes fa-tp-pousse { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 10% { transform: translate(0, 0) scale(1); opacity: 1; } 35% { transform: translate(var(--cx), 0); } 55%, 96% { transform: translate(var(--cx), var(--cy)); opacity: 1; } 100% { transform: translate(var(--cx), var(--cy)); opacity: 0; } }
+@keyframes fa-tp-pluie { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 40% { transform: translate(var(--dx), var(--dy)); opacity: 1; } 100% { transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) + 170px)) rotate(var(--r)); opacity: 0; } }
+@keyframes fa-tp-banniere { 0% { transform: translateX(-50%) scale(0.4); opacity: 0; } 10% { transform: translateX(-50%) scale(1.12); opacity: 1; } 16%, 82% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(1); opacity: 0; } }
+
 /* ---------- les gerbes au toucher : au-dessus de tout, jamais touchables ---------- */
 .fa-eclats { position: fixed; inset: 0; z-index: 9999; pointer-events: none; }
 .fa-eclat { position: absolute; display: block; animation: fa-eclat 1.1s ease-out forwards; }
@@ -726,6 +779,9 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
   /* TV : ni allumage ni zapping, antennes immobiles ; les télécommandes restent allumées, sans panneau. */
   .fa-tv-antennes i, [data-style='tv'] .ly-segments.plein i.on, [data-style='tv'] .ly-segments.plein i.on::before { animation: none; }
   .fa-tv-ecran, [data-style='tv'] .eventail-dos.fa-tv-allume::before, [data-style='tv'] .eventail-dos.fa-tv-allume::after, [data-style='tv'] .ly-segments.plein::after, [data-style='tv'] .ly-segments.plein i.on::after { display: none; }
+  /* Tapis vert : la lampe éclaire sans bouger, sans fumée ; la pile de jetons reste posée, sans croupier ni battage. */
+  .fond-anime .fa-tp-lampe, [data-style='tapis'] .ly-segments.plein i { animation: none; }
+  .fa-tp-lampe .fumee, .fa-tp-rateau, .fa-tp-riffle { display: none; }
   /* La serveuse reste posée en haut de l'encart, immobile. */
   .fa-tour .fa-serveuse { animation: none; offset-distance: 12%; }
   .fa-tour .fa-serveuse > span > span { animation: none; }

@@ -80,6 +80,12 @@
  *     « Le plat du jour », les patins sur son cadre chromé. Au toucher,
  *     une bulle de chewing-gum. À 5 / 5, une gerbe de notes sur la semaine.
  *
+ * CHANTIER 207 — Tapis vert (maquette 38a), sur « Aujourd'hui » seulement : une
+ *     lampe de table balance lentement son cône de lumière, la fumée y monte.
+ *     Toutes les 10 à 15 s, le paquet du centre est battu (riffle) ; toutes les
+ *     12 à 16 s, le croupier ramasse au râteau la pile de jetons posée au-dessus
+ *     de la barre d'onglets. À 5 / 5, les jetons font « Tapis ! ». Pas d'effet au toucher.
+ *
  * CHANTIER 205 — TV (maquette 37a), sur « Aujourd'hui » seulement : à chaque
  *     arrivée sur l'écran, les postes s'allument comme un tube cathodique. Les
  *     antennes du paquet du centre oscillent doucement ; toutes les 8 à 12 s,
@@ -1354,9 +1360,105 @@ function Tele() {
   );
 }
 
+/* ---------- CHANTIER 207 — Tapis vert : lampe, croupier, paquet battu ---------- */
+const PILES_TP: Array<[number, string, number]> = [[0, '#b3263a', 2], [24, '#22549a', 3], [50, '#1b1b1b', 1], [72, '#e0b44a', 2]];
+const FUMEE_TP: Array<[number, number, number, number]> = [[-30, 34, 0, 14], [10, 40, 2.2, -18], [-6, 30, 4.4, 22], [22, 37, 6.6, -10]];
+function Tapis() {
+  const [bas, setBas] = useState(() => mesureBas());
+  const [croup, setCroup] = useState(0);
+  const [bat, setBat] = useState<{ id: number; carte: HTMLElement } | null>(null);
+  function mesureBas() {
+    const barre = document.querySelector<HTMLElement>('.tabbar');
+    return barre ? window.innerHeight - barre.getBoundingClientRect().top + 4 : 70;
+  }
+  useEffect(() => {
+    const maj = () => setBas(mesureBas());
+    window.addEventListener('resize', maj);
+    const h = window.setInterval(maj, 1500);
+    return () => { window.removeEventListener('resize', maj); window.clearInterval(h); };
+  }, []);
+  /* Le croupier : toutes les 12 à 16 s (le premier vers 5 s). */
+  useCadence(5000, 12000, 4000, () => { if (document.querySelector('.today.ly')) setCroup(Date.now()); });
+  /* Le paquet du centre est battu : toutes les 10 à 15 s (le premier vers 2 s). */
+  useCadence(2000, 10000, 5000, () => {
+    const carte = document.querySelector<HTMLElement>('.today.ly .eventail-carte.centre');
+    if (!carte) return;
+    const id = Date.now();
+    carte.classList.add('fa-tp-bat');
+    setBat({ id, carte });
+    window.setTimeout(() => {
+      carte.classList.remove('fa-tp-bat');
+      carte.classList.add('fa-tp-tasse');
+      setBat((b) => (b && b.id === id ? null : b));
+      window.setTimeout(() => carte.classList.remove('fa-tp-tasse'), 350);
+    }, 1800);
+  });
+  return (
+    <>
+      <span className="fa-tp-lampe">
+        <i className="cone" /><i className="flaque" />
+        {FUMEE_TP.map(([x, y, d, dx], k) => <i key={k} className="fumee" style={{ left: x - 22, top: `${y}vh`, animationDelay: `${d}s`, '--dx': `${dx}px` } as Css} />)}
+        <i className="fil" /><i className="abat" /><i className="ampoule" />
+      </span>
+      <span className="fa-tp-croupier" style={{ bottom: bas }}>
+        <span key={`j${croup}`} className={`fa-tp-jetons${croup ? ' ramasse' : ''}`}>
+          {PILES_TP.map(([x, c, n]) => (
+            <span key={x} className="pile" style={{ left: x, height: 8 + n * 5, '--c': c } as Css}>
+              {Array.from({ length: n + 1 }, (_, j) => <i key={j} className={j === n ? 'dessus' : ''} style={{ bottom: j * 5 }} />)}
+            </span>
+          ))}
+        </span>
+        {croup > 0 && (
+          <span key={`r${croup}`} className="fa-tp-rateau" onAnimationEnd={(e) => { if (e.target === e.currentTarget) setCroup(0); }}>
+            <i className="pelle" /><i className="manche" /><i className="main" /><i className="manchette" /><i className="bouton" /><i className="veste" />
+          </span>
+        )}
+      </span>
+      {bat && createPortal(
+        <span key={bat.id} className="fa-tp-riffle" aria-hidden="true">
+          <i className="g" /><i className="d" />
+          {Array.from({ length: 8 }, (_, i) => <i key={i} className="feuille" style={{ '--x': `${i % 2 ? 42 : -42}px`, '--r': `${i % 2 ? 10 : -10}deg`, animationDelay: `${0.45 + i * 0.07}s`, zIndex: 2 + i } as Css} />)}
+        </span>,
+        bat.carte,
+      )}
+    </>
+  );
+}
+/* « Cette semaine » à 5 / 5 : cinq jetons poussés au centre, la bannière « Tapis ! », puis la pluie de jetons. */
+const COUL_TP = ['#b3263a', '#22549a', '#1b1b1b', '#1a5c3a', '#e0b44a'];
+function TapisCinq() {
+  const [pos, setPos] = useState<{ id: number; x: number; y: number } | null>(null);
+  useEffect(() => {
+    if (calme()) return;
+    const vus = new WeakSet<Element>();
+    const h = window.setInterval(() => {
+      const el = document.querySelector('.today.ly .ly-segments.plein');
+      if (!el || vus.has(el)) return;
+      vus.add(el);
+      const r = el.getBoundingClientRect(), id = Date.now();
+      setPos({ id, x: r.left, y: r.top + r.height / 2 });
+      window.setTimeout(() => setPos((p) => (p && p.id === id ? null : p)), 5200);
+    }, 700);
+    return () => window.clearInterval(h);
+  }, []);
+  if (!pos) return null;
+  return (
+    <div className="fa-eclats tapis" aria-hidden="true">
+      <span key={pos.id} className="fa-tp-cinq" style={{ left: pos.x, top: pos.y }}>
+        {COUL_TP.map((c, i) => <i key={i} className="pousse" style={{ left: i * 23 - 3, '--c': c, '--cx': `${(2 - i) * 23}px`, '--cy': `${-i * 5}px`, animationDelay: `${i * 0.08}s`, zIndex: 2 + i } as Css} />)}
+        {Array.from({ length: 16 }, (_, k) => {
+          const ang = -Math.PI * (0.1 + 0.8 * (k / 15)), d = 60 + (k % 4) * 22;
+          return <i key={`p${k}`} className="pluie" style={{ '--c': COUL_TP[k % 5], '--dx': `${(Math.cos(ang) * d).toFixed(0)}px`, '--dy': `${(Math.sin(ang) * d - 20).toFixed(0)}px`, '--r': `${k % 2 ? 300 : -300}deg` } as Css} />;
+        })}
+        <b>Tapis !</b>
+      </span>
+    </div>
+  );
+}
+
 export function FondAnime() {
   const style = useStyle();
-  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv') return null;
+  if (style !== 'ocean' && style !== 'decollage' && style !== 'orbite' && style !== 'arcade' && style !== 'neon' && style !== 'voyage' && style !== 'manga' && style !== 'bd' && style !== 'jardin' && style !== 'foot' && style !== 'rugby' && style !== 'basket' && style !== 'strass' && style !== 'circuit' && style !== 'diner' && style !== 'tv' && style !== 'tapis') return null;
   const forme = style === 'ocean' ? 'bulle' : style === 'decollage' ? 'etincelle' : style === 'orbite' ? 'poussiere' : style === 'arcade' ? 'pixel' : null; // Néon et Carnet kraft : pas de gerbe
   return createPortal(
     <>
@@ -1377,6 +1479,7 @@ export function FondAnime() {
         {style === 'circuit' && <Circuit />}
         {style === 'diner' && <Diner />}
         {style === 'tv' && <Tele />}
+        {style === 'tapis' && <Tapis />}
       </div>
       {/* Néon : pas de gerbe au toucher, c'est l'enseigne qui vit. */}
       {forme && <Eclats forme={forme} />}
@@ -1389,6 +1492,7 @@ export function FondAnime() {
       {style === 'strass' && <EclatsStrass />}
       {style === 'circuit' && <CoupsCircuit />}
       {style === 'diner' && <CoupsDiner />}
+      {style === 'tapis' && <TapisCinq />}
     </>,
     document.body,
   );
