@@ -5,11 +5,13 @@
 
    Active quand <html> porte data-style="fashion" (theme.ts). Base SOMBRE,
    forme du Lycée (voir estLudique). Polices déjà livrées : Lexend pour le
-   texte, Newsreader italique pour les titres.
+   texte. CHANTIER 214 — Pinyon Script (écriture à la plume) pour les grands
+   textes, chargée par index.html ; repli sur Newsreader puis Georgia.
    - Les paquets : des housses pendues à un portant (Eventail.tsx, forme
      'portant') ; elles se décrochent au changement de paquet.
    - Le fond : podium et mannequins (Defile.tsx).
-   - « Cette semaine » : cinq escarpins à talon aiguille, gris puis rouges.
+   - « Cette semaine » : cinq escarpins à talon aiguille, gris puis rouges
+     (CHANTIER 214 : silhouette de profil réaliste, en masque SVG).
    ================================================================== */
 [data-style='fashion'] {
   --paper: #0d0d0d; --panel: #1a1a1a; --panel-hi: #262626;
@@ -23,16 +25,18 @@
   --ly-tabbar: #000; --ly-ombre: rgba(0, 0, 0, 0.6); --ly-tag: #f6f4f0; --ly-bord-carte: #0d0d0d;
   --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --serif: 'Newsreader', Georgia, serif;
-  --titre: 'Newsreader', Georgia, serif;
+  /* CHANTIER 214 — les grands textes en Pinyon Script, une écriture anglaise à la plume (index.html). */
+  --titre: 'Pinyon Script', 'Newsreader', Georgia, cursive;
   --anneau: #f6f4f0;
   --creme: #f6f4f0; --noir: #0d0d0d; --gris: #555;
   --argent: #dfe3ea;
   --projos: radial-gradient(ellipse 60% 38% at 22% 0%, rgba(255, 255, 255, 0.2), transparent 70%), radial-gradient(ellipse 60% 38% at 78% 0%, rgba(255, 255, 255, 0.2), transparent 70%), radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255, 255, 255, 0.1), transparent 70%);
-  --escarpin: polygon(2% 10%, 14% 14%, 30% 46%, 58% 58%, 84% 64%, 98% 80%, 100% 96%, 70% 96%, 46% 80%, 22% 66%, 14% 60%, 12% 100%, 8% 100%, 6% 58%, 0% 30%);
+  /* CHANTIER 214 — l'escarpin à talon aiguille, de profil : contrefort haut, décolleté profond, bout pointu. */
+  --escarpin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48'%3E%3Cpath d='M15 3C17 3 18 5 20 9C25 19 33 27 42 31C50 34.5 58 37 62 39.5C63 40.5 62.5 41.5 61 41.5C54 41.5 46 41 40 39.5C32 37.5 24 31 19 25L16.2 24L13.6 46L12.4 46L13 22.5C12 14 12.6 6 15 3Z'/%3E%3C/svg%3E");
 }
 [data-style='fashion'] body { font-family: var(--sans); color: var(--ink); background-color: #0d0d0d; background-image: var(--projos); background-repeat: no-repeat; background-attachment: fixed; }
 [data-style='fashion'] .screen-title, [data-style='fashion'] .topbar h1, [data-style='fashion'] .welcome-head h1, [data-style='fashion'] .done h2, [data-style='fashion'] .sheet h3, [data-style='fashion'] .today-count b {
-  font-family: var(--titre); font-style: italic; font-weight: 600; letter-spacing: 0; color: #f6f4f0;
+  font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.2; color: #f6f4f0;
 }
 [data-style='fashion'] .sheet { border-top: 3px solid #f6f4f0; }
 [data-style='fashion'] .tabbar { background: #000; border-top: 1px solid #f6f4f0; }
@@ -49,7 +53,7 @@
 /* ---------- Aujourd'hui : l'en-tête ---------- */
 [data-style='fashion'] .ly-niv { width: 46px; height: 46px; box-sizing: border-box; border-radius: 0; background: transparent; border: 1px solid #f6f4f0; outline: 1px solid rgba(246, 244, 240, 0.4); outline-offset: 3px; color: #f6f4f0; }
 [data-style='fashion'] .ly-niv small { font-size: 7.5px; letter-spacing: 0.2em; color: #f6f4f0; }
-[data-style='fashion'] .ly-niv b { font-family: var(--titre); font-size: 20px; font-weight: 600; color: #f6f4f0; }
+[data-style='fashion'] .ly-niv b { font-family: var(--titre); font-size: 24px; font-weight: 400; line-height: 1.1; color: #f6f4f0; }
 [data-style='fashion'] .ly-xp-txt { color: #cfcac2; }
 [data-style='fashion'] .ly-xp-txt b { color: #f6f4f0; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 [data-style='fashion'] .ly-barre { height: 2px; border-radius: 0; background: rgba(246, 244, 240, 0.25); }
@@ -57,13 +61,13 @@
 [data-style='fashion'] .ly-flamme { height: 38px; padding: 0 12px; gap: 7px; border-radius: 0; background: transparent; border: 1px solid #f6f4f0; color: #f6f4f0; }
 [data-style='fashion'] .ly-flamme svg { display: none; }
 [data-style='fashion'] .ly-flamme::before { content: ''; flex: none; width: 14px; height: 14px; background: #d0103a; clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); }
-[data-style='fashion'] .ly-flamme b { font-family: var(--titre); font-size: 18px; font-weight: 600; color: #f6f4f0; }
+[data-style='fashion'] .ly-flamme b { font-family: var(--titre); font-size: 22px; font-weight: 400; color: #f6f4f0; }
 
 /* ---------- le défilé du jour : un carton blanc à filet noir ---------- */
 [data-style='fashion'] .ly-defi { padding: 14px 16px; border-radius: 0; background: #f6f4f0; border: none; border-top: 3px solid #0d0d0d; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); color: #0d0d0d; }
 [data-style='fashion'] .ly-defi-haut > span:first-child { font-size: 11px; font-weight: 600; letter-spacing: 0.32em; color: #0d0d0d; }
 [data-style='fashion'] .ly-gain { border-radius: 0; background: #0d0d0d; color: #f6f4f0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; }
-[data-style='fashion'] .ly-defi-n { font-family: var(--titre); font-style: italic; font-size: 44px; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .ly-defi-n { font-family: var(--titre); font-style: normal; font-size: 52px; font-weight: 400; line-height: 1.15; letter-spacing: 0; color: #0d0d0d; }
 [data-style='fashion'] .ly-defi-sous, [data-style='fashion'] .ly-defi-jour { color: #555; }
 [data-style='fashion'] .ly-defi .ly-barre { background: rgba(13, 13, 13, 0.14); }
 [data-style='fashion'] .ly-defi .ly-barre i { background: #0d0d0d; }
@@ -110,8 +114,8 @@
 }
 [data-style='fashion'] .ly-points i { border-radius: 0; background: rgba(246, 244, 240, 0.3); }
 [data-style='fashion'] .ly-points i.on { background: #f6f4f0; }
-[data-style='fashion'] .ly-nom { width: fit-content; margin-inline: auto; padding: 4px 14px; background: #f6f4f0; color: #0d0d0d; font-weight: 600; }
-[data-style='fashion'] .ly-nom span { color: #555; }
+[data-style='fashion'] .ly-nom { width: fit-content; margin-inline: auto; padding: 2px 16px 4px; background: #f6f4f0; color: #0d0d0d; font-family: var(--titre); font-size: 24px; font-weight: 400; line-height: 1.2; }
+[data-style='fashion'] .ly-nom span { font-family: var(--sans); font-size: 13px; color: #555; }
 /* Les flèches : un carré à filet, un chevron fin. */
 [data-style='fashion'] .ly-fusee { width: 44px; height: 44px; border-radius: 0; border: 1px solid #f6f4f0; background: rgba(13, 13, 13, 0.6); color: #f6f4f0; }
 [data-style='fashion'] .ly-fusee:hover { background: rgba(246, 244, 240, 0.12); }
@@ -124,17 +128,19 @@
 [data-style='fashion'] .ly-tuile:hover { background: #e9e5de; }
 [data-style='fashion'] .ly-tuile-haut { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #555; }
 [data-style='fashion'] .ly-tuile-haut svg { color: #d0103a; }
-[data-style='fashion'] .ly-tuile > b { font-family: var(--titre); font-style: italic; font-size: 21px; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .ly-tuile > b { font-family: var(--titre); font-style: normal; font-size: 27px; font-weight: 400; line-height: 1.15; letter-spacing: 0; color: #0d0d0d; }
 [data-style='fashion'] .ly-tuile > small { color: #555; }
 /* Un escarpin de profil par jour : gris tant que le jour n'est pas fait, rouge une fois validé. */
-[data-style='fashion'] .ly-segments { align-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: end; gap: 2px; height: 22px; }
-[data-style='fashion'] .ly-segments i { width: 100%; max-width: 28px; height: 22px; border-radius: 0; clip-path: var(--escarpin); background: linear-gradient(180deg, #b9b9b9, #8a8a8a); }
-[data-style='fashion'] .ly-segments i.on { background: linear-gradient(180deg, #e8264f, #a50a2c); }
+[data-style='fashion'] .ly-segments { align-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: end; gap: 2px; height: 26px; }
+[data-style='fashion'] .ly-segments i { width: 100%; max-width: 34px; height: 26px; border-radius: 0;
+  -webkit-mask: var(--escarpin) center bottom / contain no-repeat; mask: var(--escarpin) center bottom / contain no-repeat;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.35) 0 16%, transparent 30%), linear-gradient(180deg, #b9b9b9, #7d7d7d); }
+[data-style='fashion'] .ly-segments i.on { background: linear-gradient(160deg, rgba(255, 255, 255, 0.4) 0 16%, transparent 30%), linear-gradient(180deg, #e8264f, #a50a2c); }
 
 /* ---------- Révision : l'invitation au défilé ---------- */
 [data-style='fashion'] .studybg { background-color: #0d0d0d; background-image: var(--projos) !important; background-size: 100% 100%; background-repeat: no-repeat; }
 [data-style='fashion'] .studybg::after { display: none; }
-[data-style='fashion'] .studytop .pos { font-family: var(--titre); font-style: italic; color: #f6f4f0; }
+[data-style='fashion'] .studytop .pos { font-family: var(--titre); font-style: normal; font-size: 20px; color: #f6f4f0; }
 [data-style='fashion'] .studytop .stop { background: transparent; color: #f6f4f0; border: 1px solid #f6f4f0; border-radius: 0; }
 [data-style='fashion'] .progressbar { height: 2px; border-radius: 0; background: rgba(246, 244, 240, 0.25); }
 [data-style='fashion'] .progressbar i { border-radius: 0; background: #f6f4f0; }
@@ -142,10 +148,10 @@
 [data-style='fashion'] .studystage { --ink: #0d0d0d; margin: 18px 6px 16px; padding: 28px 22px 30px; border-radius: 0; border: none; background: #f6f4f0; color: #0d0d0d; outline: 1px solid #0d0d0d; outline-offset: -10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
 [data-style='fashion'] .studystage .tag { border: none; border-radius: 0; background: transparent; color: #0d0d0d; font-size: 10.5px; letter-spacing: 0.34em; text-transform: uppercase; }
 [data-style='fashion'] .ask { font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: #d0103a; }
-[data-style='fashion'] .word { font-family: var(--titre); font-style: italic; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .word { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.25; color: #0d0d0d; }
 [data-style='fashion'] .wordsmall { color: #555; }
 [data-style='fashion'] .ruleline { width: 40px; height: 0; border-top: 2px solid #d0103a; background: none; }
-[data-style='fashion'] .answer { font-family: var(--titre); font-style: italic; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .answer { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.25; color: #0d0d0d; }
 [data-style='fashion'] .example { font-family: var(--sans); font-style: normal; color: #555; }
 [data-style='fashion'] .speak { background: transparent; border: 1px solid #0d0d0d; border-radius: 0; color: #0d0d0d; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; }
 [data-style='fashion'] .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; background: rgba(13, 13, 13, 0.8); color: #f6f4f0; }
