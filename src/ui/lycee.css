@@ -196,6 +196,9 @@
 
 /* ---------- CHANTIER 166 — les deux tuiles du bas ---------- */
 .ly-bas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 10px; }
+/* CHANTIER 208 — tout en bas d'« Aujourd'hui », une bande de tapis libre entre les tuiles et la barre
+   d'onglets : les tuiles ne la touchent plus, et les animations du fond restent visibles. */
+.today.ly .ly-bas { padding-bottom: 64px; }
 .ly-tuile {
   display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
   min-height: 112px; padding: 14px 16px; border-radius: 18px;

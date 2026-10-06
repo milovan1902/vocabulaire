@@ -793,3 +793,16 @@ body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclat
   .orbite-lunes > i:nth-child(3) { transform: translateX(60px); }
   .orbite-lunes > i:nth-child(3) > i { transform: translateY(-47px); }
 }
+
+/* ==================================================================
+   CHANTIER 208 — deux corrections de mise en page, toutes apparences
+   ================================================================== */
+/* 1. « Aujourd'hui » : une bande libre sous les tuiles « Cette semaine » et « Parler ». Tout en bas,
+      elles ne touchent plus la barre d'onglets, et les animations du bas restent visibles. */
+.today.ly::after { content: ''; display: block; flex: none; height: 56px; pointer-events: none; }
+/* Le Jardin avait déjà sa marge (96 px pour les fleurs) : on n'en rajoute pas. */
+[data-style='jardin'] .today.ly::after { display: none; }
+/* 2. Révision : la traduction ne dépasse plus du cadre. Study.tsx réduit la police si un mot ne tient
+      pas ; en dernier recours, il se coupe (avec un tiret quand la langue le permet). */
+.studystage { min-width: 0; }
+.studystage :is(.word, .answer, .wordsmall, .example) { max-width: 100%; box-sizing: border-box; overflow-wrap: break-word; hyphens: auto; text-wrap: balance; }

@@ -9,7 +9,7 @@
  * dans les réglages, sans effet sur cet écran, et pourront être retirés
  * lors du chantier « réglages ».
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Grade, Settings } from '../domain/types';
 import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
@@ -26,6 +26,34 @@ const GRADES: Array<{ key: Grade; label: string; className: string }> = [
   { key: 'good', label: 'Correct', className: 'grade' },
   { key: 'easy', label: 'Facile', className: 'grade easy' },
 ];
+
+/* CHANTIER 208 — le mot et la réponse ne dépassent plus du cadre. Selon l'apparence, le cadre
+   (cadran, écran de TV, arche du juke-box…) est plus ou moins large et la police plus ou moins
+   grande : si un mot ne tient pas sur la largeur, on réduit la taille, 2 px par 2 px, jusqu'à
+   20 px. En dernier recours, le mot se coupe (anime.css). Recalculé à chaque carte et quand
+   l'écran change de taille. */
+function useAjuste(texte: string) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [largeur, setLargeur] = useState(() => window.innerWidth);
+  useEffect(() => {
+    const maj = () => setLargeur(window.innerWidth);
+    window.addEventListener('resize', maj);
+    return () => window.removeEventListener('resize', maj);
+  }, []);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.fontSize = '';
+    el.style.overflowWrap = 'normal';
+    let fs = parseFloat(getComputedStyle(el).fontSize) || 32;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > 20) {
+      fs -= 2;
+      el.style.fontSize = `${fs}px`;
+    }
+    el.style.overflowWrap = '';
+  }, [texte, largeur]);
+  return ref;
+}
 
 export function Study({
   queue, image, settings, onGrade, onQuit, onDone,
@@ -55,6 +83,10 @@ export function Study({
 
   const front = current ? (settings.reversed ? current.card.en : current.card.fr) : '';
   const back = current ? (settings.reversed ? current.card.fr : current.card.en) : '';
+  const langFront = settings.reversed ? 'en' : 'fr';
+  const langBack = settings.reversed ? 'fr' : 'en';
+  const refWord = useAjuste(front);
+  const refAnswer = useAjuste(back);
 
   /*
    * CHANTIER 50 — LA VOIX SUIT L'ANGLAIS, PAS LA RÉPONSE.
@@ -178,7 +210,7 @@ export function Study({
         {!revealed ? (
           <>
             <p className="ask">{settings.reversed ? 'En français ?' : 'En anglais ?'}</p>
-            <p className="word">{front}</p>
+            <p className="word" lang={langFront} ref={refWord}>{front}</p>
             {/*
               * Le mot affiché est l'anglais : on peut le réécouter avant de
               * répondre, autant de fois qu'on veut. `stopPropagation` est
@@ -196,9 +228,9 @@ export function Study({
           </>
         ) : (
           <>
-            <p className="wordsmall">{front}</p>
+            <p className="wordsmall" lang={langFront}>{front}</p>
             <span className="ruleline" aria-hidden="true" />
-            <p className="answer">{back}</p>
+            <p className="answer" lang={langBack} ref={refAnswer}>{back}</p>
             {current.card.example && <p className="example">{current.card.example}</p>}
             <button
               className="speak"
