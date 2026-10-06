@@ -475,6 +475,10 @@
 [data-style='tv'] .eventail-dos > img:not(.dos-illus-img), [data-style='tv'] .eventail-dos > svg { box-sizing: border-box; border: 2px solid #3d2c22; border-radius: 22% / 16%; }
 [data-style='tv'] .eventail-dos .dos-illus-img { left: calc(9px + (100% - 39px) * 0.161); top: calc(9px + (100% - 18px) * 0.26); width: calc((100% - 39px) * 0.677); }
 [data-style='tv'] .eventail-carte.centre .eventail-dos { border-color: #3d2c22; }
+/* CHANTIER 206 — le poste épouse le dos du paquet : l'écran (126 − 39 px de cadre, 4 px de bord) garde
+   les proportions du dos (620 × 874), sans bande vide en haut ni en bas. Descendu de 18 px pour rester
+   centré dans l'éventail (200 px de haut). */
+[data-style='tv'] .eventail-carte { top: 28px; aspect-ratio: 126 / 139; }
 [data-style='tv'] .eventail-carte::before { content: ''; position: absolute; left: 50%; top: -24px; width: 50px; height: 26px; margin-left: -25px; background: var(--antennes-p) center / contain no-repeat; pointer-events: none; }
 [data-style='tv'] .eventail-carte::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: -12px; height: 13px; background: var(--pieds) center / 100% 100% no-repeat; pointer-events: none; }
 [data-style='tv'] .eventail-due { background: #b5452a; color: #fffaf0; border: 2px solid #3d2c22; box-sizing: border-box; }
