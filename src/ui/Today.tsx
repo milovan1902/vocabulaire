@@ -431,6 +431,9 @@ export function Today({
       /* CHANTIER 210 — Station 1936 : le forfait de remontée. */
       : style === 'station'
         ? { defi: 'Forfait du jour', go: 'Monter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+      /* CHANTIER 213 — Fashion week : le défilé. */
+      : style === 'fashion'
+        ? { defi: 'Le défilé du jour', go: 'Défiler', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} looks` }
       : style === 'tv'
         ? { defi: 'Au programme', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} étoiles` }
       : style === 'jardin'
@@ -462,6 +465,8 @@ export function Today({
       : style === 'salon' ? <i className="losange" />
       /* CHANTIER 210 — Station 1936 : une plaque émaillée. */
       : style === 'station' ? <i className="plaque" />
+      /* CHANTIER 213 — Fashion week : un chevron fin dans un carré. */
+      : style === 'fashion' ? <i className="chevron-mode" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -559,7 +564,7 @@ export function Today({
           <Eventail
             paquets={aFaire}
             centre={iCentre}
-            forme={style === 'orbite' ? 'orbite' : 'eventail'}
+            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : 'eventail'}
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
@@ -575,7 +580,7 @@ export function Today({
             || style === 'voyage' || style === 'manga' || style === 'bd' || style === 'jardin'
             || style === 'basket' || style === 'foot' || style === 'rugby'
             || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
-            || style === 'tapis' || style === 'salon' || style === 'station') && aFaire.length > 1 && (
+            || style === 'tapis' || style === 'salon' || style === 'station' || style === 'fashion') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"

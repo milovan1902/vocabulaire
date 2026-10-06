@@ -9,6 +9,7 @@ import { demandeStockagePersistant, noteJourUsage } from './data/stockage';
 import { installeMiseAJour } from './data/miseAJour';
 import { MiseAJour } from './ui/MiseAJour';
 import { FondAnime } from './ui/FondAnime';
+import { Defile } from './ui/Defile';
 /* CHANTIER 161 — Atkinson Hyperlegible, livrée avec l'application : elle
    marche hors ligne. Installée par `npm install @fontsource/atkinson-hyperlegible`. */
 import '@fontsource/atkinson-hyperlegible/400.css';
@@ -51,6 +52,8 @@ import './ui/poker.css';
 import './ui/montagne.css';
 /* CHANTIER 187 — fonds animés (Grand bleu, Décollage, Orbite) et lune de la semaine. Posée en dernier. */
 import './ui/anime.css';
+/* CHANTIER 213 — Fashion week (Lexend, Newsreader, déjà livrées), après anime.css. */
+import './ui/mode.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
@@ -80,6 +83,8 @@ createRoot(document.getElementById('root')!, {
       <Lancement />
       {/* CHANTIER 187 — bulles, ciel étoilé, éclats au toucher : derrière tout, hors de l'application. */}
       <FondAnime />
+      {/* CHANTIER 213 — Fashion week : le podium et les mannequins. */}
+      <Defile />
       <App />
       <MiseAJour />
     </FiletErreur>

@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -100,6 +100,7 @@ export const THEME_LABELS: Record<Theme, string> = {
   'tapis-vert': 'Tapis vert',
   'salon-prive': 'Salon privé',
   station: 'Station 1936',
+  fashion: 'Fashion week',
 };
 
 export function themeChoisi(): Theme {
@@ -111,7 +112,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -137,6 +138,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'tapis-vert' || t === 'salon-prive') return 'sombre';
   /* CHANTIER 210 — Station 1936 : claire (panneaux crème). */
   if (t === 'station') return 'clair';
+  /* CHANTIER 213 — Fashion week : sombre (la salle du défilé dans le noir). */
+  if (t === 'fashion') return 'sombre';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -172,6 +175,8 @@ function appliquer(t: Theme) {
   else if (t === 'salon-prive') document.documentElement.dataset.style = 'salon';
   /* CHANTIER 210 — Station 1936 (montagne.css). */
   else if (t === 'station') document.documentElement.dataset.style = 'station';
+  /* CHANTIER 213 — Fashion week (mode.css, Defile.tsx). */
+  else if (t === 'fashion') document.documentElement.dataset.style = 'fashion';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

@@ -1,0 +1,222 @@
+/* ==================================================================
+   CHANTIER 213 — « Fashion week » (maquettes 42a, 43a, 43b) : le défilé.
+   La salle dans le noir, deux projecteurs, le podium qui file vers le fond.
+   Noir et blanc, une seule touche de rouge à lèvres.
+
+   Active quand <html> porte data-style="fashion" (theme.ts). Base SOMBRE,
+   forme du Lycée (voir estLudique). Polices déjà livrées : Lexend pour le
+   texte, Newsreader italique pour les titres.
+   - Les paquets : des housses pendues à un portant (Eventail.tsx, forme
+     'portant') ; elles se décrochent au changement de paquet.
+   - Le fond : podium et mannequins (Defile.tsx).
+   - « Cette semaine » : cinq escarpins à talon aiguille, gris puis rouges.
+   ================================================================== */
+[data-style='fashion'] {
+  --paper: #0d0d0d; --panel: #1a1a1a; --panel-hi: #262626;
+  --ink: #f6f4f0; --ink-soft: #e4e1db; --grey: #b5b0a8; --ink-dim: #b5b0a8;
+  --rule: rgba(246, 244, 240, 0.14); --rule-strong: rgba(246, 244, 240, 0.3);
+  --chalk: #f6f4f0; --chalk-ink: #f6f4f0; --on-chalk: #0d0d0d;
+  --good: #3fb36b; --bad: #d0103a;
+  --voile: rgba(246, 244, 240, 0.06); --voile-2: rgba(246, 244, 240, 0.12); --voile-3: rgba(246, 244, 240, 0.18);
+  --bleu: #f6f4f0; --bleu-ink: #f6f4f0; --rouge: #d0103a; --orange: #e0a040;
+  --ly-voile: rgba(246, 244, 240, 0.12); --ly-voile-2: rgba(246, 244, 240, 0.3);
+  --ly-tabbar: #000; --ly-ombre: rgba(0, 0, 0, 0.6); --ly-tag: #f6f4f0; --ly-bord-carte: #0d0d0d;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Newsreader', Georgia, serif;
+  --titre: 'Newsreader', Georgia, serif;
+  --anneau: #f6f4f0;
+  --creme: #f6f4f0; --noir: #0d0d0d; --gris: #555;
+  --argent: #dfe3ea;
+  --projos: radial-gradient(ellipse 60% 38% at 22% 0%, rgba(255, 255, 255, 0.2), transparent 70%), radial-gradient(ellipse 60% 38% at 78% 0%, rgba(255, 255, 255, 0.2), transparent 70%), radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255, 255, 255, 0.1), transparent 70%);
+  --escarpin: polygon(2% 10%, 14% 14%, 30% 46%, 58% 58%, 84% 64%, 98% 80%, 100% 96%, 70% 96%, 46% 80%, 22% 66%, 14% 60%, 12% 100%, 8% 100%, 6% 58%, 0% 30%);
+}
+[data-style='fashion'] body { font-family: var(--sans); color: var(--ink); background-color: #0d0d0d; background-image: var(--projos); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='fashion'] .screen-title, [data-style='fashion'] .topbar h1, [data-style='fashion'] .welcome-head h1, [data-style='fashion'] .done h2, [data-style='fashion'] .sheet h3, [data-style='fashion'] .today-count b {
+  font-family: var(--titre); font-style: italic; font-weight: 600; letter-spacing: 0; color: #f6f4f0;
+}
+[data-style='fashion'] .sheet { border-top: 3px solid #f6f4f0; }
+[data-style='fashion'] .tabbar { background: #000; border-top: 1px solid #f6f4f0; }
+[data-style='fashion'] .tabbar button { color: rgba(246, 244, 240, 0.6); }
+[data-style='fashion'] .tabbar button.on { color: #f6f4f0; }
+[data-style='fashion'] .tabbar button.on::before { display: none; }
+[data-style='fashion'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 0; }
+[data-style='fashion'] .tabbar button.on .tabsvg { background: rgba(246, 244, 240, 0.14); }
+[data-style='fashion'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='fashion'] .reveal { background: #f6f4f0; color: #0d0d0d; border: none; border-radius: 0; font-family: var(--sans); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; box-shadow: none; }
+[data-style='fashion'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='fashion'] .reveal:active { background: #dcd8d0; }
+
+/* ---------- Aujourd'hui : l'en-tête ---------- */
+[data-style='fashion'] .ly-niv { width: 46px; height: 46px; box-sizing: border-box; border-radius: 0; background: transparent; border: 1px solid #f6f4f0; outline: 1px solid rgba(246, 244, 240, 0.4); outline-offset: 3px; color: #f6f4f0; }
+[data-style='fashion'] .ly-niv small { font-size: 7.5px; letter-spacing: 0.2em; color: #f6f4f0; }
+[data-style='fashion'] .ly-niv b { font-family: var(--titre); font-size: 20px; font-weight: 600; color: #f6f4f0; }
+[data-style='fashion'] .ly-xp-txt { color: #cfcac2; }
+[data-style='fashion'] .ly-xp-txt b { color: #f6f4f0; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+[data-style='fashion'] .ly-barre { height: 2px; border-radius: 0; background: rgba(246, 244, 240, 0.25); }
+[data-style='fashion'] .ly-barre i { border-radius: 0; background: #f6f4f0; }
+[data-style='fashion'] .ly-flamme { height: 38px; padding: 0 12px; gap: 7px; border-radius: 0; background: transparent; border: 1px solid #f6f4f0; color: #f6f4f0; }
+[data-style='fashion'] .ly-flamme svg { display: none; }
+[data-style='fashion'] .ly-flamme::before { content: ''; flex: none; width: 14px; height: 14px; background: #d0103a; clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); }
+[data-style='fashion'] .ly-flamme b { font-family: var(--titre); font-size: 18px; font-weight: 600; color: #f6f4f0; }
+
+/* ---------- le défilé du jour : un carton blanc à filet noir ---------- */
+[data-style='fashion'] .ly-defi { padding: 14px 16px; border-radius: 0; background: #f6f4f0; border: none; border-top: 3px solid #0d0d0d; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); color: #0d0d0d; }
+[data-style='fashion'] .ly-defi-haut > span:first-child { font-size: 11px; font-weight: 600; letter-spacing: 0.32em; color: #0d0d0d; }
+[data-style='fashion'] .ly-gain { border-radius: 0; background: #0d0d0d; color: #f6f4f0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; }
+[data-style='fashion'] .ly-defi-n { font-family: var(--titre); font-style: italic; font-size: 44px; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .ly-defi-sous, [data-style='fashion'] .ly-defi-jour { color: #555; }
+[data-style='fashion'] .ly-defi .ly-barre { background: rgba(13, 13, 13, 0.14); }
+[data-style='fashion'] .ly-defi .ly-barre i { background: #0d0d0d; }
+
+/* ---------- les paquets : des housses sur un portant (maquette 43a) ---------- */
+[data-style='fashion'] .ly-scene::before { content: ''; position: absolute; left: 50%; top: 0; width: 260px; height: 280px; margin-left: -130px; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.18), transparent 65%); }
+[data-style='fashion'] .eventail.portant { height: 226px; margin-top: 30px; }
+/* La tringle argentée : les crochets s'y posent. */
+[data-style='fashion'] .eventail.portant::before { content: ''; position: absolute; left: -24px; right: -24px; top: 6px; height: 3px; z-index: 0; pointer-events: none; background: linear-gradient(90deg, transparent, #dfe3ea 12%, #f4f6fa 50%, #dfe3ea 88%, transparent); box-shadow: 0 0 10px rgba(255, 255, 255, 0.45); }
+[data-style='fashion'] .eventail.portant .eventail-carte { top: 36px; transform-origin: 50% -26px; transition: transform 0.5s cubic-bezier(0.45, 0, 0.3, 1) 0.17s, opacity 0.5s ease 0.17s; }
+[data-style='fashion'] .portant-vol { position: absolute; inset: 0; display: block; transform-origin: 50% -26px; }
+[data-style='fashion'] .portant-vol.v0 { animation: fw-decroche-0 0.95s ease-in-out both; }
+[data-style='fashion'] .portant-vol.v1 { animation: fw-decroche-1 0.95s ease-in-out both; }
+/* Le crochet, puis les deux bras du cintre et sa barre d'épaules, en argent. */
+[data-style='fashion'] .portant-vol::before { content: ''; position: absolute; left: 50%; top: -32px; width: 20px; height: 20px; margin-left: -10px; box-sizing: border-box; z-index: 3; pointer-events: none;
+  border: 4px solid var(--argent); border-bottom-color: transparent; border-left-color: transparent; border-radius: 50%; transform: rotate(-45deg); filter: drop-shadow(0 0 3px rgba(225, 231, 240, 0.85)); }
+[data-style='fashion'] .portant-vol::after { content: ''; position: absolute; left: 0; right: 0; top: -16px; height: 21px; z-index: 3; pointer-events: none;
+  background:
+    linear-gradient(180deg, #f4f6fa, #a9b0bc) left 2px bottom 0 / calc(100% - 4px) 4px no-repeat,
+    linear-gradient(to top right, transparent calc(50% - 2.2px), #8e96a3 calc(50% - 2.2px), #f4f6fa calc(50% - 0.6px), #b5bcc7 calc(50% + 2.2px), transparent calc(50% + 2.2px)) left 4px top 0 / calc(50% - 4px) calc(100% - 2px) no-repeat,
+    linear-gradient(to top left, transparent calc(50% - 2.2px), #8e96a3 calc(50% - 2.2px), #f4f6fa calc(50% - 0.6px), #b5bcc7 calc(50% + 2.2px), transparent calc(50% + 2.2px)) right 4px top 0 / calc(50% - 4px) calc(100% - 2px) no-repeat;
+  filter: drop-shadow(0 0 3px rgba(225, 231, 240, 0.85)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6)); }
+/* La housse : épaules arrondies, mat blanc. */
+[data-style='fashion'] .eventail.portant .eventail-dos { box-sizing: border-box; padding: 12px 8px 8px; border-radius: 40% 40% 8px 8px / 16% 16% 8px 8px; border: 1px solid #0d0d0d; background: #f6f4f0;
+  box-shadow: 0 0 0 4px #f6f4f0, 0 0 0 5px rgba(246, 244, 240, 0.5), 0 18px 30px rgba(0, 0, 0, 0.6); }
+[data-style='fashion'] .eventail.portant .eventail-dos > img:not(.dos-illus-img), [data-style='fashion'] .eventail.portant .eventail-dos > svg { box-sizing: border-box; border: 1px solid #0d0d0d; border-radius: 30% 30% 4px 4px / 10% 10% 4px 4px; }
+[data-style='fashion'] .eventail.portant .eventail-dos .dos-illus-img { left: calc(8px + (100% - 16px) * 0.161); top: calc(12px + (100% - 20px) * 0.26); width: calc((100% - 16px) * 0.677); }
+[data-style='fashion'] .eventail.portant .eventail-carte.centre .eventail-dos { border-color: #0d0d0d; }
+[data-style='fashion'] .eventail-due { border-radius: 0; background: #0d0d0d; color: #f6f4f0; border: 1px solid #f6f4f0; }
+[data-style='fashion'] .eventail-carte .classdot.eventail-classe { border-radius: 0; background: #f6f4f0; color: #0d0d0d; border: 1px solid #0d0d0d; }
+@keyframes fw-decroche-0 {
+  0% { transform: translateY(0) rotate(0deg); }
+  18%, 70% { transform: translateY(-30px) rotate(0deg); }
+  82% { transform: translateY(0) rotate(-3deg); }
+  91% { transform: translateY(0) rotate(2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+@keyframes fw-decroche-1 {
+  0% { transform: translateY(0) rotate(0deg); }
+  18%, 70% { transform: translateY(-30px) rotate(0deg); }
+  82% { transform: translateY(0) rotate(-3deg); }
+  91% { transform: translateY(0) rotate(2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+[data-style='fashion'] .ly-points i { border-radius: 0; background: rgba(246, 244, 240, 0.3); }
+[data-style='fashion'] .ly-points i.on { background: #f6f4f0; }
+[data-style='fashion'] .ly-nom { width: fit-content; margin-inline: auto; padding: 4px 14px; background: #f6f4f0; color: #0d0d0d; font-weight: 600; }
+[data-style='fashion'] .ly-nom span { color: #555; }
+/* Les flèches : un carré à filet, un chevron fin. */
+[data-style='fashion'] .ly-fusee { width: 44px; height: 44px; border-radius: 0; border: 1px solid #f6f4f0; background: rgba(13, 13, 13, 0.6); color: #f6f4f0; }
+[data-style='fashion'] .ly-fusee:hover { background: rgba(246, 244, 240, 0.12); }
+[data-style='fashion'] .ly-fusee:focus-visible { outline-color: #f6f4f0; }
+[data-style='fashion'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='fashion'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+
+/* ---------- les tuiles ; la semaine en escarpins ---------- */
+[data-style='fashion'] .ly-tuile { border-radius: 0; border: none; background: #f6f4f0; color: #0d0d0d; }
+[data-style='fashion'] .ly-tuile:hover { background: #e9e5de; }
+[data-style='fashion'] .ly-tuile-haut { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #555; }
+[data-style='fashion'] .ly-tuile-haut svg { color: #d0103a; }
+[data-style='fashion'] .ly-tuile > b { font-family: var(--titre); font-style: italic; font-size: 21px; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .ly-tuile > small { color: #555; }
+/* Un escarpin de profil par jour : gris tant que le jour n'est pas fait, rouge une fois validé. */
+[data-style='fashion'] .ly-segments { align-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: end; gap: 2px; height: 22px; }
+[data-style='fashion'] .ly-segments i { width: 100%; max-width: 28px; height: 22px; border-radius: 0; clip-path: var(--escarpin); background: linear-gradient(180deg, #b9b9b9, #8a8a8a); }
+[data-style='fashion'] .ly-segments i.on { background: linear-gradient(180deg, #e8264f, #a50a2c); }
+
+/* ---------- Révision : l'invitation au défilé ---------- */
+[data-style='fashion'] .studybg { background-color: #0d0d0d; background-image: var(--projos) !important; background-size: 100% 100%; background-repeat: no-repeat; }
+[data-style='fashion'] .studybg::after { display: none; }
+[data-style='fashion'] .studytop .pos { font-family: var(--titre); font-style: italic; color: #f6f4f0; }
+[data-style='fashion'] .studytop .stop { background: transparent; color: #f6f4f0; border: 1px solid #f6f4f0; border-radius: 0; }
+[data-style='fashion'] .progressbar { height: 2px; border-radius: 0; background: rgba(246, 244, 240, 0.25); }
+[data-style='fashion'] .progressbar i { border-radius: 0; background: #f6f4f0; }
+[data-style='fashion'] .ly-combo { border-radius: 0; background: #f6f4f0; color: #d0103a; }
+[data-style='fashion'] .studystage { --ink: #0d0d0d; margin: 18px 6px 16px; padding: 28px 22px 30px; border-radius: 0; border: none; background: #f6f4f0; color: #0d0d0d; outline: 1px solid #0d0d0d; outline-offset: -10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
+[data-style='fashion'] .studystage .tag { border: none; border-radius: 0; background: transparent; color: #0d0d0d; font-size: 10.5px; letter-spacing: 0.34em; text-transform: uppercase; }
+[data-style='fashion'] .ask { font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: #d0103a; }
+[data-style='fashion'] .word { font-family: var(--titre); font-style: italic; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .wordsmall { color: #555; }
+[data-style='fashion'] .ruleline { width: 40px; height: 0; border-top: 2px solid #d0103a; background: none; }
+[data-style='fashion'] .answer { font-family: var(--titre); font-style: italic; font-weight: 600; letter-spacing: 0; color: #0d0d0d; }
+[data-style='fashion'] .example { font-family: var(--sans); font-style: normal; color: #555; }
+[data-style='fashion'] .speak { background: transparent; border: 1px solid #0d0d0d; border-radius: 0; color: #0d0d0d; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; }
+[data-style='fashion'] .tap-hint { width: fit-content; margin-inline: auto; padding: 4px 12px; background: rgba(13, 13, 13, 0.8); color: #f6f4f0; }
+[data-style='fashion'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+[data-style='fashion'] .grades .grade { position: relative; min-height: 62px; padding-top: 18px; border-radius: 0; border: none; background: #f6f4f0; color: #0d0d0d; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; box-shadow: none; }
+[data-style='fashion'] .grades .grade small { font-size: 11px; font-weight: 400; letter-spacing: 0; text-transform: none; color: #555; }
+[data-style='fashion'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 9px; width: 16px; margin-left: -8px; box-sizing: border-box; }
+[data-style='fashion'] .grades .g-again::before { height: 2px; background: #d0103a; }
+[data-style='fashion'] .grades .g-hard::before { height: 2px; background: #0d0d0d; }
+[data-style='fashion'] .grades .g-good::before { height: 6px; border: 1px solid #0d0d0d; }
+[data-style='fashion'] .grades .g-easy::before { height: 6px; background: #0d0d0d; }
+[data-style='fashion'] .grades .grade:active { background: #dcd8d0; }
+
+/* ---------- le podium et les mannequins (Defile.tsx, maquette 43b) ---------- */
+/* Sur « Aujourd'hui » seulement : ailleurs, le noir et les projecteurs suffisent. */
+body:not(:has(.today.ly)) .fw-defile { display: none; }
+.fw-defile { --fw-g: linear-gradient(90deg, #3c3c3c, #0d0d0d 38%, #0d0d0d 68%, #2a2a2a); }
+.fw-defile .fw-projo { top: 0; width: 56vw; height: 82%; }
+.fw-defile .fw-projo.g { left: 0; background: linear-gradient(170deg, rgba(255, 255, 255, 0.13), transparent 70%); clip-path: polygon(30% 0, 46% 0, 100% 100%, 40% 100%); }
+.fw-defile .fw-projo.d { right: 0; background: linear-gradient(190deg, rgba(255, 255, 255, 0.13), transparent 70%); clip-path: polygon(54% 0, 70% 0, 60% 100%, 0 100%); }
+.fw-defile .fw-podium, .fw-defile .fw-lattes { left: 50%; top: 43%; width: 117vw; height: 60%; margin-left: -58.5vw; clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%); }
+.fw-defile .fw-podium { background: linear-gradient(180deg, #2a2a2a, #cfcac2 85%); opacity: 0.9; }
+.fw-defile .fw-lattes { background: repeating-linear-gradient(90deg, transparent 0 19.2vw, rgba(13, 13, 13, 0.25) 19.2vw calc(19.2vw + 1px)); }
+.fw-defile .fw-fuite { left: 50%; top: calc(43% - 2px); width: 60px; height: 6px; margin-left: -30px; border-radius: 50%; background: rgba(255, 255, 255, 0.55); filter: blur(3px); }
+.fw-defile .fw-mannequin { left: 50%; top: calc(43% + 15px); width: 0; height: 0; animation-duration: 10.7s; animation-iteration-count: infinite; }
+.fw-defile .fw-mannequin.vient { animation-name: fw-vient; animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.7); }
+.fw-defile .fw-mannequin.part { animation-name: fw-part; animation-timing-function: cubic-bezier(0.1, 0.3, 0.45, 1); }
+@keyframes fw-vient { 0% { transform: translate(-2.2vw, 0) scale(0.22); opacity: 0; } 8%, 90% { opacity: 1; } 100% { transform: translate(-17.8vw, calc(57vh - 105px)) scale(1.2); opacity: 0; } }
+@keyframes fw-part { 0% { transform: translate(17.8vw, calc(57vh - 105px)) scale(1.2); opacity: 0; } 8%, 90% { opacity: 1; } 100% { transform: translate(2.2vw, 0) scale(0.22); opacity: 0; } }
+.fw-defile .fw-corps, .fw-defile .fw-ombre { left: -20px; bottom: 0; width: 40px; height: 124px; }
+.fw-defile .fw-corps { filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, 0.8)); animation: fw-bob 1.29s ease-in-out infinite; }
+/* Deux ombres longues, une par projecteur : la silhouette retournée, étirée, qui s'estompe au bout. */
+.fw-defile .fw-ombre { transform-origin: 50% 100%; filter: brightness(0) blur(1.4px); opacity: 0.42; -webkit-mask-image: linear-gradient(to top, #000 10%, transparent 95%); mask-image: linear-gradient(to top, #000 10%, transparent 95%); }
+.fw-defile .fw-ombre.g { transform: skewX(34deg) scaleY(-1.45); }
+.fw-defile .fw-ombre.d { transform: skewX(-34deg) scaleY(-1.45); }
+.fw-defile .fw-pied { left: -14px; top: -3px; width: 28px; height: 6px; border-radius: 50%; background: rgba(0, 0, 0, 0.6); filter: blur(1.5px); }
+.fw-defile :is(.fw-tete, .fw-chignon, .fw-cou, .fw-buste, .fw-jambe) { background: var(--fw-g); }
+.fw-defile .fw-tete { left: 14px; top: 3px; width: 12px; height: 15px; border-radius: 50%; }
+.fw-defile .fw-chignon { left: 16px; top: 0; width: 8px; height: 8px; border-radius: 50%; }
+.fw-defile .fw-cou { left: 18.5px; top: 16px; width: 3px; height: 7px; }
+.fw-defile .fw-hanches { inset: 0; transform-origin: 50% 60%; animation: fw-hanche 2.57s ease-in-out infinite; }
+.fw-defile .fw-bras { top: 23px; width: 3.5px; height: 40px; border-radius: 2px; background: #0d0d0d; transform-origin: 50% 0; animation: fw-bras 1.29s ease-in-out infinite alternate; }
+.fw-defile .fw-bras.g { left: 7.5px; }
+.fw-defile .fw-bras.d { left: 29px; animation-delay: -1.29s; }
+.fw-defile .fw-buste.robe { left: 4px; top: 21px; width: 32px; height: 82px; clip-path: polygon(22% 0, 78% 0, 84% 8%, 70% 36%, 96% 100%, 4% 100%, 30% 36%, 16% 8%); }
+.fw-defile .fw-buste.tailleur { left: 6px; top: 21px; width: 28px; height: 44px; clip-path: polygon(14% 0, 86% 0, 100% 10%, 84% 55%, 92% 100%, 8% 100%, 16% 55%, 0 10%); }
+.fw-defile .fw-buste.manteau { left: 5px; top: 21px; width: 30px; height: 72px; clip-path: polygon(16% 0, 84% 0, 98% 8%, 90% 40%, 100% 100%, 0 100%, 10% 40%, 2% 8%); }
+.fw-defile .fw-ceinture { left: 11px; top: 50px; width: 18px; height: 2.5px; background: #4a4a4a; }
+.fw-defile .fw-ceinture.rouge { background: #d0103a; }
+.fw-defile .fw-sac { left: 31px; top: 58px; width: 9px; height: 7px; border-radius: 1px; background: #d0103a; }
+.fw-defile .fw-jambe { width: 4px; border-radius: 1.5px; transform-origin: 50% 100%; animation: fw-pas-g 1.29s ease-in-out infinite; }
+.fw-defile .fw-jambe.d { animation-name: fw-pas-d; animation-delay: -0.64s; }
+.fw-defile .fw-jambe.robe { top: 100px; height: 24px; }
+.fw-defile .fw-jambe.manteau { top: 92px; height: 32px; }
+.fw-defile .fw-jambe.g:is(.robe, .manteau) { left: 15px; }
+.fw-defile .fw-jambe.d:is(.robe, .manteau) { left: 21px; }
+.fw-defile .fw-jambe.tailleur { top: 62px; height: 62px; width: 8px; }
+.fw-defile .fw-jambe.g.tailleur { left: 11px; clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%); }
+.fw-defile .fw-jambe.d.tailleur { left: 21px; clip-path: polygon(0 0, 82% 0, 100% 100%, 0 100%); }
+/* Le grand chapeau rouge, de travers, sur la robe longue. */
+.fw-defile .fw-chapeau { left: 0; top: -6px; width: 40px; height: 16px; transform: rotate(-16deg); transform-origin: 50% 100%; }
+.fw-defile .fw-chapeau i:nth-child(1) { left: -4px; top: 9px; width: 48px; height: 6px; border-radius: 50%; background: linear-gradient(180deg, #e8264f, #a50a2c); }
+.fw-defile .fw-chapeau i:nth-child(2) { left: 12px; top: 0; width: 18px; height: 12px; border-radius: 7px 7px 2px 2px; background: linear-gradient(90deg, #a50a2c, #d0103a 45%, #e8264f 70%, #a50a2c); }
+.fw-defile .fw-chapeau i:nth-child(3) { left: 12px; top: 7px; width: 18px; height: 2px; background: #0d0d0d; }
+@keyframes fw-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes fw-hanche { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes fw-bras { from { transform: rotate(10deg); } to { transform: rotate(-4deg); } }
+@keyframes fw-pas-g { 0%, 100% { transform: translate(0, 0) scaleY(1); } 50% { transform: translate(2px, -6px) scaleY(0.86); } }
+@keyframes fw-pas-d { 0%, 100% { transform: translate(0, 0) scaleY(1); } 50% { transform: translate(-2px, -6px) scaleY(0.86); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='fashion'] .portant-vol.v0, [data-style='fashion'] .portant-vol.v1 { animation: none; }
+  [data-style='fashion'] .eventail.portant .eventail-carte { transition: none; }
+}

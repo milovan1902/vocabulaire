@@ -12,7 +12,7 @@
  * L'éventail ne décide rien : il dit quel paquet est au centre (`onCentre`)
  * et lequel ouvrir (`onOuvrir`). C'est « Aujourd'hui » qui retient le choix.
  */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DeckSummary } from './deckSummary';
 import { DeckFace } from './components';
 
@@ -21,7 +21,9 @@ export function Eventail({
 }: {
   paquets: DeckSummary[];
   /** CHANTIER 171 — 'orbite' : les paquets voisins montent sur l'anneau de la planète. */
-  forme?: 'eventail' | 'orbite';
+  /** CHANTIER 213 — 'portant' (Fashion week) : des housses pendues à une tringle ; celle du centre
+      de face, ses voisines de profil. Au changement de paquet, elles se décrochent, glissent, se raccrochent. */
+  forme?: 'eventail' | 'orbite' | 'portant';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -29,13 +31,21 @@ export function Eventail({
   const [dx, setDx] = useState(0);
   const [glisse, setGlisse] = useState(false);
   const depart = useRef<{ x: number; cible: number | null } | null>(null);
+  /* CHANTIER 213 — le nombre de changements de paquet : relance le décrochage (deux noms
+     d'animation qui alternent, sans démonter les housses). Rien à l'ouverture de l'écran. */
+  const [coups, setCoups] = useState(0);
+  const centrePrec = useRef(centre);
+  useEffect(() => {
+    if (centrePrec.current !== centre) { centrePrec.current = centre; setCoups((c) => c + 1); }
+  }, [centre]);
+  const por = forme === 'portant';
 
   const aller = (i: number) => onCentre(Math.max(0, Math.min(paquets.length - 1, i)));
   const fin = () => { depart.current = null; setGlisse(false); setDx(0); };
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}`}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
       tabIndex={0}
@@ -80,6 +90,15 @@ export function Eventail({
         const y = orb && a > 0 ? -34 : 0;
         const rot = a === 0 ? dx * 0.04 : a === 1 ? (orb ? 14 : 10) * s : 16 * s;
         const k = a === 0 ? 1 : a === 1 ? (orb ? 0.66 : 0.86) : 0.6;
+        const xp = (a === 0 ? 0 : a === 1 ? 100 * s : 170 * s) + dx * 0.6;
+        const transform = por
+          ? `perspective(700px) translateX(${xp}px) rotateY(${a === 0 ? dx * 0.12 : -72 * s}deg) scale(${k})`
+          : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
+        const dos = (
+          <span className="eventail-dos">
+            <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
+          </span>
+        );
         return (
           <div
             key={r.deck.id}
@@ -89,16 +108,14 @@ export function Eventail({
             aria-label={`${r.deck.name}, ${r.due} carte${r.due > 1 ? 's' : ''} à revoir`}
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
-              transform: `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`,
-              opacity: a === 0 ? 1 : a === 1 ? 0.72 : 0,
+              transform,
+              opacity: a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
               pointerEvents: a > 1 ? 'none' : undefined,
             }}
           >
-            <span className="eventail-dos">
-              <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
-            </span>
+            {por ? <span className={`portant-vol${coups ? ` v${coups % 2}` : ''}`}>{dos}</span> : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
                 paquet mis en avant : sœur du dos, pas fille, pour ne pas être rognée. Au bord bas ;
