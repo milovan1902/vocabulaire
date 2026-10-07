@@ -45,6 +45,9 @@ const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 const OBJECTIF_SEMAINE = 5;
 
 /*
+ * CHANTIER 232 — les gels ne s'affichent plus ici, seulement dans Mes XP :
+ * « Cette semaine » reste légère.
+ *
  * CHANTIER 228 — la semaine repart à zéro chaque lundi. Les cinq premiers
  * segments sont les jours de semaine tenus (validés, ou comblés par un gel) ;
  * le week-end ne s'ajoute (6e, 7e jour) qu'une fois le 5 / 5 atteint.
@@ -52,20 +55,6 @@ const OBJECTIF_SEMAINE = 5;
 function joursCetteSemaine(s: Streak): number {
   const w = semaineEnCours(s);
   return w.complete ? 5 + w.weekend : w.ouvres;
-}
-
-/** Lucide « snowflake » : le gel. */
-function Flocon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="2" x2="22" y1="12" y2="12" />
-      <line x1="12" x2="12" y1="2" y2="22" />
-      <path d="m20 16-4-4 4-4" />
-      <path d="m4 8 4 4-4 4" />
-      <path d="m16 4-4 4-4-4" />
-      <path d="m8 20 4-4 4 4" />
-    </svg>
-  );
 }
 
 /**
@@ -247,7 +236,6 @@ export function Today({
   const faitAujourdhui = doneToday(streak);
   const auj = todayKey();
   const semaineXp = semaineEnCours(streak);
-  const gels = semaineXp.gels;
   /* La semaine du calendrier, lundi → dimanche : elle repart à zéro le lundi. */
   const semaine = semaineXp.jours.map((j) => ({ key: j.key, done: j.etat === 'valide', gel: j.etat === 'gel' }));
   /* Série en jeu : elle existe, elle n'est pas encore assurée, et il reste
@@ -658,13 +646,6 @@ export function Today({
           <button className="ly-tuile" onClick={onCalendrier}>
             <span className="ly-tuile-haut">
               <span>Cette semaine</span>
-              {/* CHANTIER 228 — les gels en réserve (4 au plus). */}
-              {gels > 0 && (
-                <span className="ly-gels" aria-label={`${gels} gel${gels > 1 ? 's' : ''} en réserve`}>
-                  <Flocon />
-                  <b>{gels}</b>
-                </span>
-              )}
             </span>
             {/* CHANTIER 187 — Décollage et Orbite : la semaine en phases de lune (maquette 26b).
                 0 jour : contour seul ; 1 : nouvelle lune ; 2 : premier croissant ;
@@ -835,12 +816,6 @@ export function Today({
         <button className="ly-tuile" onClick={onCalendrier}>
           <span className="ly-tuile-haut">
             <span>Cette semaine</span>
-            {gels > 0 && (
-              <span className="ly-gels" aria-label={`${gels} gel${gels > 1 ? 's' : ''} en réserve`}>
-                <Flocon />
-                <b>{gels}</b>
-              </span>
-            )}
           </span>
           <b>{faitsSemaine > OBJECTIF_SEMAINE ? `${faitsSemaine} jours` : `${faitsSemaine} / ${OBJECTIF_SEMAINE} jours`}</b>
           <span className={`ly-segments${faitsSemaine >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
