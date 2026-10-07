@@ -10,6 +10,7 @@ import { installeMiseAJour } from './data/miseAJour';
 import { MiseAJour } from './ui/MiseAJour';
 import { FondAnime } from './ui/FondAnime';
 import { Defile } from './ui/Defile';
+import { Salle } from './ui/Salle';
 /* CHANTIER 161 — Atkinson Hyperlegible, livrée avec l'application : elle
    marche hors ligne. Installée par `npm install @fontsource/atkinson-hyperlegible`. */
 import '@fontsource/atkinson-hyperlegible/400.css';
@@ -88,6 +89,8 @@ createRoot(document.getElementById('root')!, {
       <FondAnime />
       {/* CHANTIER 213 — Fashion week : le podium et les mannequins. */}
       <Defile />
+      {/* CHANTIER 221 — Cinéma muet et Bibliothèque : le projecteur, le pianiste ; la lampe, l'horloge, le chat. */}
+      <Salle />
       <App />
       <MiseAJour />
     </FiletErreur>

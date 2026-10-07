@@ -135,7 +135,11 @@ export function Eventail({
               ...(ray ? { width: a === 0 ? LARGE : DOS, height: a === 0 ? HAUT : hDos, marginLeft: a === 0 ? -LARGE / 2 : -DOS / 2, aspectRatio: 'auto' } : {}),
             }}
           >
-            {por ? <span className={`portant-vol${coups ? ` v${coups % 2}` : ''}`}>{dos}</span> : dos}
+            {por ? <span className={`portant-vol${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
+              /* CHANTIER 221 — Cinéma muet : l'image tressaute en s'arrêtant ; Bibliothèque : le livre penche avant de sortir. */
+              : pel ? <span className={`pellicule-saut${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
+              : ray ? <span className={`rayon-tire${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
+              : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
                 paquet mis en avant : sœur du dos, pas fille, pour ne pas être rognée. Au bord bas ;

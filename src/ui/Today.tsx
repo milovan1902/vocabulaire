@@ -32,6 +32,7 @@ import { niveauDe } from '../engine/niveau';
 import { CARTES_PAR_JOUR, cartesDuJour, gainDuJour, serieValidee, xpTotal } from '../engine/xp';
 import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
+import { Amorce } from './Salle';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -493,6 +494,8 @@ export function Today({
     }
     return (
       <div className="today ly">
+        {/* CHANTIER 221 — Cinéma muet : le compte à rebours, une fois par jour. */}
+        {style === 'cinema' && <Amorce />}
         {/* CHANTIER 173 — Tableau : la date écrite à la craie et la série, en tête. */}
         {style === 'tableau' && (
           <div className="today-head">
@@ -637,7 +640,8 @@ export function Today({
                 <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE} jours`}</b>
                 {/* CHANTIER 199 — « plein » : la semaine est faite (Strass : les flûtes trinquent). */}
                 <span className={`ly-segments${faits >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
-                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? 'on' : ''} />)}
+                  {/* CHANTIER 221 — « auj » : le jour validé aujourd'hui (Cinéma muet : l'étoile gravée). */}
+                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''} />)}
                 </span>
               </>
             )}

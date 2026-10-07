@@ -122,6 +122,9 @@ export function Study({
   const style = useStyle();
   /* Bonnes réponses d'affilée dans la séance. « Raté » remet à zéro. */
   const [combo, setCombo] = useState(0);
+  /* CHANTIER 221 — Cinéma muet et Bibliothèque : la note se « frappe » d'abord (le clap claque,
+     le sceau s'écrase), la carte suivante arrive 0,28 s plus tard. */
+  const [frappe, setFrappe] = useState<Grade | null>(null);
 
   const total = queue.length;
   const current = items[index];
@@ -252,7 +255,7 @@ export function Study({
        * est bien plus large que le bouton, et le geste devient naturel.
        */}
       <div
-        className="studystage"
+        className={`studystage t${index % 2}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -300,7 +303,17 @@ export function Study({
       ) : (
         <div className="grades">
           {GRADES.map((g) => (
-            <button key={g.key} className={`${g.className} g-${g.key}`} onClick={() => void grade(g.key)}>
+            <button
+              key={g.key}
+              className={`${g.className} g-${g.key}${frappe === g.key ? ' frappe' : ''}`}
+              onClick={() => {
+                if (frappe) return;
+                if ((style === 'cinema' || style === 'biblio') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+                  setFrappe(g.key);
+                  window.setTimeout(() => { setFrappe(null); void grade(g.key); }, 280);
+                } else void grade(g.key);
+              }}
+            >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
             </button>

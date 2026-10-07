@@ -170,3 +170,81 @@
   [data-style='cinema'] .ly-scene::before { animation: none; }
   [data-style='cinema'] .pellicule-bande, [data-style='cinema'] .eventail.pellicule .eventail-carte { transition: none; }
 }
+
+/* ==================================================================
+   CHANTIER 221 — les animations du Cinéma muet
+   ================================================================== */
+/* ---------- la salle (Salle.tsx) : sur « Aujourd'hui » seulement ---------- */
+body:not(:has(.today.ly)) .ci-salle { display: none; }
+/* Le faisceau du projecteur, qui vacille, et la poussière qui flotte dedans. */
+.ci-salle .ci-faisceau { left: 50%; top: -10px; width: 140vw; height: 78vh; margin-left: -70vw; background: linear-gradient(180deg, rgba(255, 250, 230, 0.13), rgba(255, 250, 230, 0.03) 80%, transparent); clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%); animation: ci-vacille 2.6s steps(1) infinite; }
+.ci-salle .ci-grain { border-radius: 50%; background: rgba(255, 250, 230, 0.75); opacity: 0; animation-name: ci-flotte; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+/* Une rayure de pellicule usée qui traverse l'écran, de temps en temps. */
+.ci-salle .ci-rayure { top: 0; bottom: 0; width: 1.5px; background: rgba(255, 255, 255, 0.55); opacity: 0; animation: ci-rayure 9s linear infinite; }
+.ci-salle .ci-rayure.a { left: 27%; }
+.ci-salle .ci-rayure.b { left: 68%; animation-duration: 13s; animation-delay: -4.5s; }
+/* Le pianiste, en bas à gauche, entre les tuiles et la barre d'onglets. */
+.ci-salle .ci-pianiste { left: 14px; bottom: calc(env(safe-area-inset-bottom) + 72px); width: 76px; height: 56px; filter: drop-shadow(0 0 1px rgba(244, 241, 234, 0.75)); }
+.ci-salle .ci-pianiste :is(.ci-piano, .ci-dos, .ci-tete, .ci-bras) { background: #050505; }
+.ci-salle .ci-piano { left: 34px; bottom: 0; width: 42px; height: 46px; border-radius: 3px 3px 0 0; }
+.ci-salle .ci-clavier { left: 26px; bottom: 26px; width: 10px; height: 3px; background: #d9d4c9; }
+.ci-salle .ci-tabouret { left: 6px; bottom: 0; width: 16px; height: 14px;
+  background: linear-gradient(#050505, #050505) 0 0 / 100% 3px no-repeat, linear-gradient(#050505, #050505) 2px 0 / 2px 100% no-repeat, linear-gradient(#050505, #050505) right 2px top 0 / 2px 100% no-repeat; }
+.ci-salle .ci-dos { left: 8px; bottom: 14px; width: 14px; height: 24px; border-radius: 7px 7px 2px 2px; transform: rotate(8deg); }
+.ci-salle .ci-tete { left: 12px; bottom: 37px; width: 11px; height: 11px; border-radius: 50%; }
+.ci-salle .ci-bras { left: 16px; bottom: 30px; width: 14px; height: 3px; border-radius: 2px; transform-origin: 0 50%; transform: rotate(14deg); }
+.ci-salle .ci-bras.d { bottom: 28px; }
+.ci-salle .ci-bras.joue { animation: ci-joue 0.35s ease-in-out infinite alternate; }
+.ci-salle .ci-bras.d.joue { animation-delay: -0.17s; }
+.ci-salle .ci-notes { left: 40px; bottom: 48px; width: 30px; height: 30px; }
+.ci-salle .ci-notes i { left: 0; bottom: 0; font-size: 12px; font-style: normal; line-height: 1; color: rgba(244, 241, 234, 0.7); opacity: 0; animation: ci-note 3s ease-out infinite; }
+.ci-salle .ci-notes i:nth-child(2) { left: 12px; animation-delay: -1.5s; }
+
+/* ---------- l'amorce : 3, 2, 1, une fois par jour ---------- */
+.ci-amorce { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none; background: rgba(11, 11, 11, 0.86); animation: ci-amorce-fin 2.3s ease forwards; }
+.ci-a-cercle { position: relative; display: block; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #3a3631, #1a1714); box-shadow: 0 0 0 2px #f4f1ea; overflow: hidden; }
+.ci-a-cercle > * { position: absolute; display: block; }
+.ci-a-anneau { inset: 12px; border-radius: 50%; border: 2px solid rgba(244, 241, 234, 0.7); }
+.ci-a-croix.h { left: 0; right: 0; top: 50%; height: 1px; background: rgba(244, 241, 234, 0.5); }
+.ci-a-croix.v { top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(244, 241, 234, 0.5); }
+.ci-a-aiguille { left: 50%; bottom: 50%; width: 2px; height: 86px; margin-left: -1px; background: #f4f1ea; transform-origin: 50% 100%; animation: ci-tour 0.6s linear 3; }
+.ci-a-cercle b { inset: 0; display: grid; place-items: center; font-family: var(--titre); font-size: 96px; font-weight: 400; line-height: 1; color: #f4f1ea; opacity: 0; }
+.ci-a-cercle b.n3 { animation: ci-n 0.6s linear 0s; }
+.ci-a-cercle b.n2 { animation: ci-n 0.6s linear 0.6s; }
+.ci-a-cercle b.n1 { animation: ci-n 0.6s linear 1.2s; }
+
+/* ---------- le saut d'image : la pellicule s'arrête, l'image tressaute ---------- */
+[data-style='cinema'] .pellicule-saut { position: absolute; inset: 0; display: block; }
+[data-style='cinema'] .eventail-carte.centre .pellicule-saut.v0 { animation: ci-saut-0 0.42s ease-out 0.68s; }
+[data-style='cinema'] .eventail-carte.centre .pellicule-saut.v1 { animation: ci-saut-1 0.42s ease-out 0.68s; }
+
+/* ---------- le clap qui claque, puis l'ouverture en iris ---------- */
+[data-style='cinema'] .grades .grade.frappe::before { transform: rotate(0deg); transition-duration: 0.08s; }
+[data-style='cinema'] .grades .grade.frappe { animation: ci-clac 0.28s ease-out; }
+[data-style='cinema'] .studystage.t0 { animation: ci-iris-0 0.55s ease-out; }
+[data-style='cinema'] .studystage.t1 { animation: ci-iris-1 0.55s ease-out; }
+
+/* ---------- l'étoile gravée : le jour validé aujourd'hui ---------- */
+[data-style='cinema'] .ly-segments i.auj { animation: ci-pose 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) 0.3s both; }
+[data-style='cinema'] .ly-segments i.auj::before { background: linear-gradient(110deg, #a8781e 35%, #fff4c8 50%, #a8781e 65%); background-size: 300% 100%; animation: ci-eclat 3.2s ease-in-out 1s infinite; }
+
+@keyframes ci-vacille { 0%, 100% { opacity: 1; } 23% { opacity: 0.8; } 25% { opacity: 1; } 61% { opacity: 0.88; } 63% { opacity: 1; } }
+@keyframes ci-flotte { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 0.8; } 50% { transform: translate(14px, -22px); } 80% { opacity: 0.6; } 100% { transform: translate(-6px, -44px); opacity: 0; } }
+@keyframes ci-rayure { 0%, 58% { opacity: 0; transform: translateX(0); } 60% { opacity: 0.55; } 63% { opacity: 0.3; transform: translateX(6px); } 66% { opacity: 0.5; transform: translateX(-3px); } 68%, 100% { opacity: 0; transform: translateX(0); } }
+@keyframes ci-joue { from { transform: rotate(10deg); } to { transform: rotate(19deg); } }
+@keyframes ci-note { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: 0.8; } 100% { opacity: 0; transform: translate(10px, -26px); } }
+@keyframes ci-amorce-fin { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ci-tour { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ci-n { 0%, 99% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ci-saut-0 { 0% { transform: none; filter: none; } 18% { transform: translateY(-8px); filter: brightness(1.5); } 34% { transform: translateY(2px); } 52% { transform: translateY(-4px); filter: brightness(1.25); } 70% { transform: translateY(1px); } 100% { transform: none; filter: none; } }
+@keyframes ci-saut-1 { 0% { transform: none; filter: none; } 18% { transform: translateY(-8px); filter: brightness(1.5); } 34% { transform: translateY(2px); } 52% { transform: translateY(-4px); filter: brightness(1.25); } 70% { transform: translateY(1px); } 100% { transform: none; filter: none; } }
+@keyframes ci-clac { 0% { transform: none; } 30% { transform: translateY(2px) scale(0.97); } 100% { transform: none; } }
+@keyframes ci-iris-0 { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(110% at 50% 50%); } }
+@keyframes ci-iris-1 { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(110% at 50% 50%); } }
+@keyframes ci-pose { 0% { transform: scale(1.7) rotate(-25deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes ci-eclat { 0%, 55% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ci-salle .ci-faisceau, .ci-amorce, [data-style='cinema'] .pellicule-saut, [data-style='cinema'] .grades .grade.frappe,
+  [data-style='cinema'] .studystage, [data-style='cinema'] .ly-segments i.auj, [data-style='cinema'] .ly-segments i.auj::before { animation: none !important; }
+}
