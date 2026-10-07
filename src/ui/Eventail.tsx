@@ -28,7 +28,9 @@ export function Eventail({
       sont des livres rangés, vus par le dos ; celui du centre sort du rang et se présente de face. */
   /** CHANTIER 223 — 'cloche' (Salon de thé) : le paquet du centre sur un présentoir, sous une cloche de verre
       qui se soulève au changement ; 'bocaux' (Cabinet 1900) : des bocaux de verre, celui du centre s'allume. */
-  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux';
+  /** CHANTIER 227 — 'maison' (Japon zen) : le paquet sur le pas de la porte d'une maison japonaise, dont les
+      panneaux se ferment et se rouvrent ; 'pupitres' (Cotton Club) : des partitions sur des pupitres, sous un projecteur. */
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -48,6 +50,9 @@ export function Eventail({
   const ray = forme === 'rayon';
   const clo = forme === 'cloche';
   const boc = forme === 'bocaux';
+  const mai = forme === 'maison';
+  const pup = forme === 'pupitres';
+  const v = coups ? ` v${coups % 2}` : '';
   /* CHANTIER 216 — le pas de la pellicule, et la forme des livres (dos de 30 px). */
   const PAS = 124;
   const DOS = 30, JEU = 3, LARGE = 126, HAUT = 178;
@@ -58,7 +63,7 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${glisse ? ' glisse' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${glisse ? ' glisse' : ''}`}
       style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
@@ -96,6 +101,25 @@ export function Eventail({
       {/* CHANTIER 187 — trois satellites en orbite autour de la planète. */}
       {/* CHANTIER 216 — la bande perforée, sous les images ; ses perforations glissent avec elles. */}
       {pel && <i className="pellicule-bande" aria-hidden="true" />}
+      {/* CHANTIER 227 — Japon zen : la maison (toit, murs, porte ouverte, perron), le cerisier et la lanterne. */}
+      {mai && (
+        <span className="jp-maison" aria-hidden="true">
+          <i className="toit" /><i className="faitage" /><i className="avant-toit" /><i className="murs" /><i className="entree" /><i className="linteau" />
+          <i className="perron" /><i className="pierre" />
+          <span className="lanterne"><i /><i /><i /><i /></span>
+          <span className="cerisier"><i className="tronc" /><i className="b1" /><i className="b2" /><i className="b3" /><i className="f1" /><i className="f2" /><i className="f3" /><i className="f4" /><i className="f5" /><i className="f6" /><i className="f7" /></span>
+        </span>
+      )}
+      {/* CHANTIER 227 — Cotton Club : le projecteur, le plancher, le saxophoniste et ses notes. */}
+      {pup && <i className={`jz-faisceau${v}`} aria-hidden="true" />}
+      {pup && <i className="jz-plancher" aria-hidden="true" />}
+      {pup && (
+        <span className="jz-sax" aria-hidden="true">
+          <i className="tete" /><i className="chapeau" /><i className="bord" /><i className="corps" /><i className="jambe g" /><i className="jambe d" />
+          <i className="tube" /><i className="col" /><i className="pavillon" /><i className="bras" />
+          <i className="note n1">♪</i><i className="note n2">♫</i><i className="note n3">♪</i>
+        </span>
+      )}
       {/* CHANTIER 223 — Salon de thé : le présentoir (plateau, pied, deux assiettes), puis la cloche, posée après les cartes. */}
       {clo && <i className="cloche-assiette g" aria-hidden="true" />}
       {clo && <i className="cloche-assiette d" aria-hidden="true" />}
@@ -141,6 +165,10 @@ export function Eventail({
                 ? /* CHANTIER 225 — les gâteaux ne suivent plus le doigt : au relâché, la cloche se lève d'abord,
                      puis le gâteau glisse, comme avec les flèches. */
                   (a === 0 ? 'scale(0.74)' : `translate(${118 * s}px, -18px) rotate(${4 * s}deg) scale(0.5)`)
+                : mai
+                  ? 'scale(0.62)'
+                : pup
+                  ? (a === 0 ? 'scale(0.86)' : `translate(${126 * s}px, 40px) scale(0.55)`)
                 : boc
                   ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${122 * s + dx * 0.6}px, 30px) scale(0.6)`)
                   : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
@@ -160,7 +188,7 @@ export function Eventail({
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
               transform,
-              opacity: pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
+              opacity: mai && a > 0 ? 0 : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
               pointerEvents: visible ? undefined : 'none',
@@ -173,6 +201,8 @@ export function Eventail({
               : ray ? <span className={`rayon-tire${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
               /* CHANTIER 223 — Cabinet 1900 : la lueur s'allume dans le bocal qui arrive. */
               : boc ? <span className={`bocal-lueur${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
+              /* CHANTIER 227 — Cotton Club : la partition se soulève sous le projecteur. */
+              : pup ? <span className={`pupitre-lift${v}`}>{dos}</span>
               : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
@@ -187,6 +217,12 @@ export function Eventail({
       {clo && <i className={`cloche-verre${coups ? ` v${coups % 2}` : ''}`} aria-hidden="true" />}
       {/* CHANTIER 224 — l'éclat de lumière qui glisse sur le verre quand la cloche se repose. */}
       {clo && <span className={`cloche-eclat${coups ? ` v${coups % 2}` : ''}`} aria-hidden="true"><i /></span>}
+      {/* CHANTIER 227 — Japon zen : les panneaux coulissants et la bouffée de pétales, devant la carte. */}
+      {mai && <i className={`jp-porte g${v}`} aria-hidden="true" />}
+      {mai && <i className={`jp-porte d${v}`} aria-hidden="true" />}
+      {mai && <span className={`jp-bouffee${v}`} aria-hidden="true"><i /><i /><i /></span>}
+      {/* CHANTIER 227 — Cotton Club : le rideau se lève à l'arrivée sur « Aujourd'hui ». */}
+      {pup && <i className="jz-rideau" aria-hidden="true" />}
     </div>
   );
 }

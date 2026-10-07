@@ -60,6 +60,9 @@ const TRAIT = {
 /** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
   const style = useStyle();
+  /* CHANTIER 227 — Japon zen et Cotton Club. */
+  if (style === 'japon') return <svg {...TRAIT}><path d="M3 5h18" /><path d="M5 9h14" /><path d="M7 5v16M17 5v16" /><path d="M12 9v3" /></svg>;
+  if (style === 'jazz') return <svg {...TRAIT}><path d="M12 2v3" /><path d="M8 5h8l-2 5h-4z" /><path d="M10 10 5 22M14 10l5 12" /></svg>;
   /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
   if (style === 'patisserie') return <svg {...TRAIT}><path d="M4 20h16" /><path d="M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6" /><path d="M5 15.5c1.2 1 2.3 1 3.5 0s2.3-1 3.5 0 2.3 1 3.5 0 2.3-1 3.5 0" /><path d="M12 12V8" /><path d="M12 3.5c.8 1 1 1.7.6 2.4a.8.8 0 0 1-1.2 0c-.4-.7-.2-1.4.6-2.4z" /></svg>;
   if (style === 'cabinet') return <svg {...TRAIT}><path d="M9 3h6" /><path d="M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3" /><path d="M7 15h10" /></svg>;
@@ -91,6 +94,9 @@ export function IconAujourdhui() {
 /** Les cartes empilées : la collection. */
 export function IconPaquets() {
   const style = useStyle();
+  /* CHANTIER 227 — Japon zen et Cotton Club. */
+  if (style === 'japon') return <svg {...TRAIT}><path d="M2 11 12 4l10 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg>;
+  if (style === 'jazz') return <svg {...TRAIT}><path d="M4 4h16v10H4z" /><path d="M7 7h10M7 10h7" /><path d="M12 14v6M8 21h8" /></svg>;
   /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
   if (style === 'patisserie') return <svg {...TRAIT}><rect x="3" y="9" width="18" height="12" rx="1" /><path d="M3 13h18M12 9v12" /><path d="M12 9c-1.5-3-5-3.5-5-1.5S10 9 12 9c2 0 5 .5 5-1.5S13.5 6 12 9z" /></svg>;
   if (style === 'cabinet') return <svg {...TRAIT}><rect x="6" y="2" width="12" height="3" rx="1" /><path d="M7 5v1a3 3 0 0 1-2 2.8V19a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8.8A3 3 0 0 1 17 6V5" /><path d="M5 13h14" /></svg>;
@@ -121,6 +127,9 @@ export function IconPaquets() {
 /** La bulle : la conversation. */
 export function IconParler() {
   const style = useStyle();
+  /* CHANTIER 227 — Japon zen et Cotton Club. */
+  if (style === 'japon') return <svg {...TRAIT}><path d="M4 10h16a8 8 0 0 1-16 0z" /><path d="M2 21h20" /><path d="M9 3c-1 1.3 1 2.4 0 3.8M14 3c-1 1.3 1 2.4 0 3.8" /></svg>;
+  if (style === 'jazz') return <svg {...TRAIT}><rect x="8" y="2" width="8" height="12" rx="4" /><path d="M8 7h8M8 10h8" /><path d="M5 11a7 7 0 0 0 14 0" /><path d="M12 18v4M8 22h8" /></svg>;
   /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
   if (style === 'patisserie') return <svg {...TRAIT}><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" /><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" /><path d="M3 21h16" /><path d="M8 2c-1 1.2 1 2.2 0 3.4M12 2c-1 1.2 1 2.2 0 3.4" /></svg>;
   if (style === 'cabinet') return <svg {...TRAIT}><path d="M4 21h7" /><path d="M7.5 21v-6" /><path d="M7.5 15 20 4c1.2 3.2.6 9-3 11.6S9 17 7.5 15z" /></svg>;
@@ -149,6 +158,9 @@ export function IconParler() {
 /** Les trois curseurs : les réglages. */
 export function IconReglages() {
   const style = useStyle();
+  /* CHANTIER 227 — Japon zen et Cotton Club. */
+  if (style === 'japon') return <svg {...TRAIT}><path d="M12 21 3 9a12 12 0 0 1 18 0z" /><path d="M12 21 8 8M12 21V7M12 21l4-13" /></svg>;
+  if (style === 'jazz') return <svg {...TRAIT}><rect x="2" y="5" width="20" height="14" rx="1" /><path d="M7 5v9M12 5v9M17 5v9" /><path d="M2 14h20" /></svg>;
   /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
   if (style === 'patisserie') return <svg {...TRAIT}><path d="M12 13v9" /><path d="M12 13c-4-2-5-9 0-11 5 2 4 9 0 11z" /><path d="M12 13c-1.8-2-2-7.5 0-11 2 3.5 1.8 9 0 11z" /></svg>;
   if (style === 'cabinet') return <svg {...TRAIT}><path d="M6 18h8" /><path d="M3 22h18" /><path d="M14 22a7 7 0 1 0 0-14h-1" /><path d="M9 14h2" /><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z" /><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" /></svg>;
@@ -177,6 +189,9 @@ export function IconReglages() {
 /** La courbe qui monte : ce qui progresse. */
 export function IconProgres() {
   const style = useStyle();
+  /* CHANTIER 227 — Japon zen et Cotton Club. */
+  if (style === 'japon') return <svg {...TRAIT}><path d="M2 20 9 7l2.5 3L13 8l9 12z" /><path d="m7 10.5 2 1 2.5-1.5 1.5 1 2-1" /></svg>;
+  if (style === 'jazz') return <svg {...TRAIT}><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" /></svg>;
   /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
   if (style === 'patisserie') return <svg {...TRAIT}><path d="M4 21h16" /><rect x="5" y="16" width="14" height="5" rx="1" /><rect x="7.5" y="11" width="9" height="5" rx="1" /><rect x="10" y="6" width="4" height="5" rx="1" /><path d="M12 6V3" /></svg>;
   if (style === 'cabinet') return <svg {...TRAIT}><circle cx="12" cy="12" r="1" /><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z" /><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z" /></svg>;

@@ -136,14 +136,30 @@ export function Alambic() {
   );
 }
 
+/* CHANTIER 227 — Japon zen : le mont Fuji, deux nuages qui passent devant le sommet, le sol,
+   et des pétales de cerisier qui filent au vent. */
+const VENT: Array<[number, number, number]> = [[10, 0, 9], [28, -3, 11], [48, -6, 8.5], [66, -1.5, 10], [84, -5, 12], [38, -8, 9.5], [74, -9, 11]];
+
+function Japon({ anime }: { anime: boolean }) {
+  return (
+    <div className="fond-anime japon jp-salle" aria-hidden="true">
+      <i className="jp-fuji" />
+      {anime && <><i className="jp-nuage n1" /><i className="jp-nuage n2" /></>}
+      <i className="jp-sol" />
+      {anime && VENT.map(([x, d, t], k) => <i key={k} className={`jp-petale${k % 2 ? ' g' : ''}`} style={{ left: `${x}%`, animationDuration: `${t}s`, animationDelay: `${d}s` }} />)}
+    </div>
+  );
+}
+
 export function Salle() {
   const style = useStyle();
-  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet') return null;
+  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet' && style !== 'japon') return null;
   const anime = !calme();
   return createPortal(
     style === 'cinema' ? <Cinema anime={anime} />
       : style === 'biblio' ? <Biblio anime={anime} />
       : style === 'patisserie' ? <Patisserie anime={anime} />
+      : style === 'japon' ? <Japon anime={anime} />
       : <Cabinet anime={anime} />,
     document.body,
   );

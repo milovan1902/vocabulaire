@@ -61,6 +61,9 @@ import './ui/biblio.css';
 /* CHANTIER 223 — Salon de thé (Parisienne) et Cabinet 1900 (Cinzel), polices dans public/fonts. */
 import './ui/patisserie.css';
 import './ui/cabinet.css';
+/* CHANTIER 227 — Japon zen (Shippori Mincho) et Cotton Club (Bodoni Moda, Poiret One), polices dans public/fonts. */
+import './ui/japon.css';
+import './ui/jazz.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

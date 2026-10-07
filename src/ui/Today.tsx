@@ -443,6 +443,11 @@ export function Today({
       /* CHANTIER 223 — Salon de thé : la gourmandise ; Cabinet 1900 : l'expérience. */
       : style === 'patisserie'
         ? { defi: 'La gourmandise du jour', go: 'Déguster', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} douceurs` }
+      /* CHANTIER 227 — Japon zen : la voie ; Cotton Club : la scène. */
+      : style === 'japon'
+        ? { defi: 'La voie du jour', go: 'Entrer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} sushis` }
+      : style === 'jazz'
+        ? { defi: 'Ce soir sur scène', go: 'Lever de rideau', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} mesures` }
       : style === 'cabinet'
         ? { defi: 'L’expérience du jour', go: 'Expérimenter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} échantillons` }
       : style === 'tv'
@@ -480,7 +485,7 @@ export function Today({
       : style === 'fashion' ? <i className="chevron-mode" />
       /* CHANTIER 216 — Cinéma muet : un triangle de projecteur ; Bibliothèque : un chevron fin. */
       : style === 'cinema' ? <i className="fleche-cine" />
-      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' ? <i className="chevron-mode" />
+      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' ? <i className="chevron-mode" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -583,7 +588,7 @@ export function Today({
           <Eventail
             paquets={aFaire}
             centre={iCentre}
-            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : 'eventail'}
+            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : 'eventail'}
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
@@ -600,7 +605,7 @@ export function Today({
             || style === 'basket' || style === 'foot' || style === 'rugby'
             || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
             || style === 'tapis' || style === 'salon' || style === 'station' || style === 'fashion'
-            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet') && aFaire.length > 1 && (
+            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"

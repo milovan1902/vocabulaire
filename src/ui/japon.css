@@ -1,0 +1,224 @@
+/* ==================================================================
+   CHANTIER 227 — « Japon zen » (maquette 51a) : une maison au pied du Fuji.
+   Ciel rose du soir, mont Fuji enneigé, papier crème, vermillon des torii,
+   cerisier en fleurs. Shippori Mincho pour les grands textes (public/fonts).
+
+   Active quand <html> porte data-style="japon" (theme.ts). Base CLAIRE,
+   forme du Lycée (estLudique).
+   - Le fond (Salle.tsx) : le Fuji, deux nuages, le sol, des pétales au vent.
+   - Les paquets (Eventail.tsx, forme 'maison') : la carte sur le pas de la porte ;
+     au changement, les panneaux coulissants se ferment puis se rouvrent.
+   - « Cette semaine » : cinq sushis ; baguettes, sauce soja, garnis à 6, plus gros à 7.
+   - Révision : un ema (plaquette votive) qui se balance ; notes en éventails.
+   ================================================================== */
+@font-face { font-family: 'Shippori Mincho'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/shippori-mincho-latin.woff2') format('woff2'); }
+[data-style='japon'] {
+  --paper: #f7f0e2; --panel: #f7f0e2; --panel-hi: #efe4cf;
+  --ink: #2a2233; --ink-soft: #4a3a50; --grey: #6a5c70; --ink-dim: #6a5c70;
+  --rule: rgba(42, 34, 51, 0.12); --rule-strong: rgba(42, 34, 51, 0.24);
+  --chalk: #d9472b; --chalk-ink: #b8361e; --on-chalk: #f7f0e2;
+  --good: #6f9a7a; --bad: #d9472b;
+  --voile: rgba(42, 34, 51, 0.05); --voile-2: rgba(42, 34, 51, 0.1); --voile-3: rgba(42, 34, 51, 0.16);
+  --bleu: #d9472b; --bleu-ink: #b8361e; --rouge: #d9472b; --orange: #e08a3a;
+  --ly-voile: rgba(42, 34, 51, 0.15); --ly-voile-2: rgba(217, 71, 43, 0.4);
+  --ly-tabbar: #2a2233; --ly-ombre: rgba(20, 14, 30, 0.3); --ly-tag: #f7f0e2; --ly-bord-carte: #6b4a2e;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Shippori Mincho', Georgia, serif;
+  --titre: 'Shippori Mincho', Georgia, serif;
+  --anneau: #d9472b;
+  --ciel: radial-gradient(circle at 74% 14%, #ffe2b8 0 22px, rgba(255, 200, 150, 0.5) 23px, transparent 60px), linear-gradient(180deg, #f3b8a8 0, #e7a2a8 22%, #b98bb0 42%, #5e5383 62%, #3c3558 78%);
+  --shoji: linear-gradient(90deg, transparent calc(33.3% - 1px), #6b4a2e calc(33.3% - 1px) calc(33.3% + 1px), transparent calc(33.3% + 1px) calc(66.6% - 1px), #6b4a2e calc(66.6% - 1px) calc(66.6% + 1px), transparent calc(66.6% + 1px)), repeating-linear-gradient(180deg, transparent 0 23px, #6b4a2e 23px 25px), #f7f0e2;
+}
+[data-style='japon'] body { font-family: var(--sans); color: var(--ink); background-color: #3c3558; background-image: var(--ciel); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='japon'] .screen-title, [data-style='japon'] .topbar h1, [data-style='japon'] .welcome-head h1, [data-style='japon'] .done h2, [data-style='japon'] .sheet h3, [data-style='japon'] .today-count b { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; }
+[data-style='japon'] .tabbar { background: #2a2233; border-top: 3px solid #d9472b; }
+[data-style='japon'] .tabbar button { color: rgba(247, 240, 226, 0.6); }
+[data-style='japon'] .tabbar button.on { color: #f7f0e2; }
+[data-style='japon'] .tabbar button.on::before { display: none; }
+[data-style='japon'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='japon'] .tabbar button.on .tabsvg { background: rgba(217, 71, 43, 0.35); }
+[data-style='japon'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='japon'] .reveal { background: #d9472b; color: #f7f0e2; border: none; border-radius: 2px; box-shadow: 0 4px 0 #8f2a17; font-family: var(--titre); font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; }
+[data-style='japon'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active, [data-style='japon'] .reveal:active { transform: translateY(3px); box-shadow: 0 1px 0 #8f2a17; }
+
+/* ---------- le fond (Salle.tsx), sur « Aujourd'hui » seulement ---------- */
+body:not(:has(.today.ly)) .jp-salle { display: none; }
+.jp-salle .jp-fuji { left: -20px; right: -20px; top: 150px; height: 140px; opacity: 0.9; background: linear-gradient(180deg, #f7f0f4 0 18%, #6a5f8c 22%, #4a416b); clip-path: polygon(0 100%, 30% 30%, 40% 8%, 46% 4%, 54% 4%, 60% 8%, 70% 30%, 100% 100%); }
+.jp-salle .jp-nuage { left: 0; top: 168px; width: 140px; height: 18px; border-radius: 50%; background: radial-gradient(ellipse at 50% 60%, rgba(255, 245, 250, 0.85), rgba(255, 240, 248, 0) 70%); animation: jp-nuage 22s linear infinite; }
+.jp-salle .jp-nuage.n2 { top: 182px; width: 110px; height: 14px; animation-duration: 30s; animation-delay: -12s; }
+.jp-salle .jp-sol { left: -10px; right: -10px; top: 250px; bottom: 0; background: linear-gradient(180deg, #3c3558, #2a2440); }
+.jp-salle .jp-petale { top: -20px; width: 8px; height: 10px; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #fff, #f6a9c0 60%); opacity: 0; animation-name: jp-vent; animation-timing-function: linear; animation-iteration-count: infinite; }
+.jp-salle .jp-petale.g { background: linear-gradient(135deg, #fff, #f39ab4 60%); }
+
+/* ---------- l'en-tête : le niveau en torii, la série en lanterne ---------- */
+[data-style='japon'] .ly-niv { position: relative; width: 44px; height: 44px; border: none; border-radius: 0; color: #f7f0e2;
+  background: linear-gradient(#d9472b, #d9472b) 50% 4px / 100% 5px no-repeat, linear-gradient(#d9472b, #d9472b) 50% 13px / 36px 3px no-repeat, linear-gradient(#d9472b, #d9472b) 8px 4px / 5px 40px no-repeat, linear-gradient(#d9472b, #d9472b) calc(100% - 8px) 4px / 5px 40px no-repeat; }
+[data-style='japon'] .ly-niv small { display: none; }
+[data-style='japon'] .ly-niv b { margin-top: 14px; font-family: var(--titre); font-size: 17px; font-weight: 400; color: #f7f0e2; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+[data-style='japon'] .ly-xp-txt { color: #4a3a50; }
+[data-style='japon'] .ly-xp-txt b { font-family: var(--titre); font-weight: 400; font-size: 16px; color: #2a2233; }
+[data-style='japon'] .ly-barre { height: 3px; border-radius: 0; background: rgba(42, 34, 51, 0.2); }
+[data-style='japon'] .ly-barre i { border-radius: 0; background: #d9472b; }
+[data-style='japon'] .ly-flamme { height: 34px; padding: 0 10px; gap: 6px; border-radius: 17px; background: rgba(247, 240, 226, 0.85); color: #2a2233; }
+[data-style='japon'] .ly-flamme svg { display: none; }
+[data-style='japon'] .ly-flamme::before { content: ''; flex: none; width: 10px; height: 13px; border-radius: 40%; background: radial-gradient(circle at 50% 40%, #ffe7a8, #d9472b); box-shadow: 0 0 6px #e6b75a; }
+[data-style='japon'] .ly-flamme b { font-family: var(--titre); font-size: 17px; font-weight: 400; color: #2a2233; }
+[data-style='japon'] .ly-defi { padding: 12px 16px; border: none; border-radius: 2px; text-align: center; background: rgba(247, 240, 226, 0.92); box-shadow: inset 0 0 0 1px #d9472b, 0 6px 18px rgba(42, 34, 51, 0.25); }
+[data-style='japon'] .ly-defi-haut { justify-content: center; flex-wrap: wrap; }
+[data-style='japon'] .ly-defi-haut > span:first-child { font-size: 10.5px; font-weight: 400; letter-spacing: 0.28em; color: #d9472b; }
+[data-style='japon'] .ly-gain { border-radius: 2px; background: #d9472b; color: #f7f0e2; }
+[data-style='japon'] .ly-defi-n { font-family: var(--titre); font-size: 40px; font-weight: 400; line-height: 1.1; letter-spacing: 0; color: #2a2233; }
+[data-style='japon'] .ly-defi-sous, [data-style='japon'] .ly-defi-jour { color: #6a5c70; }
+
+/* ---------- les paquets : la maison (Eventail.tsx, forme 'maison') ---------- */
+[data-style='japon'] .ly-scene { position: relative; }
+[data-style='japon'] .eventail.maison { height: 200px; margin-top: 12px; overflow: visible; }
+[data-style='japon'] .eventail.maison .eventail-carte { top: 68px; transform-origin: 50% 0; transition: opacity 0.2s ease 0.38s; }
+[data-style='japon'] .eventail.maison .eventail-dos { border: none; border-radius: 2px; box-shadow: 0 8px 14px rgba(0, 0, 0, 0.4); }
+[data-style='japon'] .jp-maison { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='japon'] .jp-maison i, [data-style='japon'] .jp-maison span { position: absolute; display: block; }
+[data-style='japon'] .jp-maison .toit { left: 50%; top: 6px; width: 258px; height: 54px; margin-left: -129px; background: repeating-linear-gradient(90deg, #45414f 0 7px, #34313d 7px 9px); clip-path: polygon(4% 100%, 0 80%, 13% 62%, 28% 6%, 72% 6%, 87% 62%, 100% 80%, 96% 100%); }
+[data-style='japon'] .jp-maison .faitage { left: 50%; top: 2px; width: 118px; height: 8px; margin-left: -59px; border-radius: 4px; background: #26232d; }
+[data-style='japon'] .jp-maison .avant-toit { left: 50%; top: 56px; width: 236px; height: 6px; margin-left: -118px; background: #26232d; }
+[data-style='japon'] .jp-maison .murs { left: 50%; top: 62px; width: 214px; height: 118px; margin-left: -107px; background: linear-gradient(90deg, #4a3324 0 8px, #eadfc4 8px calc(50% - 64px), #4a3324 calc(50% - 64px) calc(50% - 58px), transparent calc(50% - 58px) calc(50% + 58px), #4a3324 calc(50% + 58px) calc(50% + 64px), #eadfc4 calc(50% + 64px) calc(100% - 8px), #4a3324 calc(100% - 8px)); }
+[data-style='japon'] .jp-maison .entree { left: 50%; top: 62px; width: 116px; height: 118px; margin-left: -58px; background: linear-gradient(180deg, #3a2c22, #5a4632 70%, #8a7a52 70%, #a8986a); }
+[data-style='japon'] .jp-maison .linteau { left: 50%; top: 76px; z-index: 11; width: 214px; height: 3px; margin-left: -107px; background: #4a3324; }
+[data-style='japon'] .jp-maison .perron { left: 50%; top: 180px; width: 240px; height: 8px; margin-left: -120px; background: linear-gradient(180deg, #9a7448, #6b4a2e); }
+[data-style='japon'] .jp-maison .pierre { left: 50%; top: 188px; width: 60px; height: 8px; margin-left: -30px; border-radius: 2px; background: #8a8274; }
+[data-style='japon'] .jp-maison .lanterne { left: calc(50% + 72px); top: 79px; z-index: 12; width: 16px; }
+[data-style='japon'] .jp-maison .lanterne i { position: relative; }
+[data-style='japon'] .jp-maison .lanterne i:nth-child(1) { width: 1px; height: 8px; margin: 0 auto; background: #2a2233; }
+[data-style='japon'] .jp-maison .lanterne i:nth-child(2), [data-style='japon'] .jp-maison .lanterne i:nth-child(4) { height: 3px; border-radius: 1px; background: #2a2233; }
+[data-style='japon'] .jp-maison .lanterne i:nth-child(3) { height: 20px; border-radius: 45%; background: repeating-linear-gradient(180deg, transparent 0 4px, rgba(120, 40, 20, 0.3) 4px 5px), radial-gradient(circle at 50% 45%, #fff2c0, #f2a04a 60%, #d9472b); box-shadow: 0 0 10px rgba(255, 190, 100, 0.8); animation: jp-lanterne 2.2s ease-in-out infinite; }
+/* Le cerisier, au premier plan, qui se balance. */
+[data-style='japon'] .jp-maison .cerisier { left: -18px; top: 0; z-index: 13; width: 120px; height: 200px; transform-origin: 22px 200px; animation: jp-arbre 5s ease-in-out infinite alternate; }
+[data-style='japon'] .cerisier .tronc { left: 14px; top: 118px; width: 16px; height: 82px; border-radius: 4px; background: linear-gradient(90deg, #2e1a12, #6a4430 45%, #3a2418); clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); }
+[data-style='japon'] .cerisier :is(.b1, .b2, .b3) { transform-origin: 0 50%; background: linear-gradient(180deg, #5a3626, #2e1a12); border-radius: 6px; }
+[data-style='japon'] .cerisier .b1 { left: 22px; top: 128px; width: 62px; height: 6px; transform: rotate(-32deg); }
+[data-style='japon'] .cerisier .b2 { left: 20px; top: 122px; width: 44px; height: 5px; transform: rotate(-78deg); }
+[data-style='japon'] .cerisier .b3 { left: 26px; top: 140px; width: 50px; height: 4px; transform: rotate(-8deg); }
+[data-style='japon'] .cerisier [class^='f'] { border-radius: 50% 50% 46% 54% / 55% 50% 50% 45%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0 1.3px, transparent 1.8px) 0 0 / 8px 7px, radial-gradient(circle at 70% 60%, rgba(255, 240, 245, 0.8) 0 1px, transparent 1.5px) 3px 2px / 9px 8px, radial-gradient(circle at 38% 32%, #ffeef3, #f6a9c0 60%, #d0688a);
+  box-shadow: inset -3px -4px 7px rgba(170, 50, 90, 0.25), 0 2px 4px rgba(60, 20, 40, 0.15); }
+[data-style='japon'] .cerisier .f1 { left: -6px; top: 96px; width: 40px; height: 33px; }
+[data-style='japon'] .cerisier .f2 { left: 22px; top: 78px; width: 46px; height: 38px; }
+[data-style='japon'] .cerisier .f3 { left: 54px; top: 90px; width: 38px; height: 31px; }
+[data-style='japon'] .cerisier .f4 { left: 8px; top: 120px; width: 36px; height: 30px; }
+[data-style='japon'] .cerisier .f5 { left: 44px; top: 116px; width: 42px; height: 34px; }
+[data-style='japon'] .cerisier .f6 { left: 72px; top: 112px; width: 30px; height: 25px; }
+[data-style='japon'] .cerisier .f7 { left: -4px; top: 140px; width: 30px; height: 25px; }
+/* Les panneaux coulissants : ouverts de part et d'autre de la porte ; au changement, ils se ferment puis se rouvrent. */
+[data-style='japon'] .jp-porte { position: absolute; top: 62px; z-index: 11; width: 58px; height: 118px; display: block; pointer-events: none; background: var(--shoji); box-shadow: inset 0 0 0 3px #6b4a2e; }
+[data-style='japon'] .jp-porte.g { left: calc(50% - 116px); }
+[data-style='japon'] .jp-porte.d { left: calc(50% + 58px); }
+[data-style='japon'] .jp-porte.g.v0 { animation: jp-porte-g-0 0.95s ease-in-out; }
+[data-style='japon'] .jp-porte.g.v1 { animation: jp-porte-g-1 0.95s ease-in-out; }
+[data-style='japon'] .jp-porte.d.v0 { animation: jp-porte-d-0 0.95s ease-in-out; }
+[data-style='japon'] .jp-porte.d.v1 { animation: jp-porte-d-1 0.95s ease-in-out; }
+[data-style='japon'] .jp-bouffee { position: absolute; left: 50%; top: 150px; z-index: 12; display: block; pointer-events: none; }
+[data-style='japon'] .jp-bouffee i { position: absolute; left: -3px; top: 0; display: block; width: 7px; height: 9px; border-radius: 80% 0 80% 0; background: #f6a9c0; opacity: 0; }
+[data-style='japon'] .jp-bouffee i:nth-child(1) { --bx: -30px; --by: -40px; }
+[data-style='japon'] .jp-bouffee i:nth-child(2) { --bx: 26px; --by: -50px; background: #f9c2d2; }
+[data-style='japon'] .jp-bouffee i:nth-child(3) { --bx: 4px; --by: -62px; background: #f39ab4; }
+[data-style='japon'] .jp-bouffee.v0 i { animation: jp-bouffee-0 1.1s ease-out 0.25s both; }
+[data-style='japon'] .jp-bouffee.v1 i { animation: jp-bouffee-1 1.1s ease-out 0.25s both; }
+[data-style='japon'] .eventail-due { right: -14px; top: -14px; background: #d9472b; color: #f7f0e2; }
+[data-style='japon'] .eventail-carte .classdot.eventail-classe { background: #f7f0e2; color: #2a2233; border-color: #d9472b; }
+[data-style='japon'] .ly-points i { background: rgba(247, 240, 226, 0.4); }
+[data-style='japon'] .ly-points i.on { background: #d9472b; }
+[data-style='japon'] .ly-nom { width: fit-content; max-width: calc(100% - 110px); margin-inline: auto; padding: 6px 14px; border-radius: 2px; background: rgba(247, 240, 226, 0.92); color: #2a2233; font-family: var(--titre); font-size: 17px; font-weight: 400; }
+[data-style='japon'] .ly-nom span { font-family: var(--sans); font-size: 12px; color: #6a5c70; }
+[data-style='japon'] .ly-fusee { z-index: 14; width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(247, 240, 226, 0.9); color: #d9472b; }
+[data-style='japon'] .ly-fusee:focus-visible { outline: 2px solid #d9472b; outline-offset: 2px; }
+[data-style='japon'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='japon'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+
+/* ---------- les tuiles ; la semaine en sushis ---------- */
+[data-style='japon'] .ly-tuile { border: none; border-radius: 2px; background: rgba(247, 240, 226, 0.94); color: #2a2233; }
+[data-style='japon'] .ly-tuile-haut { font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #6a5c70; }
+[data-style='japon'] .ly-tuile-haut svg { color: #d9472b; }
+[data-style='japon'] .ly-tuile > b { font-family: var(--titre); font-size: 20px; font-weight: 400; letter-spacing: 0; color: #2a2233; }
+[data-style='japon'] .ly-tuile > small { color: #6a5c70; }
+/* La planche de bois, puis un sushi par jour : saumon, thon, crevette, tamago, maki. */
+[data-style='japon'] .ly-segments { position: relative; align-self: stretch; display: flex; justify-content: space-around; align-items: flex-end; gap: 0; height: 40px; padding: 0 2px 5px; box-sizing: border-box; background: linear-gradient(180deg, #c8986a, #8a5e38) 0 100% / 100% 5px no-repeat; }
+[data-style='japon'] .ly-segments i { position: relative; flex: none; width: 22px; height: 16px; box-sizing: border-box; border-radius: 6px; border: 1.2px dashed rgba(42, 34, 51, 0.35); background: transparent; transform-origin: 50% 100%; }
+[data-style='japon'] .ly-segments i.on { border: none; border-radius: 7px 7px 4px 4px; filter: drop-shadow(0 2px 1.5px rgba(42, 34, 51, 0.35));
+  background: var(--dessus) 0 2px / 100% 8px no-repeat, radial-gradient(circle, #e8e4d6 0 0.8px, transparent 1.1px) 0 7px / 3px 3px, linear-gradient(#fbfaf5, #fbfaf5) 1px 7px / calc(100% - 2px) 9px no-repeat; }
+[data-style='japon'] .ly-segments i:nth-child(1) { --dessus: linear-gradient(110deg, #f08a4b 0 22%, #ffd0b0 22% 28%, #f08a4b 28% 50%, #ffd0b0 50% 56%, #f08a4b 56% 78%, #ffd0b0 78% 84%, #f08a4b 84%); --garni: radial-gradient(circle, #ff6a1a 0 1.6px, transparent 2px) 0 0 / 4px 4px; }
+[data-style='japon'] .ly-segments i:nth-child(2) { --dessus: linear-gradient(180deg, #d4374a, #a81c30); --garni: linear-gradient(135deg, #4f9a3a, #2e6e22); }
+[data-style='japon'] .ly-segments i:nth-child(3) { --dessus: linear-gradient(90deg, #ff9a6a 0 18%, #fff2e6 18% 24%, #ff9a6a 24% 46%, #fff2e6 46% 52%, #ff9a6a 52% 74%, #fff2e6 74% 80%, #ff9a6a 80%); --garni: radial-gradient(circle, #7ac24a 0 1.2px, transparent 1.6px) 0 0 / 4px 3px; }
+[data-style='japon'] .ly-segments i:nth-child(4) { --dessus: linear-gradient(90deg, #ffe066 0 36%, #1c2a20 36% 64%, #ffe066 64%); --garni: radial-gradient(circle, #7ac24a 0 1.2px, transparent 1.6px) 0 0 / 4px 3px; }
+[data-style='japon'] .ly-segments i:nth-child(5).on { border-radius: 50% / 40%; background: radial-gradient(circle at 50% 35%, #f08a4b 0 18%, #7ac24a 18% 26%, #fbfaf5 26% 44%, #1c2a20 44%); }
+[data-style='japon'] .ly-segments i:nth-child(5) { --garni: radial-gradient(circle, #ff6a1a 0 1.4px, transparent 1.8px) 0 0 / 4px 4px; }
+/* 6 jours : garnis ; 7 jours : garnis et plus gros. */
+[data-style='japon'] .ly-segments.b6 i.on::before { content: ''; position: absolute; left: 4px; right: 4px; top: -2px; height: 4px; border-radius: 2px; background: var(--garni); }
+[data-style='japon'] .ly-segments.b6 i.on:nth-child(2)::before { left: 5px; right: auto; top: -3px; width: 12px; height: 6px; border-radius: 80% 0; transform: rotate(-12deg); }
+[data-style='japon'] .ly-segments.b7 i.on { scale: 1.25; }
+/* Le sushi du jour : des baguettes viennent le poser, à chaque arrivée sur « Aujourd'hui ». */
+[data-style='japon'] .ly-segments i.auj.on { animation: jp-pose 1.2s ease-out both; }
+[data-style='japon'] .ly-segments i.auj.on::after { content: ''; position: absolute; left: 7px; top: -30px; width: 8px; height: 30px; opacity: 0; pointer-events: none; background: linear-gradient(100deg, transparent 0 30%, #3a2614 30% 42%, transparent 42% 58%, #5a3a20 58% 70%, transparent 70%); animation: jp-baguettes 1s ease-in-out both; }
+/* 5 / 5 : une goutte de sauce soja tombe dans la coupelle, qui fait des ronds. */
+[data-style='japon'] .ly-segments.plein::after { content: ''; position: absolute; right: 2px; top: -22px; width: 22px; height: 9px; border-radius: 50%; background: radial-gradient(ellipse at 50% 45%, #3a1a0a 0 45%, #f4efe4 48% 70%, #c8bfae 72%); box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25); animation: jp-rond 0.9s ease-out 1.65s both; }
+[data-style='japon'] .ly-segments.plein::before { content: ''; position: absolute; right: 11px; top: -40px; width: 4px; height: 6px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #3a1a0a; opacity: 0; animation: jp-goutte 0.5s ease-in 1.2s both; }
+
+/* ---------- Révision : l'ema qui se balance ; les notes en éventails ---------- */
+[data-style='japon'] .studybg { background-color: #3c3558; background-image: var(--ciel) !important; background-size: 100% 100%; background-repeat: no-repeat; }
+[data-style='japon'] .studybg::after { display: none; }
+[data-style='japon'] .studytop .pos { font-family: var(--titre); font-size: 16px; color: #2a2233; }
+[data-style='japon'] .studytop .stop { background: rgba(247, 240, 226, 0.9); color: #d9472b; border: none; border-radius: 50%; }
+[data-style='japon'] .progressbar { height: 3px; border-radius: 0; background: rgba(42, 34, 51, 0.2); }
+[data-style='japon'] .progressbar i { border-radius: 0; background: #d9472b; }
+[data-style='japon'] .ly-combo { border-radius: 2px; background: #d9472b; color: #f7f0e2; }
+[data-style='japon'] .studystage { --ink: #3a2614; position: relative; margin: 22px 10px 16px; padding: 48px 22px 26px; border: none; border-radius: 0; color: #3a2614; transform-origin: 50% -20px;
+  clip-path: polygon(50% 0, 100% 16%, 100% 100%, 0 100%, 0 16%);
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.06), transparent 15%, transparent 85%, rgba(0, 0, 0, 0.06)), repeating-linear-gradient(0deg, #e8cfa4 0 6px, #e2c697 6px 7px);
+  filter: drop-shadow(0 14px 18px rgba(20, 14, 30, 0.35)); }
+[data-style='japon'] .studystage::before { content: ''; position: absolute; left: 50%; top: 22px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: #6b4a2e; box-shadow: 0 0 0 2px #d9472b; }
+[data-style='japon'] .studystage.t0 { animation: jp-ema-0 1.4s ease-out; }
+[data-style='japon'] .studystage.t1 { animation: jp-ema-1 1.4s ease-out; }
+[data-style='japon'] .studystage .tag { border: none; border-radius: 0; background: transparent; color: #8a5a34; font-size: 10.5px; letter-spacing: 0.28em; text-transform: uppercase; }
+[data-style='japon'] .ask { font-family: var(--titre); font-size: 15px; color: #b8361e; }
+[data-style='japon'] .word, [data-style='japon'] .answer { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.2; color: #3a2614; }
+/* La réponse s'écrit d'un trait de pinceau (le cadre dépasse : les jambages ne sont pas rognés). */
+[data-style='japon'] .answer { padding-bottom: 6px; animation: jp-pinceau 0.8s ease-out 0.1s both; }
+[data-style='japon'] .wordsmall { color: #7a5a3a; }
+[data-style='japon'] .ruleline { width: auto; height: auto; border: none; background: none; }
+[data-style='japon'] .ruleline::before { content: '❀'; font-family: var(--titre); font-size: 16px; line-height: 1; color: #d9472b; }
+[data-style='japon'] .example { font-family: var(--sans); font-style: normal; color: #7a5a3a; }
+[data-style='japon'] .speak { background: transparent; border: 1px solid #3a2614; border-radius: 0; color: #3a2614; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; }
+[data-style='japon'] .tap-hint { color: #f7f0e2; }
+[data-style='japon'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; }
+/* L'éventail : des lames rayonnantes, un clou de bois ; au toucher, il se replie puis se déploie d'un coup sec. */
+[data-style='japon'] .grades .grade { position: relative; min-height: 86px; padding: 46px 0 4px; border: none; border-radius: 0; background: transparent; box-shadow: none; color: #f7f0e2; font-family: var(--titre); font-size: 15px; font-weight: 400; letter-spacing: 0; }
+[data-style='japon'] .grades .grade small { font-family: var(--sans); font-size: 11px; color: #e8dfea; }
+[data-style='japon'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 4px; width: 68px; height: 68px; margin-left: -34px; border-radius: 50%; transform-origin: 50% 50%;
+  background: radial-gradient(circle, #6b4a2e 0 4px, transparent 4.5px), repeating-conic-gradient(from -90deg at 50% 50%, var(--c) 0 10deg, color-mix(in srgb, var(--c) 70%, #fff) 10deg 20deg);
+  clip-path: polygon(50% 50%, 0 0, 100% 0); -webkit-mask: radial-gradient(circle at 50% 50%, #000 0 4px, transparent 4.5px 12px, #000 12.5px); mask: radial-gradient(circle at 50% 50%, #000 0 4px, transparent 4.5px 12px, #000 12.5px); }
+[data-style='japon'] .grades .g-again { --c: #d9472b; }
+[data-style='japon'] .grades .g-hard { --c: #e08a3a; }
+[data-style='japon'] .grades .g-good { --c: #6f9a7a; }
+[data-style='japon'] .grades .g-easy { --c: #6d7fc0; }
+[data-style='japon'] .grades .grade.frappe::before { animation: jp-eventail 0.65s ease-in-out; }
+
+@keyframes jp-nuage { from { transform: translateX(-160px); } to { transform: translateX(110vw); } }
+@keyframes jp-vent { 0% { transform: translate(-80px, 0) rotate(0); opacity: 0; } 8% { opacity: 0.9; } 35% { transform: translate(60px, 28vh) rotate(200deg); } 65% { transform: translate(150px, 55vh) rotate(340deg); } 92% { opacity: 0.8; } 100% { transform: translate(260px, 100vh) rotate(560deg); opacity: 0; } }
+@keyframes jp-arbre { from { transform: rotate(-1.5deg); } to { transform: rotate(2deg); } }
+@keyframes jp-lanterne { 0%, 100% { filter: brightness(1); } 30% { filter: brightness(0.85); } 55% { filter: brightness(1.12); } }
+@keyframes jp-porte-g-0 { 0%, 100% { transform: none; } 35%, 60% { transform: translateX(58px); } }
+@keyframes jp-porte-g-1 { 0%, 100% { transform: none; } 35%, 60% { transform: translateX(58px); } }
+@keyframes jp-porte-d-0 { 0%, 100% { transform: none; } 35%, 60% { transform: translateX(-58px); } }
+@keyframes jp-porte-d-1 { 0%, 100% { transform: none; } 35%, 60% { transform: translateX(-58px); } }
+@keyframes jp-bouffee-0 { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--bx), var(--by)) rotate(260deg); opacity: 0; } }
+@keyframes jp-bouffee-1 { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--bx), var(--by)) rotate(260deg); opacity: 0; } }
+@keyframes jp-pose { 0%, 40% { translate: 0 -14px; opacity: 0; } 60% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 1; } }
+@keyframes jp-baguettes { 0% { transform: translateY(-34px); opacity: 0; } 25% { opacity: 1; } 40%, 60% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-34px); opacity: 0; } }
+@keyframes jp-goutte { 0% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(16px) scaleY(1.3); opacity: 1; } 100% { transform: translateY(18px); opacity: 0; } }
+@keyframes jp-rond { 0% { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(255, 230, 200, 0.8); } 100% { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 0 0 8px rgba(255, 230, 200, 0); } }
+@keyframes jp-ema-0 { 0% { transform: rotate(9deg); } 30% { transform: rotate(-6deg); } 55% { transform: rotate(3.5deg); } 78% { transform: rotate(-1.5deg); } 100% { transform: none; } }
+@keyframes jp-ema-1 { 0% { transform: rotate(9deg); } 30% { transform: rotate(-6deg); } 55% { transform: rotate(3.5deg); } 78% { transform: rotate(-1.5deg); } 100% { transform: none; } }
+@keyframes jp-pinceau { 0% { clip-path: inset(-20% 100% -30% 0); filter: blur(1.5px); } 100% { clip-path: inset(-20% -5% -30% 0); filter: none; } }
+@keyframes jp-eventail { 0% { transform: scaleX(1); } 30%, 45% { transform: scaleX(0.12); } 70% { transform: scaleX(1.08); } 100% { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='japon'] *, [data-style='japon'] *::before, [data-style='japon'] *::after, .jp-salle * { animation: none !important; transition: none !important; }
+}
