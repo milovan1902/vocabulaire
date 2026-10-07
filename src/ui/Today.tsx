@@ -194,8 +194,6 @@ export function Today({
   onXp: () => void;
 }) {
   const [rows, setRows] = useState<DeckSummary[] | null>(null);
-  const [dueByDay, setDueByDay] = useState<number[]>([]);
-  const [resting, setResting] = useState(0);
   const [choisi, setChoisi] = useState<string | null>(() => lireChoix());
   /* CHANTIER 165 — style Lycée : la forme de l'écran change, pas seulement ses couleurs. */
   const style = useStyle();
@@ -204,7 +202,7 @@ export function Today({
   const [budget, setBudget] = useState<Budget | null | 'erreur' | undefined>(undefined);
 
   useEffect(() => {
-    if (!estLudique(style)) return;
+    /* CHANTIER 229 — toutes les apparences montrent la tuile « Parler ». */
     let alive = true;
     budgetParler()
       .then((b) => { if (alive) setBudget(b); })
@@ -221,8 +219,6 @@ export function Today({
       const charge = await loadSummaries(enJeu, settings);
       if (!alive) return;
       setRows(charge.summaries);
-      setDueByDay(charge.dueByDay);
-      setResting(charge.resting);
     })();
     return () => { alive = false; };
   }, [decks, active, settings]);
@@ -416,13 +412,28 @@ export function Today({
    * que les paquets qui ont des cartes dues ; celui du centre est le paquet
    * choisi, et c'est lui que le bouton lance.
    */
+  let parlerN = '…';
+  let parlerSous = '';
+  if (budget === null) { parlerN = 'Parler'; parlerSous = 'connecte-toi pour commencer'; }
+  else if (budget === 'erreur') { parlerN = '—'; parlerSous = 'indisponible pour l’instant'; }
+  else if (budget) {
+    const m = Math.max(0, Math.floor(budget.minutes));
+    parlerN = `${m} min`;
+    parlerSous = budget.pause
+      ? 'en pause jusqu’au 1er du mois'
+      : m === 0 || budget.fini
+        ? (budget.periode === 'semaine' ? 'reviennent lundi' : 'reviennent à minuit')
+        : `restante${m > 1 ? 's' : ''} ${quandDit(budget)}`;
+  }
+  const faitsSemaine = joursCetteSemaine(streak);
+
   if (estLudique(style) && total > 0) {
     const iCentre = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));
     const pc = aFaire[iCentre];
     const n = niveauDe(xpTotal(streak));
     const flamme = serieValidee(streak);
     const fr = (v: number) => v.toLocaleString('fr-FR');
-    const faits = joursCetteSemaine(streak);
+    const faits = faitsSemaine;
     /* CHANTIER 171 — les mots changent avec l'apparence, la forme reste. */
     const mots = style === 'decollage'
       ? { defi: 'Mission du jour', go: 'Décoller', jour: `carburant ${cartesAuj} / ${CARTES_PAR_JOUR}` }
@@ -512,19 +523,6 @@ export function Today({
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
-    let parlerN = '…';
-    let parlerSous = '';
-    if (budget === null) { parlerN = 'Parler'; parlerSous = 'connecte-toi pour commencer'; }
-    else if (budget === 'erreur') { parlerN = '—'; parlerSous = 'indisponible pour l’instant'; }
-    else if (budget) {
-      const m = Math.max(0, Math.floor(budget.minutes));
-      parlerN = `${m} min`;
-      parlerSous = budget.pause
-        ? 'en pause jusqu’au 1er du mois'
-        : m === 0 || budget.fini
-          ? (budget.periode === 'semaine' ? 'reviennent lundi' : 'reviennent à minuit')
-          : `restante${m > 1 ? 's' : ''} ${quandDit(budget)}`;
-    }
     return (
       <div className="today ly">
         {/* CHANTIER 221 — Cinéma muet : le compte à rebours, une fois par jour. */}
@@ -751,13 +749,6 @@ export function Today({
         })}
       </div>
 
-      {gels > 0 && (
-        <p className="today-gels">
-          <Flocon />
-          {gels} gel{gels > 1 ? 's' : ''} en réserve : chacun comble un jour manqué du lundi au vendredi.
-        </p>
-      )}
-
       {rows.length === 0 ? (
         <>
           <div className="today-count">
@@ -837,38 +828,38 @@ export function Today({
         </>
       )}
 
-      {dueByDay.some((n) => n > 0) && (
-        <div className="memoire">
-          <p className="label">Les sept prochains jours</p>
-          <div className="bars">
-            {dueByDay.map((_, i) => {
-              /*
-               * CHANTIER 112 — aujourd'hui compte ce que la séance montrera (le
-               * chiffre du haut), pas tous les mots jamais vus. Et l'échelle est
-               * en racine carrée : 80 contre 5 écrasait les six autres jours en
-               * traits plats. L'ordre des barres reste juste, le chiffre au-dessus
-               * donne la valeur exacte.
-               */
-              const jours = dueByDay.map((v, k) => (k === 0 ? Math.min(v, total) : v));
-              const n = jours[i];
-              const max = Math.sqrt(Math.max(...jours, 1));
-              const jour = new Date();
-              jour.setDate(jour.getDate() + i);
-              return (
-                <span key={i} className={`bar${i === 0 ? ' now' : ''}`}>
-                  <b className="bar-n">{n > 0 ? n : ''}</b>
-                  <i style={{ height: `${n > 0 ? Math.max(6, (100 * Math.sqrt(n)) / max) : 3}%` }} />
-                  <em>{JOURS[jour.getDay()]}</em>
-                </span>
-              );
-            })}
-          </div>
-          <p className="hint">
-            {resting} mot{resting > 1 ? 's' : ''} dorment en mémoire. Ils
-            reviendront à leur date, pas avant.
-          </p>
-        </div>
-      )}
+      {/* CHANTIER 229 — Automatique, Clair, Sombre et les Cahiers : les deux
+          tuiles des apparences récentes remplacent la charge des sept
+          prochains jours. */}
+      <div className="ly-bas">
+        <button className="ly-tuile" onClick={onCalendrier}>
+          <span className="ly-tuile-haut">
+            <span>Cette semaine</span>
+            {gels > 0 && (
+              <span className="ly-gels" aria-label={`${gels} gel${gels > 1 ? 's' : ''} en réserve`}>
+                <Flocon />
+                <b>{gels}</b>
+              </span>
+            )}
+          </span>
+          <b>{faitsSemaine > OBJECTIF_SEMAINE ? `${faitsSemaine} jours` : `${faitsSemaine} / ${OBJECTIF_SEMAINE} jours`}</b>
+          <span className={`ly-segments${faitsSemaine >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
+            {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faitsSemaine ? 'on' : ''} />)}
+          </span>
+        </button>
+        <button className="ly-tuile" onClick={onParler}>
+          <span className="ly-tuile-haut">
+            <span>Parler</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" x2="12" y1="19" y2="22" />
+            </svg>
+          </span>
+          <b>{parlerN}</b>
+          <small>{parlerSous}</small>
+        </button>
+      </div>
     </div>
   );
 }

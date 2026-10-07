@@ -14,3 +14,16 @@
   background: repeating-linear-gradient(45deg, var(--grey) 0 2px, transparent 2px 4px);
 }
 .xpj-legende i.xpj-gel { height: 10px; }
+
+/* CHANTIER 229 — les tuiles « Cette semaine » et « Parler » sur les premières
+   apparences (Automatique, Clair, Sombre, Cahiers). Les règles de base de
+   lycee.css s'appliquent ; ici, seulement des replis pour les variables que
+   ces thèmes ne définissent pas. */
+.today:not(.ly) .ly-bas { margin-top: 22px; padding-bottom: 8px; }
+.today:not(.ly) .ly-tuile { background: var(--panel, transparent); border-color: var(--rule-strong, var(--rule)); }
+.today:not(.ly) .ly-tuile:hover { background: var(--panel-hi, var(--voile, rgba(127, 127, 127, 0.08))); }
+.today:not(.ly) .ly-tuile:focus-visible { outline-color: var(--chalk, currentColor); }
+.today:not(.ly) .ly-tuile > b { font-weight: 700; }
+.today:not(.ly) .ly-tuile-haut svg { color: var(--bleu, var(--ink)); }
+.today:not(.ly) .ly-segments i { background: var(--ly-voile, var(--rule-strong, rgba(127, 127, 127, 0.2))); }
+.today:not(.ly) .ly-segments i.on { background: var(--good); }
