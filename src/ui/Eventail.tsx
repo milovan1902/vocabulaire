@@ -12,7 +12,7 @@
  * L'éventail ne décide rien : il dit quel paquet est au centre (`onCentre`)
  * et lequel ouvrir (`onOuvrir`). C'est « Aujourd'hui » qui retient le choix.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { DeckSummary } from './deckSummary';
 import { DeckFace } from './components';
 
@@ -23,7 +23,10 @@ export function Eventail({
   /** CHANTIER 171 — 'orbite' : les paquets voisins montent sur l'anneau de la planète. */
   /** CHANTIER 213 — 'portant' (Fashion week) : des housses pendues à une tringle ; celle du centre
       de face, ses voisines de profil. Au changement de paquet, elles se décrochent, glissent, se raccrochent. */
-  forme?: 'eventail' | 'orbite' | 'portant';
+  /** CHANTIER 216 — 'pellicule' (Cinéma muet) : les paquets sont les images d'une bande perforée, qui
+      défile pour amener le paquet choisi sous le projecteur. 'rayon' (Bibliothèque) : les paquets
+      sont des livres rangés, vus par le dos ; celui du centre sort du rang et se présente de face. */
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -39,13 +42,20 @@ export function Eventail({
     if (centrePrec.current !== centre) { centrePrec.current = centre; setCoups((c) => c + 1); }
   }, [centre]);
   const por = forme === 'portant';
+  const pel = forme === 'pellicule';
+  const ray = forme === 'rayon';
+  /* CHANTIER 216 — le pas de la pellicule, et la forme des livres (dos de 30 px). */
+  const PAS = 124;
+  const DOS = 30, JEU = 3, LARGE = 126, HAUT = 178;
+  const HAUTEURS = [150, 162, 146, 160, 152, 158, 148];
 
   const aller = (i: number) => onCentre(Math.max(0, Math.min(paquets.length - 1, i)));
   const fin = () => { depart.current = null; setGlisse(false); setDx(0); };
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${glisse ? ' glisse' : ''}`}
+      style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
       tabIndex={0}
@@ -80,6 +90,8 @@ export function Eventail({
           découpé à sa forme. Plus de jonction visible entre deux moitiés. */}
       {forme === 'orbite' && <i className="orbite-avant" aria-hidden="true"><i /></i>}
       {/* CHANTIER 187 — trois satellites en orbite autour de la planète. */}
+      {/* CHANTIER 216 — la bande perforée, sous les images ; ses perforations glissent avec elles. */}
+      {pel && <i className="pellicule-bande" aria-hidden="true" />}
       {forme === 'orbite' && <span className="orbite-lunes" aria-hidden="true"><i><i /></i><i><i /></i><i><i /></i></span>}
       {paquets.map((r, i) => {
         const o = i - centre;
@@ -91,9 +103,16 @@ export function Eventail({
         const rot = a === 0 ? dx * 0.04 : a === 1 ? (orb ? 14 : 10) * s : 16 * s;
         const k = a === 0 ? 1 : a === 1 ? (orb ? 0.66 : 0.86) : 0.6;
         const xp = (a === 0 ? 0 : a === 1 ? 100 * s : 170 * s) + dx * 0.6;
+        const hDos = HAUTEURS[i % HAUTEURS.length];
+        const xr = (a === 0 ? 0 : s * (LARGE / 2 + JEU + DOS / 2 + (a - 1) * (DOS + JEU))) + dx * 0.6;
         const transform = por
           ? `perspective(700px) translateX(${xp}px) rotateY(${a === 0 ? dx * 0.12 : -72 * s}deg) scale(${k})`
-          : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
+          : pel
+            ? `translateX(${o * PAS + dx * 0.6}px) scale(${a === 0 ? 1 : 0.92})`
+            : ray
+              ? `translate(${xr}px, ${a === 0 ? -6 : HAUT - hDos}px)`
+              : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
+        const visible = pel ? a <= 2 : ray ? a <= 5 : a <= 1;
         const dos = (
           <span className="eventail-dos">
             <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
@@ -109,10 +128,11 @@ export function Eventail({
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
               transform,
-              opacity: a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
+              opacity: pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
-              pointerEvents: a > 1 ? 'none' : undefined,
+              pointerEvents: visible ? undefined : 'none',
+              ...(ray ? { width: a === 0 ? LARGE : DOS, height: a === 0 ? HAUT : hDos, marginLeft: a === 0 ? -LARGE / 2 : -DOS / 2, aspectRatio: 'auto' } : {}),
             }}
           >
             {por ? <span className={`portant-vol${coups ? ` v${coups % 2}` : ''}`}>{dos}</span> : dos}

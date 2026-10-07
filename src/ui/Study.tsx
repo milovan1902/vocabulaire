@@ -19,6 +19,8 @@ import { estLudique, useStyle } from './useStyle';
 /* CHANTIER 165 — style Lycée : des notes courtes, et les couleurs rouge,
    orange, jaune, vert (voir lycee.css, classes g-again … g-easy). */
 const COURTS: Record<Grade, string> = { again: 'Raté', hard: 'Dur', good: 'Bien', easy: 'Facile' };
+/* CHANTIER 216 — Cinéma muet : les notes sont des claps de tournage. */
+const CLAPS: Record<Grade, string> = { again: 'Coupez !', hard: 'Dur', good: 'Bien', easy: 'Bravo !' };
 
 const GRADES: Array<{ key: Grade; label: string; className: string }> = [
   { key: 'again', label: 'À revoir', className: 'grade again' },
@@ -285,7 +287,7 @@ export function Study({
         <div className="grades">
           {GRADES.map((g) => (
             <button key={g.key} className={`${g.className} g-${g.key}`} onClick={() => void grade(g.key)}>
-              {estLudique(style) ? COURTS[g.key] : g.label}
+              {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
             </button>
           ))}

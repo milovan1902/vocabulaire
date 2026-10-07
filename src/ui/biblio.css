@@ -1,0 +1,184 @@
+/* ==================================================================
+   CHANTIER 216 — « Bibliothèque » (maquette 46b) : la salle de lecture.
+   Boiseries, lampe de banquier verte, cuir bordeaux et filets d'or.
+
+   Active quand <html> porte data-style="biblio" (theme.ts). Base SOMBRE,
+   forme du Lycée (estLudique). IM Fell English pour les grands textes
+   (public/fonts), Lexend pour le texte.
+   - Les paquets : des livres rangés sur un rayon (Eventail.tsx, forme 'rayon') ;
+     celui du centre sort du rang et se présente de face.
+   - « Cette semaine » : cinq signets de soie.
+   - Révision : une page de vieux livre ; les notes sont des sceaux de cire.
+   ================================================================== */
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/im-fell-english.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/im-fell-english-italique.ttf') format('truetype');
+}
+[data-style='biblio'] {
+  --paper: #2b1a10; --panel: #3a2416; --panel-hi: #4a2e1a;
+  --ink: #f1e6cf; --ink-soft: #e4d6b8; --grey: #d6c6a3; --ink-dim: #d6c6a3;
+  --rule: rgba(201, 162, 90, 0.2); --rule-strong: rgba(201, 162, 90, 0.4);
+  --chalk: #c9a25a; --chalk-ink: #c9a25a; --on-chalk: #2b1a10;
+  --good: #5fa36f; --bad: #c0392b;
+  --voile: rgba(241, 230, 207, 0.06); --voile-2: rgba(241, 230, 207, 0.12); --voile-3: rgba(241, 230, 207, 0.18);
+  --bleu: #c9a25a; --bleu-ink: #c9a25a; --rouge: #9b1c1c; --orange: #b0661c;
+  --ly-voile: rgba(201, 162, 90, 0.2); --ly-voile-2: rgba(201, 162, 90, 0.4);
+  --ly-tabbar: #1c110a; --ly-ombre: rgba(0, 0, 0, 0.6); --ly-tag: #f1e6cf; --ly-bord-carte: #2b1a10;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'IM Fell English', Georgia, serif;
+  --titre: 'IM Fell English', Georgia, serif;
+  --anneau: #c9a25a;
+  --or: #c9a25a; --cuir: #5a1e1e; --vert: #2e5e3e; --parchemin: #f1e6cf;
+  /* Les boiseries, et la lumière de la lampe verte en haut. */
+  --salle: radial-gradient(ellipse 70% 32% at 50% 0%, rgba(120, 200, 140, 0.22), transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 8%, rgba(255, 230, 160, 0.14), transparent 65%),
+    repeating-linear-gradient(90deg, #2b1a10 0 58px, #331f13 58px 60px, #2b1a10 60px 118px, #24150c 118px 120px);
+  /* La page : rousseurs, ligne de reliure à gauche, papier plus sombre sur les bords. */
+  --page: radial-gradient(circle at 12% 8%, rgba(150, 95, 40, 0.35) 0 3px, rgba(150, 95, 40, 0.14) 5px, transparent 8px),
+    radial-gradient(circle at 86% 14%, rgba(150, 95, 40, 0.3) 0 2px, rgba(150, 95, 40, 0.12) 4px, transparent 7px),
+    radial-gradient(circle at 78% 88%, rgba(150, 95, 40, 0.28) 0 4px, rgba(150, 95, 40, 0.11) 6px, transparent 9px),
+    radial-gradient(circle at 18% 80%, rgba(150, 95, 40, 0.3) 0 2px, rgba(150, 95, 40, 0.12) 4px, transparent 7px),
+    radial-gradient(circle at 64% 40%, rgba(150, 95, 40, 0.25) 0 1.5px, transparent 5px),
+    linear-gradient(90deg, rgba(90, 55, 25, 0.45), rgba(90, 55, 25, 0.08) 7%, transparent 14%, transparent 92%, rgba(120, 80, 40, 0.18)),
+    radial-gradient(ellipse 120% 90% at 55% 50%, #f6ecd4 40%, #e9d7b0 80%, #d6bd8a);
+}
+[data-style='biblio'] body { font-family: var(--sans); color: var(--ink); background-color: #2b1a10; background-image: var(--salle); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='biblio'] .screen-title, [data-style='biblio'] .topbar h1, [data-style='biblio'] .welcome-head h1, [data-style='biblio'] .done h2, [data-style='biblio'] .sheet h3, [data-style='biblio'] .today-count b {
+  font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; color: #f1e6cf;
+}
+[data-style='biblio'] .sheet { border-top: 2px solid #c9a25a; }
+[data-style='biblio'] .tabbar { background: #1c110a; border-top: 2px solid #c9a25a; }
+[data-style='biblio'] .tabbar button { color: rgba(241, 230, 207, 0.6); }
+[data-style='biblio'] .tabbar button.on { color: #f1e6cf; }
+[data-style='biblio'] .tabbar button.on::before { display: none; }
+[data-style='biblio'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 3px; }
+[data-style='biblio'] .tabbar button.on .tabsvg { background: rgba(201, 162, 90, 0.2); }
+[data-style='biblio'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='biblio'] .reveal { background: #2e5e3e; color: #f1e6cf; border: none; border-radius: 3px; box-shadow: inset 0 0 0 1px #c9a25a; font-family: var(--titre); font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
+[data-style='biblio'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='biblio'] .reveal:active { background: #244c32; }
+
+/* ---------- Aujourd'hui : l'en-tête ---------- */
+[data-style='biblio'] .ly-niv { width: 46px; height: 46px; box-sizing: border-box; border-radius: 50%; background: #5a1e1e; border: 2px solid #c9a25a; color: #f1e6cf; }
+[data-style='biblio'] .ly-niv small { font-size: 7.5px; letter-spacing: 0.16em; color: #c9a25a; }
+[data-style='biblio'] .ly-niv b { font-family: var(--titre); font-size: 21px; font-weight: 400; color: #f1e6cf; }
+[data-style='biblio'] .ly-xp-txt { color: #d6c6a3; }
+[data-style='biblio'] .ly-xp-txt b { font-family: var(--titre); font-weight: 400; font-size: 16px; color: #f1e6cf; }
+[data-style='biblio'] .ly-barre { height: 3px; border-radius: 0; background: rgba(201, 162, 90, 0.25); }
+[data-style='biblio'] .ly-barre i { border-radius: 0; background: #c9a25a; }
+[data-style='biblio'] .ly-flamme { height: 38px; padding: 0 10px; gap: 6px; border-radius: 3px; background: transparent; border: 1px solid #c9a25a; color: #c9a25a; }
+[data-style='biblio'] .ly-flamme svg { display: none; }
+[data-style='biblio'] .ly-flamme::before { content: '❦'; font-family: var(--titre); font-size: 18px; line-height: 1; color: #c9a25a; }
+[data-style='biblio'] .ly-flamme b { font-family: var(--titre); font-size: 18px; font-weight: 400; color: #f1e6cf; }
+
+/* ---------- la lecture du jour : une fiche de parchemin ---------- */
+[data-style='biblio'] .ly-defi { padding: 14px 16px; border-radius: 2px; background: #f1e6cf; border: none; color: #2b1a10; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(140, 100, 50, 0.25); }
+[data-style='biblio'] .ly-defi-haut > span:first-child { font-family: var(--titre); font-size: 13px; font-weight: 400; letter-spacing: 0.18em; color: #5a1e1e; }
+[data-style='biblio'] .ly-gain { border-radius: 2px; background: #2e5e3e; color: #f1e6cf; font-size: 12px; font-weight: 600; }
+[data-style='biblio'] .ly-defi-n { font-family: var(--titre); font-size: 44px; font-weight: 400; line-height: 1.05; letter-spacing: 0; color: #2b1a10; }
+[data-style='biblio'] .ly-defi-sous, [data-style='biblio'] .ly-defi-jour { color: #6e5a3e; }
+[data-style='biblio'] .ly-defi .ly-barre { background: rgba(43, 26, 16, 0.14); }
+[data-style='biblio'] .ly-defi .ly-barre i { background: #5a1e1e; }
+
+/* ---------- les paquets : des livres sur un rayon ---------- */
+[data-style='biblio'] .ly-scene { position: relative; }
+[data-style='biblio'] .eventail.rayon { height: 214px; margin: 18px -20px 0; overflow: hidden; }
+/* La planche du rayon, sous les livres. */
+[data-style='biblio'] .eventail.rayon::after { content: ''; position: absolute; left: 0; right: 0; top: 188px; height: 14px; z-index: 0; pointer-events: none; background: linear-gradient(180deg, #6b4428, #4a2e1a); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5); }
+[data-style='biblio'] .eventail.rayon .eventail-carte { z-index: 1; transition: transform 0.55s cubic-bezier(0.45, 0, 0.3, 1), width 0.55s cubic-bezier(0.45, 0, 0.3, 1), height 0.55s cubic-bezier(0.45, 0, 0.3, 1), margin-left 0.55s cubic-bezier(0.45, 0, 0.3, 1), opacity 0.3s ease; }
+/* Le dos d'un livre : cuir, nervures dorées en haut et en bas. */
+[data-style='biblio'] .eventail.rayon .eventail-dos { box-sizing: border-box; border: none; border-radius: 2px 2px 0 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.35)), var(--dos, #5a1e1e);
+  box-shadow: inset 0 14px 0 -10px #c9a25a, inset 0 -18px 0 -14px #c9a25a, inset 0 40px 0 -38px #c9a25a, 0 6px 12px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.4s ease, border-radius 0.4s ease; }
+[data-style='biblio'] .eventail.rayon .eventail-dos > * { opacity: 0; transition: opacity 0.2s ease; }
+[data-style='biblio'] .eventail.rayon .eventail-carte:nth-child(5n + 1) { --dos: #5a1e1e; }
+[data-style='biblio'] .eventail.rayon .eventail-carte:nth-child(5n + 2) { --dos: #1f3f2c; }
+[data-style='biblio'] .eventail.rayon .eventail-carte:nth-child(5n + 3) { --dos: #2b3d5a; }
+[data-style='biblio'] .eventail.rayon .eventail-carte:nth-child(5n + 4) { --dos: #3b2a5a; }
+[data-style='biblio'] .eventail.rayon .eventail-carte:nth-child(5n + 5) { --dos: #6b3a1a; }
+/* Le livre du centre, de face : la couverture dans un double filet d'or. */
+[data-style='biblio'] .eventail.rayon .eventail-carte.centre .eventail-dos { padding: 9px 8px 8px 12px; border-radius: 2px 6px 6px 2px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 8px, transparent 12px), var(--dos, #5a1e1e);
+  box-shadow: inset 0 0 0 3px var(--dos, #5a1e1e), inset 0 0 0 4px #c9a25a, 0 16px 28px rgba(0, 0, 0, 0.6); }
+[data-style='biblio'] .eventail.rayon .eventail-carte.centre .eventail-dos > * { opacity: 1; transition: opacity 0.3s ease 0.3s; }
+[data-style='biblio'] .eventail.rayon .eventail-carte.centre .eventail-dos > img:not(.dos-illus-img),
+[data-style='biblio'] .eventail.rayon .eventail-carte.centre .eventail-dos > svg { box-sizing: border-box; border: 1px solid #c9a25a; }
+[data-style='biblio'] .eventail.rayon .eventail-dos .dos-illus-img { left: calc(12px + (100% - 20px) * 0.161); top: calc(9px + (100% - 17px) * 0.26); width: calc((100% - 20px) * 0.677); }
+[data-style='biblio'] .eventail-due { right: -6px; top: -2px; border-radius: 50%; background: #c9a25a; color: #2b1a10; font-family: var(--titre); font-weight: 400; }
+[data-style='biblio'] .eventail-carte .classdot.eventail-classe { bottom: -6px; border-radius: 2px; background: #f1e6cf; color: #2b1a10; border: 1px solid #c9a25a; }
+[data-style='biblio'] .ly-points i { border-radius: 0; background: rgba(201, 162, 90, 0.35); }
+[data-style='biblio'] .ly-points i.on { background: #c9a25a; }
+[data-style='biblio'] .ly-nom { width: fit-content; max-width: calc(100% - 110px); margin-inline: auto; padding: 6px 14px; background: #f1e6cf; color: #2b1a10; border-radius: 2px; font-family: var(--titre); font-size: 17px; font-weight: 400; }
+[data-style='biblio'] .ly-nom span { font-family: var(--sans); font-size: 13px; color: #6e5a3e; }
+[data-style='biblio'] .ly-fusee { z-index: 3; width: 44px; height: 44px; border-radius: 3px; border: 1px solid #c9a25a; background: rgba(43, 26, 16, 0.85); color: #c9a25a; }
+[data-style='biblio'] .ly-fusee:hover { background: rgba(201, 162, 90, 0.15); }
+[data-style='biblio'] .ly-fusee:focus-visible { outline: 2px solid #c9a25a; outline-offset: 2px; }
+[data-style='biblio'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='biblio'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+
+/* ---------- les tuiles ; la semaine en signets ---------- */
+[data-style='biblio'] .ly-tuile { border-radius: 2px; border: none; background: #f1e6cf; color: #2b1a10; }
+[data-style='biblio'] .ly-tuile:hover { background: #e7d9bb; }
+[data-style='biblio'] .ly-tuile-haut { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #6e5a3e; }
+[data-style='biblio'] .ly-tuile-haut svg { color: #5a1e1e; }
+[data-style='biblio'] .ly-tuile > b { font-family: var(--titre); font-size: 22px; font-weight: 400; letter-spacing: 0; color: #2b1a10; }
+[data-style='biblio'] .ly-tuile > small { color: #6e5a3e; }
+/* Un signet de soie par jour, pendu au filet : en pointillé tant que le jour n'est pas fait. */
+[data-style='biblio'] .ly-segments { align-self: stretch; display: flex; justify-content: space-around; align-items: flex-start; gap: 0; height: 32px; border-top: 2px solid #b79d72; }
+[data-style='biblio'] .ly-segments i { flex: none; width: 12px; height: 30px; box-sizing: border-box; border-radius: 0; background: transparent; border: 1.5px dashed rgba(43, 26, 16, 0.35); border-top: none; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); }
+[data-style='biblio'] .ly-segments i.on { border: none; background: linear-gradient(90deg, #7a1f22, #5a1e1e); }
+
+/* ---------- Révision : la page de vieux livre ; les notes en sceaux de cire ---------- */
+[data-style='biblio'] .studybg { background-color: #2b1a10; background-image: var(--salle) !important; background-size: 100% 100%; background-repeat: no-repeat; }
+[data-style='biblio'] .studybg::after { display: none; }
+[data-style='biblio'] .studytop .pos { font-family: var(--titre); font-size: 17px; color: #f1e6cf; }
+[data-style='biblio'] .studytop .stop { background: transparent; color: #c9a25a; border: 1px solid #c9a25a; border-radius: 3px; }
+[data-style='biblio'] .progressbar { height: 3px; border-radius: 0; background: rgba(201, 162, 90, 0.25); }
+[data-style='biblio'] .progressbar i { border-radius: 0; background: #c9a25a; }
+[data-style='biblio'] .ly-combo { border-radius: 2px; background: #5a1e1e; color: #f1e6cf; font-family: var(--titre); font-weight: 400; }
+/* Deux pages dessous pour l'épaisseur (ombres décalées), la reliure à gauche. */
+[data-style='biblio'] .studystage { --ink: #2b1a10; margin: 18px 10px 18px 6px; padding: 18px 24px 22px 30px; border-radius: 2px 8px 8px 2px; border: none; background: var(--page); color: #2b1a10;
+  box-shadow: 2.5px 2.5px 0 #ecdcb8, 5px 5px 0 #e3cfa5, 0 18px 36px rgba(0, 0, 0, 0.6); }
+/* Le titre courant, en italique, filet dessous. */
+[data-style='biblio'] .studystage .tag { align-self: stretch; padding: 0 0 5px; border: none; border-bottom: 1px solid rgba(43, 26, 16, 0.35); border-radius: 0; background: transparent; color: #6e5a3e; font-family: var(--titre); font-style: italic; font-size: 13px; letter-spacing: 0; text-transform: none; }
+[data-style='biblio'] .ask { font-family: var(--titre); font-style: italic; font-size: 15px; color: #5a1e1e; }
+[data-style='biblio'] .word, [data-style='biblio'] .answer { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.15; color: #2b1a10; }
+/* La lettrine bordeaux, filetée d'or. */
+[data-style='biblio'] .answer::first-letter { padding: 0 3px; margin-right: 2px; background: #5a1e1e; color: #f1e6cf; border: 1px solid #c9a25a; }
+[data-style='biblio'] .wordsmall { font-family: var(--titre); color: #6e5a3e; }
+/* Le fleuron. */
+[data-style='biblio'] .ruleline { width: auto; height: auto; border: none; background: none; }
+[data-style='biblio'] .ruleline::before { content: '❧'; font-family: var(--titre); font-size: 22px; line-height: 1; color: #5a1e1e; }
+[data-style='biblio'] .example { font-family: var(--titre); font-style: normal; font-size: 16px; line-height: 1.45; color: #5b4830; text-align: justify; text-align-last: center; }
+[data-style='biblio'] .speak { background: transparent; border: 1px solid #2b1a10; border-radius: 0; color: #2b1a10; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
+[data-style='biblio'] .tap-hint { color: #d6c6a3; }
+[data-style='biblio'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+/* Le sceau : une goutte de cire un peu irrégulière, frappée d'un signe. */
+[data-style='biblio'] .grades .grade { position: relative; min-height: 96px; padding: 58px 0 6px; border: none; border-radius: 0; background: transparent; box-shadow: none; color: #f1e6cf; font-family: var(--titre); font-size: 15px; font-weight: 400; letter-spacing: 0; }
+[data-style='biblio'] .grades .grade small { font-family: var(--sans); font-size: 11px; color: #d6c6a3; }
+[data-style='biblio'] .grades .grade::before { position: absolute; left: 50%; top: 6px; width: 46px; height: 46px; margin-left: -23px; display: grid; place-items: center;
+  border-radius: 47% 53% 49% 51% / 52% 46% 54% 48%;
+  font-family: var(--titre); font-size: 19px; line-height: 46px; color: rgba(255, 240, 220, 0.78); text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  background: radial-gradient(circle at 38% 32%, var(--c1), var(--c2) 55%, var(--c3));
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.45), inset 0 0 0 5px rgba(0, 0, 0, 0.12), inset 0 0 0 7px rgba(255, 255, 255, 0.08);
+  transition: transform 0.12s ease; }
+[data-style='biblio'] .grades .g-again::before { content: '✗'; --c1: #d24a4a; --c2: #9b1c1c; --c3: #5e0f0f; }
+[data-style='biblio'] .grades .g-hard::before { content: '~'; --c1: #e5a24a; --c2: #b0661c; --c3: #6b3a0c; }
+[data-style='biblio'] .grades .g-good::before { content: '✓'; --c1: #5fa36f; --c2: #2e6e3e; --c3: #173d22; }
+[data-style='biblio'] .grades .g-easy::before { content: '★'; --c1: #5f86c9; --c2: #284f8f; --c3: #132a52; }
+/* Au toucher, le sceau s'écrase. */
+[data-style='biblio'] .grades .grade:active::before { transform: scale(1.12, 0.9); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='biblio'] .eventail.rayon .eventail-carte, [data-style='biblio'] .eventail.rayon .eventail-dos > * { transition: none; }
+}

@@ -432,7 +432,7 @@ export function Account({
             <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
           </div>
           <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion'] as Theme[]).map((t) => {
+            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion', 'cinema', 'bibliotheque'] as Theme[]).map((t) => {
               const libre = estDebloquee(t, xp);
               const seuil = DEBLOCAGE[t] ?? 0;
               return (
@@ -494,6 +494,8 @@ export function Account({
             « Tapis vert » et « Salon privé » : la table de poker, ou le salon de jeu noir et or.
             « Station 1936 » : l’affiche de ski rétro, où les paquets sont des télécabines.
             « Fashion week » : le défilé en noir et blanc, où les paquets sont des housses pendues à un portant.
+            « Cinéma muet » : la salle obscure, où les paquets défilent sur une pellicule.
+            « Bibliothèque » : la salle de lecture, où les paquets sont des livres rangés sur un rayon.
           </p>
         </Tiroir>
       )}

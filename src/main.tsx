@@ -54,6 +54,9 @@ import './ui/montagne.css';
 import './ui/anime.css';
 /* CHANTIER 213 — Fashion week (Lexend, Newsreader, déjà livrées), après anime.css. */
 import './ui/mode.css';
+/* CHANTIER 216 — Cinéma muet (Limelight) et Bibliothèque (IM Fell English), polices dans public/fonts. */
+import './ui/cinema.css';
+import './ui/biblio.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

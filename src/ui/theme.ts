@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -101,6 +101,8 @@ export const THEME_LABELS: Record<Theme, string> = {
   'salon-prive': 'Salon privé',
   station: 'Station 1936',
   fashion: 'Fashion week',
+  cinema: 'Cinéma muet',
+  bibliotheque: 'Bibliothèque',
 };
 
 export function themeChoisi(): Theme {
@@ -112,7 +114,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -140,6 +142,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'station') return 'clair';
   /* CHANTIER 213 — Fashion week : sombre (la salle du défilé dans le noir). */
   if (t === 'fashion') return 'sombre';
+  /* CHANTIER 216 — Cinéma muet et Bibliothèque : sombres (la salle obscure, la salle de lecture). */
+  if (t === 'cinema' || t === 'bibliotheque') return 'sombre';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -177,6 +181,9 @@ function appliquer(t: Theme) {
   else if (t === 'station') document.documentElement.dataset.style = 'station';
   /* CHANTIER 213 — Fashion week (mode.css, Defile.tsx). */
   else if (t === 'fashion') document.documentElement.dataset.style = 'fashion';
+  /* CHANTIER 216 — Cinéma muet (cinema.css) et Bibliothèque (biblio.css). */
+  else if (t === 'cinema') document.documentElement.dataset.style = 'cinema';
+  else if (t === 'bibliotheque') document.documentElement.dataset.style = 'biblio';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;
