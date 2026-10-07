@@ -1,0 +1,16 @@
+/* CHANTIER 228 — les gels : un flocon et un compteur, dans les couleurs de chaque apparence. */
+.ly-gels { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; font-variant-numeric: tabular-nums; }
+.ly-gels svg { width: 14px; height: 14px; }
+.ly-gels b { font-size: 13px; }
+
+.today-gels { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; font-size: 13px; color: var(--grey); }
+.today-gels svg { width: 15px; height: 15px; flex: none; }
+
+.serie7-j.gel i { background: transparent; border: 2px dashed currentColor; opacity: 0.8; }
+
+.xpj-chiffres.quatre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.xpj-gel {
+  display: block; width: 100%; height: 6px; border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--grey) 0 2px, transparent 2px 4px);
+}
+.xpj-legende i.xpj-gel { height: 10px; }

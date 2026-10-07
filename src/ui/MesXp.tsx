@@ -6,11 +6,14 @@
  * Aujourd'hui l'ouvre aussi, d'un appui sur le niveau.
  * Les chiffres viennent de engine/xp.ts, comme au niveau d'Aujourd'hui :
  * le même calcul partout, donc le même niveau partout.
+ *
+ * CHANTIER 228 — barème de la semaine de cinq jours, et les gels.
  */
 import type { Streak } from '../engine/streak';
 import {
-  CARTES_PAR_JOUR, XP_MAX_GRATUIT, estPremium, historiqueXp, meilleureSerie, serieValidee, xpTotal,
+  CARTES_PAR_JOUR, GELS_MAX, XP_MAX_GRATUIT, estPremium, gelsEnReserve, historiqueXp, meilleureSerie, serieValidee, xpTotal,
 } from '../engine/xp';
+import './gel.css';
 import { niveauDe } from '../engine/niveau';
 
 /* CHANTIER 169 — la frise des apparences du tiroir « Mes XP ». Les trois
@@ -31,9 +34,10 @@ export function MesXp({ streak }: { streak: Streak }) {
   const serieXp = serieValidee(streak);
   const recordXp = Math.max(meilleureSerie(streak), serieXp);
   const jours14 = historiqueXp(streak, 14);
+  const gels = gelsEnReserve(streak);
   return (
     <>
-      <div className="xpj-chiffres">
+      <div className="xpj-chiffres quatre">
         <span>
           <b>{xp.toLocaleString('fr-FR')}</b>
           <small>{estPremium() ? 'XP' : `XP sur ${XP_MAX_GRATUIT.toLocaleString('fr-FR')}`}</small>
@@ -45,6 +49,10 @@ export function MesXp({ streak }: { streak: Streak }) {
         <span>
           <b>{serieXp} / {recordXp}</b>
           <small>série en cours / meilleure</small>
+        </span>
+        <span>
+          <b>{gels} / {GELS_MAX}</b>
+          <small>gels en réserve</small>
         </span>
       </div>
 
@@ -65,6 +73,7 @@ export function MesXp({ streak }: { streak: Streak }) {
                   <i className="xpj-auj" style={{ height: `${Math.max(4, (25 * Math.min(j.cartes, CARTES_PAR_JOUR)) / CARTES_PAR_JOUR)}%` }} />
                 )}
                 {j.etat === 'manque' && <i className="xpj-manque" />}
+                {j.etat === 'gel' && <i className="xpj-gel" />}
               </span>
               <small>{nom}</small>
             </span>
@@ -72,20 +81,25 @@ export function MesXp({ streak }: { streak: Streak }) {
         })}
       </div>
       <div className="xpj-legende">
-        <span><i className="xpj-base" />20 XP du jour</span>
-        <span><i className="xpj-bonus" />bonus de série</span>
+        <span><i className="xpj-base" />XP du jour</span>
+        <span><i className="xpj-bonus" />bonus de semaine</span>
+        <span><i className="xpj-gel" />jour comblé par un gel</span>
         <span><i className="xpj-manque" />jour manqué</span>
         <span><i className="xpj-auj" />aujourd’hui ({Math.min(jours14[13].cartes, CARTES_PAR_JOUR)}/{CARTES_PAR_JOUR})</span>
       </div>
 
       <div className="xpj-bareme">
-        <span><span>20 cartes dans la journée</span><b>+20 XP</b></span>
-        <span><span>5e jour d’affilée</span><b>+20 bonus</b></span>
-        <span><span>10e jour d’affilée</span><b>+40 bonus</b></span>
-        <span><span>15e, 20e, 25e… jour</span><b>+60 bonus</b></span>
+        <span><span>Du lundi au vendredi, 20 cartes</span><b>+20 XP</b></span>
+        <span><span>Vendredi, 1re semaine à 5 / 5</span><b>+20 bonus</b></span>
+        <span><span>2e semaine à 5 / 5 d’affilée</span><b>+40 bonus</b></span>
+        <span><span>3e semaine et suivantes</span><b>+60 bonus</b></span>
+        <span><span>Samedi ou dimanche, 20 cartes</span><b>+30 XP + 1 gel</b></span>
       </div>
       <p className="hint">
-        Un jour manqué remet le bonus à zéro, jamais tes XP. « Facile » ne
+        La semaine repart à zéro chaque lundi. Un gel comble un jour manqué
+        du lundi au vendredi : ce jour ne rapporte rien, mais la semaine
+        compte pour 5 / 5. {GELS_MAX} gels au plus en réserve. Une semaine
+        incomplète fait repartir le bonus à +20, jamais tes XP. « Facile » ne
         rapporte rien de plus. Parler ne rapporte pas d’XP.
       </p>
 

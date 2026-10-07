@@ -24,12 +24,13 @@ import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
 import { masteryLabel, STATUTS } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
-import { doneToday, lastSeven, liveStreak, shiftDay } from '../engine/streak';
+import { doneToday } from '../engine/streak';
 import { todayKey } from '../engine/session';
 import { budgetParler, quandDit, type Budget } from '../data/parler';
 import { minutesPour } from '../engine/tempo';
 import { niveauDe } from '../engine/niveau';
-import { CARTES_PAR_JOUR, cartesDuJour, gainDuJour, serieValidee, xpTotal } from '../engine/xp';
+import { CARTES_PAR_JOUR, cartesDuJour, gainDuJour, semaineEnCours, serieValidee, xpTotal } from '../engine/xp';
+import './gel.css';
 import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 import { Alambic, Amorce } from './Salle';
@@ -43,13 +44,28 @@ const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
  */
 const OBJECTIF_SEMAINE = 5;
 
+/*
+ * CHANTIER 228 — la semaine repart à zéro chaque lundi. Les cinq premiers
+ * segments sont les jours de semaine tenus (validés, ou comblés par un gel) ;
+ * le week-end ne s'ajoute (6e, 7e jour) qu'une fois le 5 / 5 atteint.
+ */
 function joursCetteSemaine(s: Streak): number {
-  const auj = todayKey();
-  const depuisLundi = (new Date().getDay() + 6) % 7;
-  const faits = new Set(s.days);
-  let n = 0;
-  for (let i = 0; i <= depuisLundi; i++) if (faits.has(shiftDay(auj, -i))) n++;
-  return n;
+  const w = semaineEnCours(s);
+  return w.complete ? 5 + w.weekend : w.ouvres;
+}
+
+/** Lucide « snowflake » : le gel. */
+function Flocon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="2" x2="22" y1="12" y2="12" />
+      <line x1="12" x2="12" y1="2" y2="22" />
+      <path d="m20 16-4-4 4-4" />
+      <path d="m4 8 4 4-4 4" />
+      <path d="m16 4-4 4-4-4" />
+      <path d="m8 20 4-4 4 4" />
+    </svg>
+  );
 }
 
 /**
@@ -229,9 +245,15 @@ export function Today({
   const enAvant = aFaire.find((r) => r.deck.id === choisi) ?? null;
   const suite = aFaire.filter((r) => r.deck.id !== enAvant?.deck.id);
 
-  const serie = liveStreak(streak);
+  /* CHANTIER 228 — la série suit la semaine de cinq jours : un week-end
+     chômé ne la casse plus, un gel la tient. */
+  const serie = serieValidee(streak);
   const faitAujourdhui = doneToday(streak);
-  const semaine = lastSeven(streak);
+  const auj = todayKey();
+  const semaineXp = semaineEnCours(streak);
+  const gels = semaineXp.gels;
+  /* La semaine du calendrier, lundi → dimanche : elle repart à zéro le lundi. */
+  const semaine = semaineXp.jours.map((j) => ({ key: j.key, done: j.etat === 'valide', gel: j.etat === 'gel' }));
   /* Série en jeu : elle existe, elle n'est pas encore assurée, et il reste
      du travail pour la sauver. Sans ces trois conditions, se taire. */
   const serieEnJeu = serie > 0 && !faitAujourdhui && total > 0;
@@ -239,9 +261,10 @@ export function Today({
   const cartesAuj = cartesDuJour(streak);
   const gain = gainDuJour(streak);
   const manque = Math.max(0, CARTES_PAR_JOUR - cartesAuj);
+  const etGel = gain.gel ? ' et un gel' : '';
   const ligneXp = gain.valide
-    ? `Journée validée : +${gain.xp} XP.`
-    : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes aujourd’hui — +${gain.xp} XP à la clé.`;
+    ? `Journée validée : +${gain.xp} XP${etGel}.`
+    : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes aujourd’hui — +${gain.xp} XP${etGel} à la clé.`;
 
   const date = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
@@ -557,10 +580,10 @@ export function Today({
 
         {style === 'tableau' && (
           <div className="serie7" aria-label={`Série : ${serie} jours`}>
-            {semaine.map((j, i) => {
+            {semaine.map((j) => {
               const nom = JOURS[new Date(j.key + 'T12:00:00').getDay()];
               return (
-                <span key={j.key} className={`serie7-j${j.done ? ' on' : ''}${i === 6 ? ' auj' : ''}`} aria-current={i === 6 ? 'date' : undefined}>
+                <span key={j.key} className={`serie7-j${j.done ? ' on' : ''}${j.gel ? ' gel' : ''}${j.key === auj ? ' auj' : ''}`} aria-current={j.key === auj ? 'date' : undefined}>
                   <small>{nom.charAt(0).toUpperCase()}</small>
                   <i>{j.done ? '✓' : ''}</i>
                 </span>
@@ -635,7 +658,16 @@ export function Today({
             le temps de parole ouvre l'onglet Parler. */}
         <div className="ly-bas">
           <button className="ly-tuile" onClick={onCalendrier}>
-            <span className="ly-tuile-haut"><span>Cette semaine</span></span>
+            <span className="ly-tuile-haut">
+              <span>Cette semaine</span>
+              {/* CHANTIER 228 — les gels en réserve (4 au plus). */}
+              {gels > 0 && (
+                <span className="ly-gels" aria-label={`${gels} gel${gels > 1 ? 's' : ''} en réserve`}>
+                  <Flocon />
+                  <b>{gels}</b>
+                </span>
+              )}
+            </span>
             {/* CHANTIER 187 — Décollage et Orbite : la semaine en phases de lune (maquette 26b).
                 0 jour : contour seul ; 1 : nouvelle lune ; 2 : premier croissant ;
                 3 : demi-lune ; 4 : lune gibbeuse ; 5 : pleine lune. 6 et 7 jours :
@@ -697,14 +729,14 @@ export function Today({
         * voyaient pas.
         */}
       <div className="serie7" aria-label={`Série : ${serie} jours`}>
-        {semaine.map((j, i) => {
+        {semaine.map((j) => {
           const nom = JOURS[new Date(j.key + 'T12:00:00').getDay()];
           return (
             <span
               key={j.key}
-              className={`serie7-j${j.done ? ' on' : ''}${i === 6 ? ' auj' : ''}`}
+              className={`serie7-j${j.done ? ' on' : ''}${j.gel ? ' gel' : ''}${j.key === auj ? ' auj' : ''}`}
               title={`${nom} ${j.key.slice(8)}`}
-              aria-current={i === 6 ? 'date' : undefined}
+              aria-current={j.key === auj ? 'date' : undefined}
             >
               <small>{nom.charAt(0).toUpperCase()}</small>
               <i>
@@ -718,6 +750,13 @@ export function Today({
           );
         })}
       </div>
+
+      {gels > 0 && (
+        <p className="today-gels">
+          <Flocon />
+          {gels} gel{gels > 1 ? 's' : ''} en réserve : chacun comble un jour manqué du lundi au vendredi.
+        </p>
+      )}
 
       {rows.length === 0 ? (
         <>
