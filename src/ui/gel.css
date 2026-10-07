@@ -27,3 +27,19 @@
 .today:not(.ly) .ly-tuile-haut svg { color: var(--bleu, var(--ink)); }
 .today:not(.ly) .ly-segments i { background: var(--ly-voile, var(--rule-strong, rgba(127, 127, 127, 0.2))); }
 .today:not(.ly) .ly-segments i.on { background: var(--good); }
+
+/* CHANTIER 234 — niveau, barre d'XP, flamme et défi du jour sur les premières
+   apparences (Automatique, Clair, Sombre, Cahiers). La forme vient de
+   lycee.css et apparence.css ; ici, les replis de couleurs de ces thèmes. */
+.today:not(.ly) .ly-haut { margin: 12px 0 0; }
+.today:not(.ly) .ly-niv { border-color: var(--bleu, var(--chalk, var(--ink))); background: color-mix(in srgb, var(--bleu, var(--chalk, var(--ink))) 12%, transparent); color: var(--ink); }
+.today:not(.ly) .ly-niv small { color: var(--bleu-ink, var(--grey)); }
+.today:not(.ly) .ly-niv b, .today:not(.ly) .ly-flamme b { font-weight: 700; }
+.today:not(.ly) .ly-barre { background: var(--ly-voile, var(--rule-strong, rgba(127, 127, 127, 0.2))); }
+.today:not(.ly) .ly-barre i { background: var(--bleu, var(--chalk, var(--good))); }
+.today:not(.ly) .ly-flamme { background: color-mix(in srgb, var(--rouge, var(--bad, #c0392b)) 14%, transparent); color: var(--rouge, var(--bad, #c0392b)); }
+.today:not(.ly) .ly-defi { background: var(--panel, transparent); border-color: var(--chalk, var(--rule-strong, var(--ink))); margin-bottom: 18px; }
+.today:not(.ly) .ly-defi-haut > span:first-child { color: var(--chalk-ink, var(--chalk, var(--ink-soft, var(--ink)))); }
+.today:not(.ly) .ly-defi-n { font-weight: 700; }
+.today:not(.ly) .ly-defi .ly-barre i { background: var(--good); }
+.today:not(.ly) .ly-niv:focus-visible, .today:not(.ly) .ly-xp:focus-visible { outline: 2px solid var(--chalk, currentColor); outline-offset: 2px; border-radius: 8px; }

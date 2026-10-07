@@ -238,9 +238,6 @@ export function Today({
   const semaineXp = semaineEnCours(streak);
   /* La semaine du calendrier, lundi → dimanche : elle repart à zéro le lundi. */
   const semaine = semaineXp.jours.map((j) => ({ key: j.key, done: j.etat === 'valide', gel: j.etat === 'gel' }));
-  /* Série en jeu : elle existe, elle n'est pas encore assurée, et il reste
-     du travail pour la sauver. Sans ces trois conditions, se taire. */
-  const serieEnJeu = serie > 0 && !faitAujourdhui && total > 0;
   /* CHANTIER 168 — la journée qui rapporte des XP : 20 cartes notées. */
   const cartesAuj = cartesDuJour(streak);
   const gain = gainDuJour(streak);
@@ -690,44 +687,45 @@ export function Today({
     );
   }
 
+  /* CHANTIER 234 — Automatique, Clair, Sombre et les Cahiers : les mêmes
+     informations que les apparences récentes (Tapis vert…). Le niveau, la
+     barre d'XP et la flamme remplacent « N jours d'affilée » et les sept
+     pastilles ; le défi du jour remplace le grand nombre de cartes. */
+  const nv = niveauDe(xpTotal(streak));
+  const flammeNv = serieValidee(streak);
+  const frNv = (v: number) => v.toLocaleString('fr-FR');
+
   return (
     <div className="today">
       <div className="today-head">
         <p className="today-date">{date}</p>
-        {serie > 0 && (
-          <span className="serie-count">
-            {serie} jour{serie > 1 ? 's' : ''} d’affilée
-          </span>
-        )}
       </div>
 
-      {/*
-        * CHANTIER 161 — la semaine en sept pastilles, avec l'initiale du
-        * jour. Un jour fait porte une coche ; aujourd'hui, s'il reste à
-        * faire, est un cercle en pointillé. Les sept traits de 5 px ne se
-        * voyaient pas.
-        */}
-      <div className="serie7" aria-label={`Série : ${serie} jours`}>
-        {semaine.map((j) => {
-          const nom = JOURS[new Date(j.key + 'T12:00:00').getDay()];
-          return (
-            <span
-              key={j.key}
-              className={`serie7-j${j.done ? ' on' : ''}${j.gel ? ' gel' : ''}${j.key === auj ? ' auj' : ''}`}
-              title={`${nom} ${j.key.slice(8)}`}
-              aria-current={j.key === auj ? 'date' : undefined}
-            >
-              <small>{nom.charAt(0).toUpperCase()}</small>
-              <i>
-                {j.done && (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
-              </i>
-            </span>
-          );
-        })}
+      <div className="ly-haut">
+        <span className="ly-niv" aria-hidden="true" onClick={onXp} style={{ cursor: 'pointer' }}>
+          <small>NIV.</small><b>{nv.niveau}</b>
+        </span>
+        <span
+          className="ly-xp"
+          role="button"
+          tabIndex={0}
+          aria-label={`Niveau ${nv.niveau}, ${frNv(nv.xp)} XP : voir le détail`}
+          onClick={onXp}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onXp(); } }}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="ly-xp-txt">
+            <b>Niveau {nv.niveau}</b>
+            <span>{frNv(nv.dansNiveau)} / {frNv(nv.pourNiveau)} XP</span>
+          </span>
+          <span className="ly-barre"><i style={{ width: `${Math.round((100 * nv.dansNiveau) / nv.pourNiveau)}%` }} /></span>
+        </span>
+        <span className="ly-flamme" aria-label={`Série : ${flammeNv} jour${flammeNv > 1 ? 's' : ''} à ${CARTES_PAR_JOUR} cartes`}>
+          <svg viewBox="0 0 24 24" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+          </svg>
+          <b>{flammeNv}</b>
+        </span>
       </div>
 
       {rows.length === 0 ? (
@@ -767,32 +765,22 @@ export function Today({
         </>
       ) : (
         <>
-          {/*
-            * « à revoir » : les cartes dues ce matin, sur les paquets en jeu
-            * et les thèmes retenus. Ce n'est pas une dette — elles sont là
-            * parce qu'elles commencent à s'effacer — mais c'est bien un
-            * travail du jour, et non l'étendue du vocabulaire. « Mes
-            * progrès » compte celle-là, et dit « mots », jamais « cartes ».
-            */}
-          <div className="today-count">
-            <b>{total}</b>
-            <span>carte{total > 1 ? 's' : ''}<br />à revoir</span>
+          {/* « à revoir » : les cartes dues ce matin, sur les paquets en jeu et
+              les thèmes retenus — même bloc que les apparences récentes. */}
+          <div className="ly-defi">
+            <div className="ly-defi-haut">
+              <span>Défi du jour</span>
+              <span className="ly-gain">{gain.valide ? `+${gain.xp} XP ✓` : `+${gain.xp} XP`}</span>
+            </div>
+            <b className="ly-defi-n">{total} carte{total > 1 ? 's' : ''}</b>
+            <span className="ly-defi-sous">
+              Environ {minutesPour(total)} min · {aFaire.length} paquet{aFaire.length > 1 ? 's' : ''}
+            </span>
+            <span className="ly-defi-jour">
+              <span className="ly-barre"><i style={{ width: `${Math.min(100, (100 * cartesAuj) / CARTES_PAR_JOUR)}%` }} /></span>
+              <span>{gain.valide ? 'Journée validée' : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP`}</span>
+            </span>
           </div>
-          <p className="today-est">
-            {aFaire.length > 1 ? `Répartis sur ${aFaire.length} paquets. ` : ''}
-            {/* CHANTIER 50 — `total / 3` valait bien vingt secondes par
-                carte, mais rien ne le disait : le jour où la constante
-                bouge, cette ligne serait restée seule en arrière. */}
-            Environ {minutesPour(total)} minutes.
-          </p>
-          <p className="today-xp">{ligneXp}</p>
-
-          {serieEnJeu && (
-            <p className="serie-alerte">
-              Ta série de {serie} jour{serie > 1 ? 's' : ''} tient à une
-              révision aujourd’hui.
-            </p>
-          )}
 
           {enAvant && carteEnAvant(enAvant)}
 
