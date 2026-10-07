@@ -117,17 +117,20 @@
 [data-style='cinema'] .ly-tuile > small { color: #555; }
 /* Une dalle par jour : à faire, une dalle grise vide ; fait, la dalle anthracite mouchetée,
    l'étoile rose cerclée de laiton et son médaillon. */
-[data-style='cinema'] .ly-segments { align-self: stretch; display: flex; justify-content: space-between; gap: 2px; height: 30px; }
-[data-style='cinema'] .ly-segments i { position: relative; flex: none; width: 30px; height: 30px; border-radius: 0;
+/* CHANTIER 219 — les cinq dalles se partagent la largeur de la tuile (elles faisaient 30 px chacune,
+   plus large que la tuile sur téléphone : la rangée débordait à droite). Chaque dalle est carrée,
+   26 px au plus, centrée dans sa colonne ; les étoiles suivent sa taille. */
+[data-style='cinema'] .ly-segments { align-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-items: center; align-items: center; gap: 3px; height: auto; margin-top: auto; }
+[data-style='cinema'] .ly-segments i { position: relative; flex: none; width: 100%; max-width: 26px; height: auto; aspect-ratio: 1; border-radius: 0;
   background-color: #cfccc6;
   background-image: radial-gradient(rgba(255, 255, 255, 0.18) 0.6px, transparent 1px), radial-gradient(rgba(0, 0, 0, 0.2) 0.6px, transparent 1px);
   background-size: 4px 4px, 5px 5px; background-position: 0 0, 2px 1px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25); }
-[data-style='cinema'] .ly-segments i::before { content: ''; position: absolute; left: 2px; top: 2px; width: 26px; height: 26px; background: #b5b1aa; clip-path: var(--etoile); }
-[data-style='cinema'] .ly-segments i::after { content: ''; position: absolute; left: 4px; top: 4.4px; width: 22px; height: 22px; background: #e3e0da; clip-path: var(--etoile); }
+[data-style='cinema'] .ly-segments i::before { content: ''; position: absolute; inset: 7%; background: #b5b1aa; clip-path: var(--etoile); }
+[data-style='cinema'] .ly-segments i::after { content: ''; position: absolute; inset: 15% 15% 13% 15%; background: #e3e0da; clip-path: var(--etoile); }
 [data-style='cinema'] .ly-segments i.on { background-color: #3b3734; }
 [data-style='cinema'] .ly-segments i.on::before { background: linear-gradient(135deg, #f3d27a, #a8781e); }
-[data-style='cinema'] .ly-segments i.on::after { background: radial-gradient(circle at 50% 56%, #d9a440 0 2.6px, #6b4e12 2.6px 3.2px, transparent 3.2px), linear-gradient(180deg, #f2b5ad, #d9827a); }
+[data-style='cinema'] .ly-segments i.on::after { background: radial-gradient(circle at 50% 56%, #d9a440 0 12%, #6b4e12 12% 15%, transparent 15%), linear-gradient(180deg, #f2b5ad, #d9827a); }
 
 /* ---------- Révision : l'intertitre ; les notes en claps ---------- */
 [data-style='cinema'] .studybg { background-color: #0b0b0b; background-image: var(--salle) !important; background-size: 100% 100%; background-repeat: no-repeat; }
