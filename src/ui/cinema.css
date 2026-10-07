@@ -184,7 +184,8 @@ body:not(:has(.today.ly)) .ci-salle { display: none; }
 .ci-salle .ci-rayure.a { left: 27%; }
 .ci-salle .ci-rayure.b { left: 68%; animation-duration: 13s; animation-delay: -4.5s; }
 /* Le pianiste, en bas à gauche, entre les tuiles et la barre d'onglets. */
-.ci-salle .ci-pianiste { left: 14px; bottom: calc(env(safe-area-inset-bottom) + 72px); width: 76px; height: 56px; filter: drop-shadow(0 0 1px rgba(244, 241, 234, 0.75)); }
+/* CHANTIER 222 — au-dessus de la barre d'onglets (environ 90 px), comme l'horloge de la Bibliothèque. */
+.ci-salle .ci-pianiste { left: 14px; bottom: calc(env(safe-area-inset-bottom) + 98px); width: 76px; height: 56px; filter: drop-shadow(0 0 1px rgba(244, 241, 234, 0.75)); }
 .ci-salle .ci-pianiste :is(.ci-piano, .ci-dos, .ci-tete, .ci-bras) { background: #050505; }
 .ci-salle .ci-piano { left: 34px; bottom: 0; width: 42px; height: 46px; border-radius: 3px 3px 0 0; }
 .ci-salle .ci-clavier { left: 26px; bottom: 26px; width: 10px; height: 3px; background: #d9d4c9; }

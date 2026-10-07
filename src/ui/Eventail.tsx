@@ -92,6 +92,23 @@ export function Eventail({
       {/* CHANTIER 187 — trois satellites en orbite autour de la planète. */}
       {/* CHANTIER 216 — la bande perforée, sous les images ; ses perforations glissent avec elles. */}
       {pel && <i className="pellicule-bande" aria-hidden="true" />}
+      {/* CHANTIER 222 — Bibliothèque : le chat noir marche sur la planche, devant les livres. */}
+      {ray && (
+        <span className="bi-chat" aria-hidden="true">
+          <span className="bi-chat-corps">
+            <i className="bi-c-queue" />
+            <i className="bi-c-dos" />
+            <i className="bi-c-patte p1" />
+            <i className="bi-c-patte p2" />
+            <i className="bi-c-patte p3" />
+            <i className="bi-c-patte p4" />
+            <i className="bi-c-tete" />
+            <i className="bi-c-oreille o1" />
+            <i className="bi-c-oreille o2" />
+            <i className="bi-c-oeil" />
+          </span>
+        </span>
+      )}
       {forme === 'orbite' && <span className="orbite-lunes" aria-hidden="true"><i><i /></i><i><i /></i><i><i /></i></span>}
       {paquets.map((r, i) => {
         const o = i - centre;

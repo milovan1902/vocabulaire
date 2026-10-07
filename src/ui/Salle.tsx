@@ -7,7 +7,8 @@
  * Cinéma muet : le faisceau du projecteur et sa poussière, une rayure de
  * pellicule usée de temps en temps, le pianiste de la salle (en bas à gauche).
  * Bibliothèque : la lampe de banquier qui respire, la poussière dorée,
- * l'horloge comtoise (en bas à gauche) et le chat qui traverse.
+ * l'horloge comtoise (en bas à gauche). CHANTIER 222 — le chat passe au premier plan, sur le
+ * rayon des livres : il est dessiné par Eventail.tsx (forme 'rayon').
  *
  * `Amorce` : le compte à rebours « 3, 2, 1 » du Cinéma muet, une fois par
  * jour, posé par Today.tsx sur « Aujourd'hui ».
@@ -79,23 +80,6 @@ function Biblio({ anime }: { anime: boolean }) {
         <span className={`bi-h-balancier${anime ? ' bat' : ''}`}><i /></span>
         <i className="bi-h-pied" />
       </span>
-      {/* Le chat : il traverse, s'arrête au milieu, regarde, repart. */}
-      {anime && (
-        <span className="bi-chat">
-          <span className="bi-chat-corps">
-            <i className="bi-c-queue" />
-            <i className="bi-c-dos" />
-            <i className="bi-c-patte p1" />
-            <i className="bi-c-patte p2" />
-            <i className="bi-c-patte p3" />
-            <i className="bi-c-patte p4" />
-            <i className="bi-c-tete" />
-            <i className="bi-c-oreille o1" />
-            <i className="bi-c-oreille o2" />
-            <i className="bi-c-oeil" />
-          </span>
-        </span>
-      )}
     </div>
   );
 }
