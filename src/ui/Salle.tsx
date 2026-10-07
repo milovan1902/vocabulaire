@@ -108,19 +108,30 @@ function Cabinet({ anime }: { anime: boolean }) {
       {anime && LUEURS.map(([x, y, d, r], k) => (
         <i key={k} className={`cb-lueur${k % 2 ? ' g' : ''}`} style={{ left: `${x}%`, top: `${y}%`, animationDuration: `${d}s`, animationDelay: `${r}s` }} />
       ))}
-      <span className="cb-alambic">
-        <i className="foyer" /><i className="braise" /><i className={`flamme${anime ? ' vive' : ''}`} />
-        <i className="cucurbite" /><i className="rivets r1" /><i className="rivets r2" />
-        <i className="robinet-a" /><i className="robinet-b" />
-        <i className="bague" /><i className="chapiteau" /><i className="bouton" />
-        <i className="col" /><i className="col-bague" />
-        <i className="cuve-pied p1" /><i className="cuve-pied p2" /><i className="cuve-socle" />
-        <i className="cuve" /><i className="cuve-haut" /><i className="cuve-entree" />
-        <i className="sortie" /><i className="bec" /><i className="clef" />
-        {anime && <i className="goutte" />}
-        <i className="fiole" /><i className="etiquette" />
-        {anime && <><i className="fumee f1" /><i className="fumee f2" /><i className="fumee f3" /></>}
-      </span>
+    </div>
+  );
+}
+
+/* CHANTIER 225 — l'alambic n'est plus collé au bas de l'écran : il est posé tout en bas
+   d'« Aujourd'hui », sous les tuiles (Today.tsx), et ne se voit qu'en descendant.
+   La fiole, la goutte et la fumée restent centrées sur le bec verseur (x = 304). */
+export function Alambic() {
+  const anime = !calme();
+  return (
+    <div className="cb-alambic-bloc" aria-hidden="true">
+        <span className="cb-alambic">
+          <i className="foyer" /><i className="braise" /><i className={`flamme${anime ? ' vive' : ''}`} />
+          <i className="cucurbite" /><i className="rivets r1" /><i className="rivets r2" />
+          <i className="robinet-a" /><i className="robinet-b" />
+          <i className="bague" /><i className="chapiteau" /><i className="bouton" />
+          <i className="col" /><i className="col-bague" />
+          <i className="cuve-pied p1" /><i className="cuve-pied p2" /><i className="cuve-socle" />
+          <i className="cuve" /><i className="cuve-haut" /><i className="cuve-entree" />
+          <i className="sortie" /><i className="bec" /><i className="clef" />
+          {anime && <i className="goutte" />}
+          <i className="fiole" /><i className="etiquette" />
+          {anime && <><i className="fumee f1" /><i className="fumee f2" /><i className="fumee f3" /></>}
+        </span>
     </div>
   );
 }

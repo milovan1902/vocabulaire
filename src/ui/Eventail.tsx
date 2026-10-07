@@ -138,7 +138,9 @@ export function Eventail({
             : ray
               ? `translate(${xr}px, ${a === 0 ? -6 : HAUT - hDos}px)`
               : clo
-                ? (a === 0 ? `translateX(${dx * 0.6}px) scale(0.74)` : `translate(${118 * s + dx * 0.6}px, -18px) rotate(${4 * s}deg) scale(0.5)`)
+                ? /* CHANTIER 225 — les gâteaux ne suivent plus le doigt : au relâché, la cloche se lève d'abord,
+                     puis le gâteau glisse, comme avec les flèches. */
+                  (a === 0 ? 'scale(0.74)' : `translate(${118 * s}px, -18px) rotate(${4 * s}deg) scale(0.5)`)
                 : boc
                   ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${122 * s + dx * 0.6}px, 30px) scale(0.6)`)
                   : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;

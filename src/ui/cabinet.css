@@ -206,7 +206,8 @@
 /* ---------- les électrons du niveau (Today.tsx) ---------- */
 [data-style='cabinet'] .ly-electrons { position: absolute; inset: 0; display: block; pointer-events: none; }
 [data-style='cabinet'] .ly-electrons i { position: absolute; inset: 0; display: block; }
-[data-style='cabinet'] .ly-electrons i:nth-child(1) { transform: scaleY(0.38); }
+/* CHANTIER 225 — l'orbite horizontale manquait (le niveau n'en dessine que deux, en biais). */
+[data-style='cabinet'] .ly-electrons i:nth-child(1) { transform: scaleY(0.38); box-sizing: border-box; border: 1.5px solid rgba(141, 255, 154, 0.85); border-radius: 50%; }
 [data-style='cabinet'] .ly-electrons i:nth-child(2) { transform: rotate(60deg) scaleY(0.38); }
 [data-style='cabinet'] .ly-electrons i:nth-child(3) { transform: rotate(-60deg) scaleY(0.38); }
 [data-style='cabinet'] .ly-electrons em { position: absolute; inset: 0; display: block; animation: cb-orbite 1.6s linear infinite; }
@@ -218,8 +219,12 @@
 body:not(:has(.today.ly)) .cb-salle { display: none; }
 .cb-salle .cb-lueur { width: 3px; height: 3px; border-radius: 50%; background: #b6ffbf; box-shadow: 0 0 6px #8dff9a; opacity: 0; --mx: 12px; animation-name: cb-mote; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
 .cb-salle .cb-lueur.g { --mx: -14px; }
-/* L'alambic : un dessin de 332 × 96 px, centré, au-dessus de la barre d'onglets. */
-.cb-salle .cb-alambic { left: 50%; bottom: calc(env(safe-area-inset-bottom) + 96px); width: 332px; height: 96px; margin-left: -166px; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.55)); }
+/* CHANTIER 225 — l'alambic : un dessin de 332 × 96 px, posé tout en bas d'« Aujourd'hui », sous les tuiles
+   (il ne se voit qu'en descendant). Réduit à 92 % pour tenir dans la largeur d'un téléphone. */
+[data-style='cabinet'] .today.ly .ly-bas { padding-bottom: 8px; }
+.cb-alambic-bloc { position: relative; height: 90px; margin: 14px 0 56px; }
+.cb-alambic { position: absolute; left: 50%; bottom: 0; width: 332px; height: 96px; margin-left: -166px; transform: scale(0.92); transform-origin: 50% 100%; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.55)); }
+.cb-alambic i { position: absolute; display: block; }
 .cb-alambic .foyer { left: 2px; bottom: 0; width: 60px; height: 24px; border-radius: 3px 3px 1px 1px; box-shadow: inset 0 2px 0 #a0523a;
   background: linear-gradient(0deg, transparent 0 5px, rgba(30, 12, 8, 0.7) 5px 6px, transparent 6px 11px, rgba(30, 12, 8, 0.7) 11px 12px, transparent 12px 17px, rgba(30, 12, 8, 0.7) 17px 18px, transparent 18px), repeating-linear-gradient(90deg, #7a3424 0 11px, rgba(30, 12, 8, 0.7) 11px 12px), #7a3424; }
 .cb-alambic .braise { left: 20px; bottom: 0; width: 24px; height: 16px; border-radius: 12px 12px 0 0; background: radial-gradient(ellipse at 50% 100%, #fff3c0 0 15%, #ffb347 35%, #c2401a 65%, #2a0e08 90%); }

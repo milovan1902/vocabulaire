@@ -32,7 +32,7 @@ import { niveauDe } from '../engine/niveau';
 import { CARTES_PAR_JOUR, cartesDuJour, gainDuJour, serieValidee, xpTotal } from '../engine/xp';
 import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
-import { Amorce } from './Salle';
+import { Alambic, Amorce } from './Salle';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -668,6 +668,8 @@ export function Today({
             <small>{parlerSous}</small>
           </button>
         </div>
+        {/* CHANTIER 225 — Cabinet 1900 : l'alambic, tout en bas, sous les tuiles. */}
+        {style === 'cabinet' && <Alambic />}
       </div>
     );
   }

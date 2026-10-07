@@ -39,6 +39,9 @@ import { useStyle } from './useStyle';
  *     appareil photo, lampe à lave, fusée jouet).
  *   — CHANTIER 183 : Tapis vert (jeton, cartes, micro, dé, pile de jetons),
  *     Salon privé (losange, cartes, verre, roulette, trophée).
+ *   — CHANTIER 225 : Salon de thé (gâteau à bougie, boîte à gâteaux, tasse de thé,
+ *     fouet, pièce montée), Cabinet 1900 (erlenmeyer, bocal, cornet de phonographe,
+ *     microscope, atome).
  * Toujours au trait, en currentColor : l'onglet actif garde sa couleur.
  */
 const TRAIT = {
@@ -57,6 +60,9 @@ const TRAIT = {
 /** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
   const style = useStyle();
+  /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
+  if (style === 'patisserie') return <svg {...TRAIT}><path d="M4 20h16" /><path d="M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6" /><path d="M5 15.5c1.2 1 2.3 1 3.5 0s2.3-1 3.5 0 2.3 1 3.5 0 2.3-1 3.5 0" /><path d="M12 12V8" /><path d="M12 3.5c.8 1 1 1.7.6 2.4a.8.8 0 0 1-1.2 0c-.4-.7-.2-1.4.6-2.4z" /></svg>;
+  if (style === 'cabinet') return <svg {...TRAIT}><path d="M9 3h6" /><path d="M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3" /><path d="M7 15h10" /></svg>;
   if (style === 'tapis') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" /></svg>;
   if (style === 'salon') return <svg {...TRAIT}><path d="M12 2l8 10-8 10-8-10z" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><circle cx="12" cy="15.5" r="5.5" /><path d="M9.5 6.5 11 3.5h2l1.5 3L12 10z" /></svg>;
@@ -85,6 +91,9 @@ export function IconAujourdhui() {
 /** Les cartes empilées : la collection. */
 export function IconPaquets() {
   const style = useStyle();
+  /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
+  if (style === 'patisserie') return <svg {...TRAIT}><rect x="3" y="9" width="18" height="12" rx="1" /><path d="M3 13h18M12 9v12" /><path d="M12 9c-1.5-3-5-3.5-5-1.5S10 9 12 9c2 0 5 .5 5-1.5S13.5 6 12 9z" /></svg>;
+  if (style === 'cabinet') return <svg {...TRAIT}><rect x="6" y="2" width="12" height="3" rx="1" /><path d="M7 5v1a3 3 0 0 1-2 2.8V19a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8.8A3 3 0 0 1 17 6V5" /><path d="M5 13h14" /></svg>;
   if (style === 'tapis') return <svg {...TRAIT}><rect x="3" y="5" width="10" height="15" rx="1.5" transform="rotate(-12 8 12.5)" /><rect x="10" y="4" width="10" height="15" rx="1.5" transform="rotate(10 15 11.5)" /></svg>;
   if (style === 'salon') return <svg {...TRAIT}><rect x="3" y="5" width="10" height="15" rx="1.5" transform="rotate(-12 8 12.5)" /><rect x="10" y="4" width="10" height="15" rx="1.5" transform="rotate(10 15 11.5)" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><path d="M5 9h14l-1.5 11h-11z" /><path d="M8.5 9V7a3.5 3.5 0 0 1 7 0v2" /></svg>;
@@ -112,6 +121,9 @@ export function IconPaquets() {
 /** La bulle : la conversation. */
 export function IconParler() {
   const style = useStyle();
+  /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
+  if (style === 'patisserie') return <svg {...TRAIT}><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" /><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" /><path d="M3 21h16" /><path d="M8 2c-1 1.2 1 2.2 0 3.4M12 2c-1 1.2 1 2.2 0 3.4" /></svg>;
+  if (style === 'cabinet') return <svg {...TRAIT}><path d="M4 21h7" /><path d="M7.5 21v-6" /><path d="M7.5 15 20 4c1.2 3.2.6 9-3 11.6S9 17 7.5 15z" /></svg>;
   if (style === 'tapis') return <svg {...TRAIT}><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8" /></svg>;
   if (style === 'salon') return <svg {...TRAIT}><path d="M4 4h16l-8 9z" /><path d="M12 13v8M8 21h8" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><path d="M9 2h6l-.5 7a2.5 2.5 0 0 1-5 0z" /><path d="M12 11.5V20M8.5 21h7M11 6h.01M13 4.5h.01" /></svg>;
@@ -137,6 +149,9 @@ export function IconParler() {
 /** Les trois curseurs : les réglages. */
 export function IconReglages() {
   const style = useStyle();
+  /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
+  if (style === 'patisserie') return <svg {...TRAIT}><path d="M12 13v9" /><path d="M12 13c-4-2-5-9 0-11 5 2 4 9 0 11z" /><path d="M12 13c-1.8-2-2-7.5 0-11 2 3.5 1.8 9 0 11z" /></svg>;
+  if (style === 'cabinet') return <svg {...TRAIT}><path d="M6 18h8" /><path d="M3 22h18" /><path d="M14 22a7 7 0 1 0 0-14h-1" /><path d="M9 14h2" /><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z" /><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" /></svg>;
   if (style === 'tapis') return <svg {...TRAIT}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M8.5 8.5h.01M15.5 15.5h.01M12 12h.01M15.5 8.5h.01M8.5 15.5h.01" strokeWidth="2.6" /></svg>;
   if (style === 'salon') return <svg {...TRAIT}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /><path d="M12 3v6M12 15v6M3 12h6M15 12h6M5.6 5.6l4.3 4.3M14.1 14.1l4.3 4.3M5.6 18.4l4.3-4.3M14.1 9.9l4.3-4.3" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><circle cx="12" cy="12" r="5" /><path d="M9 7.5 9.5 3h5l.5 4.5M9 16.5l.5 4.5h5l.5-4.5M12 10v2l1.5 1" /></svg>;
@@ -162,6 +177,9 @@ export function IconReglages() {
 /** La courbe qui monte : ce qui progresse. */
 export function IconProgres() {
   const style = useStyle();
+  /* CHANTIER 225 — Salon de thé et Cabinet 1900. */
+  if (style === 'patisserie') return <svg {...TRAIT}><path d="M4 21h16" /><rect x="5" y="16" width="14" height="5" rx="1" /><rect x="7.5" y="11" width="9" height="5" rx="1" /><rect x="10" y="6" width="4" height="5" rx="1" /><path d="M12 6V3" /></svg>;
+  if (style === 'cabinet') return <svg {...TRAIT}><circle cx="12" cy="12" r="1" /><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z" /><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z" /></svg>;
   if (style === 'tapis') return <svg {...TRAIT}><ellipse cx="12" cy="6" rx="7" ry="2.5" /><path d="M5 6v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 10v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-4M5 14v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-4" /></svg>;
   if (style === 'salon') return <svg {...TRAIT}><path d="M7 3h10v5a5 5 0 0 1-10 0z" /><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6v4H9z" /></svg>;
   if (style === 'strass') return <svg {...TRAIT}><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5z" /><path d="M5 21h14" /></svg>;
