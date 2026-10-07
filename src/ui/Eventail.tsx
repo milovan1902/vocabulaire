@@ -183,6 +183,8 @@ export function Eventail({
         );
       })}
       {clo && <i className={`cloche-verre${coups ? ` v${coups % 2}` : ''}`} aria-hidden="true" />}
+      {/* CHANTIER 224 — l'éclat de lumière qui glisse sur le verre quand la cloche se repose. */}
+      {clo && <span className={`cloche-eclat${coups ? ` v${coups % 2}` : ''}`} aria-hidden="true"><i /></span>}
     </div>
   );
 }

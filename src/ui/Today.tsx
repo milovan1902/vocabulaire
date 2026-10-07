@@ -511,7 +511,10 @@ export function Today({
         {/* CHANTIER 185 — le niveau et sa barre ouvrent « Mes XP ». Le chiffre
             est celui du compte : xpTotal(streak), le même calcul que Mes XP. */}
         <div className="ly-haut">
-          <span className="ly-niv" aria-hidden="true" onClick={onXp} style={{ cursor: 'pointer' }}><small>NIV.</small><b>{n.niveau}</b></span>
+          <span className="ly-niv" aria-hidden="true" onClick={onXp} style={{ cursor: 'pointer' }}><small>NIV.</small><b>{n.niveau}</b>
+            {/* CHANTIER 224 — Cabinet 1900 : trois électrons sur les orbites de l'atome. */}
+            {style === 'cabinet' && <span className="ly-electrons"><i><em /></i><i><em /></i><i><em /></i></span>}
+          </span>
           <span
             className="ly-xp"
             role="button"

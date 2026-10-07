@@ -84,11 +84,58 @@ function Biblio({ anime }: { anime: boolean }) {
   );
 }
 
+/* CHANTIER 224 — Salon de thé : des pétales de rose qui descendent en tournoyant. */
+const PETALES: Array<[number, number, number]> = [[8, 0, 11], [30, -4, 13], [55, -8, 10], [78, -2, 14], [18, -6.5, 12], [66, -10, 15], [90, -12, 12]];
+
+function Patisserie({ anime }: { anime: boolean }) {
+  if (!anime) return null;
+  return (
+    <div className="fond-anime patisserie pa-salle" aria-hidden="true">
+      {PETALES.map(([x, d, t], k) => (
+        <i key={k} className={`pa-petale${k % 2 ? ' g' : ''}`} style={{ left: `${x}%`, animationDuration: `${t}s`, animationDelay: `${d}s` }} />
+      ))}
+    </div>
+  );
+}
+
+/* CHANTIER 224 — Cabinet 1900 : les lueurs qui flottent, et l'alambic en bas de l'écran.
+   La fiole, la goutte et la fumée sont centrées sur le bec verseur (x = 304 dans le dessin). */
+const LUEURS: Array<[number, number, number, number]> = [[12, 30, 7, 0], [24, 58, 9, -3], [40, 18, 8, -5], [62, 44, 10, -2], [78, 26, 7, -6], [88, 62, 9, -1], [50, 70, 8, -4], [18, 80, 10, -7], [70, 84, 9, -3.5], [34, 40, 11, -8]];
+
+function Cabinet({ anime }: { anime: boolean }) {
+  return (
+    <div className="fond-anime cabinet cb-salle" aria-hidden="true">
+      {anime && LUEURS.map(([x, y, d, r], k) => (
+        <i key={k} className={`cb-lueur${k % 2 ? ' g' : ''}`} style={{ left: `${x}%`, top: `${y}%`, animationDuration: `${d}s`, animationDelay: `${r}s` }} />
+      ))}
+      <span className="cb-alambic">
+        <i className="foyer" /><i className="braise" /><i className={`flamme${anime ? ' vive' : ''}`} />
+        <i className="cucurbite" /><i className="rivets r1" /><i className="rivets r2" />
+        <i className="robinet-a" /><i className="robinet-b" />
+        <i className="bague" /><i className="chapiteau" /><i className="bouton" />
+        <i className="col" /><i className="col-bague" />
+        <i className="cuve-pied p1" /><i className="cuve-pied p2" /><i className="cuve-socle" />
+        <i className="cuve" /><i className="cuve-haut" /><i className="cuve-entree" />
+        <i className="sortie" /><i className="bec" /><i className="clef" />
+        {anime && <i className="goutte" />}
+        <i className="fiole" /><i className="etiquette" />
+        {anime && <><i className="fumee f1" /><i className="fumee f2" /><i className="fumee f3" /></>}
+      </span>
+    </div>
+  );
+}
+
 export function Salle() {
   const style = useStyle();
-  if (style !== 'cinema' && style !== 'biblio') return null;
+  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet') return null;
   const anime = !calme();
-  return createPortal(style === 'cinema' ? <Cinema anime={anime} /> : <Biblio anime={anime} />, document.body);
+  return createPortal(
+    style === 'cinema' ? <Cinema anime={anime} />
+      : style === 'biblio' ? <Biblio anime={anime} />
+      : style === 'patisserie' ? <Patisserie anime={anime} />
+      : <Cabinet anime={anime} />,
+    document.body,
+  );
 }
 
 const CLE_AMORCE = 'cinema-amorce-jour';

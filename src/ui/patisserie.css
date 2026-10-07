@@ -194,6 +194,68 @@
 @keyframes pa-souffle { 0% { transform: rotate(0) scale(1); opacity: 1; } 35% { transform: rotate(38deg) translateX(2px) scale(0.9, 0.75); opacity: 1; } 70% { transform: rotate(55deg) translateX(3px) scale(0.35); opacity: 0.6; } 100% { transform: rotate(60deg) scale(0); opacity: 0; } }
 @keyframes pa-fumee { 0% { opacity: 0; transform: translate(0, 0) scale(0.4); } 20% { opacity: 0.85; } 100% { opacity: 0; transform: translate(7px, -30px) scale(1.7); } }
 
+/* ==================================================================
+   CHANTIER 224 — les animations du Salon de thé (maquette 49a)
+   ================================================================== */
+/* ---------- les pétales (Salle.tsx), sur « Aujourd'hui » seulement ---------- */
+body:not(:has(.today.ly)) .pa-salle { display: none; }
+.pa-salle .pa-petale { top: -20px; width: 9px; height: 12px; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #fff, #f3b7c6 60%); opacity: 0; --sx: 40px; animation-name: pa-petale; animation-timing-function: linear; animation-iteration-count: infinite; }
+.pa-salle .pa-petale.g { --sx: -40px; background: linear-gradient(135deg, #fff, #eea3b6 60%); }
+
+/* ---------- le reflet sur la cloche (Eventail.tsx) ---------- */
+[data-style='patisserie'] .cloche-eclat { position: absolute; left: 50%; top: 24px; width: 150px; height: 170px; margin-left: -75px; z-index: 13; display: block; overflow: hidden; pointer-events: none; border-radius: 50% 50% 10px 10px / 58% 58% 10px 10px; }
+[data-style='patisserie'] .cloche-eclat i { position: absolute; left: 0; top: 0; bottom: 0; width: 34px; display: block; opacity: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent); }
+[data-style='patisserie'] .cloche-eclat.v0 { animation: pa-cloche-0 0.9s ease-in-out; }
+[data-style='patisserie'] .cloche-eclat.v1 { animation: pa-cloche-1 0.9s ease-in-out; }
+[data-style='patisserie'] .cloche-eclat.v0 i { animation: pa-reflet-0 0.7s ease-out 0.8s both; }
+[data-style='patisserie'] .cloche-eclat.v1 i { animation: pa-reflet-1 0.7s ease-out 0.8s both; }
+
+/* ---------- la bougie du jour s'allume, d'une étincelle, à chaque arrivée sur « Aujourd'hui » ---------- */
+[data-style='patisserie'] .ly-segments:not(.plein) i.auj.on::before { animation: pa-rallume 0.55s ease-out 0.35s both, pa-vacille 0.8s ease-in-out 0.9s infinite alternate; }
+[data-style='patisserie'] .ly-segments:not(.plein) i.auj::after { left: -4px; top: -14px; width: 16px; height: 16px; border-radius: 0; background: radial-gradient(circle, #fffbe0 0 20%, #ffd36a 45%, transparent 70%); clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: pa-etincelle 0.6s ease-out 0.2s both; }
+
+/* ---------- 5 / 5 : soufflées de gauche à droite, puis rallumées ; 6 jours : halo ; 7 jours : étincelles ---------- */
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(1)::before { animation: pa-souffle 0.8s ease-in 0.60s forwards, pa-rallume 0.5s ease-out 3.22s forwards, pa-vacille 0.8s ease-in-out 3.72s infinite alternate; }
+[data-style='patisserie'] .ly-segments.b6 i.on:nth-child(1)::before { animation: pa-souffle 0.8s ease-in 0.60s forwards, pa-rallume 0.5s ease-out 3.22s forwards, pa-vacille 0.8s ease-in-out 3.72s infinite alternate, pa-halo 1.6s ease-in-out 3.72s infinite alternate; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(1)::after { animation: pa-fumee 1.6s ease-out 1.05s forwards; }
+[data-style='patisserie'] .ly-segments.b7 i.on:nth-child(1)::after { animation: pa-fumee 1.6s ease-out 1.05s forwards, pa-crepite 0.70s ease-out 3.62s infinite; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(2)::before { animation: pa-souffle 0.8s ease-in 0.98s forwards, pa-rallume 0.5s ease-out 3.37s forwards, pa-vacille 0.8s ease-in-out 3.87s infinite alternate; }
+[data-style='patisserie'] .ly-segments.b6 i.on:nth-child(2)::before { animation: pa-souffle 0.8s ease-in 0.98s forwards, pa-rallume 0.5s ease-out 3.37s forwards, pa-vacille 0.8s ease-in-out 3.87s infinite alternate, pa-halo 1.6s ease-in-out 3.87s infinite alternate; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(2)::after { animation: pa-fumee 1.6s ease-out 1.43s forwards; }
+[data-style='patisserie'] .ly-segments.b7 i.on:nth-child(2)::after { animation: pa-fumee 1.6s ease-out 1.43s forwards, pa-crepite 0.85s ease-out 3.88s infinite; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(3)::before { animation: pa-souffle 0.8s ease-in 1.36s forwards, pa-rallume 0.5s ease-out 3.52s forwards, pa-vacille 0.8s ease-in-out 4.02s infinite alternate; }
+[data-style='patisserie'] .ly-segments.b6 i.on:nth-child(3)::before { animation: pa-souffle 0.8s ease-in 1.36s forwards, pa-rallume 0.5s ease-out 3.52s forwards, pa-vacille 0.8s ease-in-out 4.02s infinite alternate, pa-halo 1.6s ease-in-out 4.02s infinite alternate; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(3)::after { animation: pa-fumee 1.6s ease-out 1.81s forwards; }
+[data-style='patisserie'] .ly-segments.b7 i.on:nth-child(3)::after { animation: pa-fumee 1.6s ease-out 1.81s forwards, pa-crepite 1.00s ease-out 4.14s infinite; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(4)::before { animation: pa-souffle 0.8s ease-in 1.74s forwards, pa-rallume 0.5s ease-out 3.67s forwards, pa-vacille 0.8s ease-in-out 4.17s infinite alternate; }
+[data-style='patisserie'] .ly-segments.b6 i.on:nth-child(4)::before { animation: pa-souffle 0.8s ease-in 1.74s forwards, pa-rallume 0.5s ease-out 3.67s forwards, pa-vacille 0.8s ease-in-out 4.17s infinite alternate, pa-halo 1.6s ease-in-out 4.17s infinite alternate; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(4)::after { animation: pa-fumee 1.6s ease-out 2.19s forwards; }
+[data-style='patisserie'] .ly-segments.b7 i.on:nth-child(4)::after { animation: pa-fumee 1.6s ease-out 2.19s forwards, pa-crepite 0.70s ease-out 4.40s infinite; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(5)::before { animation: pa-souffle 0.8s ease-in 2.12s forwards, pa-rallume 0.5s ease-out 3.82s forwards, pa-vacille 0.8s ease-in-out 4.32s infinite alternate; }
+[data-style='patisserie'] .ly-segments.b6 i.on:nth-child(5)::before { animation: pa-souffle 0.8s ease-in 2.12s forwards, pa-rallume 0.5s ease-out 3.82s forwards, pa-vacille 0.8s ease-in-out 4.32s infinite alternate, pa-halo 1.6s ease-in-out 4.32s infinite alternate; }
+[data-style='patisserie'] .ly-segments.plein i.on:nth-child(5)::after { animation: pa-fumee 1.6s ease-out 2.57s forwards; }
+[data-style='patisserie'] .ly-segments.b7 i.on:nth-child(5)::after { animation: pa-fumee 1.6s ease-out 2.57s forwards, pa-crepite 0.85s ease-out 4.66s infinite; }
+
+/* ---------- la note : le macaron s'écrase, la farce déborde, il reprend sa forme (Study.tsx, .frappe) ---------- */
+[data-style='patisserie'] .grades .grade.frappe::before { animation: pa-ecrase-haut 0.9s cubic-bezier(0.3, 0.7, 0.4, 1); }
+[data-style='patisserie'] .grades .grade.frappe::after { animation: pa-ecrase-bas 0.9s cubic-bezier(0.3, 0.7, 0.4, 1); }
+
+@keyframes pa-petale { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 8% { opacity: 0.9; } 50% { transform: translate(var(--sx), 50vh) rotate(220deg); } 92% { opacity: 0.8; } 100% { transform: translate(0, 105vh) rotate(420deg); opacity: 0; } }
+@keyframes pa-reflet-0 { 0% { transform: translateX(-50px) skewX(-18deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateX(190px) skewX(-18deg); opacity: 0; } }
+@keyframes pa-reflet-1 { 0% { transform: translateX(-50px) skewX(-18deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateX(190px) skewX(-18deg); opacity: 0; } }
+@keyframes pa-rallume { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes pa-etincelle { 0% { transform: scale(0) rotate(0); opacity: 1; } 50% { transform: scale(1.4) rotate(45deg); opacity: 1; } 100% { transform: scale(0.2) rotate(90deg); opacity: 0; } }
+@keyframes pa-halo { from { filter: drop-shadow(0 0 3px rgba(247, 177, 60, 0.8)) drop-shadow(0 0 4px rgba(255, 220, 130, 0.5)); } to { filter: drop-shadow(0 0 3px rgba(247, 177, 60, 0.9)) drop-shadow(0 0 11px rgba(255, 220, 130, 0.95)); } }
+/* Les étincelles : la fumée s'efface (fond réduit à rien), trois points brillants jaillissent. */
+@keyframes pa-crepite { 0% { opacity: 0; background-size: 0 0; transform: none; box-shadow: 0 0 0 -1px #fff6c8, 0 0 0 -1px #ffd36a, 0 0 0 -1px #fff6c8; } 15% { opacity: 1; } 100% { opacity: 0; background-size: 0 0; transform: none; box-shadow: -9px -10px 0 -3px #fff6c8, 9px -12px 0 -3px #ffd36a, 1px -17px 0 -3px #fff6c8; } }
+@keyframes pa-ecrase-haut { 0% { transform: none; } 25% { transform: translateY(6px) scale(1.16, 0.7); } 45% { transform: translateY(5px) scale(1.12, 0.75); } 70% { transform: translateY(-1px) scale(0.97, 1.05); } 100% { transform: none; } }
+@keyframes pa-ecrase-bas { 0% { transform: none; } 25% { transform: translateY(-2px) scale(1.16, 0.8); box-shadow: 0 -3px 0 0 var(--fonce), 0 -10px 0 5px var(--ganache), 0 6px 6px rgba(74, 44, 53, 0.22); } 55% { box-shadow: 0 -3px 0 0 var(--fonce), 0 -11px 0 3px var(--ganache), 0 6px 6px rgba(74, 44, 53, 0.22); } 80% { transform: scale(0.98, 1.04); } 100% { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-salle, [data-style='patisserie'] .cloche-eclat { display: none; }
+  [data-style='patisserie'] .grades .grade::before, [data-style='patisserie'] .grades .grade::after { animation: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-style='patisserie'] .cloche-verre, [data-style='patisserie'] .ly-segments i::before, [data-style='patisserie'] .ly-segments i::after { animation: none !important; }
   [data-style='patisserie'] .eventail.cloche .eventail-carte { transition: none; }

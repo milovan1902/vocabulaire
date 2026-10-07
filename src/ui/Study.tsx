@@ -308,9 +308,11 @@ export function Study({
               className={`${g.className} g-${g.key}${frappe === g.key ? ' frappe' : ''}`}
               onClick={() => {
                 if (frappe) return;
-                if ((style === 'cinema' || style === 'biblio') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+                /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
+                const attente = style === 'cinema' || style === 'biblio' ? 280 : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : 0;
+                if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
-                  window.setTimeout(() => { setFrappe(null); void grade(g.key); }, 280);
+                  window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
                 } else void grade(g.key);
               }}
             >
