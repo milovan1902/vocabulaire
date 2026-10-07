@@ -53,8 +53,21 @@ function useAjuste(texte: string) {
     });
     ro.observe(cible);
     let actif = true;
-    document.fonts?.ready.then(() => { if (actif) setPasse((p) => p + 1); });
-    return () => { actif = false; ro.disconnect(); };
+    const relance = () => { if (actif) setPasse((p) => p + 1); };
+    document.fonts?.ready.then(relance);
+    /* CHANTIER 218 — la police d'un mot ne se charge qu'au moment où il s'affiche (la réponse,
+       souvent en italique très gras, n'apparaît qu'au toucher). « ready » était déjà résolu :
+       la mesure se faisait avec la police de secours, plus étroite, puis la vraie police
+       arrivait et le mot se coupait (« coun- / tryside »). On remesure quand une police finit
+       de se charger, et deux fois encore par sécurité. */
+    document.fonts?.addEventListener?.('loadingdone', relance);
+    const t1 = window.setTimeout(relance, 300);
+    const t2 = window.setTimeout(relance, 1200);
+    return () => {
+      actif = false; ro.disconnect();
+      document.fonts?.removeEventListener?.('loadingdone', relance);
+      window.clearTimeout(t1); window.clearTimeout(t2);
+    };
   }, [texte]);
   useLayoutEffect(() => {
     const el = ref.current;
@@ -64,7 +77,8 @@ function useAjuste(texte: string) {
     el.style.overflowWrap = 'normal';
     el.style.wordBreak = 'normal';
     const cs = getComputedStyle(el);
-    const dispo = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) - 2;
+    /* CHANTIER 218 — 6 % de marge : l'italique très gras déborde de sa propre chasse (le « y », le « e »). */
+    const dispo = (el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)) * 0.94 - 2;
     if (dispo <= 0) return;
     const mots = texte.split(/\s+/).filter(Boolean);
     if (!mots.length) return;
