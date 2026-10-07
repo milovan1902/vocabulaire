@@ -432,7 +432,7 @@ export function Account({
             <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
           </div>
           <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion', 'cinema', 'bibliotheque'] as Theme[]).map((t) => {
+            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion', 'cinema', 'bibliotheque', 'salon-the', 'cabinet'] as Theme[]).map((t) => {
               const libre = estDebloquee(t, xp);
               const seuil = DEBLOCAGE[t] ?? 0;
               return (
@@ -496,6 +496,8 @@ export function Account({
             « Fashion week » : le défilé en noir et blanc, où les paquets sont des housses pendues à un portant.
             « Cinéma muet » : la salle obscure, où les paquets défilent sur une pellicule.
             « Bibliothèque » : la salle de lecture, où les paquets sont des livres rangés sur un rayon.
+            « Salon de thé » : la pâtisserie parisienne, où le paquet du jour attend sous une cloche de verre.
+            « Cabinet 1900 » : le laboratoire d’une chimiste, la nuit, où les paquets luisent dans des bocaux.
           </p>
         </Tiroir>
       )}

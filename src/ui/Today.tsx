@@ -440,6 +440,11 @@ export function Today({
         ? { defi: 'La séance du jour', go: 'Projeter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} bobines` }
       : style === 'biblio'
         ? { defi: 'Lecture du jour', go: 'Ouvrir', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} pages` }
+      /* CHANTIER 223 — Salon de thé : la gourmandise ; Cabinet 1900 : l'expérience. */
+      : style === 'patisserie'
+        ? { defi: 'La gourmandise du jour', go: 'Déguster', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} douceurs` }
+      : style === 'cabinet'
+        ? { defi: 'L’expérience du jour', go: 'Expérimenter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} échantillons` }
       : style === 'tv'
         ? { defi: 'Au programme', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} étoiles` }
       : style === 'jardin'
@@ -475,7 +480,7 @@ export function Today({
       : style === 'fashion' ? <i className="chevron-mode" />
       /* CHANTIER 216 — Cinéma muet : un triangle de projecteur ; Bibliothèque : un chevron fin. */
       : style === 'cinema' ? <i className="fleche-cine" />
-      : style === 'biblio' ? <i className="chevron-mode" />
+      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' ? <i className="chevron-mode" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -575,7 +580,7 @@ export function Today({
           <Eventail
             paquets={aFaire}
             centre={iCentre}
-            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : 'eventail'}
+            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : 'eventail'}
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
@@ -592,7 +597,7 @@ export function Today({
             || style === 'basket' || style === 'foot' || style === 'rugby'
             || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
             || style === 'tapis' || style === 'salon' || style === 'station' || style === 'fashion'
-            || style === 'cinema' || style === 'biblio') && aFaire.length > 1 && (
+            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -639,7 +644,8 @@ export function Today({
               <>
                 <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE} jours`}</b>
                 {/* CHANTIER 199 — « plein » : la semaine est faite (Strass : les flûtes trinquent). */}
-                <span className={`ly-segments${faits >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
+                {/* CHANTIER 223 — « b6 », « b7 » : les jours de bonus (Cabinet 1900 : le tube vire au jaune, puis au rouge). */}
+                <span className={`ly-segments${faits >= OBJECTIF_SEMAINE ? ' plein' : ''}${faits > OBJECTIF_SEMAINE ? ` b${Math.min(faits, 7)}` : ''}`} aria-hidden="true">
                   {/* CHANTIER 221 — « auj » : le jour validé aujourd'hui (Cinéma muet : l'étoile gravée). */}
                   {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''} />)}
                 </span>

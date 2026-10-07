@@ -1,0 +1,200 @@
+/* ==================================================================
+   CHANTIER 223 — « Salon de thé » (maquette 48a) : la pâtisserie parisienne.
+   Papier peint rayé rose poudré, crème, filets roses, touches de pistache et d'or.
+
+   Active quand <html> porte data-style="patisserie" (theme.ts). Base CLAIRE,
+   forme du Lycée (estLudique). Parisienne pour les grands textes (public/fonts),
+   Lexend pour le texte.
+   - Les paquets : sur un présentoir doré, celui du centre sous une cloche de verre
+     qui se soulève au changement (Eventail.tsx, forme 'cloche').
+   - « Cette semaine » : cinq bougies sur un gâteau ; à 5 / 5, elles se soufflent
+     de gauche à droite à chaque ouverture d'« Aujourd'hui ».
+   - Révision : une étiquette de vitrine nouée d'un ruban ; les notes sont des macarons.
+   ================================================================== */
+@font-face {
+  font-family: 'Parisienne';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/parisienne-latin.woff2') format('woff2');
+}
+[data-style='patisserie'] {
+  --paper: #fbf1ec; --panel: #fffaf5; --panel-hi: #f6e4dd;
+  --ink: #4a2c35; --ink-soft: #6b4a53; --grey: #8a6a72; --ink-dim: #8a6a72;
+  --rule: rgba(74, 44, 53, 0.1); --rule-strong: rgba(74, 44, 53, 0.2);
+  --chalk: #e79fb2; --chalk-ink: #b8566f; --on-chalk: #fff;
+  --good: #7fa964; --bad: #c8506c;
+  --voile: rgba(74, 44, 53, 0.05); --voile-2: rgba(74, 44, 53, 0.1); --voile-3: rgba(74, 44, 53, 0.16);
+  --bleu: #e79fb2; --bleu-ink: #b8566f; --rouge: #c8506c; --orange: #d9924a;
+  --ly-voile: rgba(231, 159, 178, 0.25); --ly-voile-2: rgba(231, 159, 178, 0.5);
+  --ly-tabbar: #fffaf5; --ly-ombre: rgba(74, 44, 53, 0.18); --ly-tag: #fffaf5; --ly-bord-carte: #fff;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Parisienne', Georgia, cursive;
+  --titre: 'Parisienne', Georgia, cursive;
+  --anneau: #e79fb2;
+  --rose: #e79fb2; --pistache: #a9c98f; --or: #c8a35a; --creme: #fffaf5;
+  --rayures: repeating-linear-gradient(90deg, #fbf1ec 0 18px, #f6e4dd 18px 36px);
+}
+[data-style='patisserie'] body { font-family: var(--sans); color: var(--ink); background-color: #fbf1ec; background-image: var(--rayures); background-attachment: fixed; }
+[data-style='patisserie'] .screen-title, [data-style='patisserie'] .topbar h1, [data-style='patisserie'] .welcome-head h1, [data-style='patisserie'] .done h2, [data-style='patisserie'] .sheet h3, [data-style='patisserie'] .today-count b {
+  font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; color: #4a2c35;
+}
+[data-style='patisserie'] .sheet { border-top: 3px solid #e79fb2; }
+[data-style='patisserie'] .tabbar { background: #fffaf5; border-top: 2px solid #e79fb2; }
+[data-style='patisserie'] .tabbar button { color: #8a6a72; }
+[data-style='patisserie'] .tabbar button.on { color: #4a2c35; }
+[data-style='patisserie'] .tabbar button.on::before { display: none; }
+[data-style='patisserie'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='patisserie'] .tabbar button.on .tabsvg { background: rgba(231, 159, 178, 0.28); }
+[data-style='patisserie'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='patisserie'] .reveal { background: #e79fb2; color: #fff; border: none; border-radius: 999px; box-shadow: 0 4px 0 #c97d92; font-family: var(--sans); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+[data-style='patisserie'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='patisserie'] .reveal:active { transform: translateY(3px); box-shadow: 0 1px 0 #c97d92; }
+
+/* ---------- Aujourd'hui : l'en-tête ---------- */
+/* Le niveau : un macaron rose, sa ganache crème. */
+[data-style='patisserie'] .ly-niv { width: 48px; height: 40px; border: none; border-radius: 50% / 40%; color: #4a2c35;
+  background: linear-gradient(180deg, #e79fb2 0 40%, #fffaf5 40% 60%, #e79fb2 60%); box-shadow: 0 3px 4px rgba(74, 44, 53, 0.18); }
+[data-style='patisserie'] .ly-niv small { display: none; }
+[data-style='patisserie'] .ly-niv b { font-family: var(--titre); font-size: 22px; font-weight: 400; line-height: 1; color: #4a2c35; }
+[data-style='patisserie'] .ly-xp-txt { color: #8a6a72; }
+[data-style='patisserie'] .ly-xp-txt b { font-family: var(--titre); font-weight: 400; font-size: 19px; color: #4a2c35; }
+[data-style='patisserie'] .ly-barre { height: 4px; background: #f0d9d6; }
+[data-style='patisserie'] .ly-barre i { background: #e79fb2; }
+[data-style='patisserie'] .ly-flamme { height: 36px; padding: 0 12px; gap: 6px; background: #fffaf5; border: 1px solid #e79fb2; color: #e79fb2; }
+[data-style='patisserie'] .ly-flamme svg { display: none; }
+[data-style='patisserie'] .ly-flamme::before { content: '❀'; font-size: 15px; line-height: 1; color: #e79fb2; }
+[data-style='patisserie'] .ly-flamme b { font-family: var(--titre); font-size: 22px; font-weight: 400; color: #4a2c35; }
+
+/* ---------- la gourmandise du jour : un carton à filet rose ---------- */
+[data-style='patisserie'] .ly-defi { padding: 14px 16px 12px; border: none; border-radius: 14px; background: #fffaf5; text-align: center; color: #4a2c35;
+  box-shadow: 0 0 0 4px #fffaf5, 0 0 0 5px #e79fb2, 0 8px 20px rgba(74, 44, 53, 0.12); }
+[data-style='patisserie'] .ly-defi-haut { justify-content: center; flex-wrap: wrap; }
+[data-style='patisserie'] .ly-defi-haut > span:first-child { font-size: 10.5px; font-weight: 400; letter-spacing: 0.28em; color: #8a6a72; }
+[data-style='patisserie'] .ly-gain { background: #a9c98f; color: #2f4a22; }
+[data-style='patisserie'] .ly-defi-n { font-family: var(--titre); font-size: 50px; font-weight: 400; line-height: 1.1; letter-spacing: 0; color: #4a2c35; }
+[data-style='patisserie'] .ly-defi-sous, [data-style='patisserie'] .ly-defi-jour { color: #8a6a72; }
+[data-style='patisserie'] .ly-defi .ly-barre { background: #f0d9d6; }
+
+/* ---------- les paquets : le présentoir et la cloche (Eventail.tsx, forme 'cloche') ---------- */
+[data-style='patisserie'] .ly-scene { position: relative; }
+[data-style='patisserie'] .eventail.cloche { height: 226px; margin-top: 14px; }
+[data-style='patisserie'] .eventail.cloche .eventail-carte { top: 16px; transform-origin: 50% 100%; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) 0.22s, opacity 0.4s ease 0.22s; }
+[data-style='patisserie'] .eventail.cloche .eventail-dos { border: none; border-radius: 10px; background: #fff; box-shadow: 0 0 0 4px #fff, 0 0 0 5px #e79fb2, 0 10px 18px rgba(74, 44, 53, 0.2); }
+[data-style='patisserie'] .eventail.cloche .eventail-carte:not(.centre) .eventail-dos { box-shadow: 0 0 0 4px #fff, 0 0 0 5px #a9c98f, 0 6px 10px rgba(74, 44, 53, 0.15); }
+[data-style='patisserie'] .cloche-plateau { position: absolute; left: 50%; top: 190px; width: 180px; height: 16px; margin-left: -90px; z-index: 1; border-radius: 50%; pointer-events: none; background: linear-gradient(180deg, #fff, #eadfd5); box-shadow: 0 3px 0 #c8a35a, 0 8px 14px rgba(74, 44, 53, 0.25); }
+[data-style='patisserie'] .cloche-pied { position: absolute; left: 50%; top: 204px; width: 18px; height: 22px; margin-left: -9px; z-index: 0; pointer-events: none; background: linear-gradient(90deg, #d9b56a, #f2dca6, #b8913f); clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); }
+[data-style='patisserie'] .cloche-assiette { position: absolute; top: 172px; width: 80px; height: 12px; margin-left: -40px; z-index: 0; border-radius: 50%; pointer-events: none; background: linear-gradient(180deg, #fff, #e9dfd6); box-shadow: 0 3px 0 #c8a35a, 0 6px 10px rgba(74, 44, 53, 0.2); }
+[data-style='patisserie'] .cloche-assiette.g { left: calc(50% - 118px); }
+[data-style='patisserie'] .cloche-assiette.d { left: calc(50% + 118px); }
+/* La cloche de verre, devant la carte du centre ; son bouton doré. */
+[data-style='patisserie'] .cloche-verre { position: absolute; left: 50%; top: 24px; width: 150px; height: 170px; margin-left: -75px; z-index: 12; box-sizing: border-box; pointer-events: none;
+  border-radius: 50% 50% 10px 10px / 58% 58% 10px 10px; border: 2px solid rgba(255, 255, 255, 0.95);
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.08) 35%, rgba(255, 255, 255, 0.02) 60%, rgba(255, 255, 255, 0.35));
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.6), 0 0 0 1px rgba(200, 163, 90, 0.35); }
+[data-style='patisserie'] .cloche-verre::after { content: ''; position: absolute; left: 50%; top: -11px; width: 16px; height: 14px; margin-left: -8px; border-radius: 50% 50% 30% 30%; background: linear-gradient(180deg, #f0d79a, #c8a35a); }
+[data-style='patisserie'] .cloche-verre.v0 { animation: pa-cloche-0 0.9s ease-in-out; }
+[data-style='patisserie'] .cloche-verre.v1 { animation: pa-cloche-1 0.9s ease-in-out; }
+[data-style='patisserie'] .eventail-due { right: -10px; top: -10px; background: #e79fb2; color: #fff; }
+[data-style='patisserie'] .eventail-carte .classdot.eventail-classe { background: #fffaf5; color: #4a2c35; border-color: #e79fb2; }
+[data-style='patisserie'] .ly-points i { background: rgba(231, 159, 178, 0.4); }
+[data-style='patisserie'] .ly-points i.on { background: #e79fb2; }
+[data-style='patisserie'] .ly-nom { width: fit-content; max-width: calc(100% - 110px); margin-inline: auto; padding: 4px 16px; border-radius: 999px; background: #fffaf5; font-family: var(--titre); font-size: 22px; font-weight: 400; line-height: 1.3; }
+[data-style='patisserie'] .ly-nom span { font-family: var(--sans); font-size: 12px; color: #8a6a72; }
+[data-style='patisserie'] .ly-fusee { z-index: 13; width: 44px; height: 44px; border-radius: 50%; background: #fffaf5; border: 1px solid #e79fb2; color: #e79fb2; }
+[data-style='patisserie'] .ly-fusee:hover { background: #fdeef0; }
+[data-style='patisserie'] .ly-fusee:focus-visible { outline: 2px solid #e79fb2; outline-offset: 2px; }
+[data-style='patisserie'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 1.5px solid currentColor; border-right: 1.5px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='patisserie'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+
+/* ---------- les tuiles ; la semaine en bougies ---------- */
+[data-style='patisserie'] .ly-tuile { border: none; border-radius: 14px; background: #fffaf5; color: #4a2c35; }
+[data-style='patisserie'] .ly-tuile:hover { background: #fff3ee; }
+[data-style='patisserie'] .ly-tuile-haut { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a6a72; }
+[data-style='patisserie'] .ly-tuile-haut svg { color: #e79fb2; }
+[data-style='patisserie'] .ly-tuile > b { font-family: var(--titre); font-size: 26px; font-weight: 400; letter-spacing: 0; color: #4a2c35; }
+[data-style='patisserie'] .ly-tuile > small { color: #8a6a72; }
+/* Le gâteau : une bande rose à festons sous les bougies. */
+[data-style='patisserie'] .ly-segments { align-self: stretch; position: relative; display: flex; justify-content: space-around; align-items: flex-end; gap: 0; height: 48px; padding: 0 6px 8px; box-sizing: border-box; border-radius: 2px 2px 4px 4px;
+  background: radial-gradient(circle at 6px 0, #fff 0 4px, transparent 4.5px) 0 calc(100% - 2px) / 12px 6px repeat-x, linear-gradient(#f2c4cf, #f2c4cf) 0 100% / 100% 8px no-repeat; }
+/* Une bougie torsadée par jour, avec sa mèche ; la flamme (::before) ne brûle que les jours faits. */
+[data-style='patisserie'] .ly-segments i { position: relative; flex: none; width: 8px; height: 32px; border-radius: 0;
+  background: linear-gradient(#4a2c35, #4a2c35) 50% 0 / 1.2px 6px no-repeat, repeating-linear-gradient(-35deg, var(--cire, #e79fb2) 0 3px, #fffaf5 3px 6px) 0 6px / 100% calc(100% - 6px) no-repeat; }
+[data-style='patisserie'] .ly-segments i:nth-child(1) { --cire: #e79fb2; }
+[data-style='patisserie'] .ly-segments i:nth-child(2) { --cire: #a9c98f; }
+[data-style='patisserie'] .ly-segments i:nth-child(3) { --cire: #f1d38a; }
+[data-style='patisserie'] .ly-segments i:nth-child(4) { --cire: #b9a3d6; }
+[data-style='patisserie'] .ly-segments i:nth-child(5) { --cire: #9fc9e6; }
+[data-style='patisserie'] .ly-segments i::before { content: ''; position: absolute; left: -1px; top: -12px; width: 10px; height: 14px; opacity: 0; transform-origin: 50% 100%;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 68%, #fff7c8 0 25%, #f7b13c 55%, rgba(242, 120, 40, 0.6) 70%, transparent 72%);
+  filter: drop-shadow(0 0 3px rgba(247, 177, 60, 0.8)); }
+[data-style='patisserie'] .ly-segments i.on::before { opacity: 1; animation: pa-vacille 0.8s ease-in-out infinite alternate; }
+[data-style='patisserie'] .ly-segments i:nth-child(2n).on::before { animation-duration: 0.95s; animation-delay: -0.3s; }
+/* La fumée (::after), seulement quand on souffle. */
+[data-style='patisserie'] .ly-segments i::after { content: ''; position: absolute; left: -1px; top: -16px; width: 10px; height: 10px; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(160, 150, 150, 0.75), rgba(160, 150, 150, 0) 70%); }
+/* 5 / 5 : à chaque ouverture d'« Aujourd'hui », on souffle les bougies de gauche à droite. */
+[data-style='patisserie'] .ly-segments.plein i.on::before { animation: pa-souffle 0.8s ease-in forwards; }
+[data-style='patisserie'] .ly-segments.plein i.on::after { animation: pa-fumee 1.6s ease-out forwards; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(1)::before { animation-delay: 0.6s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(2)::before { animation-delay: 0.98s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(3)::before { animation-delay: 1.36s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(4)::before { animation-delay: 1.74s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(5)::before { animation-delay: 2.12s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(1)::after { animation-delay: 1.05s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(2)::after { animation-delay: 1.43s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(3)::after { animation-delay: 1.81s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(4)::after { animation-delay: 2.19s; }
+[data-style='patisserie'] .ly-segments.plein i:nth-child(5)::after { animation-delay: 2.57s; }
+
+/* ---------- Révision : l'étiquette de vitrine ; les notes en macarons ---------- */
+[data-style='patisserie'] .studybg { background-color: #fbf1ec; background-image: var(--rayures) !important; background-size: auto; background-repeat: repeat; }
+[data-style='patisserie'] .studybg::after { display: none; }
+[data-style='patisserie'] .studytop .pos { font-family: var(--titre); font-size: 22px; color: #4a2c35; }
+[data-style='patisserie'] .studytop .stop { background: #fffaf5; color: #e79fb2; border: 1px solid #e79fb2; border-radius: 50%; }
+[data-style='patisserie'] .progressbar { height: 5px; border-radius: 3px; background: #f0d9d6; }
+[data-style='patisserie'] .progressbar i { border-radius: 3px; background: #e79fb2; }
+[data-style='patisserie'] .ly-combo { background: #fffaf5; color: #e79fb2; border: 1px solid #e79fb2; }
+/* Le ruban rose qui traverse l'étiquette, et son nœud. */
+[data-style='patisserie'] .studystage { --ink: #4a2c35; position: relative; margin: 22px 14px 18px; padding: 50px 22px 26px; border: none; border-radius: 18px; background: #fffaf5; color: #4a2c35;
+  box-shadow: 0 0 0 6px #fffaf5, 0 0 0 7px #e79fb2, 0 0 0 11px #fffaf5, 0 0 0 12px rgba(231, 159, 178, 0.5), 0 18px 30px rgba(74, 44, 53, 0.18); }
+[data-style='patisserie'] .studystage::before { content: ''; position: absolute; left: -12px; right: -12px; top: 22px; height: 14px; background: #e79fb2; box-shadow: 0 2px 0 #c97d92; pointer-events: none; }
+[data-style='patisserie'] .studystage::after { content: ''; position: absolute; left: 50%; top: 14px; width: 46px; height: 30px; margin-left: -23px; pointer-events: none;
+  background: linear-gradient(#d9708a, #d9708a) 50% 50% / 12px 14px no-repeat, radial-gradient(circle at 25% 50%, #e79fb2 0 9px, transparent 10px), radial-gradient(circle at 75% 50%, #e79fb2 0 9px, transparent 10px); }
+[data-style='patisserie'] .studystage .tag { border: none; background: transparent; color: #8a6a72; font-size: 10.5px; letter-spacing: 0.28em; text-transform: uppercase; }
+[data-style='patisserie'] .ask { font-family: var(--titre); font-size: 20px; color: #b8566f; }
+[data-style='patisserie'] .word, [data-style='patisserie'] .answer { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.15; color: #4a2c35; }
+[data-style='patisserie'] .wordsmall { color: #8a6a72; }
+[data-style='patisserie'] .ruleline { width: 30px; height: 6px; border: none; background: radial-gradient(circle, #e79fb2 0 3px, transparent 3.5px) 0 0 / 12px 6px, radial-gradient(circle, #a9c98f 0 3px, transparent 3.5px) 12px 0 / 12px 6px no-repeat; }
+[data-style='patisserie'] .example { font-family: var(--sans); font-style: italic; color: #8a6a72; }
+[data-style='patisserie'] .speak { background: transparent; border: 1px solid #4a2c35; border-radius: 999px; color: #4a2c35; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
+[data-style='patisserie'] .tap-hint { color: #8a6a72; }
+[data-style='patisserie'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+/* Le macaron : coque du haut (::before, avec sa collerette), ganache puis collerette et coque du bas (::after). */
+[data-style='patisserie'] .grades .grade { position: relative; min-height: 104px; padding: 62px 0 4px; border: none; border-radius: 0; background: transparent; box-shadow: none; color: #4a2c35; font-family: var(--titre); font-size: 21px; font-weight: 400; letter-spacing: 0; }
+[data-style='patisserie'] .grades .grade small { font-family: var(--sans); font-size: 11px; color: #8a6a72; }
+[data-style='patisserie'] .grades .grade::before, [data-style='patisserie'] .grades .grade::after { content: ''; position: absolute; left: 50%; width: 56px; height: 18px; margin-left: -28px; pointer-events: none; transition: transform 0.12s ease; }
+[data-style='patisserie'] .grades .grade::before { top: 4px; border-radius: 50% 50% 18% 18% / 80% 80% 20% 20%;
+  background: radial-gradient(ellipse 30% 30% at 32% 28%, rgba(255, 255, 255, 0.6), transparent 70%), radial-gradient(ellipse 70% 80% at 40% 25%, var(--clair), var(--c) 55%, var(--fonce));
+  box-shadow: 0 4px 0 0 var(--fonce); }
+[data-style='patisserie'] .grades .grade::after { top: 38px; height: 16px; border-radius: 18% 18% 50% 50% / 20% 20% 80% 80%;
+  background: radial-gradient(ellipse 70% 80% at 40% 75%, var(--clair), var(--c) 55%, var(--fonce));
+  box-shadow: 0 -4px 0 0 var(--fonce), 0 -14px 0 -2px var(--ganache), 0 6px 6px rgba(74, 44, 53, 0.22); }
+[data-style='patisserie'] .grades .g-again { --c: #d9567a; --clair: #ef9fb5; --fonce: #a8344f; --ganache: #f6c1cf; }
+[data-style='patisserie'] .grades .g-hard { --c: #d9924a; --clair: #f0c08a; --fonce: #a8662a; --ganache: #f3d6a6; }
+[data-style='patisserie'] .grades .g-good { --c: #9cc47e; --clair: #cfe3b9; --fonce: #6f9654; --ganache: #eef5df; }
+[data-style='patisserie'] .grades .g-easy { --c: #a58bd0; --clair: #d2c3ea; --fonce: #7a5fa8; --ganache: #e9e0f5; }
+[data-style='patisserie'] .grades .grade:active::before { transform: translateY(3px); }
+[data-style='patisserie'] .grades .grade:active::after { transform: translateY(-1px); }
+
+@keyframes pa-cloche-0 { 0% { transform: none; } 25%, 68% { transform: translateY(-46px) rotate(-4deg); } 84% { transform: translateY(2px); } 100% { transform: none; } }
+@keyframes pa-cloche-1 { 0% { transform: none; } 25%, 68% { transform: translateY(-46px) rotate(-4deg); } 84% { transform: translateY(2px); } 100% { transform: none; } }
+@keyframes pa-vacille { from { transform: rotate(-3deg) scaleY(1); } to { transform: rotate(3deg) scaleY(1.08); } }
+@keyframes pa-souffle { 0% { transform: rotate(0) scale(1); opacity: 1; } 35% { transform: rotate(38deg) translateX(2px) scale(0.9, 0.75); opacity: 1; } 70% { transform: rotate(55deg) translateX(3px) scale(0.35); opacity: 0.6; } 100% { transform: rotate(60deg) scale(0); opacity: 0; } }
+@keyframes pa-fumee { 0% { opacity: 0; transform: translate(0, 0) scale(0.4); } 20% { opacity: 0.85; } 100% { opacity: 0; transform: translate(7px, -30px) scale(1.7); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='patisserie'] .cloche-verre, [data-style='patisserie'] .ly-segments i::before, [data-style='patisserie'] .ly-segments i::after { animation: none !important; }
+  [data-style='patisserie'] .eventail.cloche .eventail-carte { transition: none; }
+}

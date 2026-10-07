@@ -26,7 +26,9 @@ export function Eventail({
   /** CHANTIER 216 — 'pellicule' (Cinéma muet) : les paquets sont les images d'une bande perforée, qui
       défile pour amener le paquet choisi sous le projecteur. 'rayon' (Bibliothèque) : les paquets
       sont des livres rangés, vus par le dos ; celui du centre sort du rang et se présente de face. */
-  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon';
+  /** CHANTIER 223 — 'cloche' (Salon de thé) : le paquet du centre sur un présentoir, sous une cloche de verre
+      qui se soulève au changement ; 'bocaux' (Cabinet 1900) : des bocaux de verre, celui du centre s'allume. */
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -44,6 +46,8 @@ export function Eventail({
   const por = forme === 'portant';
   const pel = forme === 'pellicule';
   const ray = forme === 'rayon';
+  const clo = forme === 'cloche';
+  const boc = forme === 'bocaux';
   /* CHANTIER 216 — le pas de la pellicule, et la forme des livres (dos de 30 px). */
   const PAS = 124;
   const DOS = 30, JEU = 3, LARGE = 126, HAUT = 178;
@@ -54,7 +58,7 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${glisse ? ' glisse' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${glisse ? ' glisse' : ''}`}
       style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
@@ -92,6 +96,11 @@ export function Eventail({
       {/* CHANTIER 187 — trois satellites en orbite autour de la planète. */}
       {/* CHANTIER 216 — la bande perforée, sous les images ; ses perforations glissent avec elles. */}
       {pel && <i className="pellicule-bande" aria-hidden="true" />}
+      {/* CHANTIER 223 — Salon de thé : le présentoir (plateau, pied, deux assiettes), puis la cloche, posée après les cartes. */}
+      {clo && <i className="cloche-assiette g" aria-hidden="true" />}
+      {clo && <i className="cloche-assiette d" aria-hidden="true" />}
+      {clo && <i className="cloche-plateau" aria-hidden="true" />}
+      {clo && <i className="cloche-pied" aria-hidden="true" />}
       {/* CHANTIER 222 — Bibliothèque : le chat noir marche sur la planche, devant les livres. */}
       {ray && (
         <span className="bi-chat" aria-hidden="true">
@@ -128,7 +137,11 @@ export function Eventail({
             ? `translateX(${o * PAS + dx * 0.6}px) scale(${a === 0 ? 1 : 0.92})`
             : ray
               ? `translate(${xr}px, ${a === 0 ? -6 : HAUT - hDos}px)`
-              : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
+              : clo
+                ? (a === 0 ? `translateX(${dx * 0.6}px) scale(0.74)` : `translate(${118 * s + dx * 0.6}px, -18px) rotate(${4 * s}deg) scale(0.5)`)
+                : boc
+                  ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${122 * s + dx * 0.6}px, 30px) scale(0.6)`)
+                  : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
         const visible = pel ? a <= 2 : ray ? a <= 5 : a <= 1;
         const dos = (
           <span className="eventail-dos">
@@ -156,6 +169,8 @@ export function Eventail({
               /* CHANTIER 221 — Cinéma muet : l'image tressaute en s'arrêtant ; Bibliothèque : le livre penche avant de sortir. */
               : pel ? <span className={`pellicule-saut${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
               : ray ? <span className={`rayon-tire${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
+              /* CHANTIER 223 — Cabinet 1900 : la lueur s'allume dans le bocal qui arrive. */
+              : boc ? <span className={`bocal-lueur${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
               : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
@@ -167,6 +182,7 @@ export function Eventail({
           </div>
         );
       })}
+      {clo && <i className={`cloche-verre${coups ? ` v${coups % 2}` : ''}`} aria-hidden="true" />}
     </div>
   );
 }

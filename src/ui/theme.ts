@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -103,6 +103,8 @@ export const THEME_LABELS: Record<Theme, string> = {
   fashion: 'Fashion week',
   cinema: 'Cinéma muet',
   bibliotheque: 'Bibliothèque',
+  'salon-the': 'Salon de thé',
+  cabinet: 'Cabinet 1900',
 };
 
 export function themeChoisi(): Theme {
@@ -114,7 +116,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -144,6 +146,9 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'fashion') return 'sombre';
   /* CHANTIER 216 — Cinéma muet et Bibliothèque : sombres (la salle obscure, la salle de lecture). */
   if (t === 'cinema' || t === 'bibliotheque') return 'sombre';
+  /* CHANTIER 223 — Salon de thé : clair ; Cabinet 1900 : sombre. */
+  if (t === 'salon-the') return 'clair';
+  if (t === 'cabinet') return 'sombre';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -184,6 +189,9 @@ function appliquer(t: Theme) {
   /* CHANTIER 216 — Cinéma muet (cinema.css) et Bibliothèque (biblio.css). */
   else if (t === 'cinema') document.documentElement.dataset.style = 'cinema';
   else if (t === 'bibliotheque') document.documentElement.dataset.style = 'biblio';
+  /* CHANTIER 223 — Salon de thé (patisserie.css) et Cabinet 1900 (cabinet.css). */
+  else if (t === 'salon-the') document.documentElement.dataset.style = 'patisserie';
+  else if (t === 'cabinet') document.documentElement.dataset.style = 'cabinet';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

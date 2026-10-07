@@ -58,6 +58,9 @@ import './ui/mode.css';
 /* CHANTIER 216 — Cinéma muet (Limelight) et Bibliothèque (IM Fell English), polices dans public/fonts. */
 import './ui/cinema.css';
 import './ui/biblio.css';
+/* CHANTIER 223 — Salon de thé (Parisienne) et Cabinet 1900 (Cinzel), polices dans public/fonts. */
+import './ui/patisserie.css';
+import './ui/cabinet.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
