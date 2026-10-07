@@ -67,7 +67,8 @@ describe('XP — semaine de cinq jours', () => {
     let s = semaine(EMPTY_STREAK, L0, '0000011');
     s = semaine(s, sem(1), '1101100');
     const h = historiqueXp(s, 7, dim(1));
-    expect(h.map((j) => j.etat)).toEqual(['valide', 'valide', 'gel', 'valide', 'valide', 'repos', 'repos']);
+    // Le dimanche est « aujourd'hui » : en cours, pas encore « repos ».
+    expect(h.map((j) => j.etat)).toEqual(['valide', 'valide', 'gel', 'valide', 'valide', 'repos', 'encours']);
     expect(h[2].base).toBe(0);
     expect(h[4].bonus).toBe(20);
   });
