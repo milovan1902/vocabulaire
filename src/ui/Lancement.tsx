@@ -102,6 +102,10 @@ export default function Lancement() {
         <p
           className="lancement-nom"
           style={{
+            /* CHANTIER 226 — la police du nom ne suit plus l'apparence choisie. Elle lisait --serif,
+               que chaque apparence redéfinit (Cinzel en Cabinet 1900, Parisienne en Salon de thé…) :
+               le lancement changeait d'écriture selon le thème. On fixe l'ancienne valeur. */
+            fontFamily: "'Newsreader', Georgia, 'Times New Roman', serif",
             transition: `opacity ${duree(0.7)} ease, letter-spacing ${duree(0.7)} ${COURBE}, transform ${duree(0.7)} ${COURBE}`,
             opacity: etape >= 3 ? 1 : 0,
             letterSpacing: etape >= 3 ? '0.2em' : '0.34em',
