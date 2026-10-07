@@ -15,7 +15,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/limelight.ttf') format('truetype');
+  /* CHANTIER 220 — woff2, alphabet latin seul (accents compris) : 23 Ko au lieu de 130. */
+  src: url('/fonts/limelight-latin.woff2') format('woff2');
 }
 [data-style='cinema'] {
   --paper: #0b0b0b; --panel: #161616; --panel-hi: #222;

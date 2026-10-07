@@ -40,8 +40,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        /* CHANTIER 216 — ttf : les polices du Cinéma muet et de la Bibliothèque, pour le hors ligne. */
-        globPatterns: ['**/*.{js,css,html,png,svg,woff2,ttf,webp}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2,webp}'],
         /*
          * CHANTIER 149 — LE PREMIER CHARGEMENT NE TÉLÉCHARGE PLUS TOUS LES DOS.
          *

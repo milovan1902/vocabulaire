@@ -15,14 +15,15 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/im-fell-english.ttf') format('truetype');
+  /* CHANTIER 220 — woff2, alphabet latin seul (accents compris) : 60 Ko au lieu de 195. */
+  src: url('/fonts/im-fell-english-latin.woff2') format('woff2');
 }
 @font-face {
   font-family: 'IM Fell English';
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/im-fell-english-italique.ttf') format('truetype');
+  src: url('/fonts/im-fell-english-italique-latin.woff2') format('woff2');
 }
 [data-style='biblio'] {
   --paper: #2b1a10; --panel: #3a2416; --panel-hi: #4a2e1a;
