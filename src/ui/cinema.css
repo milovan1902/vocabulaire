@@ -35,7 +35,8 @@
   --salle: linear-gradient(90deg, transparent 22%, rgba(255, 255, 255, 0.1) 22%, rgba(255, 255, 255, 0.1) calc(22% + 1px), transparent calc(22% + 1px), transparent 73%, rgba(255, 255, 255, 0.06) 73%, rgba(255, 255, 255, 0.06) calc(73% + 1px), transparent calc(73% + 1px)),
     repeating-radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px),
     radial-gradient(ellipse 90% 70% at 50% 45%, #2a2a2a, #0b0b0b 80%);
-  --perfo: repeating-linear-gradient(90deg, transparent 0 5px, #f4f1ea 5px 13px, transparent 13px 18px);
+  /* CHANTIER 217 — les perforations : des fenêtres claires, nettes, dans les bords de la bande. */
+  --perfo: repeating-linear-gradient(90deg, transparent 0 5px, #f4f1ea 5px 14px, transparent 14px 20px);
   --etoile: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 [data-style='cinema'] body { font-family: var(--sans); color: var(--ink); background-color: #0b0b0b; background-image: var(--salle); background-repeat: no-repeat; background-attachment: fixed; }
@@ -79,17 +80,21 @@
 /* ---------- les paquets : une pellicule qui défile sous le projecteur ---------- */
 [data-style='cinema'] .ly-scene { position: relative; }
 [data-style='cinema'] .ly-scene::before { content: ''; position: absolute; left: 50%; top: 0; width: 200px; height: 230px; margin-left: -100px; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, rgba(255, 250, 230, 0.16), transparent 70%); animation: ci-scintille 3.2s steps(1) infinite; }
-[data-style='cinema'] .eventail.pellicule { height: 214px; margin: 22px -20px 0; overflow: hidden; }
-[data-style='cinema'] .pellicule-bande { position: absolute; left: 0; right: 0; top: 0; height: 214px; z-index: 0; display: block; pointer-events: none;
-  background-color: #141414;
-  background-image: var(--perfo), var(--perfo);
-  background-size: 18px 9px, 18px 9px; background-repeat: repeat-x;
-  background-position: var(--decal, 0px) 6px, var(--decal, 0px) calc(100% - 6px);
-  box-shadow: inset 0 22px 0 -2px #0b0b0b, inset 0 -22px 0 -2px #0b0b0b;
+[data-style='cinema'] .eventail.pellicule { height: 214px; margin: 22px -20px 0; overflow: hidden; isolation: isolate; }
+/* CHANTIER 217 — la bande se voyait mal : noire sur la salle noire. Elle passe en film argentique
+   gris acier, bordée d'un filet clair, avec deux rails sombres percés de fenêtres crème, et des
+   intervalles noirs entre les images (sur chaque image, voir .eventail-dos). */
+[data-style='cinema'] .pellicule-bande { position: absolute !important; left: 0; right: 0; top: 0; width: auto; height: 214px; z-index: 0 !important; display: block !important; opacity: 1 !important; pointer-events: none;
+  background-color: #3a3631;
+  background-image: var(--perfo), var(--perfo), linear-gradient(180deg, #0e0e0e 0 22px, transparent 22px, transparent calc(100% - 22px), #0e0e0e calc(100% - 22px));
+  background-size: 20px 11px, 20px 11px, 100% 100%; background-repeat: repeat-x, repeat-x, no-repeat;
+  background-position: var(--decal, 0px) 5.5px, var(--decal, 0px) calc(100% - 5.5px), 0 0;
+  border-top: 1px solid rgba(244, 241, 234, 0.45); border-bottom: 1px solid rgba(244, 241, 234, 0.45); box-sizing: border-box;
+  box-shadow: 0 0 24px rgba(255, 250, 230, 0.12);
   transition: background-position 0.7s cubic-bezier(0.5, 0, 0.25, 1); }
 [data-style='cinema'] .eventail.pellicule.glisse .pellicule-bande { transition: none; }
 [data-style='cinema'] .eventail.pellicule .eventail-carte { top: 28px; width: 112px; margin-left: -56px; transition: transform 0.7s cubic-bezier(0.5, 0, 0.25, 1), opacity 0.5s ease; }
-[data-style='cinema'] .eventail.pellicule .eventail-dos { border-radius: 0; border: none; background: #77736b; box-shadow: 0 0 0 3px #0b0b0b; filter: grayscale(1) brightness(0.55); transition: filter 0.5s ease; }
+[data-style='cinema'] .eventail.pellicule .eventail-dos { border-radius: 0; border: none; background: #77736b; box-shadow: 0 0 0 4px #0e0e0e; filter: grayscale(1) brightness(0.55); transition: filter 0.5s ease; }
 [data-style='cinema'] .eventail.pellicule .eventail-carte.centre .eventail-dos { border: none; filter: grayscale(1) contrast(1.05); }
 [data-style='cinema'] .eventail-due { right: -8px; top: -8px; border-radius: 0; background: #f4f1ea; color: #0b0b0b; font-family: var(--titre); font-weight: 400; box-shadow: none; }
 [data-style='cinema'] .eventail-carte .classdot.eventail-classe { bottom: -10px; border-radius: 0; background: #0b0b0b; color: #f4f1ea; border: 1px solid #f4f1ea; }
