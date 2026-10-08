@@ -16,6 +16,9 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { DeckSummary } from './deckSummary';
 import { DeckFace } from './components';
 
+/* CHANTIER 240 — Mêlée : le nombre de morceaux de chaque joueur (pilier, deuxième-ligne, demi de mêlée, puis les mêmes en miroir). */
+const JOUEURS_RG = [20, 22, 19, 19, 22, 20];
+
 export function Eventail({
   paquets, centre, onCentre, onOuvrir, forme = 'eventail',
 }: {
@@ -34,7 +37,7 @@ export function Eventail({
       'chateau' (Château) : le paquet dans la porte d'un château, derrière un pont-levis. */
   /** CHANTIER 237 — 'caisses' (Jungle et safari) : le paquet est une caisse suspendue à une liane ;
       'train' (Pacific Express) : le paquet voyage sur le wagon d'une locomotive, sur un pont de bois. */
-  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau' | 'caisses' | 'train' | 'panier' | 'but';
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau' | 'caisses' | 'train' | 'panier' | 'but' | 'poteaux';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -73,6 +76,9 @@ export function Eventail({
   const pan = forme === 'panier';
   /* CHANTIER 239 — Pelouse : le paquet au fond du filet. */
   const but = forme === 'but';
+  /* CHANTIER 240 — Mêlée : le paquet sous la barre des poteaux. */
+  const pot = forme === 'poteaux';
+  const cote = ancien?.d ?? 'd';
   const calme = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   /* CHANTIER 237 — Jungle : le perroquet passe toutes les 10 à 20 s. Il vole (1,15 s), se pose (4,45 s),
      puis repart (1,4 s). La phase dit au CSS quand les ailes battent. */
@@ -124,7 +130,7 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pan ? ' panier' : ''}${but ? ' but' : ''}${pla || cha || cai || tra || pan || but ? v : ''}${glisse ? ' glisse' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pan ? ' panier' : ''}${but ? ' but' : ''}${pot ? ' poteaux' : ''}${pla || cha || cai || tra || pan || but || pot ? v : ''}${glisse ? ' glisse' : ''}`}
       style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : cha || tra ? ({ '--cycle': cycle } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
@@ -244,6 +250,14 @@ export function Eventail({
           <i className={`filet${v}`} /><i className="ficelle g" /><i className="ficelle d" />
         </span>
       )}
+      {/* CHANTIER 240 — Mêlée : la ligne d'en-but, les poteaux en H (ils vibrent au passage du ballon). */}
+      {pot && (
+        <span className="rg-scene" aria-hidden="true">
+          <i className="ligne" />
+          <span className={`h${v}`}><i className="poteau g" /><i className="poteau d" /><i className="barre" /><i className="mousse g" /><i className="mousse d" /></span>
+          <i className="ficelle g" /><i className="ficelle d" />
+        </span>
+      )}
       {/* CHANTIER 227 — Cotton Club : le projecteur, le plancher, le saxophoniste et ses notes. */}
       {pup && <i className={`jz-faisceau${v}`} aria-hidden="true" />}
       {pup && <i className="jz-plancher" aria-hidden="true" />}
@@ -307,7 +321,7 @@ export function Eventail({
                   ? (a === 0 ? 'scale(0.62)' : `translate(${120 * s}px, 34px) scale(0.36)`)
                 : tra
                   ? 'scale(0.62)'
-                : pan || but
+                : pan || but || pot
                   ? 'none'
                 : mai
                   ? 'scale(0.62)'
@@ -316,7 +330,7 @@ export function Eventail({
                 : boc
                   ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${122 * s + dx * 0.6}px, 30px) scale(0.6)`)
                   : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
-        const visible = tra || pan || but ? a === 0 : pel ? a <= 2 : ray ? a <= 5 : a <= 1;
+        const visible = tra || pan || but || pot ? a === 0 : pel ? a <= 2 : ray ? a <= 5 : a <= 1;
         const dos = (
           <span className="eventail-dos">
             <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
@@ -332,7 +346,7 @@ export function Eventail({
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
               transform,
-              opacity: tra || pan || but ? (a === 0 || (ancien && ancien.i === i && coups && !calme) ? 1 : 0) : cai ? (a === 0 ? 1 : a === 1 ? 0.92 : 0) : (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
+              opacity: tra || pan || but || pot ? (a === 0 || (ancien && ancien.i === i && coups && !calme) ? 1 : 0) : cai ? (a === 0 ? 1 : a === 1 ? 0.92 : 0) : (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
               pointerEvents: visible ? undefined : 'none',
@@ -357,6 +371,8 @@ export function Eventail({
               : pan ? <span className={`bk-tableau-paquet${!coups || !ancien ? '' : a === 0 ? ` arrive v${coups % 2}` : ancien.i === i ? ` part v${coups % 2}` : ''}`}>{dos}</span>
               /* CHANTIER 239 — Pelouse : l'ancien paquet reste au fond du filet jusqu'au but. */
               : but ? <span className={`fb-paquet${!coups || !ancien ? '' : a === 0 ? ` arrive v${coups % 2}` : ancien.i === i ? ` part v${coups % 2}` : ''}`}>{dos}</span>
+              /* CHANTIER 240 — Mêlée : l'ancien paquet reste sous la barre jusqu'à la transformation. */
+              : pot ? <span className={`rg-paquet${!coups || !ancien ? '' : a === 0 ? ` arrive v${coups % 2}` : ancien.i === i ? ` part v${coups % 2}` : ''}`}>{dos}</span>
               : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
@@ -395,6 +411,20 @@ export function Eventail({
           <i className={`onde${v}`} />
           <i className={`tir${ancien && coups ? ` ${ancien.d}${v}` : ''}`} />
           <b className={`but${v}`}>BUT !</b>
+        </span>
+      )}
+      {/* CHANTIER 240 — Mêlée : les six joueurs (ils sautent), le tee et le ballon posé dessus, du côté de la flèche
+          touchée ; le ballon transformé, les gouttes, « +3 ». */}
+      {pot && (
+        <span className="rg-avant" aria-hidden="true">
+          {JOUEURS_RG.map((n, k) => (
+            <span key={k} className={`joueur j${k}${v}`}><span><span>{Array.from({ length: n }, (_, m) => <i key={m} />)}</span></span></span>
+          ))}
+          <i className={`tee ${cote}`} />
+          <i className={`repos ${cote}${v}`} />
+          <span className={`gouttes${v}`}><i /><i /><i /><i /><i /><i /></span>
+          <i className={`tir${ancien && coups ? ` ${ancien.d}${v}` : ''}`} />
+          <b className={`plus3${v}`}>+3</b>
         </span>
       )}
       {/* CHANTIER 227 — Cotton Club : le rideau se lève à l'arrivée sur « Aujourd'hui ». */}

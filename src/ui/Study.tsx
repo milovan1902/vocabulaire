@@ -320,7 +320,9 @@ export function Study({
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
                   : style === 'basket' ? 1250
                   /* CHANTIER 239 — Pelouse : le ballon touché part (roule, à côté, poteau, lucarne). */
-                  : style === 'foot' ? 1250 : 0;
+                  : style === 'foot' ? 1250
+                  /* CHANTIER 240 — Mêlée : le ballon touché part (en avant, à côté, poteau, entre les poteaux). */
+                  : style === 'rugby' ? 1350 : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
@@ -329,7 +331,7 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
             </button>
           ))}
         </div>

@@ -885,7 +885,15 @@ function JoueurM({ x, y, i, peau }: { x: number; y: number; i: number; peau: str
     </span>
   );
 }
+/* CHANTIER 240 — la tribune pleine de supporters (sport.css), et l'orage qui s'emballe toutes les 10 à 20 s pendant 3 s :
+   la pluie redouble, un éclair, la foudre, l'écran tremble, les flashs crépitent, les flaques éclaboussent. */
+const FLASHS_RG: Array<[number, number]> = [[11, 24], [83, 29], [25, 55], [75, 62], [50, 39], [17, 79], [89, 84]];
 function Rugby() {
+  const fete = useFete();
+  useEffect(() => {
+    const fond = document.querySelector('.fond-anime.rugby');
+    fond?.classList.toggle('fa-fete', fete > 0);
+  }, [fete]);
   const { pluie, flaques } = useMemo(() => {
     const r = hasard(59);
     return {
@@ -901,6 +909,9 @@ function Rugby() {
   return (
     <span className="fa-rugby">
       <i className="fa-r-ciel" />
+      <span className="fa-r-tribune">
+        <i /><i /><i /><b>ALLEZ · ALLEZ · ALLEZ</b><i className="foule" /><i /><i className="foule" /><i /><i className="foule" /><i /><i className="foule" /><i /><i className="foule" /><i /><span><i /></span><span><i /></span><span><i /></span><span><i /></span>
+      </span>
       {melee && (
         <span key={melee.id} className="fa-melee" style={{ left: melee.x, top: melee.y, transform: `rotate(${melee.r}deg)` }}>
           <span className="fa-m-groupe">
@@ -923,6 +934,14 @@ function Rugby() {
       {pluie.map((g, i) => (
         <i key={i} className="fa-r-goutte" style={{ left: `${g.x}%`, top: g.haut, height: g.l, animationDuration: `${g.dur}s`, animationDelay: `${g.del}s` }} />
       ))}
+      {fete > 0 && (
+        <span key={fete} className="fa-salve">
+          <i className="fa-r-averse" /><i className="fa-r-eclair" /><i className="fa-r-foudre" />
+          {FLASHS_RG.map(([x, y], k) => (
+            <span key={k} className="fa-flash" style={{ left: `${x}%`, top: `${y}%`, '--t': `${10 + (k % 4) * 3}px`, animationDelay: `${600 + k * 300}ms` } as Css}><i /><i /><i /></span>
+          ))}
+        </span>
+      )}
     </span>
   );
 }
