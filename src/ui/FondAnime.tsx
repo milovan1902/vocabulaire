@@ -659,7 +659,35 @@ const PROJOS: Array<{ x: number; a: number; b: number; dur: number; del: number;
   { x: 86, a: -6, b: 28, dur: 13, del: -1, c: '214,228,255' },
 ];
 type Flash = { id: number; x: number; y: number; d: number; t: number };
+/* CHANTIER 238 — l'ambiance qui s'emballe : toutes les 10 à 20 s, pendant 3 s, les projecteurs balaient vite et
+   plus fort, la salle se réchauffe, une bande de lumière traverse le parquet, une salve de flashs, le tableau clignote.
+   Sur « Aujourd'hui » seulement, pas en révision. */
+function useFete(): number {
+  const [fete, setFete] = useState(0);
+  useEffect(() => {
+    if (calme()) return;
+    let t = 0, fin = 0;
+    const boucle = (d: number) => {
+      t = window.setTimeout(() => {
+        if (!enRevision() && document.visibilityState === 'visible' && document.querySelector('.today.ly')) {
+          setFete(Date.now());
+          fin = window.setTimeout(() => setFete(0), 3000);
+        }
+        boucle(10000 + Math.random() * 10000);
+      }, d);
+    };
+    boucle(6000);
+    return () => { window.clearTimeout(t); window.clearTimeout(fin); };
+  }, []);
+  return fete;
+}
 function Salle() {
+  const fete = useFete();
+  /* La classe fa-fete sur la couche du fond : les projecteurs accélèrent, le tableau clignote (sport.css). */
+  useEffect(() => {
+    const fond = document.querySelector('.fond-anime.basket');
+    fond?.classList.toggle('fa-fete', fete > 0);
+  }, [fete]);
   const [salve, setSalve] = useState<{ id: number; flashs: Flash[] } | null>(null);
   useCadence(1500, 3000, 4000, () => {
     const id = Date.now();
@@ -676,6 +704,14 @@ function Salle() {
           <i className="fa-lampe" />
         </span>
       ))}
+      {fete > 0 && (
+        <span key={fete} className="fa-salve">
+          <i className="fa-p-chaud" /><i className="fa-p-bande" /><i className="fa-p-ecran" />
+          {Array.from({ length: 12 }, (_, k) => (
+            <span key={k} className="fa-flash" style={{ left: `${8 + ((k * 37) % 84)}%`, top: `${4 + ((k * 23) % 70)}%`, '--t': `${10 + (k % 4) * 3}px`, animationDelay: `${k * 220}ms` } as Css}><i /><i /><i /></span>
+          ))}
+        </span>
+      )}
       {salve && (
         <span key={salve.id} className="fa-salve">
           <i className="fa-salve-ecran" />
@@ -701,7 +737,10 @@ function Tableau() {
         return { chrono: 24, dom: s.dom + (dom ? 2 : 0), vis: s.vis + (dom ? 0 : 2), sirene: Date.now(), marque: dom ? 0 : 1 };
       });
     }, 1000);
-    return () => window.clearInterval(h);
+    /* CHANTIER 238 — un panier au changement de paquet (Eventail.tsx) : deux points pour DOM. */
+    const panier = () => setM((s) => ({ ...s, dom: s.dom + 2, sirene: Date.now(), marque: 0 }));
+    window.addEventListener('bk-panier', panier);
+    return () => { window.clearInterval(h); window.removeEventListener('bk-panier', panier); };
   }, []);
   return (
     <span className="fa-tableau">

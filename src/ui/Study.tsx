@@ -316,7 +316,9 @@ export function Study({
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
-                  : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000 : 0;
+                  : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000
+                  /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
+                  : style === 'basket' ? 1250 : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
@@ -325,7 +327,7 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
+              {(style === 'plage' || style === 'chateau' || style === 'basket') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
             </button>
           ))}
         </div>

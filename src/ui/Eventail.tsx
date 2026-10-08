@@ -34,7 +34,7 @@ export function Eventail({
       'chateau' (Château) : le paquet dans la porte d'un château, derrière un pont-levis. */
   /** CHANTIER 237 — 'caisses' (Jungle et safari) : le paquet est une caisse suspendue à une liane ;
       'train' (Pacific Express) : le paquet voyage sur le wagon d'une locomotive, sur un pont de bois. */
-  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau' | 'caisses' | 'train';
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau' | 'caisses' | 'train' | 'panier';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -54,6 +54,8 @@ export function Eventail({
       setAncien({ i: centrePrec.current, d: centre > centrePrec.current ? 'd' : 'g' });
       centrePrec.current = centre;
       setCoups((c) => c + 1);
+      /* CHANTIER 238 — Parquet : le tableau d'affichage (FondAnime.tsx) marque deux points quand le ballon entre. */
+      if (forme === 'panier') window.setTimeout(() => window.dispatchEvent(new Event('bk-panier')), 850);
     }
   }, [centre]);
   const por = forme === 'portant';
@@ -67,6 +69,8 @@ export function Eventail({
   const cha = forme === 'chateau';
   const cai = forme === 'caisses';
   const tra = forme === 'train';
+  /* CHANTIER 238 — Parquet : le paquet sur le panneau du panier. */
+  const pan = forme === 'panier';
   const calme = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   /* CHANTIER 237 — Jungle : le perroquet passe toutes les 10 à 20 s. Il vole (1,15 s), se pose (4,45 s),
      puis repart (1,4 s). La phase dit au CSS quand les ailes battent. */
@@ -118,7 +122,7 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pla || cha || cai || tra ? v : ''}${glisse ? ' glisse' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pan ? ' panier' : ''}${pla || cha || cai || tra || pan ? v : ''}${glisse ? ' glisse' : ''}`}
       style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : cha || tra ? ({ '--cycle': cycle } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
@@ -224,6 +228,13 @@ export function Eventail({
           <span className={`pe-boule${boule ? ` v${boule % 2}` : ''}`}><i /></span>
         </span>
       )}
+      {/* CHANTIER 238 — Parquet : les panneaux voisins, le mât et le panneau du centre (derrière le paquet). */}
+      {pan && (
+        <span className="bk-scene" aria-hidden="true">
+          <i className="voisin g" /><i className="mat-v g" /><i className="voisin d" /><i className="mat-v d" />
+          <i className="mat" /><i className={`panneau${v}`} />
+        </span>
+      )}
       {/* CHANTIER 227 — Cotton Club : le projecteur, le plancher, le saxophoniste et ses notes. */}
       {pup && <i className={`jz-faisceau${v}`} aria-hidden="true" />}
       {pup && <i className="jz-plancher" aria-hidden="true" />}
@@ -287,6 +298,8 @@ export function Eventail({
                   ? (a === 0 ? 'scale(0.62)' : `translate(${120 * s}px, 34px) scale(0.36)`)
                 : tra
                   ? 'scale(0.62)'
+                : pan
+                  ? 'none'
                 : mai
                   ? 'scale(0.62)'
                 : pup
@@ -294,7 +307,7 @@ export function Eventail({
                 : boc
                   ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${122 * s + dx * 0.6}px, 30px) scale(0.6)`)
                   : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
-        const visible = tra ? a === 0 : pel ? a <= 2 : ray ? a <= 5 : a <= 1;
+        const visible = tra || pan ? a === 0 : pel ? a <= 2 : ray ? a <= 5 : a <= 1;
         const dos = (
           <span className="eventail-dos">
             <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
@@ -310,7 +323,7 @@ export function Eventail({
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
               transform,
-              opacity: tra ? (a === 0 || (ancien && ancien.i === i && coups && !calme) ? 1 : 0) : cai ? (a === 0 ? 1 : a === 1 ? 0.92 : 0) : (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
+              opacity: tra || pan ? (a === 0 || (ancien && ancien.i === i && coups && !calme) ? 1 : 0) : cai ? (a === 0 ? 1 : a === 1 ? 0.92 : 0) : (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
               pointerEvents: visible ? undefined : 'none',
@@ -331,6 +344,8 @@ export function Eventail({
                  le wagon qui part quitte l'écran, le suivant arrive de l'autre côté. */
               : cai ? <span className={`jg-caisse${!coups ? '' : a === 0 ? ` descend v${coups % 2}` : ancien && ancien.i === i ? ` hisse v${coups % 2}` : ''}`}><span className="jg-balance">{dos}</span></span>
               : tra ? <span className={`pe-wagon${!coups || !ancien ? '' : a === 0 ? ` arrive ${ancien.d} v${coups % 2}` : ancien.i === i ? ` part ${ancien.d} v${coups % 2}` : ''}`}>{dos}</span>
+              /* CHANTIER 238 — Parquet : l'ancien paquet reste affiché jusqu'au panier, puis le nouveau s'allume. */
+              : pan ? <span className={`bk-tableau-paquet${!coups || !ancien ? '' : a === 0 ? ` arrive v${coups % 2}` : ancien.i === i ? ` part v${coups % 2}` : ''}`}>{dos}</span>
               : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
@@ -352,6 +367,15 @@ export function Eventail({
       {/* CHANTIER 235 — Plage : le jet de sable ; Château : le pont-levis, devant la porte. */}
       {pla && <span className={`su-sable${v}`} aria-hidden="true"><i /><i /><i /><i /><i /></span>}
       {cha && <span className="ch-pont-cadre" aria-hidden="true"><i className={`ch-pont${v}`} /></span>}
+      {/* CHANTIER 238 — Parquet : le ballon tiré, le cercle et le filet, devant le paquet ; « +2 ». */}
+      {pan && (
+        <span className="bk-avant" aria-hidden="true">
+          <i className="fixation" />
+          <i className={`tir${ancien && coups ? ` ${ancien.d}${v}` : ''}`} />
+          <i className="cercle" /><i className={`filet${v}`} />
+          <b className={`plus2${v}`}>+2</b>
+        </span>
+      )}
       {/* CHANTIER 227 — Cotton Club : le rideau se lève à l'arrivée sur « Aujourd'hui ». */}
       {pup && <i className="jz-rideau" aria-hidden="true" />}
     </div>
