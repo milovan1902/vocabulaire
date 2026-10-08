@@ -32,7 +32,9 @@ export function Eventail({
       panneaux se ferment et se rouvrent ; 'pupitres' (Cotton Club) : des partitions sur des pupitres, sous un projecteur. */
   /** CHANTIER 235 — 'planches' (Plage et surf) : les paquets sont des planches de surf plantées dans le sable ;
       'chateau' (Château) : le paquet dans la porte d'un château, derrière un pont-levis. */
-  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau';
+  /** CHANTIER 237 — 'caisses' (Jungle et safari) : le paquet est une caisse suspendue à une liane ;
+      'train' (Pacific Express) : le paquet voyage sur le wagon d'une locomotive, sur un pont de bois. */
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau' | 'caisses' | 'train';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -63,6 +65,36 @@ export function Eventail({
   const pup = forme === 'pupitres';
   const pla = forme === 'planches';
   const cha = forme === 'chateau';
+  const cai = forme === 'caisses';
+  const tra = forme === 'train';
+  const calme = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  /* CHANTIER 237 — Jungle : le perroquet passe toutes les 10 à 20 s. Il vole (1,15 s), se pose (4,45 s),
+     puis repart (1,4 s). La phase dit au CSS quand les ailes battent. */
+  const [pq, setPq] = useState(0);
+  const [ph, setPh] = useState<'' | 'vol' | 'pose'>('');
+  useEffect(() => {
+    if (!cai || calme) return;
+    const t: number[] = [];
+    let b = 0;
+    const visite = () => {
+      setPq((c) => c + 1); setPh('vol');
+      t.push(window.setTimeout(() => setPh('pose'), 1150));
+      t.push(window.setTimeout(() => setPh('vol'), 5600));
+      t.push(window.setTimeout(() => setPh(''), 7000));
+    };
+    const boucle = (d: number) => { b = window.setTimeout(() => { visite(); boucle(10000 + Math.random() * 10000); }, d); };
+    boucle(2500);
+    return () => { window.clearTimeout(b); t.forEach((x) => window.clearTimeout(x)); };
+  }, [cai, calme]);
+  /* CHANTIER 237 — Pacific Express : une boule d'herbe roule devant le pont toutes les 10 à 20 s. */
+  const [boule, setBoule] = useState(0);
+  useEffect(() => {
+    if (!tra || calme) return;
+    let t = 0;
+    const boucle = (d: number) => { t = window.setTimeout(() => { setBoule((c) => c + 1); boucle(10000 + Math.random() * 10000); }, d); };
+    boucle(4000);
+    return () => window.clearTimeout(t);
+  }, [tra, calme]);
   /* CHANTIER 235 — Plage : le bernard-l'ermite sort de sa coquille toutes les 10 à 20 s. */
   const [crabe, setCrabe] = useState(0);
   useEffect(() => {
@@ -86,8 +118,8 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${pla || cha ? v : ''}${glisse ? ' glisse' : ''}`}
-      style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : cha ? ({ '--cycle': cycle } as CSSProperties) : undefined}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pla || cha || cai || tra ? v : ''}${glisse ? ' glisse' : ''}`}
+      style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : cha || tra ? ({ '--cycle': cycle } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
       tabIndex={0}
@@ -159,6 +191,39 @@ export function Eventail({
           <i className="ch-lueur l1" /><i className="ch-lueur l2" /><i className="ch-lueur l3" /><i className="ch-lueur l4" />
         </span>
       )}
+      {/* CHANTIER 237 — Jungle : la liane fleurie, et le perroquet qui vient s'y poser. */}
+      {cai && (
+        <span className="jg-scene" aria-hidden="true">
+          <i className="liane" /><i className="fleur f1" /><i className="fleur f2" /><i className="fleur f3" /><i className="fleur f4" />
+          <i className="feuille l1" /><i className="feuille l2" /><i className="feuille l3" />
+          <span className={`jg-perroquet${pq && ph ? ` v${pq % 2} ${ph}` : ''}`}>
+            <span className="miroir"><span className="corps">
+              <i className="queue" /><i className="aile2" /><i className="ventre" /><i className="aile" />
+              <span className="tete"><i className="bec" /></span><i className="pattes" />
+            </span></span>
+          </span>
+        </span>
+      )}
+      {/* CHANTIER 237 — Pacific Express : le pont (il vibre au passage), le train (il part du côté de la flèche
+          et revient de l'autre), la fumée, les étincelles, la lanterne de nuit, la boule d'herbe. */}
+      {tra && (
+        <span className="pe-scene" aria-hidden="true">
+          <span className={`pe-pont${v}`}><span className="pe-ombre"><i className="tablier" /><i className="treillis" /><i className="rails" /></span></span>
+          <span className={`pe-train${ancien && coups ? ` ${ancien.d}${v}` : ''}`}>
+            <span className="pe-ombre">
+              <i className="plateau g" /><i className="roue r1" /><i className="roue r2" /><i className="cargo" /><i className="attache a" />
+              <i className="montant m1" /><i className="montant m2" /><i className="barre" />
+              <i className="plateau c" /><i className="roue r3" /><i className="roue r4" /><i className="attache b" />
+              <i className="toit" /><i className="cabine" /><i className="fenetre" /><i className="chaudiere" /><i className="dome" /><i className="cheminee" /><i className="phare" /><i className="chasse" />
+              <i className="roue r5" /><i className="roue r6" /><i className="roue r7" /><i className="bielle" />
+              <span className={`pe-fumee${v}`}><i /><i /><i /><i className="f" /><i className="f" /><i className="f" /><i className="f" /><i className="f" /></span>
+              <span className={`pe-etincelles${ancien && coups ? ` ${ancien.d}${v}` : ''}`}><i /><i /><i /><i /><i /><i /><i /><i /></span>
+            </span>
+            <i className="lanterne" /><i className="lanterne l2" />
+          </span>
+          <span className={`pe-boule${boule ? ` v${boule % 2}` : ''}`}><i /></span>
+        </span>
+      )}
       {/* CHANTIER 227 — Cotton Club : le projecteur, le plancher, le saxophoniste et ses notes. */}
       {pup && <i className={`jz-faisceau${v}`} aria-hidden="true" />}
       {pup && <i className="jz-plancher" aria-hidden="true" />}
@@ -218,6 +283,10 @@ export function Eventail({
                   ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${118 * s + dx * 0.6}px, 36px) rotate(${14 * s}deg) scale(0.5)`)
                 : cha
                   ? 'scale(0.7)'
+                : cai
+                  ? (a === 0 ? 'scale(0.62)' : `translate(${120 * s}px, 34px) scale(0.36)`)
+                : tra
+                  ? 'scale(0.62)'
                 : mai
                   ? 'scale(0.62)'
                 : pup
@@ -225,7 +294,7 @@ export function Eventail({
                 : boc
                   ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${122 * s + dx * 0.6}px, 30px) scale(0.6)`)
                   : `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${k})`;
-        const visible = pel ? a <= 2 : ray ? a <= 5 : a <= 1;
+        const visible = tra ? a === 0 : pel ? a <= 2 : ray ? a <= 5 : a <= 1;
         const dos = (
           <span className="eventail-dos">
             <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
@@ -241,7 +310,7 @@ export function Eventail({
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
               transform,
-              opacity: (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
+              opacity: tra ? (a === 0 || (ancien && ancien.i === i && coups && !calme) ? 1 : 0) : cai ? (a === 0 ? 1 : a === 1 ? 0.92 : 0) : (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
               pointerEvents: visible ? undefined : 'none',
@@ -258,6 +327,10 @@ export function Eventail({
               : pup ? <span className={`pupitre-lift${v}`}>{dos}</span>
               /* CHANTIER 235 — Plage : la planche du centre sort du sable ; celle qui part se couche. */
               : pla ? <span className={`su-planche${!coups ? '' : a === 0 ? ` monte v${coups % 2}` : ancien && ancien.i === i ? ` couche-${ancien.d} v${coups % 2}` : ''}`}>{dos}</span>
+              /* CHANTIER 237 — Jungle : la caisse du centre descend, celle qui part est hissée. Pacific Express :
+                 le wagon qui part quitte l'écran, le suivant arrive de l'autre côté. */
+              : cai ? <span className={`jg-caisse${!coups ? '' : a === 0 ? ` descend v${coups % 2}` : ancien && ancien.i === i ? ` hisse v${coups % 2}` : ''}`}><span className="jg-balance">{dos}</span></span>
+              : tra ? <span className={`pe-wagon${!coups || !ancien ? '' : a === 0 ? ` arrive ${ancien.d} v${coups % 2}` : ancien.i === i ? ` part ${ancien.d} v${coups % 2}` : ''}`}>{dos}</span>
               : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le

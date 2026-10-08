@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau' | 'jungle' | 'pacific';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -109,6 +109,8 @@ export const THEME_LABELS: Record<Theme, string> = {
   jazz: 'Cotton Club',
   plage: 'Plage et surf',
   chateau: 'Château',
+  jungle: 'Jungle et safari',
+  pacific: 'Pacific Express',
 };
 
 export function themeChoisi(): Theme {
@@ -120,7 +122,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' || v === 'japon' || v === 'jazz' || v === 'plage' || v === 'chateau' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' || v === 'japon' || v === 'jazz' || v === 'plage' || v === 'chateau' || v === 'jungle' || v === 'pacific' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -158,6 +160,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'jazz') return 'sombre';
   /* CHANTIER 235 — Plage et surf, Château : clairs (plein soleil, parchemin). */
   if (t === 'plage' || t === 'chateau') return 'clair';
+  /* CHANTIER 237 — Jungle et safari, Pacific Express : clairs (la canopée, le canyon au soleil). */
+  if (t === 'jungle' || t === 'pacific') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -207,6 +211,9 @@ function appliquer(t: Theme) {
   /* CHANTIER 235 — Plage et surf (plage.css) et Château (chateau.css). */
   else if (t === 'plage') document.documentElement.dataset.style = 'plage';
   else if (t === 'chateau') document.documentElement.dataset.style = 'chateau';
+  /* CHANTIER 237 — Jungle et safari (jungle.css) et Pacific Express (western.css). */
+  else if (t === 'jungle') document.documentElement.dataset.style = 'jungle';
+  else if (t === 'pacific') document.documentElement.dataset.style = 'western';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

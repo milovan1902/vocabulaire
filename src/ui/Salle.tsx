@@ -185,9 +185,74 @@ function Chateau({ anime }: { anime: boolean }) {
   );
 }
 
+/* CHANTIER 237 — Jungle et safari : la canopée sur trois couches, les rayons et leurs poussières, deux lianes
+   et des fougères qui ondulent. [gauche %, largeur, durée, décalage] pour les rayons ; [gauche %, haut px, durée, décalage] pour les poussières. */
+const RAYONS: Array<[number, number, number, number]> = [[17, 50, 3.4, 0], [47, 70, 4.2, -1.5], [72, 46, 3.8, -0.7]];
+const MOTES: Array<[number, number, number, number]> = [[27, 300, 4, 0], [33, 420, 5, -2], [58, 360, 4.5, -1], [66, 470, 5.5, -3], [83, 330, 4.2, -0.5], [42, 230, 4.8, -2.4]];
+/* [gauche %, haut, largeur, hauteur, angle, couleur] — trois couches de feuilles. */
+const COUCHES: Array<{ d: number; r: number; f: Array<[number, number, number, number, number, string]> }> = [
+  { d: 6, r: 0, f: [[-6, -34, 150, 72, 25, '#1f4d28'], [22, -46, 160, 72, -12, '#1f4d28'], [50, -40, 150, 70, 18, '#1f4d28'], [73, -34, 150, 74, -24, '#1f4d28']] },
+  { d: 4.6, r: -1.8, f: [[-8, -6, 110, 50, -28, '#2f7a3a'], [17, -20, 120, 54, 14, '#2f7a3a'], [42, -16, 110, 50, -20, '#2f7a3a'], [66, -4, 130, 54, 30, '#2f7a3a'], [86, 26, 90, 44, 48, '#2f7a3a']] },
+  { d: 3.8, r: -0.9, f: [[-1, 34, 76, 34, -42, '#5aa64a'], [7, 6, 70, 30, 18, '#5aa64a'], [81, 10, 70, 30, -18, '#5aa64a'], [92, 50, 64, 30, 56, '#5aa64a']] },
+];
+/* [côté, décalage px, hauteur, angle, durée, retard, couleur] — les fougères des deux coins bas. */
+const FOUGERES: Array<['g' | 'd', number, number, number, number, number, string]> = [
+  ['g', -6, 150, -52, 3.6, 0, '#3f8f3a'], ['g', 2, 170, -30, 4.2, -1, '#2f7a32'], ['g', 10, 140, -12, 3.9, -0.6, '#4f9e42'],
+  ['d', -6, 150, 52, 3.8, -1.2, '#3f8f3a'], ['d', 2, 170, 30, 4.4, 0, '#2f7a32'], ['d', 10, 140, 12, 4, -2, '#4f9e42'],
+];
+
+function Jungle({ anime }: { anime: boolean }) {
+  return (
+    <div className="fond-anime jungle jg-salle" aria-hidden="true">
+      <i className="jg-tronc" style={{ left: '11%', width: 16, opacity: 0.22 }} /><i className="jg-tronc" style={{ left: '36%', width: 22, opacity: 0.18 }} />
+      <i className="jg-tronc" style={{ left: '66%', width: 14, opacity: 0.2 }} /><i className="jg-tronc" style={{ left: '83%', width: 20, opacity: 0.16 }} />
+      {RAYONS.map(([x, w, d, r], k) => <i key={k} className="jg-rayon" style={{ left: `${x}%`, width: w, animationDuration: `${d}s`, animationDelay: `${r}s` }} />)}
+      {anime && MOTES.map(([x, y, d, r], k) => <i key={k} className="jg-mote" style={{ left: `${x}%`, top: y, animationDuration: `${d}s`, animationDelay: `${r}s` }} />)}
+      {COUCHES.map((c, n) => (
+        <span key={n} className="jg-canopee" style={{ animationDuration: `${c.d}s`, animationDelay: `${c.r}s` }}>
+          {c.f.map(([x, y, w, h, a, col], k) => <i key={k} style={{ left: `${x}%`, top: y, width: w, height: h, transform: `rotate(${a}deg)`, '--c': col } as CSSProperties} />)}
+        </span>
+      ))}
+      <span className="jg-liane" style={{ left: -12, height: 420 }}><i style={{ left: -6, top: 60, transform: 'rotate(-30deg)' }} /><i style={{ left: 2, top: 140, transform: 'rotate(30deg)' }} /><i style={{ left: -6, top: 230, transform: 'rotate(-30deg)' }} /><i style={{ left: 2, top: 320, transform: 'rotate(30deg)' }} /></span>
+      <span className="jg-liane d" style={{ right: -12, height: 360, animationDuration: '5.4s', animationDelay: '-2s' }}><i style={{ right: -6, top: 60, transform: 'rotate(-30deg)' }} /><i style={{ right: 2, top: 140, transform: 'rotate(30deg)' }} /><i style={{ right: -6, top: 230, transform: 'rotate(-30deg)' }} /><i style={{ right: 2, top: 320, transform: 'rotate(30deg)' }} /></span>
+      {FOUGERES.map(([c, x, h, a, d, r, col], k) => (
+        <i key={k} className="jg-fougere" style={{ ...(c === 'g' ? { left: x } : { right: x }), height: h, '--r': `${a}deg`, '--c': col, animationDuration: `${d}s`, animationDelay: `${r}s` } as CSSProperties} />
+      ))}
+    </div>
+  );
+}
+
+/* CHANTIER 237 — Pacific Express : le soleil qui se couche et se lève, les mesas, l'aigle qui tourne, la poussière,
+   deux cactus ; la nuit, les étoiles et la lune. Le cycle de 40 s suit l'horloge (même calcul qu'Eventail.tsx). */
+const ETOILES_PE: Array<[number, number, number]> = [[8, 40, 2], [22, 22, 2], [36, 60, 3], [56, 30, 2], [69, 70, 2], [83, 26, 3], [92, 90, 2], [44, 120, 2], [17, 140, 2], [81, 150, 2], [6, 200, 2], [64, 180, 3]];
+
+function Western({ anime }: { anime: boolean }) {
+  const [cycle] = useState(() => `${-((Date.now() / 1000) % 40)}s`);
+  return (
+    <div className="fond-anime western pe-salle" aria-hidden="true" style={{ '--cycle': cycle } as CSSProperties}>
+      <span className="pe-ciel">
+        <i className="pe-soleil" />
+        {anime && <span className="pe-aigle-orbite"><span className="pe-aigle-jour"><span className="pe-aigle-tour"><span className="pe-aigle"><i className="g" /><i className="d" /></span></span></span></span>}
+      </span>
+      <i className="pe-mesa m1" /><i className="pe-mesa m2" /><i className="pe-mesa m3" /><i className="pe-mesa m4" />
+      {anime && <><i className="pe-poussiere" style={{ top: 308 }} /><i className="pe-poussiere p2" /></>}
+      <i className="pe-cactus c1" /><i className="pe-cactus c2" />
+      {anime && (
+        <>
+          <i className="pe-nuit" />
+          <span className="pe-ciel-nuit">
+            {ETOILES_PE.map(([x, y, t], k) => <i key={k} className="pe-etoile" style={{ left: `${x}%`, top: y, width: t, height: t }} />)}
+            <i className="pe-lune" />
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function Salle() {
   const style = useStyle();
-  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet' && style !== 'japon' && style !== 'plage' && style !== 'chateau') return null;
+  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet' && style !== 'japon' && style !== 'plage' && style !== 'chateau' && style !== 'jungle' && style !== 'western') return null;
   const anime = !calme();
   return createPortal(
     style === 'cinema' ? <Cinema anime={anime} />
@@ -196,6 +261,8 @@ export function Salle() {
       : style === 'japon' ? <Japon anime={anime} />
       : style === 'plage' ? <Plage />
       : style === 'chateau' ? <Chateau anime={anime} />
+      : style === 'jungle' ? <Jungle anime={anime} />
+      : style === 'western' ? <Western anime={anime} />
       : <Cabinet anime={anime} />,
     document.body,
   );

@@ -1,0 +1,321 @@
+/* ==================================================================
+   CHANTIER 237 — « Pacific Express » (maquette 55b) : le train à vapeur dans le canyon.
+   Coucher de soleil, mesas, désert. Rye pour les grands textes (public/fonts), Lexend pour le reste.
+
+   Active quand <html> porte data-style="western" (theme.ts). Base CLAIRE, forme du Lycée (estLudique).
+   - Le fond (Salle.tsx) : le soleil, les mesas, l'aigle qui tourne, la poussière ; un cycle de 40 s,
+     20 s de jour, 20 s de nuit (lune, étoiles). Le cycle suit l'horloge, comme le Château.
+   - Les paquets (Eventail.tsx, forme 'train') : le paquet voyage sur le wagon d'une locomotive,
+     sur un pont de bois. Au changement, le train part du côté de la flèche touchée et revient
+     de l'autre côté avec le paquet suivant ; le pont vibre, les roues font des étincelles,
+     la cheminée fume plus fort. La nuit, la lanterne s'allume. Une boule d'herbe roule de temps en temps.
+   - « Tous à bord » : un jet de vapeur (Today.tsx).
+   - « Cette semaine » : cinq étoiles de shérif ; 5 / 5 elles brillent ; 6 or poli ; 7 or + feux d'artifice.
+   - Révision : l'affiche « recherché » ; les notes sont des signaux de chemin de fer.
+   ================================================================== */
+@font-face { font-family: 'Rye'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/rye-latin.woff2') format('woff2'); }
+[data-style='western'] {
+  --paper: #f3e2c0; --panel: #f3e2c0; --panel-hi: #ead09a;
+  --ink: #3a1d0e; --ink-soft: #5a3018; --grey: #6a4428; --ink-dim: #6a4428;
+  --rule: rgba(58, 29, 14, 0.14); --rule-strong: rgba(58, 29, 14, 0.28);
+  --chalk: #b23a1e; --chalk-ink: #8a2a14; --on-chalk: #f3e2c0;
+  --good: #4f6a2e; --bad: #b23a1e;
+  --voile: rgba(58, 29, 14, 0.05); --voile-2: rgba(58, 29, 14, 0.1); --voile-3: rgba(58, 29, 14, 0.16);
+  --bleu: #8a2a14; --bleu-ink: #6a1f0e; --rouge: #b23a1e; --orange: #e0a030;
+  --ly-voile: rgba(58, 29, 14, 0.12); --ly-voile-2: rgba(58, 29, 14, 0.3);
+  --ly-tabbar: #3a1d0e; --ly-ombre: rgba(40, 15, 5, 0.3); --ly-tag: #f3e2c0; --ly-bord-carte: #f3e2c0;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Rye', Georgia, serif;
+  --titre: 'Rye', Georgia, serif;
+  --anneau: #b23a1e;
+}
+[data-style='western'] body { font-family: var(--sans); color: var(--ink); background-color: #b8743e; background-image: linear-gradient(180deg, #f7d58c 0, #f4a55e 200px, #e26a3c 330px, #d9a066 330px, #c58550 520px, #b8743e 760px); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='western'] body:has(.today.ly) { overflow-x: clip; }
+[data-style='western'] .screen-title, [data-style='western'] .topbar h1, [data-style='western'] .welcome-head h1, [data-style='western'] .done h2, [data-style='western'] .sheet h3, [data-style='western'] .today-count b { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; }
+[data-style='western'] .tabbar { background: #3a1d0e; border-top: 3px solid #e0a030; }
+[data-style='western'] .tabbar button { color: rgba(243, 226, 192, 0.6); }
+[data-style='western'] .tabbar button.on { color: #f3e2c0; }
+[data-style='western'] .tabbar button.on::before { display: none; }
+[data-style='western'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 2px; }
+[data-style='western'] .tabbar button.on .tabsvg { background: rgba(224, 160, 48, 0.3); }
+[data-style='western'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='western'] .reveal { background: #b23a1e; color: #f3e2c0; border: none; border-radius: 2px; box-shadow: inset 0 0 0 2px #b23a1e, inset 0 0 0 3.5px #f3e2c0, 0 4px 0 #5a1a0c; font-family: var(--titre); font-weight: 400; font-size: 19px; letter-spacing: 0; }
+[data-style='western'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active, [data-style='western'] .reveal:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px #b23a1e, inset 0 0 0 3.5px #f3e2c0, 0 1px 0 #5a1a0c; }
+
+/* ---------- le fond (Salle.tsx), sur « Aujourd'hui » seulement ---------- */
+body:not(:has(.today.ly)) .pe-salle { display: none; }
+.pe-salle i, .pe-salle span { position: absolute; display: block; }
+.pe-salle .pe-soleil { left: calc(50% + 36px); top: 196px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #fff6c4 0 30%, #ffd166 55%, #f9a03f 72%); box-shadow: 0 0 50px 14px rgba(255, 200, 100, 0.55); animation: pe-soleil 40s linear infinite; animation-delay: var(--cycle, 0s); }
+.pe-salle .pe-ciel { left: 0; right: 0; top: 0; height: 330px; overflow: hidden; }
+.pe-salle .pe-aigle-orbite { left: calc(50% - 70px); top: 150px; width: 0; height: 0; transform: scaleY(0.4); }
+.pe-salle .pe-aigle-jour { left: 0; top: 0; animation: pe-jour 40s linear infinite; animation-delay: var(--cycle, 0s); }
+.pe-salle .pe-aigle-tour { left: 0; top: 0; animation: pe-tourne 16s linear infinite; }
+.pe-salle .pe-aigle { left: 50px; top: 0; animation: pe-contre 16s linear infinite; }
+.pe-salle .pe-aigle i { top: -10px; width: 14px; height: 7px; border-top: 2.5px solid #3a1d0e; transform: scaleY(2.5) rotate(-8deg); }
+.pe-salle .pe-aigle i.g { left: -14px; border-radius: 60% 40% 0 0; }
+.pe-salle .pe-aigle i.d { left: 0; border-radius: 40% 60% 0 0; transform: scaleY(2.5) rotate(8deg); }
+.pe-salle .pe-mesa { background: repeating-linear-gradient(180deg, transparent 0 6px, rgba(60, 20, 10, 0.16) 6px 8px), var(--c); }
+.pe-salle .pe-mesa.m1 { left: calc(50% - 40px); top: 238px; width: 240px; height: 92px; --c: #e3a07a; clip-path: polygon(4% 100%, 12% 18%, 20% 10%, 70% 10%, 80% 22%, 92% 100%); }
+.pe-salle .pe-mesa.m2 { left: calc(50% - 210px); top: 258px; width: 200px; height: 72px; --c: #c0623f; clip-path: polygon(0 100%, 8% 20%, 16% 12%, 60% 12%, 68% 26%, 74% 26%, 82% 100%); }
+.pe-salle .pe-mesa.m3 { left: calc(50% - 12px); top: 272px; width: 40px; height: 58px; --c: #a84d30; clip-path: polygon(15% 100%, 28% 8%, 72% 8%, 85% 100%); }
+.pe-salle .pe-mesa.m4 { left: calc(50% + 50px); top: 286px; width: 340px; height: 44px; --c: #8f3f26; clip-path: polygon(0 100%, 5% 30%, 10% 18%, 100% 18%, 100% 100%); }
+.pe-salle .pe-poussiere { left: 0; width: 170px; height: 28px; border-radius: 50%; background: rgba(240, 205, 160, 0.55); filter: blur(7px); animation: pe-poussiere 22s linear -6s infinite; }
+.pe-salle .pe-poussiere.p2 { top: auto; bottom: 90px; width: 150px; animation-duration: 18s; animation-delay: -12s; }
+.pe-salle .pe-cactus { bottom: 70px; width: 60px; height: 120px; transform-origin: 50% 100%;
+  background: linear-gradient(#4f6a2e, #4f6a2e) 22px 8px / 16px 112px no-repeat, linear-gradient(#4f6a2e, #4f6a2e) 4px 32px / 10px 38px no-repeat, linear-gradient(#4f6a2e, #4f6a2e) 6px 62px / 20px 10px no-repeat, linear-gradient(#4f6a2e, #4f6a2e) 46px 24px / 10px 30px no-repeat, linear-gradient(#4f6a2e, #4f6a2e) 34px 47px / 18px 9px no-repeat; }
+.pe-salle .pe-cactus.c1 { left: calc(50% + 112px); }
+.pe-salle .pe-cactus.c2 { left: calc(50% - 176px); transform: scale(0.55); }
+.pe-salle .pe-nuit { inset: 0; opacity: 0; background: linear-gradient(180deg, rgba(14, 18, 58, 0.88), rgba(30, 28, 78, 0.62) 330px, rgba(20, 14, 40, 0.55)); animation: pe-nuit 40s linear infinite; animation-delay: var(--cycle, 0s); }
+.pe-salle .pe-ciel-nuit { left: 0; right: 0; top: 0; height: 330px; opacity: 0; animation: pe-nuit 40s linear infinite; animation-delay: var(--cycle, 0s); }
+.pe-salle .pe-etoile { border-radius: 50%; background: #fff; box-shadow: 0 0 4px #fff; }
+.pe-salle .pe-lune { left: calc(50% - 132px); top: 64px; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset -7px 4px 0 #f4ecd0; filter: drop-shadow(0 0 6px rgba(244, 236, 208, 0.7)); }
+
+/* ---------- l'en-tête ---------- */
+[data-style='western'] .ly-niv { width: 46px; height: 46px; border: none; border-radius: 0; background: #e0a030; color: #3a1d0e; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+[data-style='western'] .ly-niv small { display: none; }
+[data-style='western'] .ly-niv b { margin-top: 6px; font-family: var(--titre); font-size: 15px; font-weight: 400; color: #3a1d0e; }
+[data-style='western'] .ly-xp-txt { font-size: 12px; color: #3a1d0e; }
+[data-style='western'] .ly-xp-txt b { color: #3a1d0e; }
+[data-style='western'] .ly-barre { border-radius: 2px; background: rgba(255, 255, 255, 0.45); }
+[data-style='western'] .ly-barre i { border-radius: 0; background: #3a1d0e; }
+[data-style='western'] .ly-flamme { height: 38px; padding: 0 12px; gap: 6px; border-radius: 2px; background: rgba(243, 226, 192, 0.88); color: #3a1d0e; }
+[data-style='western'] .ly-flamme svg { display: none; }
+[data-style='western'] .ly-flamme::before { content: ''; flex: none; width: 12px; height: 12px; border-radius: 50%; background: #b23a1e; box-shadow: 0 0 0 3px rgba(178, 58, 30, 0.3); }
+[data-style='western'] .ly-flamme b { font-size: 17px; font-weight: 700; color: #3a1d0e; }
+[data-style='western'] .ly-defi { position: relative; z-index: 3; padding: 14px 16px; border: none; border-radius: 2px; background: #f3e2c0; box-shadow: inset 0 0 0 3px #f3e2c0, inset 0 0 0 4.5px #3a1d0e, 0 6px 0 rgba(58, 29, 14, 0.4); }
+[data-style='western'] .ly-defi-haut > span:first-child { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #b23a1e; }
+[data-style='western'] .ly-gain { border-radius: 2px; background: #ead09a; color: #b23a1e; }
+[data-style='western'] .ly-defi-n { font-family: var(--titre); font-size: 32px; font-weight: 400; line-height: 1.15; letter-spacing: 0; color: #3a1d0e; }
+[data-style='western'] .ly-defi-sous, [data-style='western'] .ly-defi-jour { color: #6a4428; }
+[data-style='western'] .ly-defi-jour .ly-barre { border-radius: 2px; background: #e0c896; }
+[data-style='western'] .ly-defi-jour .ly-barre i { background: #b23a1e; }
+
+/* ---------- les paquets : le train (Eventail.tsx, forme 'train') ---------- */
+[data-style='western'] .ly-scene { position: relative; }
+[data-style='western'] .eventail.train { height: 214px; margin-top: 16px; overflow: visible; }
+[data-style='western'] .eventail.train .eventail-carte { top: -4px; transform-origin: 50% 0; transition: none; }
+/* Le paquet est le chargement du wagon : cadre crème, deux sangles à boucle dorée. */
+[data-style='western'] .eventail.train .eventail-dos,
+[data-style='western'] .eventail.train .eventail-carte.centre .eventail-dos { border: 6px solid #f3e2c0; border-radius: 0; box-shadow: 0 0 0 3px #3a1d0e, 0 12px 26px rgba(0, 0, 0, 0.3); animation: pe-ombre 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='western'] .pe-wagon { position: absolute; inset: 0; display: block; }
+[data-style='western'] .pe-wagon::before, [data-style='western'] .pe-wagon::after { content: ''; position: absolute; left: -12px; right: -12px; z-index: 1; height: 11px; pointer-events: none;
+  background: linear-gradient(#c9a227, #c9a227) 50% 50% / 14px 13px no-repeat, linear-gradient(#5a3018, #5a3018) 50% 50% / 8px 7px no-repeat, #5a3018; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15); }
+[data-style='western'] .pe-wagon::before { top: 16%; }
+[data-style='western'] .pe-wagon::after { top: 80%; }
+[data-style='western'] .pe-wagon.arrive.d.v0 { animation: pe-arrive-d-0 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-wagon.arrive.d.v1 { animation: pe-arrive-d-1 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-wagon.arrive.g.v0 { animation: pe-arrive-g-0 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-wagon.arrive.g.v1 { animation: pe-arrive-g-1 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-wagon.part.d.v0 { animation: pe-part-d-0 1.8s cubic-bezier(.5, 0, .4, 1) forwards; }
+[data-style='western'] .pe-wagon.part.d.v1 { animation: pe-part-d-1 1.8s cubic-bezier(.5, 0, .4, 1) forwards; }
+[data-style='western'] .pe-wagon.part.g.v0 { animation: pe-part-g-0 1.8s cubic-bezier(.5, 0, .4, 1) forwards; }
+[data-style='western'] .pe-wagon.part.g.v1 { animation: pe-part-g-1 1.8s cubic-bezier(.5, 0, .4, 1) forwards; }
+[data-style='western'] .eventail.train.v0 .eventail-carte.centre .eventail-due { animation: pe-pastille-0 1.8s ease-out; }
+[data-style='western'] .eventail.train.v1 .eventail-carte.centre .eventail-due { animation: pe-pastille-1 1.8s ease-out; }
+[data-style='western'] .eventail-due { right: -30px; top: -30px; min-width: 50px; height: 50px; font-size: 22px; background: #b23a1e; color: #f3e2c0; box-shadow: 0 0 0 3px #f3e2c0; }
+[data-style='western'] .eventail.train .eventail-carte .classdot.eventail-classe { bottom: -10px; height: 32px; font-size: 16px; border-radius: 2px; background: #f3e2c0; color: #3a1d0e; border: 2px solid #3a1d0e; }
+/* Le décor : le pont, le train, la boule d'herbe. Coordonnées de la maquette (scène de 360 px). */
+[data-style='western'] .pe-scene { position: absolute; left: 50%; top: 0; width: 360px; height: 214px; margin-left: -180px; display: block; pointer-events: none; }
+[data-style='western'] .pe-scene i, [data-style='western'] .pe-scene span { position: absolute; display: block; }
+[data-style='western'] .pe-pont, [data-style='western'] .pe-train, [data-style='western'] .pe-ombre { inset: 0; }
+[data-style='western'] .pe-ombre { animation: pe-ombre 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='western'] .pe-pont.v0 { animation: pe-vibre-0 1.8s linear; }
+[data-style='western'] .pe-pont.v1 { animation: pe-vibre-1 1.8s linear; }
+[data-style='western'] .pe-pont .tablier { left: 0; top: 148px; width: 360px; height: 70px; background: repeating-linear-gradient(180deg, transparent 0 8px, rgba(0, 0, 0, 0.14) 8px 10px), linear-gradient(90deg, #b8573a 0, #8a3a22 14%, #4a1c10 34%, #2e120a 50%, #4a1c10 66%, #8a3a22 86%, #b8573a 100%); clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%); }
+[data-style='western'] .pe-pont .treillis { left: 0; top: 146px; width: 360px; height: 70px; background: linear-gradient(#5a3018, #5a3018) 0 26px / 100% 5px no-repeat, repeating-linear-gradient(90deg, #4a2810 0 7px, transparent 7px 48px), repeating-linear-gradient(56deg, transparent 0 22px, #6b3a1c 22px 26px), repeating-linear-gradient(-56deg, transparent 0 22px, #6b3a1c 22px 26px); -webkit-mask: linear-gradient(180deg, #000 60%, transparent); mask: linear-gradient(180deg, #000 60%, transparent); }
+[data-style='western'] .pe-pont .rails { left: 0; top: 136px; width: 360px; height: 12px; background: linear-gradient(#9aa0a8, #6a707a) 0 0 / 100% 3px no-repeat, repeating-linear-gradient(90deg, #3a1d0e 0 7px, #7a4422 7px 13px) 0 3px / 100% 9px no-repeat; }
+[data-style='western'] .pe-train.d.v0 { animation: pe-train-d-0 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-train.d.v1 { animation: pe-train-d-1 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-train.g.v0 { animation: pe-train-g-0 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-train.g.v1 { animation: pe-train-g-1 1.8s cubic-bezier(.5, 0, .4, 1); }
+[data-style='western'] .pe-train .plateau { height: 10px; background: repeating-linear-gradient(90deg, #8a5030 0 14px, #5a3018 14px 16px); box-shadow: inset 0 -3px 0 #3a1d0e; }
+[data-style='western'] .pe-train .plateau.g { left: -40px; top: 108px; width: 140px; background: repeating-linear-gradient(90deg, #7a4422 0 12px, #5a3018 12px 14px); }
+[data-style='western'] .pe-train .plateau.c { left: 116px; top: 108px; width: 128px; }
+[data-style='western'] .pe-train .roue { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle, #c9a227 0 2.5px, transparent 3px), repeating-conic-gradient(#1f1a17 0 7deg, transparent 7deg 45deg), #3a2a1a; box-shadow: inset 0 0 0 3px #b23a1e, 0 0 0 1px #1f1a17; }
+[data-style='western'] .pe-train .r1 { left: -2px; top: 115px; } [data-style='western'] .pe-train .r2 { left: 68px; top: 115px; } [data-style='western'] .pe-train .r3 { left: 128px; top: 115px; } [data-style='western'] .pe-train .r4 { left: 210px; top: 115px; }
+[data-style='western'] .pe-train .r5 { left: 263px; top: 119px; width: 18px; height: 18px; } [data-style='western'] .pe-train .r6 { left: 293px; top: 111px; width: 26px; height: 26px; } [data-style='western'] .pe-train .r7 { left: 321px; top: 111px; width: 26px; height: 26px; }
+[data-style='western'] .pe-train .cargo { left: 8px; top: 30px; width: 84px; height: 78px; border-radius: 10px 10px 2px 2px; background: linear-gradient(90deg, transparent 26px, #6b4a2a 26px 29px, transparent 29px 55px, #6b4a2a 55px 58px, transparent 58px), repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0 2px, transparent 2px 9px), #c9a66b; box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.15); }
+[data-style='western'] .pe-train .attache { height: 4px; background: #1f1a17; }
+[data-style='western'] .pe-train .attache.a { left: 100px; top: 110px; width: 16px; } [data-style='western'] .pe-train .attache.b { left: 244px; top: 110px; width: 10px; }
+[data-style='western'] .pe-train .montant { top: 92px; width: 4px; height: 16px; background: #5a3018; }
+[data-style='western'] .pe-train .montant.m1 { left: 118px; } [data-style='western'] .pe-train .montant.m2 { left: 238px; }
+[data-style='western'] .pe-train .barre { left: 118px; top: 92px; width: 124px; height: 3px; background: #5a3018; }
+[data-style='western'] .pe-train .toit { left: 250px; top: 60px; width: 44px; height: 8px; border-radius: 2px; background: #1f1a17; }
+[data-style='western'] .pe-train .cabine { left: 254px; top: 66px; width: 36px; height: 52px; background: #b23a1e; box-shadow: inset 0 0 0 2px #7a2414; }
+[data-style='western'] .pe-train .fenetre { left: 262px; top: 74px; width: 20px; height: 16px; border-radius: 2px; background: #ffd98a; box-shadow: inset 0 0 0 2px #7a2414; }
+[data-style='western'] .pe-train .chaudiere { left: 290px; top: 84px; width: 62px; height: 32px; border-radius: 4px 14px 14px 4px; background: linear-gradient(90deg, transparent 14px, #c9a227 14px 16px, transparent 16px 34px, #c9a227 34px 36px, transparent 36px), linear-gradient(180deg, #3a3430, #1f1a17); }
+[data-style='western'] .pe-train .dome { left: 304px; top: 76px; width: 14px; height: 10px; border-radius: 7px 7px 0 0; background: #c9a227; }
+[data-style='western'] .pe-train .cheminee { left: 330px; top: 52px; width: 18px; height: 34px; background: #1f1a17; clip-path: polygon(0 0, 100% 0, 72% 42%, 72% 100%, 28% 100%, 28% 42%); }
+[data-style='western'] .pe-train .phare { left: 344px; top: 74px; width: 12px; height: 12px; background: radial-gradient(circle 3px, #ffd166 98%, transparent) 50% 50% / 6px 6px no-repeat, #3a2a1a; background-size: 100% 100%; }
+[data-style='western'] .pe-train .chasse { left: 348px; top: 104px; width: 20px; height: 30px; background: repeating-linear-gradient(90deg, #b23a1e 0 3px, #5a1a0c 3px 5px); clip-path: polygon(0 0, 0 100%, 100% 100%); }
+[data-style='western'] .pe-train .bielle { left: 306px; top: 122px; width: 28px; height: 3px; background: #9aa0a8; }
+/* La lanterne et la fenêtre de la cabine s'allument la nuit. */
+[data-style='western'] .pe-train .lanterne { left: 330px; top: 60px; width: 40px; height: 40px; border-radius: 50%; opacity: 0; background: radial-gradient(circle, rgba(255, 224, 130, 0.95) 0 18%, rgba(255, 200, 90, 0.4) 45%, transparent 70%); animation: pe-lanterne 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='western'] .pe-train .lanterne.l2 { left: 258px; top: 70px; width: 28px; height: 24px; border-radius: 4px; background: radial-gradient(circle, rgba(255, 220, 130, 0.8), transparent 70%); }
+/* La fumée : trois bouffées douces ; au changement de paquet, une fumée noire et forte. */
+[data-style='western'] .pe-fumee i { left: 333px; top: 44px; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle, rgba(90, 80, 75, 0.8), rgba(90, 80, 75, 0) 70%); opacity: 0; --o: 0.45; --dx: -26px; animation: pe-fumee 2.8s ease-out infinite; }
+[data-style='western'] .pe-fumee i:nth-child(2) { animation-delay: 0.93s; } [data-style='western'] .pe-fumee i:nth-child(3) { animation-delay: 1.86s; }
+[data-style='western'] .pe-fumee i.f { display: none; left: 329px; top: 40px; width: 22px; height: 22px; background: radial-gradient(circle, rgba(40, 32, 30, 0.9), rgba(40, 32, 30, 0) 70%); --o: 0.85; }
+[data-style='western'] .pe-fumee:is(.v0, .v1) i.f { display: block; animation: pe-fumee 1.3s ease-out 2; }
+[data-style='western'] .pe-fumee i.f:nth-child(4) { --dx: -40px; animation-delay: 0.00s; }
+[data-style='western'] .pe-fumee i.f:nth-child(5) { --dx: -46px; animation-delay: 0.18s; }
+[data-style='western'] .pe-fumee i.f:nth-child(6) { --dx: -52px; animation-delay: 0.36s; }
+[data-style='western'] .pe-fumee i.f:nth-child(7) { --dx: -58px; animation-delay: 0.54s; }
+[data-style='western'] .pe-fumee i.f:nth-child(8) { --dx: -64px; animation-delay: 0.72s; }
+/* Les étincelles aux roues du wagon. */
+[data-style='western'] .pe-etincelles i { top: 133px; width: 3px; height: 3px; border-radius: 50%; background: #ffd166; box-shadow: 0 0 4px #ff9f1c; opacity: 0; }
+[data-style='western'] .pe-etincelles i:nth-child(-n+4) { left: 139px; } [data-style='western'] .pe-etincelles i:nth-child(n+5) { left: 221px; }
+[data-style='western'] .pe-etincelles i:nth-child(4n+1) { --dx: calc(var(--s) * 18px); --dy: -10px; }
+[data-style='western'] .pe-etincelles i:nth-child(4n+2) { --dx: calc(var(--s) * 26px); --dy: -16px; }
+[data-style='western'] .pe-etincelles i:nth-child(4n+3) { --dx: calc(var(--s) * 14px); --dy: -6px; }
+[data-style='western'] .pe-etincelles i:nth-child(4n+4) { --dx: calc(var(--s) * 30px); --dy: -12px; }
+[data-style='western'] .pe-etincelles.d { --s: -1; } [data-style='western'] .pe-etincelles.g { --s: 1; }
+[data-style='western'] .pe-etincelles.v0 i { animation: pe-etincelle-0 1.8s linear; }
+[data-style='western'] .pe-etincelles.v1 i { animation: pe-etincelle-1 1.8s linear; }
+/* La boule d'herbe qui roule devant le pont, toutes les 10 à 20 s. */
+[data-style='western'] .pe-boule { left: 0; top: 180px; z-index: 12; width: 30px; height: 30px; opacity: 0; }
+[data-style='western'] .pe-boule i { inset: 0; border-radius: 50%; border: 2px dotted #8a6a3a; background: repeating-conic-gradient(#a07a4a 0 5deg, transparent 5deg 22deg), radial-gradient(circle, transparent 30%, rgba(160, 122, 74, 0.4) 32%); animation: pe-roule 1.2s linear infinite; }
+[data-style='western'] .pe-boule.v0 { animation: pe-boule-0 5s linear; }
+[data-style='western'] .pe-boule.v1 { animation: pe-boule-1 5s linear; }
+[data-style='western'] .ly-points { margin-top: 8px; }
+[data-style='western'] .ly-points i { border-radius: 1px; background: rgba(58, 29, 14, 0.3); }
+[data-style='western'] .ly-points i.on { background: #b23a1e; }
+[data-style='western'] .ly-nom { color: #3a1d0e; }
+[data-style='western'] .ly-nom span { color: #3a1d0e; }
+[data-style='western'] .ly-fusee { top: 44px; z-index: 14; width: 40px; height: 40px; border-radius: 2px; border: none; background: #f3e2c0; box-shadow: inset 0 0 0 2px #3a1d0e; color: #b23a1e; }
+[data-style='western'] .ly-fusee:focus-visible { outline: 2px solid #b23a1e; outline-offset: 2px; }
+[data-style='western'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 2.5px solid currentColor; border-right: 2.5px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='western'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+/* « Tous à bord » : le jet de vapeur (Today.tsx). */
+[data-style='western'] .btn.ly-go { position: relative; overflow: visible; }
+[data-style='western'] .pe-vapeur { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='western'] .pe-vapeur i { position: absolute; left: 50%; top: 0; display: block; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: rgba(255, 255, 255, 0.95); box-shadow: 0 0 6px rgba(255, 255, 255, 0.8); opacity: 0; }
+[data-style='western'] .pe-vapeur i:nth-child(1) { --dx: -30px; --dy: -60px; animation-delay: 0.00s; }
+[data-style='western'] .pe-vapeur i:nth-child(2) { --dx: -14px; --dy: -80px; animation-delay: 0.04s; }
+[data-style='western'] .pe-vapeur i:nth-child(3) { --dx: 0px; --dy: -92px; animation-delay: 0.08s; }
+[data-style='western'] .pe-vapeur i:nth-child(4) { --dx: 16px; --dy: -80px; animation-delay: 0.12s; }
+[data-style='western'] .pe-vapeur i:nth-child(5) { --dx: 32px; --dy: -60px; animation-delay: 0.16s; }
+[data-style='western'] .pe-vapeur i:nth-child(6) { --dx: -6px; --dy: -50px; animation-delay: 0.20s; }
+[data-style='western'] .pe-vapeur i:nth-child(7) { --dx: 8px; --dy: -55px; animation-delay: 0.24s; }
+[data-style='western'] .pe-vapeur i:nth-child(8) { --dx: -46px; --dy: -44px; animation-delay: 0.28s; }
+[data-style='western'] .pe-vapeur i:nth-child(9) { --dx: 46px; --dy: -44px; animation-delay: 0.32s; }
+[data-style='western'] .pe-vapeur.v0 i { animation-name: pe-vapeur-0; animation-duration: 0.9s; animation-timing-function: ease-out; }
+[data-style='western'] .pe-vapeur.v1 i { animation-name: pe-vapeur-1; animation-duration: 0.9s; animation-timing-function: ease-out; }
+[data-style='western'] .btn.ly-go:has(.pe-vapeur.v0) { animation: pe-bouton-0 0.5s ease-out; }
+[data-style='western'] .btn.ly-go:has(.pe-vapeur.v1) { animation: pe-bouton-1 0.5s ease-out; }
+
+/* ---------- les tuiles ; la semaine en étoiles de shérif ---------- */
+[data-style='western'] .ly-tuile { position: relative; overflow: visible; border: none; border-radius: 2px; background: rgba(243, 226, 192, 0.96); box-shadow: inset 0 0 0 1.5px #3a1d0e; color: #3a1d0e; }
+[data-style='western'] .ly-tuile-haut { font-size: 13px; color: #6a4428; }
+[data-style='western'] .ly-tuile-haut svg { color: #b23a1e; }
+[data-style='western'] .ly-tuile > b { font-size: 20px; font-weight: 700; letter-spacing: 0; color: #3a1d0e; }
+[data-style='western'] .ly-tuile > small { color: #6a4428; }
+[data-style='western'] .ly-segments { position: relative; z-index: 1; align-self: stretch; display: flex; justify-content: space-between; align-items: flex-end; gap: 0; height: 22px; }
+[data-style='western'] .ly-segments i { position: relative; flex: none; width: 22px; height: 22px; border-radius: 0; background: rgba(58, 29, 14, 0.18); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+[data-style='western'] .ly-segments i.on { background: radial-gradient(circle, #b07a1a 0 3px, transparent 3.5px), #e0a030; }
+/* L'étoile du jour tombe et s'épingle. */
+[data-style='western'] .ly-segments i.auj.on { animation: pe-chute 0.9s ease-out 0.3s both; }
+/* 5 / 5 : les cinq étoiles brillent l'une après l'autre. */
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on { animation: pe-brille 0.6s ease-in-out both; }
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(1) { animation-delay: 1.20s; }
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(2) { animation-delay: 1.38s; }
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(3) { animation-delay: 1.56s; }
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(4) { animation-delay: 1.74s; }
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(5) { animation-delay: 1.92s; }
+[data-style='western'] .ly-segments.plein:not(.b6):not(.b7) i.on.auj { animation: pe-chute 0.9s ease-out 0.3s both, pe-brille 0.6s ease-in-out 1.92s; }
+/* 6 et 7 jours : or poli, qui luit. */
+[data-style='western'] .ly-segments:is(.b6, .b7) i.on { background: radial-gradient(circle, #fff3b0 0 2.5px, transparent 3px), linear-gradient(135deg, #fff3b0, #e8b830 40%, #b07a1a 70%, #ffe08a); animation: pe-or 1.5s ease-in-out infinite alternate, pe-chute 0.9s ease-out both; }
+[data-style='western'] .ly-segments:is(.b6, .b7) i.on:nth-child(1) { animation-delay: 0.0s, 0.20s; }
+[data-style='western'] .ly-segments:is(.b6, .b7) i.on:nth-child(2) { animation-delay: -0.3s, 0.32s; }
+[data-style='western'] .ly-segments:is(.b6, .b7) i.on:nth-child(3) { animation-delay: -0.6s, 0.44s; }
+[data-style='western'] .ly-segments:is(.b6, .b7) i.on:nth-child(4) { animation-delay: -0.9s, 0.56s; }
+[data-style='western'] .ly-segments:is(.b6, .b7) i.on:nth-child(5) { animation-delay: -1.2s, 0.68s; }
+[data-style='western'] .ly-tuile:has(.ly-segments:is(.b6, .b7)) { box-shadow: inset 0 0 0 1.5px #3a1d0e, 0 0 0 2px #e0a030, 0 0 14px rgba(224, 160, 48, 0.5); }
+/* 7 jours : des feux d'artifice au-dessus de la tuile. */
+[data-style='western'] .ly-tuile:has(.ly-segments.b7)::before, [data-style='western'] .ly-tuile:has(.ly-segments.b7)::after { content: ''; position: absolute; top: -26px; z-index: 3; width: 4px; height: 4px; border-radius: 50%; pointer-events: none; opacity: 0; animation: pe-artifice 2.1s ease-out infinite; }
+[data-style='western'] .ly-tuile:has(.ly-segments.b7)::before { left: 40px; background: #ffd166; box-shadow: 26px 0px 0 #ffd166, 21px 15px 0 #ffd166, 8px 25px 0 #ffd166, -8px 25px 0 #ffd166, -21px 15px 0 #ffd166, -26px 0px 0 #ffd166, -21px -15px 0 #ffd166, -8px -25px 0 #ffd166, 8px -25px 0 #ffd166, 21px -15px 0 #ffd166; }
+[data-style='western'] .ly-tuile:has(.ly-segments.b7)::after { right: 30px; top: -40px; background: #ff6b4a; box-shadow: 26px 0px 0 #ff6b4a, 21px 15px 0 #ff6b4a, 8px 25px 0 #ff6b4a, -8px 25px 0 #ff6b4a, -21px 15px 0 #ff6b4a, -26px 0px 0 #ff6b4a, -21px -15px 0 #ff6b4a, -8px -25px 0 #ff6b4a, 8px -25px 0 #ff6b4a, 21px -15px 0 #ff6b4a; animation-delay: 0.9s; }
+
+/* ---------- Révision : l'affiche ; les notes en signaux ---------- */
+[data-style='western'] .studybg { background-color: #7a4422; background-image: repeating-linear-gradient(90deg, #7a4422 0 50px, #2a1408 50px 53px, #8a5030 53px 104px, #2a1408 104px 107px, #6e3c1e 107px 158px, #2a1408 158px 161px) !important; background-size: auto; background-repeat: repeat; }
+[data-style='western'] .studybg::after { display: none; }
+[data-style='western'] .studytop .pos { font-weight: 700; color: #f3e2c0; }
+[data-style='western'] .studytop .stop { background: #f3e2c0; color: #b23a1e; border: none; border-radius: 2px; }
+[data-style='western'] .progressbar { height: 10px; border-radius: 2px; background: rgba(0, 0, 0, 0.35); }
+[data-style='western'] .progressbar i { border-radius: 0; background: #e0a030; }
+[data-style='western'] .ly-combo { border-radius: 2px; background: #b23a1e; color: #f3e2c0; }
+[data-style='western'] .studystage { --ink: #3a1d0e; position: relative; margin: 22px 4px 18px; padding: 30px 22px 30px; border: none; border-radius: 0; color: #3a1d0e; box-shadow: none; transform: rotate(-1.2deg);
+  background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.25), transparent 60%), radial-gradient(ellipse at 80% 90%, rgba(120, 70, 20, 0.22), transparent 55%), #f0dcb4;
+  clip-path: polygon(0% 1.1%, 5% 0.3%, 10% 1%, 15% 0.2%, 20% 1.3%, 25% 0.6%, 30% 1.4%, 35% 1.1%, 40% 1.5%, 45% 1.2%, 50% 0.4%, 55% 2.1%, 60% 0.3%, 65% 2.1%, 70% 0.9%, 75% 1.5%, 80% 0.4%, 85% 1%, 90% 1.2%, 95% 0.3%, 100% 0.8%, 100% 99.2%, 95% 98.3%, 90% 99.3%, 85% 99.5%, 80% 97.8%, 75% 99.4%, 70% 98.8%, 65% 99.6%, 60% 99%, 55% 97.9%, 50% 99.9%, 45% 98.9%, 40% 99.7%, 35% 99.5%, 30% 99.8%, 25% 98.3%, 20% 99.1%, 15% 98.1%, 10% 98.9%, 5% 99.5%, 0% 98.8%); }
+/* Les quatre clous, et un impact de balle. */
+[data-style='western'] .studystage::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle 3.5px at 17px 17px, #5a5450 98%, transparent), radial-gradient(circle 3.5px at calc(100% - 17px) 17px, #5a5450 98%, transparent), radial-gradient(circle 3.5px at 17px calc(100% - 19px), #5a5450 98%, transparent), radial-gradient(circle 3.5px at calc(100% - 17px) calc(100% - 19px), #5a5450 98%, transparent); }
+[data-style='western'] .studystage::after { content: ''; position: absolute; right: 38px; top: 30px; width: 22px; height: 22px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, #140a04 0 3.5px, #5a3a20 4px, transparent 5px), repeating-conic-gradient(rgba(60, 30, 10, 0.55) 0 3deg, transparent 3deg 45deg); -webkit-mask: radial-gradient(circle, #000 40%, transparent 72%); mask: radial-gradient(circle, #000 40%, transparent 72%); }
+[data-style='western'] .studystage .tag { border: none; border-radius: 0; background: transparent; color: #6a4428; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+[data-style='western'] .ask { font-family: var(--titre); color: #b23a1e; }
+[data-style='western'] .word, [data-style='western'] .answer { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.15; color: #3a1d0e; }
+[data-style='western'] .answer { padding-bottom: 4px; }
+[data-style='western'] .wordsmall { color: #6a4428; }
+[data-style='western'] .ruleline { width: 120px; height: 7px; border: none; background: linear-gradient(#3a1d0e, #3a1d0e) 0 50% / 45px 1.5px no-repeat, linear-gradient(#3a1d0e, #3a1d0e) 100% 50% / 45px 1.5px no-repeat, radial-gradient(circle 3.5px, #b23a1e 98%, transparent) 50% 50% / 7px 7px no-repeat; }
+[data-style='western'] .example { font-style: normal; color: #6a4428; }
+[data-style='western'] .speak { background: transparent; border: 2px solid #3a1d0e; border-radius: 0; color: #3a1d0e; font-size: 12.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+[data-style='western'] .tap-hint { color: #f3e2c0; }
+[data-style='western'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+[data-style='western'] .grades .grade { position: relative; min-height: 104px; padding: 66px 0 4px; border: none; border-radius: 0; background: transparent; box-shadow: none; color: #f3e2c0; font-family: var(--sans); font-size: 14px; font-weight: 700; letter-spacing: 0; }
+[data-style='western'] .grades .grade small { font-size: 11.5px; font-weight: 400; color: rgba(243, 226, 192, 0.85); }
+/* Le signal : la tête noire, son pare-soleil, le mât, le socle ; puis le feu. */
+[data-style='western'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 0; width: 44px; height: 60px; margin-left: -22px; transform-origin: 50% 100%;
+  background: radial-gradient(circle 18px at 22px 18px, #1a0f08 98%, transparent), radial-gradient(ellipse 14px 6px at 22px 1px, #1a0f08 98%, transparent), linear-gradient(#1a0f08, #1a0f08) 20px 30px / 4px 30px no-repeat, linear-gradient(#1a0f08, #1a0f08) 12px 56px / 20px 4px no-repeat; }
+[data-style='western'] .grades .grade::after { content: ''; position: absolute; left: 50%; top: 7px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; transform-origin: 50% 53px; background: var(--d); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5); }
+[data-style='western'] .grades .g-again { --c: #ff4a32; --d: #5a1a10; }
+[data-style='western'] .grades .g-hard { --c: #ff9a2a; --d: #5a3410; }
+[data-style='western'] .grades .g-good { --c: #ffd84a; --d: #5a4a14; }
+[data-style='western'] .grades .g-easy { --c: #5ee06a; --d: #1e4a22; }
+/* La note allume le feu, qui clignote ; Raté fait trembler le signal. */
+[data-style='western'] .grades .grade.frappe::after { background: var(--c); box-shadow: 0 0 16px var(--c), inset 0 0 4px #fff; animation: pe-feu 1.2s linear; }
+[data-style='western'] .grades .g-again.frappe::before { animation: pe-tremble 0.8s ease-in-out; }
+[data-style='western'] .grades .g-again.frappe::after { animation: pe-feu 1.2s linear, pe-tremble 0.8s ease-in-out; }
+
+@keyframes pe-soleil { 0%, 38% { transform: none; } 48%, 90% { transform: translateY(150px); } 100% { transform: none; } }
+@keyframes pe-nuit { 0%, 40% { opacity: 0; } 50%, 88% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes pe-jour { 0%, 40% { opacity: 1; } 48%, 90% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes pe-ombre { 0%, 40% { filter: none; } 50%, 88% { filter: brightness(0.5) saturate(0.75); } 98%, 100% { filter: none; } }
+@keyframes pe-lanterne { 0%, 44% { opacity: 0; } 52%, 88% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@keyframes pe-poussiere { from { transform: translateX(-220px); } to { transform: translateX(110vw); } }
+@keyframes pe-tourne { to { transform: rotate(360deg); } }
+@keyframes pe-contre { to { transform: rotate(-360deg); } }
+@keyframes pe-fumee { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 15% { opacity: var(--o); } 100% { transform: translate(var(--dx), -64px) scale(2.4); opacity: 0; } }
+@keyframes pe-artifice { 0% { transform: scale(0.2); opacity: 0; } 8% { opacity: 1; } 60% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.1) translateY(12px); opacity: 0; } }
+@keyframes pe-or { from { filter: brightness(1) drop-shadow(0 0 2px rgba(255, 200, 80, 0.5)); } to { filter: brightness(1.25) drop-shadow(0 0 7px rgba(255, 200, 80, 1)); } }
+@keyframes pe-roule { to { transform: rotate(720deg); } }
+@keyframes pe-chute { 0% { transform: translateY(-70px) rotate(-120deg); opacity: 0; } 45% { transform: none; opacity: 1; } 60% { transform: translateY(-14px) rotate(10deg); } 75% { transform: none; } 87% { transform: translateY(-4px); } 100% { transform: none; opacity: 1; } }
+@keyframes pe-brille { 0%, 100% { filter: none; transform: none; } 40% { filter: brightness(1.9) drop-shadow(0 0 6px #ffd166); transform: scale(1.3); } }
+@keyframes pe-feu { 0%, 20%, 40%, 60%, 100% { opacity: 1; } 10%, 30%, 50% { opacity: 0.15; } }
+@keyframes pe-tremble { 0%, 100% { transform: none; } 10%, 30%, 50%, 70% { transform: rotate(-5deg); } 20%, 40%, 60%, 80% { transform: rotate(5deg); } }
+@keyframes pe-train-d-0 { 0% { transform: none; } 8% { transform: translateX(-6px); } 40% { transform: translateX(440px); } 40.1% { transform: translateX(-440px); } 80% { transform: translateX(8px); } 88% { transform: translateX(-3px); } 100% { transform: none; } }
+@keyframes pe-train-d-1 { 0% { transform: none; } 8% { transform: translateX(-6px); } 40% { transform: translateX(440px); } 40.1% { transform: translateX(-440px); } 80% { transform: translateX(8px); } 88% { transform: translateX(-3px); } 100% { transform: none; } }
+@keyframes pe-train-g-0 { 0% { transform: none; } 8% { transform: translateX(6px); } 40% { transform: translateX(-440px); } 40.1% { transform: translateX(440px); } 80% { transform: translateX(-8px); } 88% { transform: translateX(3px); } 100% { transform: none; } }
+@keyframes pe-train-g-1 { 0% { transform: none; } 8% { transform: translateX(6px); } 40% { transform: translateX(-440px); } 40.1% { transform: translateX(440px); } 80% { transform: translateX(-8px); } 88% { transform: translateX(3px); } 100% { transform: none; } }
+@keyframes pe-arrive-d-0 { 0%, 40% { transform: translateX(-710px); opacity: 0; } 40.1% { transform: translateX(-710px); opacity: 1; } 80% { transform: translateX(13px); } 88% { transform: translateX(-5px); } 100% { transform: none; opacity: 1; } }
+@keyframes pe-arrive-d-1 { 0%, 40% { transform: translateX(-710px); opacity: 0; } 40.1% { transform: translateX(-710px); opacity: 1; } 80% { transform: translateX(13px); } 88% { transform: translateX(-5px); } 100% { transform: none; opacity: 1; } }
+@keyframes pe-arrive-g-0 { 0%, 40% { transform: translateX(710px); opacity: 0; } 40.1% { transform: translateX(710px); opacity: 1; } 80% { transform: translateX(-13px); } 88% { transform: translateX(5px); } 100% { transform: none; opacity: 1; } }
+@keyframes pe-arrive-g-1 { 0%, 40% { transform: translateX(710px); opacity: 0; } 40.1% { transform: translateX(710px); opacity: 1; } 80% { transform: translateX(-13px); } 88% { transform: translateX(5px); } 100% { transform: none; opacity: 1; } }
+@keyframes pe-part-d-0 { 0% { transform: none; opacity: 1; } 8% { transform: translateX(-10px); } 40% { transform: translateX(710px); opacity: 1; } 40.1%, 100% { transform: translateX(710px); opacity: 0; } }
+@keyframes pe-part-d-1 { 0% { transform: none; opacity: 1; } 8% { transform: translateX(-10px); } 40% { transform: translateX(710px); opacity: 1; } 40.1%, 100% { transform: translateX(710px); opacity: 0; } }
+@keyframes pe-part-g-0 { 0% { transform: none; opacity: 1; } 8% { transform: translateX(10px); } 40% { transform: translateX(-710px); opacity: 1; } 40.1%, 100% { transform: translateX(-710px); opacity: 0; } }
+@keyframes pe-part-g-1 { 0% { transform: none; opacity: 1; } 8% { transform: translateX(10px); } 40% { transform: translateX(-710px); opacity: 1; } 40.1%, 100% { transform: translateX(-710px); opacity: 0; } }
+@keyframes pe-pastille-0 { 0%, 84% { transform: scale(0.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes pe-pastille-1 { 0%, 84% { transform: scale(0.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes pe-vibre-0 { 0%, 78% { transform: none; } 81% { transform: translateY(2px); } 84% { transform: translateY(-1.5px); } 87% { transform: translateY(1px); } 90% { transform: translateY(-0.5px); } 100% { transform: none; } }
+@keyframes pe-vibre-1 { 0%, 78% { transform: none; } 81% { transform: translateY(2px); } 84% { transform: translateY(-1.5px); } 87% { transform: translateY(1px); } 90% { transform: translateY(-0.5px); } 100% { transform: none; } }
+@keyframes pe-etincelle-0 { 0%, 70% { transform: translate(0, 0); opacity: 0; } 72% { opacity: 1; } 92% { transform: translate(var(--dx), var(--dy)); opacity: 0; } 100% { opacity: 0; } }
+@keyframes pe-etincelle-1 { 0%, 70% { transform: translate(0, 0); opacity: 0; } 72% { opacity: 1; } 92% { transform: translate(var(--dx), var(--dy)); opacity: 0; } 100% { opacity: 0; } }
+@keyframes pe-boule-0 { 0% { transform: translate(-60px, 0); opacity: 1; } 12% { transform: translate(10px, -20px); } 22% { transform: translate(70px, 0); } 36% { transform: translate(140px, -14px); } 48% { transform: translate(200px, 0); } 62% { transform: translate(270px, -10px); } 74% { transform: translate(330px, 0); } 99% { opacity: 1; } 100% { transform: translate(440px, 0); opacity: 0; } }
+@keyframes pe-boule-1 { 0% { transform: translate(-60px, 0); opacity: 1; } 12% { transform: translate(10px, -20px); } 22% { transform: translate(70px, 0); } 36% { transform: translate(140px, -14px); } 48% { transform: translate(200px, 0); } 62% { transform: translate(270px, -10px); } 74% { transform: translate(330px, 0); } 99% { opacity: 1; } 100% { transform: translate(440px, 0); opacity: 0; } }
+@keyframes pe-vapeur-0 { 0% { transform: translate(0, 0) scale(0.4); opacity: 0.95; } 100% { transform: translate(var(--dx), var(--dy)) scale(2.3); opacity: 0; } }
+@keyframes pe-vapeur-1 { 0% { transform: translate(0, 0) scale(0.4); opacity: 0.95; } 100% { transform: translate(var(--dx), var(--dy)) scale(2.3); opacity: 0; } }
+@keyframes pe-bouton-0 { 0%, 100% { transform: none; } 30% { transform: scale(0.95); } 60% { transform: scale(1.03); } }
+@keyframes pe-bouton-1 { 0%, 100% { transform: none; } 30% { transform: scale(0.95); } 60% { transform: scale(1.03); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='western'] *, [data-style='western'] *::before, [data-style='western'] *::after, .pe-salle * { animation: none !important; transition: none !important; }
+}

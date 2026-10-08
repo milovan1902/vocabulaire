@@ -475,6 +475,11 @@ export function Today({
         ? { defi: 'Session du jour', go: 'À l’eau', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} vagues` }
       : style === 'chateau'
         ? { defi: 'Quête du jour', go: 'Entrer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} pierres posées` }
+      /* CHANTIER 237 — Jungle : l'expédition ; Pacific Express : la ligne. */
+      : style === 'jungle'
+        ? { defi: 'Expédition du jour', go: 'En route', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} étapes` }
+      : style === 'western'
+        ? { defi: 'Ligne du jour', go: 'Tous à bord', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} miles` }
       : style === 'cabinet'
         ? { defi: 'L’expérience du jour', go: 'Expérimenter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} échantillons` }
       : style === 'tv'
@@ -512,7 +517,7 @@ export function Today({
       : style === 'fashion' ? <i className="chevron-mode" />
       /* CHANTIER 216 — Cinéma muet : un triangle de projecteur ; Bibliothèque : un chevron fin. */
       : style === 'cinema' ? <i className="fleche-cine" />
-      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'plage' || style === 'chateau' ? <i className="chevron-mode" />
+      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'plage' || style === 'chateau' || style === 'jungle' || style === 'western' ? <i className="chevron-mode" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -602,7 +607,7 @@ export function Today({
           <Eventail
             paquets={aFaire}
             centre={iCentre}
-            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : style === 'plage' ? 'planches' : style === 'chateau' ? 'chateau' : 'eventail'}
+            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : style === 'plage' ? 'planches' : style === 'chateau' ? 'chateau' : style === 'jungle' ? 'caisses' : style === 'western' ? 'train' : 'eventail'}
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
@@ -619,7 +624,7 @@ export function Today({
             || style === 'basket' || style === 'foot' || style === 'rugby'
             || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
             || style === 'tapis' || style === 'salon' || style === 'station' || style === 'fashion'
-            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'plage' || style === 'chateau') && aFaire.length > 1 && (
+            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'plage' || style === 'chateau' || style === 'jungle' || style === 'western') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -644,7 +649,8 @@ export function Today({
         <button
           className="btn ly-go"
           onClick={() => {
-            if (style === 'plage' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 237 — Jungle (les feuilles) et Pacific Express (la vapeur) partent comme l'éclaboussure de Plage. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
@@ -654,7 +660,7 @@ export function Today({
           }}
         >
           {mots.go} · {Math.min(pc.due, settings.cardsPerSession)} cartes
-          {style === 'plage' && plouf > 0 && <span className={`su-gouttes v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
+          {(style === 'plage' || style === 'jungle' || style === 'western') && plouf > 0 && <span className={`${style === 'jungle' ? 'jg-feuilles' : style === 'western' ? 'pe-vapeur' : 'su-gouttes'} v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
         </button>
 
         {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,

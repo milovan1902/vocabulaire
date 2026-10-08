@@ -314,7 +314,9 @@ export function Study({
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 const attente = style === 'cinema' || style === 'biblio' ? 280 : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
-                  : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650 : 0;
+                  : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
+                  /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
+                  : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000 : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);

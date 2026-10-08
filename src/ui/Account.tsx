@@ -432,7 +432,7 @@ export function Account({
             <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
           </div>
           <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion', 'cinema', 'bibliotheque', 'salon-the', 'cabinet', 'japon', 'jazz', 'plage', 'chateau'] as Theme[]).map((t) => {
+            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion', 'cinema', 'bibliotheque', 'salon-the', 'cabinet', 'japon', 'jazz', 'plage', 'chateau', 'jungle', 'pacific'] as Theme[]).map((t) => {
               const libre = estDebloquee(t, xp);
               const seuil = DEBLOCAGE[t] ?? 0;
               return (
@@ -502,6 +502,8 @@ export function Account({
             « Cotton Club » : la scène de jazz des années 20, où les paquets sont des partitions sous le projecteur.
             « Plage et surf » : la cabane de surf en plein soleil, où les paquets sont des planches plantées dans le sable.
             « Château » : la forteresse, où le paquet attend dans la porte, derrière le pont-levis.
+            « Jungle et safari » : l’expédition sous la canopée, où les paquets sont des caisses suspendues à une liane.
+            « Pacific Express » : le train à vapeur dans le canyon, où le paquet voyage sur le wagon.
           </p>
         </Tiroir>
       )}

@@ -67,6 +67,9 @@ import './ui/jazz.css';
 /* CHANTIER 235 — Plage et surf (Shrikhand) et Château (Cinzel, Cinzel Decorative), polices dans public/fonts. */
 import './ui/plage.css';
 import './ui/chateau.css';
+/* CHANTIER 237 — Jungle et safari (Lilita One) et Pacific Express (Rye), polices dans public/fonts. */
+import './ui/jungle.css';
+import './ui/western.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

@@ -44,6 +44,8 @@ import { useStyle } from './useStyle';
  *     microscope, atome).
  *   — CHANTIER 235 : Plage et surf (soleil, planche, coquillage, bouée, palmier),
  *     Château (tour, écu, trompette, épée, couronne).
+ *   — CHANTIER 237 : Jungle et safari (jumelles, caisse, perroquet, carte, empreinte),
+ *     Pacific Express (soleil couchant, locomotive, étoile de shérif, cactus, lanterne).
  * Toujours au trait, en currentColor : l'onglet actif garde sa couleur.
  */
 const TRAIT = {
@@ -65,6 +67,9 @@ export function IconAujourdhui() {
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M22 20v-9H2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z" /><path d="M18 11V4H6v7" /><path d="M15 22v-4a3 3 0 0 0-6 0v4" /><path d="M22 11V9M2 11V9M6 4V2M18 4V2M10 4V2M14 4V2" /></svg>;
+  /* CHANTIER 237 — Jungle et safari et Pacific Express. */
+  if (style === 'jungle') return <svg {...TRAIT}><path d="M10 10h4" /><path d="M19 7V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3" /><path d="M20 21a2 2 0 0 0 2-2v-3.851c0-1.39-2-2.962-2-4.829V8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2z" /><path d="M22 16H2" /><path d="M4 21a2 2 0 0 1-2-2v-3.851c0-1.39 2-2.962 2-4.829V8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v11a2 2 0 0 1-2 2z" /><path d="M9 7V4a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v3" /></svg>;
+  if (style === 'western') return <svg {...TRAIT}><path d="M12 10V2" /><path d="m4.93 10.93 1.41 1.41" /><path d="M2 18h2" /><path d="M20 18h2" /><path d="m19.07 10.93-1.41 1.41" /><path d="M22 22H2" /><path d="m16 6-4 4-4-4" /><path d="M16 18a4 4 0 0 0-8 0" /></svg>;
   /* CHANTIER 227 — Japon zen et Cotton Club. */
   if (style === 'japon') return <svg {...TRAIT}><path d="M3 5h18" /><path d="M5 9h14" /><path d="M7 5v16M17 5v16" /><path d="M12 9v3" /></svg>;
   if (style === 'jazz') return <svg {...TRAIT}><path d="M12 2v3" /><path d="M8 5h8l-2 5h-4z" /><path d="M10 10 5 22M14 10l5 12" /></svg>;
@@ -102,6 +107,9 @@ export function IconPaquets() {
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><ellipse cx="12" cy="12" rx="4" ry="10" transform="rotate(35 12 12)" /><path d="M8.6 17 15.4 7" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="M12 3v18M4 11h16" /></svg>;
+  /* CHANTIER 237 — Jungle et safari et Pacific Express. */
+  if (style === 'jungle') return <svg {...TRAIT}><rect x="3" y="4" width="18" height="16" rx="1" /><path d="M3 9h18M3 15h18M3 9l18 6" /></svg>;
+  if (style === 'western') return <svg {...TRAIT}><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1" /><path d="m9 15-1-1" /><path d="m15 15 1-1" /><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z" /><path d="m8 19-2 3" /><path d="m16 19 2 3" /></svg>;
   /* CHANTIER 227 — Japon zen et Cotton Club. */
   if (style === 'japon') return <svg {...TRAIT}><path d="M2 11 12 4l10 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg>;
   if (style === 'jazz') return <svg {...TRAIT}><path d="M4 4h16v10H4z" /><path d="M7 7h10M7 10h7" /><path d="M12 14v6M8 21h8" /></svg>;
@@ -138,6 +146,9 @@ export function IconParler() {
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><path d="M3 14a9 9 0 0 1 18 0l-3 4H6z" /><path d="M12 5v13M7.5 6.5 9 18M16.5 6.5 15 18" /><path d="M10 18v3h4v-3" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M3 10v4M3 12h11" /><path d="M14 9l7-4v14l-7-4z" /><path d="M7 12v3h3v-3" /></svg>;
+  /* CHANTIER 237 — Jungle et safari et Pacific Express. */
+  if (style === 'jungle') return <svg {...TRAIT}><path d="M16 7h.01" /><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20" /><path d="m20 7 2 .5-2 .5" /><path d="M10 18v3" /><path d="M14 17.75V21" /><path d="M7 18a6 6 0 0 0 3.84-10.61" /></svg>;
+  if (style === 'western') return <svg {...TRAIT}><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></svg>;
   /* CHANTIER 227 — Japon zen et Cotton Club. */
   if (style === 'japon') return <svg {...TRAIT}><path d="M4 10h16a8 8 0 0 1-16 0z" /><path d="M2 21h20" /><path d="M9 3c-1 1.3 1 2.4 0 3.8M14 3c-1 1.3 1 2.4 0 3.8" /></svg>;
   if (style === 'jazz') return <svg {...TRAIT}><rect x="8" y="2" width="8" height="12" rx="4" /><path d="M8 7h8M8 10h8" /><path d="M5 11a7 7 0 0 0 14 0" /><path d="M12 18v4M8 22h8" /></svg>;
@@ -172,6 +183,9 @@ export function IconReglages() {
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M14.5 17.5 3 6V3h3l11.5 11.5" /><path d="m13 19 6-6M16 16l4 4M19 21l2-2" /></svg>;
+  /* CHANTIER 237 — Jungle et safari et Pacific Express. */
+  if (style === 'jungle') return <svg {...TRAIT}><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /><path d="M15 5.764v15" /><path d="M9 3.236v15" /></svg>;
+  if (style === 'western') return <svg {...TRAIT}><path d="M10 22V5a2 2 0 0 1 4 0v17" /><path d="M10 14H7a2 2 0 0 1-2-2V9" /><path d="M14 11h3a2 2 0 0 0 2-2V7" /><path d="M6 22h12" /></svg>;
   /* CHANTIER 227 — Japon zen et Cotton Club. */
   if (style === 'japon') return <svg {...TRAIT}><path d="M12 21 3 9a12 12 0 0 1 18 0z" /><path d="M12 21 8 8M12 21V7M12 21l4-13" /></svg>;
   if (style === 'jazz') return <svg {...TRAIT}><rect x="2" y="5" width="20" height="14" rx="1" /><path d="M7 5v9M12 5v9M17 5v9" /><path d="M2 14h20" /></svg>;
@@ -206,6 +220,9 @@ export function IconProgres() {
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4" /><path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3" /><path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35" /><path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" /><path d="M5 21h14" /></svg>;
+  /* CHANTIER 237 — Jungle et safari et Pacific Express. */
+  if (style === 'jungle') return <svg {...TRAIT}><circle cx="11" cy="4" r="2" /><circle cx="18" cy="8" r="2" /><circle cx="20" cy="16" r="2" /><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" /></svg>;
+  if (style === 'western') return <svg {...TRAIT}><path d="M10 2h4" /><path d="M9 5h6" /><path d="M8 5h8l-1 13H9z" /><path d="M8 21h8" /><path d="M12 9c1 1.2 1.5 2.1 1.5 3a1.5 1.5 0 0 1-3 0c0-.9.5-1.8 1.5-3z" /></svg>;
   /* CHANTIER 227 — Japon zen et Cotton Club. */
   if (style === 'japon') return <svg {...TRAIT}><path d="M2 20 9 7l2.5 3L13 8l9 12z" /><path d="m7 10.5 2 1 2.5-1.5 1.5 1 2-1" /></svg>;
   if (style === 'jazz') return <svg {...TRAIT}><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" /></svg>;
