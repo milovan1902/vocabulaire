@@ -1,0 +1,277 @@
+/* ==================================================================
+   CHANTIER 235 — « Plage et surf » (maquettes 52a, 53a) : la cabane de surf.
+   Plein soleil, mer turquoise, sable chaud. Shrikhand pour les grands textes
+   (public/fonts), Lexend pour le reste.
+
+   Active quand <html> porte data-style="plage" (theme.ts). Base CLAIRE,
+   forme du Lycée (estLudique).
+   - Le fond (Salle.tsx) : le soleil qui pulse, l'eau qui scintille, l'écume qui va et vient.
+   - Les paquets (Eventail.tsx, forme 'planches') : chaque paquet est une planche de surf,
+     plantée dans le sable. Au changement, la planche se couche du côté de la flèche
+     touchée, la suivante sort du sable. Un bernard-l'ermite passe toutes les 10 à 20 s.
+   - « À l'eau » : une éclaboussure avant d'entrer en révision (Today.tsx).
+   - « Cette semaine » : cinq coquillages ; 5 / 5 une vague, 6 rose et or, 7 rose et or + bulles.
+   - Révision : la carte sur fond de mer ; les notes sont des bouées (Raté : percée, elle s'envole).
+   ================================================================== */
+@font-face { font-family: 'Shrikhand'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/shrikhand-latin.woff2') format('woff2'); }
+[data-style='plage'] {
+  --paper: #fffaf0; --panel: #fffaf0; --panel-hi: #f6ecd8;
+  --ink: #0b3d4a; --ink-soft: #2d5a64; --grey: #4d6b72; --ink-dim: #4d6b72;
+  --rule: rgba(11, 61, 74, 0.12); --rule-strong: rgba(11, 61, 74, 0.24);
+  --chalk: #ff7a59; --chalk-ink: #d65a3c; --on-chalk: #fff;
+  --good: #2a9d8f; --bad: #e63946;
+  --voile: rgba(11, 61, 74, 0.05); --voile-2: rgba(11, 61, 74, 0.1); --voile-3: rgba(11, 61, 74, 0.16);
+  --bleu: #0f7f8c; --bleu-ink: #0b5f69; --rouge: #e63946; --orange: #f4a261;
+  --ly-voile: rgba(11, 61, 74, 0.12); --ly-voile-2: rgba(90, 61, 34, 0.3);
+  --ly-tabbar: #fffaf0; --ly-ombre: rgba(11, 61, 74, 0.25); --ly-tag: #fffaf0; --ly-bord-carte: #ffd23f;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Shrikhand', Georgia, serif;
+  --titre: 'Shrikhand', Georgia, serif;
+  --anneau: #ff7a59;
+  --plage: linear-gradient(180deg, #7fd0f2 0, #c9eef9 300px, #35c2c9 300px, #1b9aae 432px, #f2dcae 432px, #e8c98e 100%);
+}
+[data-style='plage'] body { font-family: var(--sans); color: var(--ink); background-color: #e8c98e; background-image: var(--plage); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='plage'] .screen-title, [data-style='plage'] .topbar h1, [data-style='plage'] .welcome-head h1, [data-style='plage'] .done h2, [data-style='plage'] .sheet h3, [data-style='plage'] .today-count b { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; }
+[data-style='plage'] .tabbar { background: #fffaf0; border-top: 3px solid #ff7a59; }
+[data-style='plage'] .tabbar button { color: rgba(11, 61, 74, 0.55); }
+[data-style='plage'] .tabbar button.on { color: #ff7a59; }
+[data-style='plage'] .tabbar button.on::before { display: none; }
+[data-style='plage'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 999px; }
+[data-style='plage'] .tabbar button.on .tabsvg { background: rgba(255, 122, 89, 0.18); }
+[data-style='plage'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='plage'] .reveal { background: #ff7a59; color: #fff; border: none; border-radius: 999px; box-shadow: 0 4px 0 #d65a3c; font-family: var(--titre); font-weight: 400; font-size: 19px; letter-spacing: 0; }
+[data-style='plage'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active, [data-style='plage'] .reveal:active { transform: translateY(3px); box-shadow: 0 1px 0 #d65a3c; }
+
+/* ---------- le fond (Salle.tsx), sur « Aujourd'hui » seulement ---------- */
+body:not(:has(.today.ly)) .su-salle { display: none; }
+.su-salle i { position: absolute; display: block; }
+.su-salle .su-soleil { right: -40px; top: -40px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #fff7c4 0 34%, rgba(255, 221, 102, 0.5) 36%, transparent 70%); animation: su-soleil 3s ease-in-out infinite alternate; }
+.su-salle .su-eau { left: 0; right: 0; top: 312px; height: 110px; background: repeating-linear-gradient(180deg, transparent 0 16px, rgba(255, 255, 255, 0.3) 16px 18px); animation: su-scintille 2.2s ease-in-out infinite alternate; }
+.su-salle .su-eclat { width: 9px; height: 9px; background: #fff; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: su-eclat 2.4s ease-in-out infinite; }
+.su-salle .su-eclat.e1 { left: 17%; top: 338px; animation-delay: -0.3s; }
+.su-salle .su-eclat.e2 { left: 69%; top: 362px; width: 8px; height: 8px; animation-duration: 2.8s; animation-delay: -1.4s; }
+.su-salle .su-eclat.e3 { left: 42%; top: 398px; width: 7px; height: 7px; animation-duration: 2.2s; animation-delay: -0.9s; }
+.su-salle .su-eclat.e4 { left: 84%; top: 326px; animation-duration: 3s; animation-delay: -2s; }
+.su-salle .su-mouille { left: -20px; right: -20px; top: 430px; height: 30px; border-radius: 50%; background: #dfc289; animation: su-ecume 3s ease-in-out infinite alternate; }
+.su-salle .su-ecume { left: -20px; right: -20px; top: 422px; height: 20px; border-radius: 50%; background: #fdfaf2; animation: su-ecume 3s ease-in-out -0.2s infinite alternate; }
+
+/* ---------- l'en-tête ---------- */
+[data-style='plage'] .ly-niv { width: 44px; height: 44px; border: none; border-radius: 14px; background: #ff7a59; color: #fff; box-shadow: 0 3px 0 #d65a3c; }
+[data-style='plage'] .ly-niv small { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; color: #fff; }
+[data-style='plage'] .ly-niv b { font-family: var(--titre); font-size: 19px; font-weight: 400; color: #fff; }
+[data-style='plage'] .ly-xp-txt { color: #0b3d4a; }
+[data-style='plage'] .ly-xp-txt b { color: #0b3d4a; }
+[data-style='plage'] .ly-barre { background: rgba(255, 255, 255, 0.65); }
+[data-style='plage'] .ly-barre i { background: #ffb703; }
+[data-style='plage'] .ly-flamme { height: 38px; padding: 0 12px; gap: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.8); color: #0b3d4a; }
+[data-style='plage'] .ly-flamme svg { display: none; }
+[data-style='plage'] .ly-flamme::before { content: ''; flex: none; width: 15px; height: 15px; border-radius: 50%; background: #ffb703; box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.3); }
+[data-style='plage'] .ly-flamme b { font-size: 17px; font-weight: 700; color: #0b3d4a; }
+[data-style='plage'] .ly-defi { padding: 14px 16px; border: none; border-radius: 20px; background: #fffaf0; box-shadow: 0 4px 0 rgba(11, 61, 74, 0.12); }
+[data-style='plage'] .ly-defi-haut > span:first-child { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #0f7f8c; }
+[data-style='plage'] .ly-gain { border-radius: 999px; background: #d8f4f2; color: #0f7f8c; }
+[data-style='plage'] .ly-defi-n { font-family: var(--titre); font-size: 36px; font-weight: 400; line-height: 1.1; letter-spacing: 0; color: #0b3d4a; }
+[data-style='plage'] .ly-defi-sous, [data-style='plage'] .ly-defi-jour { color: #4d6b72; }
+/* La barre du jour : une petite crête de vague au bout. */
+[data-style='plage'] .ly-defi-jour .ly-barre { overflow: visible; background: #efe3c8; }
+[data-style='plage'] .ly-defi-jour .ly-barre i { position: relative; min-width: 8px; background: #ff7a59; }
+[data-style='plage'] .ly-defi-jour .ly-barre i::after { content: ''; position: absolute; right: -10px; top: -9px; width: 16px; height: 12px; border-radius: 12px 12px 2px 0; background: linear-gradient(180deg, #fff 0 45%, #ff9f86 45%); box-shadow: 0 1px 0 #d65a3c; transform-origin: 30% 100%; animation: su-crete 0.9s ease-in-out infinite alternate; }
+
+/* ---------- les paquets : les planches (Eventail.tsx, forme 'planches') ---------- */
+[data-style='plage'] .ly-scene { position: relative; }
+[data-style='plage'] .eventail.planches { height: 200px; margin-top: 12px; overflow: visible; }
+[data-style='plage'] .eventail.planches .eventail-carte { top: 6px; transform-origin: 50% 100%; }
+/* Le visuel du paquet devient la planche : découpé en planche, cerclé de jaune. */
+[data-style='plage'] .eventail.planches .eventail-dos,
+[data-style='plage'] .eventail.planches .eventail-carte.centre .eventail-dos { border: 4px solid #ffd23f; border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%; box-shadow: 0 10px 24px rgba(11, 61, 74, 0.25); }
+[data-style='plage'] .su-planche { position: absolute; inset: 0; display: block; transform-origin: 50% 100%; }
+[data-style='plage'] .su-planche::after { content: ''; position: absolute; left: 50%; top: 4px; bottom: 4px; z-index: 1; width: 10px; margin-left: -5px; border-radius: 5px; pointer-events: none; background: linear-gradient(180deg, #ff7a59 0 18px, transparent 18px calc(100% - 18px), #ff7a59 0); }
+[data-style='plage'] .su-planche.monte.v0 { animation: su-monte-0 1.25s cubic-bezier(.4, 0, .3, 1); }
+[data-style='plage'] .su-planche.monte.v1 { animation: su-monte-1 1.25s cubic-bezier(.4, 0, .3, 1); }
+[data-style='plage'] .su-planche.couche-d.v0 { animation: su-couche-d-0 1.25s ease-in; }
+[data-style='plage'] .su-planche.couche-d.v1 { animation: su-couche-d-1 1.25s ease-in; }
+[data-style='plage'] .su-planche.couche-g.v0 { animation: su-couche-g-0 1.25s ease-in; }
+[data-style='plage'] .su-planche.couche-g.v1 { animation: su-couche-g-1 1.25s ease-in; }
+[data-style='plage'] .eventail.planches.v0 .eventail-carte.centre .eventail-due { animation: su-pastille-0 1.25s ease-out; }
+[data-style='plage'] .eventail.planches.v1 .eventail-carte.centre .eventail-due { animation: su-pastille-1 1.25s ease-out; }
+[data-style='plage'] .eventail-due { right: -12px; top: 6px; background: #ff7a59; color: #fff; }
+[data-style='plage'] .eventail.planches .eventail-carte .classdot.eventail-classe { bottom: 30px; background: #fffaf0; color: #0b3d4a; border-color: #ff7a59; }
+/* Le sable : la dune où la planche est plantée, trois coquillages, le bernard-l'ermite. */
+[data-style='plage'] .su-plage { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='plage'] .su-plage i, [data-style='plage'] .su-plage span { position: absolute; display: block; }
+[data-style='plage'] .su-dune { left: 12%; right: 12%; bottom: -16px; z-index: 11; height: 44px; border-radius: 50%; background: #efd5a2; }
+[data-style='plage'] .su-coq { z-index: 12; border-radius: 50% 50% 5px 5px / 80% 80% 20% 20%; box-shadow: 0 2px 0 rgba(90, 61, 34, 0.18); }
+[data-style='plage'] .su-coq.c1 { left: calc(50% - 100px); bottom: -6px; width: 22px; height: 18px; background: repeating-conic-gradient(from -90deg at 50% 100%, #f9d3c2 0 11deg, #e8957f 11deg 14deg); transform: rotate(-18deg); }
+[data-style='plage'] .su-coq.c2 { left: calc(50% + 80px); bottom: -2px; width: 16px; height: 13px; background: repeating-conic-gradient(from -90deg at 50% 100%, #fff3e0 0 11deg, #e3c08f 11deg 14deg); transform: rotate(22deg); }
+[data-style='plage'] .su-coq.c3 { left: calc(50% + 120px); bottom: -14px; width: 12px; height: 10px; background: repeating-conic-gradient(from -90deg at 50% 100%, #ffd9e0 0 11deg, #f0a2b1 11deg 14deg); transform: rotate(-8deg); }
+[data-style='plage'] .su-bernard { left: calc(50% - 64px); bottom: -14px; z-index: 12; width: 26px; height: 18px; }
+[data-style='plage'] .su-bernard .corps { inset: 0; }
+[data-style='plage'] .su-bernard .pattes { left: 3px; bottom: 0; width: 18px; height: 6px; background: repeating-linear-gradient(90deg, #e0694c 0 2px, transparent 2px 5px); transform: scale(0); transform-origin: 50% 0; }
+[data-style='plage'] .su-bernard .yeux { right: 0; top: 2px; width: 8px; height: 9px; transform: scale(0); transform-origin: 0 100%;
+  background: radial-gradient(circle at 2.5px 1.5px, #1b1b1b 0 1.5px, transparent 2px), radial-gradient(circle at 5.5px 2.5px, #1b1b1b 0 1.5px, transparent 2px), radial-gradient(ellipse at 50% 100%, #e0694c 0 4px, transparent 4.5px); }
+[data-style='plage'] .su-bernard .coquille { left: 6px; bottom: 3px; width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 62% 40%, #fff6ea 0 2px, #e9b9a2 2.5px 4px, #fbe4d6 4.5px 6px, #d99a80 6.5px); box-shadow: 0 2px 0 rgba(90, 61, 34, 0.18); }
+[data-style='plage'] .su-bernard.v0 { animation: su-bernard-0 4.2s linear; }
+[data-style='plage'] .su-bernard.v1 { animation: su-bernard-1 4.2s linear; }
+[data-style='plage'] .su-bernard.v0 :is(.pattes, .yeux) { animation: su-pattes-0 4.2s linear; }
+[data-style='plage'] .su-bernard.v1 :is(.pattes, .yeux) { animation: su-pattes-1 4.2s linear; }
+[data-style='plage'] .su-bernard:is(.v0, .v1) .corps { animation: su-trotte 0.2s ease-in-out 0.5s 16 alternate; }
+/* Le jet de sable quand la planche suivante se plante. */
+[data-style='plage'] .su-sable { position: absolute; left: 50%; bottom: 2px; z-index: 12; display: block; pointer-events: none; }
+[data-style='plage'] .su-sable i { position: absolute; left: 0; bottom: 0; display: block; width: 5px; height: 5px; border-radius: 50%; background: #d9b878; opacity: 0; }
+[data-style='plage'] .su-sable i:nth-child(1) { --dx: -30px; --dy: -26px; }
+[data-style='plage'] .su-sable i:nth-child(2) { --dx: -14px; --dy: -40px; }
+[data-style='plage'] .su-sable i:nth-child(3) { --dx: 4px; --dy: -34px; }
+[data-style='plage'] .su-sable i:nth-child(4) { --dx: 20px; --dy: -42px; }
+[data-style='plage'] .su-sable i:nth-child(5) { --dx: 34px; --dy: -24px; }
+[data-style='plage'] .su-sable.v0 i { animation: su-grain-0 0.7s ease-out 0.62s; }
+[data-style='plage'] .su-sable.v1 i { animation: su-grain-1 0.7s ease-out 0.62s; }
+[data-style='plage'] .ly-points i { background: rgba(90, 61, 34, 0.3); }
+[data-style='plage'] .ly-points i.on { background: #ff7a59; }
+[data-style='plage'] .ly-nom { color: #5a3d22; }
+[data-style='plage'] .ly-nom span { color: #5a3d22; }
+[data-style='plage'] .ly-fusee { z-index: 14; width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255, 255, 255, 0.9); color: #ff7a59; }
+[data-style='plage'] .ly-fusee:focus-visible { outline: 2px solid #ff7a59; outline-offset: 2px; }
+[data-style='plage'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 2.5px solid currentColor; border-right: 2.5px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='plage'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+/* « À l'eau » : l'éclaboussure (Today.tsx). */
+[data-style='plage'] .btn.ly-go { position: relative; overflow: visible; }
+[data-style='plage'] .su-gouttes { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='plage'] .su-gouttes i { position: absolute; left: 50%; top: 40%; display: block; width: 8px; height: 11px; margin-left: -4px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #35c2c9; opacity: 0; }
+[data-style='plage'] .su-gouttes i:nth-child(even) { background: #7fdbe2; }
+[data-style='plage'] .su-gouttes i:nth-child(1) { --dx: -120px; --dy: -40px; }
+[data-style='plage'] .su-gouttes i:nth-child(2) { --dx: -80px; --dy: -60px; }
+[data-style='plage'] .su-gouttes i:nth-child(3) { --dx: -40px; --dy: -70px; }
+[data-style='plage'] .su-gouttes i:nth-child(4) { --dx: 0px; --dy: -78px; }
+[data-style='plage'] .su-gouttes i:nth-child(5) { --dx: 40px; --dy: -70px; }
+[data-style='plage'] .su-gouttes i:nth-child(6) { --dx: 80px; --dy: -60px; }
+[data-style='plage'] .su-gouttes i:nth-child(7) { --dx: 120px; --dy: -40px; }
+[data-style='plage'] .su-gouttes i:nth-child(8) { --dx: -60px; --dy: -30px; }
+[data-style='plage'] .su-gouttes i:nth-child(9) { --dx: 60px; --dy: -30px; }
+[data-style='plage'] .su-gouttes.v0 i { animation: su-goutte-0 0.9s cubic-bezier(.2, .6, .4, 1); }
+[data-style='plage'] .su-gouttes.v1 i { animation: su-goutte-1 0.9s cubic-bezier(.2, .6, .4, 1); }
+[data-style='plage'] .btn.ly-go:has(.su-gouttes.v0) { animation: su-plouf-0 0.5s ease-out; }
+[data-style='plage'] .btn.ly-go:has(.su-gouttes.v1) { animation: su-plouf-1 0.5s ease-out; }
+
+/* ---------- les tuiles ; la semaine en coquillages ---------- */
+[data-style='plage'] .ly-tuile { position: relative; overflow: hidden; border: none; border-radius: 18px; background: rgba(255, 250, 240, 0.94); color: #0b3d4a; }
+[data-style='plage'] .ly-tuile-haut { font-size: 13px; color: #4d6b72; }
+[data-style='plage'] .ly-tuile-haut svg { color: #ff7a59; }
+[data-style='plage'] .ly-tuile > b { font-size: 20px; font-weight: 700; letter-spacing: 0; color: #0b3d4a; }
+[data-style='plage'] .ly-tuile > small { color: #4d6b72; }
+[data-style='plage'] .ly-segments { position: relative; z-index: 1; align-self: stretch; display: flex; justify-content: space-between; align-items: flex-end; gap: 0; height: 18px; }
+[data-style='plage'] .ly-segments i { position: relative; flex: none; width: 22px; height: 18px; box-sizing: border-box; border-radius: 50% 50% 5px 5px / 80% 80% 20% 20%; border: 1.5px dashed rgba(90, 61, 34, 0.4); background: transparent; }
+[data-style='plage'] .ly-segments i.on { border: none; background: repeating-conic-gradient(from -90deg at 50% 100%, #ffc9b8 0 11deg, #e0694c 11deg 14deg); box-shadow: 0 1px 0 rgba(90, 61, 34, 0.25); }
+/* Le coquillage du jour roule jusqu'à sa place, à chaque arrivée sur « Aujourd'hui ». */
+[data-style='plage'] .ly-segments i.auj.on { animation: su-roule 1.1s cubic-bezier(.3, .7, .4, 1) 0.3s both; }
+/* 5 / 5 (et 7) : une vague recouvre la rangée et la laisse brillante. */
+[data-style='plage'] .ly-tuile:has(.ly-segments.plein:not(.b6))::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; height: 46px; pointer-events: none; opacity: 0.9;
+  background: linear-gradient(180deg, #fff 0 3px, #7fdbe2 3px, #35c2c9);
+  -webkit-mask: radial-gradient(circle at 8px 0, transparent 7px, #000 7.5px) 0 0 / 16px 100% repeat-x; mask: radial-gradient(circle at 8px 0, transparent 7px, #000 7.5px) 0 0 / 16px 100% repeat-x;
+  transform: translateX(-110%); animation: su-vague 1.5s ease-in-out 0.4s both; }
+[data-style='plage'] .ly-segments.plein:not(.b6):not(.b7) i.on { animation: su-brille 1s ease-out both; }
+[data-style='plage'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(1) { animation-delay: 0.7s; }
+[data-style='plage'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(2) { animation-delay: 0.82s; }
+[data-style='plage'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(3) { animation-delay: 0.94s; }
+[data-style='plage'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(4) { animation-delay: 1.06s; }
+[data-style='plage'] .ly-segments.plein:not(.b6):not(.b7) i.on:nth-child(5) { animation-delay: 1.18s; }
+/* 6 et 7 jours : rose et or, avec un reflet qui passe. */
+[data-style='plage'] .ly-segments:is(.b6, .b7) i.on { background: linear-gradient(160deg, rgba(255, 255, 255, 0.45), transparent 50%), repeating-conic-gradient(from -90deg at 50% 100%, #ff9ec0 0 11deg, #d4a33a 11deg 14deg); box-shadow: 0 0 0 1.5px #d4a33a, 0 0 7px rgba(232, 180, 60, 0.75); }
+[data-style='plage'] .ly-tuile:has(.ly-segments.b6) { box-shadow: 0 0 0 1.5px #d4a33a; }
+[data-style='plage'] .ly-tuile:has(.ly-segments:is(.b6, .b7))::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; z-index: 2; width: 30px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent); transform: translateX(-40px) skewX(-18deg); animation: su-reflet 3.2s ease-in-out infinite; }
+/* 7 jours : des bulles bleu ciel qui montent, et une lueur dorée. */
+[data-style='plage'] .ly-segments.b7 i.on::after { content: ''; position: absolute; left: 6px; bottom: 0; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #6ec6f5; background: radial-gradient(circle at 35% 30%, #fff 0 18%, rgba(143, 216, 255, 0.65) 45%); opacity: 0; animation: su-bulle 2.8s linear infinite; }
+[data-style='plage'] .ly-segments.b7 i.on:nth-child(2)::after { left: 10px; width: 6px; height: 6px; animation-duration: 3.1s; animation-delay: 0.8s; }
+[data-style='plage'] .ly-segments.b7 i.on:nth-child(3)::after { left: 2px; width: 10px; height: 10px; animation-duration: 2.6s; animation-delay: 1.6s; }
+[data-style='plage'] .ly-segments.b7 i.on:nth-child(4)::after { animation-duration: 3.4s; animation-delay: 0.4s; }
+[data-style='plage'] .ly-segments.b7 i.on:nth-child(5)::after { left: 9px; width: 7px; height: 7px; animation-duration: 2.9s; animation-delay: 1.2s; }
+[data-style='plage'] .ly-tuile:has(.ly-segments.b7) { animation: su-lueur 1.8s ease-in-out infinite alternate; }
+
+/* ---------- Révision : la carte sur la mer ; les notes en bouées ---------- */
+[data-style='plage'] .studybg { background-color: #1b8aa0; background-image: repeating-linear-gradient(180deg, transparent 0 26px, rgba(255, 255, 255, 0.12) 26px 28px), linear-gradient(180deg, #46cbd0, #1b8aa0) !important; background-size: auto; }
+[data-style='plage'] .studybg::after { display: none; }
+[data-style='plage'] .studytop .pos { font-weight: 700; color: #fff; }
+[data-style='plage'] .studytop .stop { background: rgba(255, 255, 255, 0.9); color: #ff7a59; border: none; border-radius: 50%; }
+[data-style='plage'] .progressbar { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.35); }
+[data-style='plage'] .progressbar i { border-radius: 999px; background: #ffd23f; }
+[data-style='plage'] .ly-combo { border-radius: 999px; background: #ff7a59; color: #fff; }
+[data-style='plage'] .studystage { --ink: #0b3d4a; position: relative; margin: 18px 4px 16px; padding: 26px 20px 24px; border: none; border-radius: 28px; background: #fffaf0; color: #0b3d4a; box-shadow: 0 14px 30px rgba(0, 40, 60, 0.3); }
+[data-style='plage'] .studystage::before { content: ''; position: absolute; left: 50%; top: 0; width: 14px; height: 100%; margin-left: -7px; pointer-events: none; opacity: 0.25; background: linear-gradient(180deg, #ff7a59, rgba(255, 122, 89, 0) 30%, rgba(255, 122, 89, 0) 70%, #ff7a59); }
+[data-style='plage'] .studystage .tag { border: none; border-radius: 0; background: transparent; color: #0f7f8c; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+[data-style='plage'] .ask { color: #0f7f8c; }
+[data-style='plage'] .word, [data-style='plage'] .answer { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; line-height: 1.15; color: #0b3d4a; }
+[data-style='plage'] .answer { padding-bottom: 4px; }
+[data-style='plage'] .wordsmall { color: #4d6b72; }
+[data-style='plage'] .ruleline { width: 120px; height: 8px; border: none; background: radial-gradient(circle at 6px -2px, transparent 6px, #35c2c9 6.5px 8px, transparent 8.5px) 0 0 / 12px 8px repeat-x; }
+[data-style='plage'] .example { font-style: normal; color: #4d6b72; }
+[data-style='plage'] .speak { background: transparent; border: 2px solid #ff7a59; border-radius: 999px; color: #e0694c; font-size: 12.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+[data-style='plage'] .tap-hint { color: #fff; }
+[data-style='plage'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+[data-style='plage'] .grades .grade { position: relative; min-height: 96px; padding: 64px 0 4px; border: none; border-radius: 0; background: transparent; box-shadow: none; color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 700; letter-spacing: 0; }
+[data-style='plage'] .grades .grade small { font-size: 11.5px; font-weight: 400; color: rgba(255, 255, 255, 0.85); }
+[data-style='plage'] .grades .grade::before { content: ''; position: absolute; left: 50%; top: 2px; z-index: 3; width: 58px; height: 58px; margin-left: -29px; border-radius: 50%;
+  background: conic-gradient(var(--c) 0 25%, #fff 0 50%, var(--c) 0 75%, #fff 0);
+  -webkit-mask: radial-gradient(circle, transparent 15px, #000 16px); mask: radial-gradient(circle, transparent 15px, #000 16px); }
+[data-style='plage'] .grades .g-again { --c: #e63946; }
+[data-style='plage'] .grades .g-hard { --c: #f4a261; }
+[data-style='plage'] .grades .g-good { --c: #ffd23f; }
+[data-style='plage'] .grades .g-easy { --c: #2a9d8f; }
+/* Raté : la bouée se perce, s'envole en zigzag, puis se regonfle. Dur : elle tangue.
+   Bien : un tour. Facile : deux tours et un jet d'eau. */
+[data-style='plage'] .grades .g-again.frappe::before { animation: su-perce 1.82s cubic-bezier(.35, .1, .6, 1); }
+[data-style='plage'] .grades .g-hard.frappe::before { animation: su-tangue 0.63s ease-in-out; }
+[data-style='plage'] .grades .g-good.frappe::before { animation: su-tourne 0.63s cubic-bezier(.3, 1.3, .5, 1); }
+[data-style='plage'] .grades .g-easy.frappe::before { animation: su-tourne2 0.91s cubic-bezier(.3, 1.2, .5, 1); }
+[data-style='plage'] .grades .g-fx { position: absolute; left: 50%; top: 2px; z-index: 4; width: 58px; height: 58px; margin-left: -29px; display: block; pointer-events: none; }
+[data-style='plage'] .grades .g-fx i { position: absolute; display: none; opacity: 0; }
+[data-style='plage'] .grades .g-again.frappe .g-fx i:nth-child(-n+3) { display: block; left: 42px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); animation: su-pff 0.42s ease-out both; }
+[data-style='plage'] .grades .g-again.frappe .g-fx i:nth-child(1) { --dx: 14px; --dy: -12px; animation-delay: 0.04s; }
+[data-style='plage'] .grades .g-again.frappe .g-fx i:nth-child(2) { --dx: 22px; --dy: 4px; animation-delay: 0.12s; }
+[data-style='plage'] .grades .g-again.frappe .g-fx i:nth-child(3) { --dx: 10px; --dy: -24px; animation-delay: 0.2s; }
+[data-style='plage'] .grades .g-easy.frappe .g-fx i { display: block; left: 25px; top: 20px; width: 7px; height: 9px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #bff0f4; animation: su-goutte-0 0.63s ease-out both; }
+[data-style='plage'] .grades .g-easy.frappe .g-fx i:nth-child(1) { --dx: -20px; --dy: -50px; animation-delay: 0.25s; }
+[data-style='plage'] .grades .g-easy.frappe .g-fx i:nth-child(2) { --dx: -8px; --dy: -70px; animation-delay: 0.28s; }
+[data-style='plage'] .grades .g-easy.frappe .g-fx i:nth-child(3) { --dx: 0px; --dy: -84px; animation-delay: 0.31s; }
+[data-style='plage'] .grades .g-easy.frappe .g-fx i:nth-child(4) { --dx: 8px; --dy: -70px; animation-delay: 0.34s; }
+[data-style='plage'] .grades .g-easy.frappe .g-fx i:nth-child(5) { --dx: 20px; --dy: -50px; animation-delay: 0.37s; }
+[data-style='plage'] .grades .g-good.frappe .g-fx i:nth-child(1) { display: block; inset: 0; border-radius: 50%; border: 2px solid #fff; animation: su-onde 0.56s ease-out 0.35s both; }
+
+@keyframes su-soleil { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.08); opacity: 1; } }
+@keyframes su-scintille { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes su-eclat { 0%, 100% { transform: scale(0); opacity: 0; } 50% { transform: scale(1); opacity: 1; } }
+@keyframes su-ecume { from { transform: translateY(-5px) scaleX(0.97); } to { transform: translateY(9px) scaleX(1.03); } }
+@keyframes su-crete { from { transform: rotate(-10deg) translateY(1px); } to { transform: rotate(8deg) translateY(-2px); } }
+@keyframes su-monte-0 { 0%, 30% { transform: translateY(190px); clip-path: inset(-40px -40px 190px -40px); } 70% { transform: translateY(-12px); clip-path: inset(-40px -40px 0 -40px); } 84% { transform: translateY(4px); clip-path: inset(-40px -40px 4px -40px); } 93% { transform: translateY(-2px); clip-path: inset(-40px); } 100% { transform: none; clip-path: inset(-40px); } }
+@keyframes su-monte-1 { 0%, 30% { transform: translateY(190px); clip-path: inset(-40px -40px 190px -40px); } 70% { transform: translateY(-12px); clip-path: inset(-40px -40px 0 -40px); } 84% { transform: translateY(4px); clip-path: inset(-40px -40px 4px -40px); } 93% { transform: translateY(-2px); clip-path: inset(-40px); } 100% { transform: none; clip-path: inset(-40px); } }
+@keyframes su-couche-d-0 { 0% { transform: none; opacity: 1; } 34% { transform: translate(40px, 60px) rotate(84deg); opacity: 0; } 35%, 75% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-couche-d-1 { 0% { transform: none; opacity: 1; } 34% { transform: translate(40px, 60px) rotate(84deg); opacity: 0; } 35%, 75% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-couche-g-0 { 0% { transform: none; opacity: 1; } 34% { transform: translate(-40px, 60px) rotate(-84deg); opacity: 0; } 35%, 75% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-couche-g-1 { 0% { transform: none; opacity: 1; } 34% { transform: translate(-40px, 60px) rotate(-84deg); opacity: 0; } 35%, 75% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-pastille-0 { 0%, 70% { transform: scale(0.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-pastille-1 { 0%, 70% { transform: scale(0.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-grain-0 { 0% { transform: translate(0, 0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+@keyframes su-grain-1 { 0% { transform: translate(0, 0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+@keyframes su-bernard-0 { 0%, 12% { transform: none; opacity: 1; } 78% { transform: translateX(150px); opacity: 1; } 82% { transform: translateX(165px); opacity: 0; } 86% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-bernard-1 { 0%, 12% { transform: none; opacity: 1; } 78% { transform: translateX(150px); opacity: 1; } 82% { transform: translateX(165px); opacity: 0; } 86% { transform: none; opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes su-pattes-0 { 0% { transform: scale(0); } 6%, 84% { transform: scale(1); } 88%, 100% { transform: scale(0); } }
+@keyframes su-pattes-1 { 0% { transform: scale(0); } 6%, 84% { transform: scale(1); } 88%, 100% { transform: scale(0); } }
+@keyframes su-trotte { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-2px) rotate(5deg); } }
+@keyframes su-goutte-0 { 0% { transform: translate(0, 0) scale(0.6); opacity: 1; } 50% { transform: translate(calc(var(--dx) * 0.7), var(--dy)) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 60px)) scale(0.8); opacity: 0; } }
+@keyframes su-goutte-1 { 0% { transform: translate(0, 0) scale(0.6); opacity: 1; } 50% { transform: translate(calc(var(--dx) * 0.7), var(--dy)) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 60px)) scale(0.8); opacity: 0; } }
+@keyframes su-plouf-0 { 0% { transform: none; } 30% { transform: scale(0.94, 0.88); } 60% { transform: scale(1.04, 1.06); } 100% { transform: none; } }
+@keyframes su-plouf-1 { 0% { transform: none; } 30% { transform: scale(0.94, 0.88); } 60% { transform: scale(1.04, 1.06); } 100% { transform: none; } }
+@keyframes su-roule { 0% { transform: translateX(130px) rotate(720deg); opacity: 0; } 12% { opacity: 1; } 75% { transform: translateX(-4px) rotate(-12deg); opacity: 1; } 88% { transform: translateX(2px) rotate(4deg); } 100% { transform: none; opacity: 1; } }
+@keyframes su-vague { 0% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+@keyframes su-brille { 0% { filter: none; } 30% { filter: brightness(1.7) saturate(1.3); } 100% { filter: none; } }
+@keyframes su-reflet { 0% { transform: translateX(-40px) skewX(-18deg); } 55%, 100% { transform: translateX(220px) skewX(-18deg); } }
+@keyframes su-bulle { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(8px, -110px); opacity: 0; } }
+@keyframes su-lueur { from { box-shadow: 0 0 0 2px #ffd23f, 0 0 6px rgba(255, 210, 63, 0.5); } to { box-shadow: 0 0 0 2px #ffd23f, 0 0 22px rgba(255, 210, 63, 0.95); } }
+@keyframes su-perce { 0% { transform: none; } 8% { transform: scale(1.12); } 18% { transform: translate(-14px, -40px) rotate(-120deg) scale(0.95); } 32% { transform: translate(34px, -110px) rotate(140deg) scale(0.8); } 46% { transform: translate(-30px, -190px) rotate(380deg) scale(0.62); } 60% { transform: translate(40px, -270px) rotate(560deg) scale(0.42); opacity: 1; } 70% { transform: translate(70px, -340px) rotate(700deg) scale(0.25); opacity: 0; } 72% { transform: scale(0); opacity: 0; } 88% { transform: scale(1.18); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes su-tangue { 0%, 100% { transform: none; } 20% { transform: rotate(-22deg) translateY(-3px); } 45% { transform: rotate(16deg); } 70% { transform: rotate(-8deg); } 85% { transform: rotate(4deg); } }
+@keyframes su-tourne { 0% { transform: none; } 40% { transform: translateY(-8px) rotate(200deg); } 100% { transform: rotate(360deg); } }
+@keyframes su-tourne2 { 0% { transform: none; } 45% { transform: translateY(-18px) rotate(450deg) scale(1.1); } 100% { transform: rotate(720deg); } }
+@keyframes su-pff { 0% { transform: translate(0, 0) scale(0.4); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1.8); opacity: 0; } }
+@keyframes su-onde { 0% { transform: scale(0.85); opacity: 0.9; } 100% { transform: scale(1.7); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='plage'] *, [data-style='plage'] *::before, [data-style='plage'] *::after, .su-salle * { animation: none !important; transition: none !important; }
+}

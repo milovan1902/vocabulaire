@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet' | 'japon' | 'jazz';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -107,6 +107,8 @@ export const THEME_LABELS: Record<Theme, string> = {
   cabinet: 'Cabinet 1900',
   japon: 'Japon zen',
   jazz: 'Cotton Club',
+  plage: 'Plage et surf',
+  chateau: 'Château',
 };
 
 export function themeChoisi(): Theme {
@@ -118,7 +120,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' || v === 'japon' || v === 'jazz' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' || v === 'japon' || v === 'jazz' || v === 'plage' || v === 'chateau' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -154,6 +156,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   /* CHANTIER 227 — Japon zen : clair (papier crème) ; Cotton Club : sombre. */
   if (t === 'japon') return 'clair';
   if (t === 'jazz') return 'sombre';
+  /* CHANTIER 235 — Plage et surf, Château : clairs (plein soleil, parchemin). */
+  if (t === 'plage' || t === 'chateau') return 'clair';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -200,6 +204,9 @@ function appliquer(t: Theme) {
   /* CHANTIER 227 — Japon zen (japon.css) et Cotton Club (jazz.css). */
   else if (t === 'japon') document.documentElement.dataset.style = 'japon';
   else if (t === 'jazz') document.documentElement.dataset.style = 'jazz';
+  /* CHANTIER 235 — Plage et surf (plage.css) et Château (chateau.css). */
+  else if (t === 'plage') document.documentElement.dataset.style = 'plage';
+  else if (t === 'chateau') document.documentElement.dataset.style = 'chateau';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

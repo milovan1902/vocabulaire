@@ -30,7 +30,9 @@ export function Eventail({
       qui se soulève au changement ; 'bocaux' (Cabinet 1900) : des bocaux de verre, celui du centre s'allume. */
   /** CHANTIER 227 — 'maison' (Japon zen) : le paquet sur le pas de la porte d'une maison japonaise, dont les
       panneaux se ferment et se rouvrent ; 'pupitres' (Cotton Club) : des partitions sur des pupitres, sous un projecteur. */
-  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres';
+  /** CHANTIER 235 — 'planches' (Plage et surf) : les paquets sont des planches de surf plantées dans le sable ;
+      'chateau' (Château) : le paquet dans la porte d'un château, derrière un pont-levis. */
+  forme?: 'eventail' | 'orbite' | 'portant' | 'pellicule' | 'rayon' | 'cloche' | 'bocaux' | 'maison' | 'pupitres' | 'planches' | 'chateau';
   centre: number;
   onCentre: (i: number) => void;
   onOuvrir: (i: number) => void;
@@ -42,8 +44,15 @@ export function Eventail({
      d'animation qui alternent, sans démonter les housses). Rien à l'ouverture de l'écran. */
   const [coups, setCoups] = useState(0);
   const centrePrec = useRef(centre);
+  /* CHANTIER 235 — le paquet qui vient de quitter le centre, et de quel côté il part (Plage : la planche
+     se couche du côté de la flèche touchée). */
+  const [ancien, setAncien] = useState<{ i: number; d: 'g' | 'd' } | null>(null);
   useEffect(() => {
-    if (centrePrec.current !== centre) { centrePrec.current = centre; setCoups((c) => c + 1); }
+    if (centrePrec.current !== centre) {
+      setAncien({ i: centrePrec.current, d: centre > centrePrec.current ? 'd' : 'g' });
+      centrePrec.current = centre;
+      setCoups((c) => c + 1);
+    }
   }, [centre]);
   const por = forme === 'portant';
   const pel = forme === 'pellicule';
@@ -52,6 +61,20 @@ export function Eventail({
   const boc = forme === 'bocaux';
   const mai = forme === 'maison';
   const pup = forme === 'pupitres';
+  const pla = forme === 'planches';
+  const cha = forme === 'chateau';
+  /* CHANTIER 235 — Plage : le bernard-l'ermite sort de sa coquille toutes les 10 à 20 s. */
+  const [crabe, setCrabe] = useState(0);
+  useEffect(() => {
+    if (!pla || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    let t = 0;
+    const boucle = () => { t = window.setTimeout(() => { setCrabe((c) => c + 1); boucle(); }, 10000 + Math.random() * 10000); };
+    boucle();
+    return () => window.clearTimeout(t);
+  }, [pla]);
+  /* CHANTIER 235 — Château : le cycle jour / nuit (40 s) suit l'horloge, calculé une fois au montage :
+     le fond (Salle.tsx) et le château restent d'accord. */
+  const [cycle] = useState(() => `${-((Date.now() / 1000) % 40)}s`);
   const v = coups ? ` v${coups % 2}` : '';
   /* CHANTIER 216 — le pas de la pellicule, et la forme des livres (dos de 30 px). */
   const PAS = 124;
@@ -63,8 +86,8 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${glisse ? ' glisse' : ''}`}
-      style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : undefined}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${pla || cha ? v : ''}${glisse ? ' glisse' : ''}`}
+      style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : cha ? ({ '--cycle': cycle } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"
       tabIndex={0}
@@ -108,6 +131,30 @@ export function Eventail({
           <i className="perron" /><i className="pierre" />
           <span className="lanterne"><i /><i /><i /><i /></span>
           <span className="cerisier"><i className="tronc" /><i className="b1" /><i className="b2" /><i className="b3" /><i className="f1" /><i className="f2" /><i className="f3" /><i className="f4" /><i className="f5" /><i className="f6" /><i className="f7" /></span>
+        </span>
+      )}
+      {/* CHANTIER 235 — Plage et surf : la dune où les planches sont plantées, trois coquillages, le bernard-l'ermite. */}
+      {pla && (
+        <span className="su-plage" aria-hidden="true">
+          <i className="su-dune" /><i className="su-coq c1" /><i className="su-coq c2" /><i className="su-coq c3" />
+          <span className={`su-bernard${crabe ? ` v${crabe % 2}` : ''}`}><span className="corps"><i className="pattes" /><i className="yeux" /><i className="coquille" /></span></span>
+        </span>
+      )}
+      {/* CHANTIER 235 — Château : deux tours, le rempart, la porte et ses bannières ; deux archers derrière les
+          créneaux (le jour) ; les lueurs des meurtrières (la nuit). */}
+      {cha && (
+        <span className="ch-chateau" aria-hidden="true">
+          <i className="ch-ombre-sol" />
+          <span className="ch-jour">
+            <span className="ch-archer a"><span className="miroir"><i className="tabard" /><i className="ceinture" /><i className="visage" /><i className="oeil" /><i className="casque" /><i className="bord" /><i className="plumet" /><i className="bras" /><i className="arc" /><i className="corde" /><i className="encoche" /></span></span>
+            <span className="ch-archer b"><span className="miroir"><i className="tabard" /><i className="ceinture" /><i className="visage" /><i className="oeil" /><i className="casque" /><i className="bord" /><i className="plumet" /><i className="bras" /><i className="arc" /><i className="corde" /><i className="encoche" /></span></span>
+            <i className="ch-fleche a" /><i className="ch-fleche b" />
+            <span className="ch-rempart"><i className="fenetre f1" /><i className="fenetre f2" /></span>
+            <span className="ch-tour g"><i className="corniche" /><i className="toit" /><i className="lisere" /><i className="mat" /><i className="drapeau" /><i className="meurtriere" /></span>
+            <span className="ch-tour d"><i className="corniche" /><i className="toit" /><i className="lisere" /><i className="mat" /><i className="drapeau" /><i className="meurtriere" /></span>
+            <span className="ch-porte"><i className="corniche" /><i className="banniere g" /><i className="banniere d" /><span className="arche"><i className="herse" /></span><i className="cle" /></span>
+          </span>
+          <i className="ch-lueur l1" /><i className="ch-lueur l2" /><i className="ch-lueur l3" /><i className="ch-lueur l4" />
         </span>
       )}
       {/* CHANTIER 227 — Cotton Club : le projecteur, le plancher, le saxophoniste et ses notes. */}
@@ -165,6 +212,10 @@ export function Eventail({
                 ? /* CHANTIER 225 — les gâteaux ne suivent plus le doigt : au relâché, la cloche se lève d'abord,
                      puis le gâteau glisse, comme avec les flèches. */
                   (a === 0 ? 'scale(0.74)' : `translate(${118 * s}px, -18px) rotate(${4 * s}deg) scale(0.5)`)
+                : pla
+                  ? (a === 0 ? `translateX(${dx * 0.6}px)` : `translate(${118 * s + dx * 0.6}px, 36px) rotate(${14 * s}deg) scale(0.5)`)
+                : cha
+                  ? 'scale(0.7)'
                 : mai
                   ? 'scale(0.62)'
                 : pup
@@ -188,7 +239,7 @@ export function Eventail({
             className={`eventail-carte${a === 0 ? ' centre' : ''}`}
             style={{
               transform,
-              opacity: mai && a > 0 ? 0 : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
+              opacity: (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
               zIndex: 10 - a,
               transition: glisse ? 'none' : undefined,
               pointerEvents: visible ? undefined : 'none',
@@ -203,6 +254,8 @@ export function Eventail({
               : boc ? <span className={`bocal-lueur${coups ? ` v${coups % 2}` : ''}`}>{dos}</span>
               /* CHANTIER 227 — Cotton Club : la partition se soulève sous le projecteur. */
               : pup ? <span className={`pupitre-lift${v}`}>{dos}</span>
+              /* CHANTIER 235 — Plage : la planche du centre sort du sable ; celle qui part se couche. */
+              : pla ? <span className={`su-planche${!coups ? '' : a === 0 ? ` monte v${coups % 2}` : ancien && ancien.i === i ? ` couche-${ancien.d} v${coups % 2}` : ''}`}>{dos}</span>
               : dos}
             {a === 0 && r.due > 0 && <span className="eventail-due">{r.due}</span>}
             {/* CHANTIER 200 — la classe plancher (6e, 5e… ou « SC »), comme sur la liste et le
@@ -221,6 +274,9 @@ export function Eventail({
       {mai && <i className={`jp-porte g${v}`} aria-hidden="true" />}
       {mai && <i className={`jp-porte d${v}`} aria-hidden="true" />}
       {mai && <span className={`jp-bouffee${v}`} aria-hidden="true"><i /><i /><i /></span>}
+      {/* CHANTIER 235 — Plage : le jet de sable ; Château : le pont-levis, devant la porte. */}
+      {pla && <span className={`su-sable${v}`} aria-hidden="true"><i /><i /><i /><i /><i /></span>}
+      {cha && <span className="ch-pont-cadre" aria-hidden="true"><i className={`ch-pont${v}`} /></span>}
       {/* CHANTIER 227 — Cotton Club : le rideau se lève à l'arrivée sur « Aujourd'hui ». */}
       {pup && <i className="jz-rideau" aria-hidden="true" />}
     </div>

@@ -64,6 +64,9 @@ import './ui/cabinet.css';
 /* CHANTIER 227 — Japon zen (Shippori Mincho) et Cotton Club (Bodoni Moda, Poiret One), polices dans public/fonts. */
 import './ui/japon.css';
 import './ui/jazz.css';
+/* CHANTIER 235 — Plage et surf (Shrikhand) et Château (Cinzel, Cinzel Decorative), polices dans public/fonts. */
+import './ui/plage.css';
+import './ui/chateau.css';
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();

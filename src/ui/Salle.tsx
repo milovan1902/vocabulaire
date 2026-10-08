@@ -16,7 +16,7 @@
  * « Réduire les animations » : le décor reste, immobile ; pas d'amorce.
  * Tout le mouvement est en CSS.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useStyle } from './useStyle';
 
@@ -151,15 +151,51 @@ function Japon({ anime }: { anime: boolean }) {
   );
 }
 
+/* CHANTIER 235 — Plage et surf : le soleil qui pulse, l'eau qui scintille, l'écume qui va et vient. */
+function Plage() {
+  return (
+    <div className="fond-anime plage su-salle" aria-hidden="true">
+      <i className="su-soleil" /><i className="su-eau" />
+      <i className="su-eclat e1" /><i className="su-eclat e2" /><i className="su-eclat e3" /><i className="su-eclat e4" />
+      <i className="su-mouille" /><i className="su-ecume" />
+    </div>
+  );
+}
+
+/* CHANTIER 235 — Château : deux nuages, le rempart ; 20 s de jour, 20 s de nuit (lune, étoiles).
+   Le cycle suit l'horloge (même calcul que le château d'Eventail.tsx), une fois au montage. */
+const ETOILES: Array<[number, number, number]> = [[33, 20, 2], [56, 30, 2], [69, 16, 3], [92, 44, 2], [3, 264, 2], [94, 258, 3], [44, 8, 2]];
+
+function Chateau({ anime }: { anime: boolean }) {
+  const [cycle] = useState(() => `${-((Date.now() / 1000) % 40)}s`);
+  return (
+    <div className="fond-anime chateau ch-salle" aria-hidden="true" style={{ '--cycle': cycle } as CSSProperties}>
+      {anime && <><i className="ch-nuage" /><i className="ch-nuage n2" /></>}
+      <i className="ch-creneaux" /><i className="ch-mur" />
+      {anime && (
+        <>
+          <i className="ch-nuit" />
+          <span className="ch-ciel-nuit">
+            <i className="ch-lune" />
+            {ETOILES.map(([x, y, t], k) => <i key={k} className="ch-etoile" style={{ left: `${x}%`, top: y, width: t, height: t }} />)}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function Salle() {
   const style = useStyle();
-  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet' && style !== 'japon') return null;
+  if (style !== 'cinema' && style !== 'biblio' && style !== 'patisserie' && style !== 'cabinet' && style !== 'japon' && style !== 'plage' && style !== 'chateau') return null;
   const anime = !calme();
   return createPortal(
     style === 'cinema' ? <Cinema anime={anime} />
       : style === 'biblio' ? <Biblio anime={anime} />
       : style === 'patisserie' ? <Patisserie anime={anime} />
       : style === 'japon' ? <Japon anime={anime} />
+      : style === 'plage' ? <Plage />
+      : style === 'chateau' ? <Chateau anime={anime} />
       : <Cabinet anime={anime} />,
     document.body,
   );

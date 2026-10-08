@@ -1,0 +1,291 @@
+/* ==================================================================
+   CHANTIER 235 — « Château » (maquettes 52c, 53b) : la forteresse au grand jour.
+   Ciel bleu, remparts de pierre, étendards bleu et rouge, parchemin et or.
+   Cinzel (déjà livrée avec le Cabinet 1900) et Cinzel Decorative (public/fonts).
+
+   Active quand <html> porte data-style="chateau" (theme.ts). Base CLAIRE,
+   forme du Lycée (estLudique).
+   - Le fond (Salle.tsx) : nuages, rempart ; cycle de 40 s, 20 s de jour, 20 s de nuit
+     (lune, étoiles). Le cycle suit l'horloge : fond et château restent d'accord.
+   - Les paquets (Eventail.tsx, forme 'chateau') : le paquet dans la porte du château.
+     Au changement, le pont-levis se relève, le paquet change, il redescend.
+     Le jour, deux archers sortent des créneaux et tirent ; la nuit, les meurtrières s'allument.
+   - « Cette semaine » : cinq étendards ; 5 / 5 trompette, 6 brodés d'or, 7 couronnes et confettis.
+   - Révision : un parchemin roulé ; les notes sont des écus qui vibrent.
+   ================================================================== */
+@font-face { font-family: 'Cinzel Decorative'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/cinzel-decorative-700-latin.woff2') format('woff2'); }
+[data-style='chateau'] {
+  --paper: #f3e6c4; --panel: #f3e6c4; --panel-hi: #eadab2;
+  --ink: #3b2a14; --ink-soft: #5a4426; --grey: #6b5434; --ink-dim: #6b5434;
+  --rule: rgba(122, 90, 42, 0.25); --rule-strong: rgba(122, 90, 42, 0.5);
+  --chalk: #7a1f1f; --chalk-ink: #6a1414; --on-chalk: #f6e7c1;
+  --good: #2e6b3a; --bad: #8b1e1e;
+  --voile: rgba(59, 42, 20, 0.05); --voile-2: rgba(59, 42, 20, 0.1); --voile-3: rgba(59, 42, 20, 0.16);
+  --bleu: #1f3a8a; --bleu-ink: #162b66; --rouge: #8b1e1e; --orange: #b5651d;
+  --ly-voile: rgba(59, 42, 20, 0.16); --ly-voile-2: rgba(255, 255, 255, 0.45);
+  --ly-tabbar: #3b2a14; --ly-ombre: rgba(0, 0, 0, 0.35); --ly-tag: #f3e6c4; --ly-bord-carte: #c9a227;
+  --sans: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --serif: 'Cinzel', Georgia, serif;
+  --titre: 'Cinzel', Georgia, serif;
+  --deco: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  --anneau: #c9a227;
+  --pierre: linear-gradient(#766f63 2px, transparent 2px), linear-gradient(90deg, #766f63 2px, transparent 2px);
+}
+[data-style='chateau'] body { font-family: var(--sans); color: var(--ink); background-color: #958d80; background-image: linear-gradient(180deg, #8fbbe3 0, #d7e8f4 300px, #958d80 300px); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='chateau'] .screen-title, [data-style='chateau'] .topbar h1, [data-style='chateau'] .welcome-head h1, [data-style='chateau'] .done h2, [data-style='chateau'] .sheet h3, [data-style='chateau'] .today-count b { font-family: var(--titre); font-style: normal; font-weight: 600; letter-spacing: 0.02em; }
+[data-style='chateau'] .tabbar { background: #3b2a14; border-top: 3px solid #c9a227; }
+[data-style='chateau'] .tabbar button { color: rgba(243, 230, 196, 0.6); }
+[data-style='chateau'] .tabbar button.on { color: #f3e6c4; }
+[data-style='chateau'] .tabbar button.on::before { display: none; }
+[data-style='chateau'] .tabbar button .tabsvg { box-sizing: content-box; padding: 3px 14px; border-radius: 4px; }
+[data-style='chateau'] .tabbar button.on .tabsvg { background: rgba(201, 162, 39, 0.3); }
+[data-style='chateau'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='chateau'] .reveal { background: #7a1f1f; color: #f6e7c1; border: 2px solid #c9a227; border-radius: 4px; box-shadow: 0 4px 0 #4a1010; font-family: var(--titre); font-weight: 600; font-size: 17px; letter-spacing: 0.04em; }
+[data-style='chateau'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active, [data-style='chateau'] .reveal:active { transform: translateY(3px); box-shadow: 0 1px 0 #4a1010; }
+
+/* ---------- le fond (Salle.tsx), sur « Aujourd'hui » seulement ---------- */
+body:not(:has(.today.ly)) .ch-salle { display: none; }
+.ch-salle i, .ch-salle span { position: absolute; display: block; }
+.ch-salle .ch-nuage { left: 0; top: 120px; width: 90px; height: 22px; border-radius: 999px; background: rgba(255, 255, 255, 0.8); animation: ch-nuage 26s linear -8s infinite; }
+.ch-salle .ch-nuage.n2 { top: 270px; width: 70px; height: 18px; background: rgba(255, 255, 255, 0.7); animation-duration: 34s; animation-delay: -22s; }
+.ch-salle .ch-creneaux { left: 0; right: 0; top: 286px; height: 16px; background: repeating-linear-gradient(90deg, #958d80 0 24px, transparent 24px 36px); }
+.ch-salle .ch-mur { left: 0; right: 0; top: 302px; bottom: 0; background-color: #958d80; background-image: var(--pierre); background-size: 46px 24px; }
+.ch-salle .ch-nuit { inset: 0; opacity: 0; background: linear-gradient(180deg, rgba(10, 14, 44, 0.86), rgba(18, 24, 60, 0.7) 300px, rgba(10, 12, 30, 0.6)); animation: ch-nuit 40s linear infinite; animation-delay: var(--cycle, 0s); }
+.ch-salle .ch-ciel-nuit { inset: 0; opacity: 0; animation: ch-lune 40s linear infinite; animation-delay: var(--cycle, 0s); }
+.ch-salle .ch-lune { right: 52px; top: 12px; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset -6px 3px 0 #f4ecd0; filter: drop-shadow(0 0 6px rgba(244, 236, 208, 0.7)); }
+.ch-salle .ch-etoile { width: 2px; height: 2px; border-radius: 50%; background: #fff; }
+
+/* ---------- l'en-tête : le niveau en écu, la série en flambeau ---------- */
+[data-style='chateau'] .ly-niv { position: relative; width: 42px; height: 48px; border: none; border-radius: 0; background: #c9a227; clip-path: polygon(0 0, 100% 0, 100% 58%, 50% 100%, 0 58%); color: #f3e6c4; justify-content: flex-start; padding-top: 7px; box-sizing: border-box; }
+[data-style='chateau'] .ly-niv::before { content: ''; position: absolute; left: 3px; top: 0; z-index: -1; width: 36px; height: 42px; background: #1f3a8a; clip-path: polygon(0 0, 100% 0, 100% 58%, 50% 100%, 0 58%); }
+[data-style='chateau'] .ly-niv { isolation: isolate; }
+[data-style='chateau'] .ly-niv small { font-size: 8px; letter-spacing: 0.08em; color: #f3e6c4; }
+[data-style='chateau'] .ly-niv b { font-family: var(--titre); font-size: 17px; font-weight: 700; color: #f3e6c4; }
+[data-style='chateau'] .ly-xp-txt { color: #1b2a4a; }
+[data-style='chateau'] .ly-xp-txt b { font-family: var(--titre); font-size: 14px; font-weight: 700; color: #1b2a4a; }
+[data-style='chateau'] .ly-barre { height: 8px; border-radius: 2px; background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 0 1px rgba(27, 42, 74, 0.2); }
+[data-style='chateau'] .ly-barre i { border-radius: 0; background: #c9a227; }
+[data-style='chateau'] .ly-flamme { height: 38px; padding: 0 12px; gap: 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.75); color: #1b2a4a; }
+[data-style='chateau'] .ly-flamme svg { display: none; }
+[data-style='chateau'] .ly-flamme::before { content: ''; flex: none; width: 10px; height: 16px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: radial-gradient(circle at 50% 70%, #ffd27a, #e8572a); }
+[data-style='chateau'] .ly-flamme b { font-size: 17px; font-weight: 700; color: #1b2a4a; }
+[data-style='chateau'] .ly-defi { padding: 14px 16px; border: 2px solid #7a5a2a; border-radius: 3px; background: #f3e6c4; box-shadow: inset 0 0 0 3px #f3e6c4, inset 0 0 0 4px rgba(122, 90, 42, 0.45); }
+[data-style='chateau'] .ly-defi-haut > span:first-child { font-family: var(--titre); font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #7a1f1f; }
+[data-style='chateau'] .ly-gain { border-radius: 0; background: transparent; border: 1.5px solid #7a5a2a; color: #5a3d1a; }
+[data-style='chateau'] .ly-defi-n { font-family: var(--deco); font-size: 32px; font-weight: 700; line-height: 1.15; letter-spacing: 0; color: #3b2a14; }
+[data-style='chateau'] .ly-defi-sous, [data-style='chateau'] .ly-defi-jour { color: #6b5434; }
+[data-style='chateau'] .ly-defi-jour .ly-barre { border-radius: 0; background: rgba(122, 90, 42, 0.18); box-shadow: none; }
+[data-style='chateau'] .ly-defi-jour .ly-barre i { background: #7a1f1f; }
+
+/* ---------- les paquets : le château (Eventail.tsx, forme 'chateau') ---------- */
+[data-style='chateau'] .ly-scene { position: relative; }
+[data-style='chateau'] .eventail.chateau { height: 200px; margin-top: 12px; margin-bottom: 14px; overflow: visible; }
+/* Le paquet tient dans la porte. Au changement : l'ancien reste jusqu'à ce que le pont soit fermé,
+   le nouveau n'apparaît que quand il se rouvre. */
+[data-style='chateau'] .eventail.chateau .eventail-carte { top: 54px; transform-origin: 50% 0; }
+[data-style='chateau'] .eventail.chateau .eventail-dos { border: 3px solid #c9a227; border-radius: 4px; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45); }
+[data-style='chateau'] .eventail.chateau.v0 .eventail-carte.centre { animation: ch-entre-0 1.8s linear; }
+[data-style='chateau'] .eventail.chateau.v1 .eventail-carte.centre { animation: ch-entre-1 1.8s linear; }
+[data-style='chateau'] .eventail.chateau.v0 .eventail-carte:not(.centre) { animation: ch-sort-0 1.8s linear; }
+[data-style='chateau'] .eventail.chateau.v1 .eventail-carte:not(.centre) { animation: ch-sort-1 1.8s linear; }
+[data-style='chateau'] .eventail-due { right: -14px; top: -14px; background: #8b1e1e; color: #f3e6c4; font-family: var(--titre); box-shadow: 0 0 0 3px rgba(139, 30, 30, 0.35), 0 3px 8px rgba(0, 0, 0, 0.3); }
+[data-style='chateau'] .eventail-carte .classdot.eventail-classe { background: #f3e6c4; color: #3b2a14; border-color: #c9a227; }
+[data-style='chateau'] .ch-chateau { position: absolute; left: 50%; top: 0; width: 324px; height: 200px; margin-left: -162px; display: block; pointer-events: none; }
+[data-style='chateau'] .ch-chateau i, [data-style='chateau'] .ch-chateau span { position: absolute; display: block; }
+[data-style='chateau'] .ch-ombre-sol { left: 30px; right: 30px; bottom: -6px; height: 16px; border-radius: 50%; background: rgba(0, 0, 0, 0.28); }
+[data-style='chateau'] .ch-jour { inset: 0; animation: ch-ombre 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='chateau'] .ch-rempart { left: 44px; right: 44px; bottom: 0; height: 96px; background-color: #b3ab9d; background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.12)), linear-gradient(#8f8778 2px, transparent 2px), linear-gradient(90deg, #8f8778 2px, transparent 2px); background-size: 100% 100%, 30px 16px, 30px 16px; }
+[data-style='chateau'] .ch-rempart::before { content: ''; position: absolute; left: 0; right: 0; top: -10px; height: 10px; background: repeating-linear-gradient(90deg, #b3ab9d 0 12px, transparent 12px 20px); }
+[data-style='chateau'] .ch-rempart .fenetre { top: 26px; width: 6px; height: 12px; border-radius: 3px 3px 0 0; background: #2a2219; box-shadow: 0 0 0 1.5px #d8d0c0; }
+[data-style='chateau'] .ch-rempart .fenetre.f1 { left: 28px; }
+[data-style='chateau'] .ch-rempart .fenetre.f2 { left: 202px; }
+[data-style='chateau'] .ch-tour { bottom: 0; width: 62px; height: 124px; background-color: #c2baab; background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent 35%, rgba(0, 0, 0, 0.22)), linear-gradient(#958d7f 2px, transparent 2px), linear-gradient(90deg, #958d7f 2px, transparent 2px); background-size: 100% 100%, 31px 18px, 31px 18px; }
+[data-style='chateau'] .ch-tour.g { left: 6px; }
+[data-style='chateau'] .ch-tour.d { right: 6px; }
+[data-style='chateau'] .ch-tour .corniche { left: -6px; right: -6px; top: -8px; height: 10px; background: #a39b8e; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15); }
+[data-style='chateau'] .ch-tour .toit { left: -8px; right: -8px; top: -56px; height: 50px; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(90deg, #3d5ea8, #1f3a8a 55%, #162b66); }
+[data-style='chateau'] .ch-tour.d .toit { background: linear-gradient(90deg, #c4473f, #7a1f1f 55%, #5c1616); }
+[data-style='chateau'] .ch-tour .lisere { left: -8px; right: -8px; top: -10px; height: 4px; background: #c9a227; }
+[data-style='chateau'] .ch-tour .mat { left: 30px; top: -74px; width: 2px; height: 20px; background: #4a3f33; }
+[data-style='chateau'] .ch-tour .drapeau { left: 32px; top: -74px; width: 26px; height: 14px; background: #7a1f1f; clip-path: polygon(0 0, 100% 30%, 70% 55%, 100% 100%, 0 100%); transform-origin: 0 50%; animation: ch-drapeau 0.9s ease-in-out infinite alternate; }
+[data-style='chateau'] .ch-tour.d .drapeau { background: #1f3a8a; animation-duration: 0.8s; animation-delay: -0.4s; }
+[data-style='chateau'] .ch-tour .meurtriere { left: 27px; top: 22px; width: 8px; height: 22px; border-radius: 4px 4px 0 0; background: #2a2219; box-shadow: 0 0 0 2px #d8d0c0; }
+[data-style='chateau'] .ch-porte { left: 86px; bottom: 0; width: 152px; height: 168px; background-color: #bdb5a6; background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.15), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.2)), linear-gradient(#918979 2px, transparent 2px), linear-gradient(90deg, #918979 2px, transparent 2px); background-size: 100% 100%, 38px 20px, 38px 20px; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08); }
+[data-style='chateau'] .ch-porte::before { content: ''; position: absolute; left: 0; right: 0; top: -14px; height: 14px; background: repeating-linear-gradient(90deg, #bdb5a6 0 16px, transparent 16px 27px); }
+[data-style='chateau'] .ch-porte .corniche { left: -4px; right: -4px; top: 0; height: 6px; background: #a39b8e; }
+[data-style='chateau'] .ch-porte .banniere { top: 6px; width: 16px; height: 64px; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%); box-shadow: inset 0 4px 0 #c9a227; transform-origin: 50% 0; animation: ch-banniere 2.6s ease-in-out infinite alternate; }
+[data-style='chateau'] .ch-porte .banniere.g { left: 5px; background: linear-gradient(90deg, #7a1f1f, #9a2a2a); }
+[data-style='chateau'] .ch-porte .banniere.d { right: 5px; background: linear-gradient(90deg, #1f3a8a, #2b4ca6); animation-delay: -1.3s; }
+[data-style='chateau'] .ch-porte .arche { left: 24px; right: 24px; top: 22px; bottom: 0; overflow: hidden; border-radius: 52px 52px 0 0; background: #2a2219; box-shadow: 0 0 0 6px #d8d0c0, 0 0 0 7px #8f8778; }
+[data-style='chateau'] .ch-porte .herse { left: 0; right: 0; top: 0; height: 34px; background: repeating-linear-gradient(90deg, #5a4c3c 0 3px, transparent 3px 13px), repeating-linear-gradient(180deg, #5a4c3c 0 3px, transparent 3px 11px); }
+[data-style='chateau'] .ch-porte .cle { left: 50%; top: 10px; width: 14px; height: 16px; margin-left: -7px; background: #c9a227; clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%); }
+/* Les deux archers, derrière les créneaux de la porte : ils sortent le buste, tirent, redescendent. */
+[data-style='chateau'] .ch-archer { top: -2px; width: 36px; height: 34px; transform: translateY(36px); animation: ch-archer 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='chateau'] .ch-archer.a { left: 180px; }
+[data-style='chateau'] .ch-archer.b { left: 108px; animation-name: ch-archer2; }
+[data-style='chateau'] .ch-archer .miroir { inset: 0; }
+[data-style='chateau'] .ch-archer.b .miroir { transform: scaleX(-1); }
+[data-style='chateau'] .ch-archer .tabard { left: 3px; top: 20px; width: 24px; height: 14px; border-radius: 10px 10px 0 0; background: linear-gradient(90deg, #1f3a8a 0 50%, #7a1f1f 50%); box-shadow: inset 0 2px 0 #c9a227; }
+[data-style='chateau'] .ch-archer.b .tabard { background: linear-gradient(90deg, #7a1f1f 0 50%, #1f3a8a 50%); }
+[data-style='chateau'] .ch-archer .ceinture { left: 13px; top: 20px; width: 4px; height: 14px; background: #c9a227; }
+[data-style='chateau'] .ch-archer .visage { left: 9px; top: 8px; width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #f6d6b6, #d9a77e); }
+[data-style='chateau'] .ch-archer .oeil { left: 17px; top: 13px; width: 2px; height: 2px; border-radius: 50%; background: #3a2a1a; }
+[data-style='chateau'] .ch-archer .casque { left: 7px; top: 3px; width: 17px; height: 8px; border-radius: 9px 9px 2px 2px; background: linear-gradient(180deg, #e2e6ec, #8a929e); }
+[data-style='chateau'] .ch-archer .bord { left: 4px; top: 9px; width: 23px; height: 3px; border-radius: 2px; background: #7d8590; }
+[data-style='chateau'] .ch-archer .plumet { left: 9px; top: -3px; width: 5px; height: 9px; border-radius: 50% 50% 0 50%; background: #c4473f; transform: rotate(-25deg); }
+[data-style='chateau'] .ch-archer.b .plumet { background: #1f3a8a; }
+[data-style='chateau'] .ch-archer .bras { left: 18px; top: 21px; width: 12px; height: 4px; border-radius: 2px; background: #e0b48e; }
+[data-style='chateau'] .ch-archer .arc { left: 24px; top: 2px; width: 10px; height: 30px; box-sizing: border-box; border-right: 2.5px solid #8a5a2b; border-radius: 0 60% 60% 0 / 0 50% 50% 0; }
+[data-style='chateau'] .ch-archer .corde { left: 26px; top: 3px; width: 1px; height: 28px; background: rgba(255, 255, 255, 0.85); }
+[data-style='chateau'] .ch-archer .encoche { left: 12px; top: 22px; width: 24px; height: 1.5px; background: linear-gradient(90deg, #e8e2d6 0 4px, #5a4632 4px calc(100% - 3px), #aeb4bc 0); animation: ch-encoche 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='chateau'] .ch-archer.b .encoche { animation-name: ch-encoche2; }
+[data-style='chateau'] .ch-fleche { top: 20px; width: 22px; height: 1.5px; opacity: 0; animation: ch-fleche 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='chateau'] .ch-fleche.a { left: 192px; background: linear-gradient(90deg, #e8e2d6 0 4px, #5a4632 4px calc(100% - 3px), #aeb4bc 0); }
+[data-style='chateau'] .ch-fleche.b { left: 110px; background: linear-gradient(270deg, #e8e2d6 0 4px, #5a4632 4px calc(100% - 3px), #aeb4bc 0); animation-name: ch-fleche2; }
+/* La nuit, une lueur vacille dans les meurtrières et les fenêtres. */
+[data-style='chateau'] .ch-lueur { width: 16px; height: 30px; border-radius: 8px 8px 0 0; opacity: 0; background: radial-gradient(ellipse at 50% 60%, #fff1b0 0 22%, #ffb347 45%, rgba(255, 140, 40, 0) 75%); animation: ch-lumiere 40s linear infinite; animation-delay: var(--cycle, 0s); }
+[data-style='chateau'] .ch-lueur.l1 { left: 29px; top: 94px; }
+[data-style='chateau'] .ch-lueur.l2 { left: 279px; top: 94px; animation-name: ch-lumiere2; }
+[data-style='chateau'] .ch-lueur.l3 { left: 68px; top: 126px; width: 14px; height: 20px; animation-name: ch-lumiere2; }
+[data-style='chateau'] .ch-lueur.l4 { left: 242px; top: 126px; width: 14px; height: 20px; }
+/* Le pont-levis : abaissé devant la porte ; au changement, il se relève puis redescend. */
+[data-style='chateau'] .ch-pont-cadre { position: absolute; left: 50%; top: 54px; z-index: 12; width: 104px; height: 146px; margin-left: -52px; display: block; perspective: 600px; perspective-origin: 50% -60px; pointer-events: none; }
+[data-style='chateau'] .ch-pont { position: absolute; inset: 0; display: block; border-radius: 52px 52px 0 0; transform-origin: 50% 100%; transform: rotateX(-75deg);
+  background: linear-gradient(180deg, transparent 28%, #3a2a1a 28% 31%, transparent 31% 70%, #3a2a1a 70% 73%, transparent 73%), repeating-linear-gradient(90deg, #8a5c32 0 12px, #6b4423 12px 13px); box-shadow: inset 0 0 0 3px #4a3220; }
+[data-style='chateau'] .ch-pont.v0 { animation: ch-pont-0 1.8s cubic-bezier(.45, 0, .35, 1); }
+[data-style='chateau'] .ch-pont.v1 { animation: ch-pont-1 1.8s cubic-bezier(.45, 0, .35, 1); }
+[data-style='chateau'] .ly-points { margin-top: 6px; align-items: center; }
+[data-style='chateau'] .ly-points i { width: 6px; height: 6px; border-radius: 0; background: rgba(255, 255, 255, 0.45); transform: rotate(45deg); }
+[data-style='chateau'] .ly-points i.on { width: 8px; height: 8px; background: #c9a227; }
+[data-style='chateau'] .ly-nom { font-family: var(--titre); font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+[data-style='chateau'] .ly-nom span { font-weight: 400; color: #fff; }
+[data-style='chateau'] .ly-fusee { z-index: 14; width: 40px; height: 40px; border-radius: 4px; border: 2px solid #c9a227; background: rgba(243, 230, 196, 0.92); color: #7a1f1f; }
+[data-style='chateau'] .ly-fusee:focus-visible { outline: 2px solid #c9a227; outline-offset: 2px; }
+[data-style='chateau'] .ly-fusee .chevron-mode { display: block; width: 10px; height: 10px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: translateX(-2px) rotate(45deg); }
+[data-style='chateau'] .ly-fusee.prec .chevron-mode { transform: translateX(2px) rotate(-135deg); }
+
+/* ---------- les tuiles ; la semaine en étendards ---------- */
+[data-style='chateau'] .ly-tuile { position: relative; overflow: hidden; border: 1.5px solid #7a5a2a; border-radius: 3px; background: #f3e6c4; color: #3b2a14; }
+[data-style='chateau'] .ly-tuile-haut { font-family: var(--titre); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b5434; }
+[data-style='chateau'] .ly-tuile-haut svg { color: #7a1f1f; }
+[data-style='chateau'] .ly-tuile > b { font-size: 20px; font-weight: 700; letter-spacing: 0; color: #3b2a14; }
+[data-style='chateau'] .ly-tuile > small { color: #6b5434; }
+[data-style='chateau'] .ly-segments { position: relative; align-self: stretch; display: flex; justify-content: space-between; align-items: flex-end; gap: 0; height: 26px; overflow: visible; }
+[data-style='chateau'] .ly-segments i { position: relative; flex: none; width: 18px; height: 26px; background: transparent; border-radius: 0; transform-origin: 50% 0; }
+[data-style='chateau'] .ly-segments i::before { content: ''; position: absolute; inset: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); background: rgba(59, 42, 20, 0.16); }
+[data-style='chateau'] .ly-segments i.on::before { background: #1f3a8a; box-shadow: inset 0 3px 0 #c9a227; }
+[data-style='chateau'] .ly-segments i.on:nth-child(even)::before { background: #7a1f1f; }
+/* L'étendard du jour se hisse, à chaque arrivée sur « Aujourd'hui ». */
+[data-style='chateau'] .ly-segments i.auj.on { animation: ch-hisse 1s cubic-bezier(.3, 1.4, .5, 1) 0.3s both; }
+/* 5 / 5 (et 7) : sonnerie de trompette, les cinq claquent au vent. */
+[data-style='chateau'] .ly-segments.plein:not(.b6) i.on { animation: ch-claque 0.9s ease-in-out both; }
+[data-style='chateau'] .ly-segments.plein:not(.b6) i.on:nth-child(1) { animation-delay: 0.6s; }
+[data-style='chateau'] .ly-segments.plein:not(.b6) i.on:nth-child(2) { animation-delay: 0.7s; }
+[data-style='chateau'] .ly-segments.plein:not(.b6) i.on:nth-child(3) { animation-delay: 0.8s; }
+[data-style='chateau'] .ly-segments.plein:not(.b6) i.on:nth-child(4) { animation-delay: 0.9s; }
+[data-style='chateau'] .ly-segments.plein:not(.b6) i.on:nth-child(5) { animation-delay: 1s; }
+[data-style='chateau'] .ly-tuile:has(.ly-segments.plein:not(.b6))::before { content: ''; position: absolute; right: 12px; top: 12px; width: 30px; height: 11px; opacity: 0; transform-origin: 0 50%;
+  background: linear-gradient(90deg, #e8c547, #b8912a) 18px 0 / 12px 11px no-repeat, linear-gradient(#c9a227, #c9a227) 0 4px / 20px 3px no-repeat;
+  clip-path: polygon(0 36%, 60% 36%, 100% 0, 100% 100%, 60% 64%, 0 64%); animation: ch-trompette 2.2s ease-out 0.2s both; }
+[data-style='chateau'] .ly-tuile:has(.ly-segments.plein:not(.b6))::after { content: '♪ ♫ ♪'; position: absolute; right: 6px; top: 18px; font-size: 13px; color: #7a1f1f; opacity: 0; letter-spacing: 2px; animation: ch-notes 1.4s ease-out 0.6s both; }
+/* 6 et 7 jours : brodés d'or, qui chatoient. */
+[data-style='chateau'] .ly-segments:is(.b6, .b7) i.on::before { background: radial-gradient(circle at 50% 38%, #f6dc7a 0 2.5px, transparent 3px), #1f3a8a; box-shadow: inset 0 3px 0 #e8c547, inset 2px 0 0 #e8c547, inset -2px 0 0 #e8c547; animation: ch-or 1.6s ease-in-out infinite alternate, ch-brode 0.9s ease-out 0.3s both; }
+[data-style='chateau'] .ly-segments:is(.b6, .b7) i.on:nth-child(even)::before { background: radial-gradient(circle at 50% 38%, #f6dc7a 0 2.5px, transparent 3px), #7a1f1f; }
+[data-style='chateau'] .ly-segments:is(.b6, .b7) i.on:nth-child(2)::before { animation-delay: -0.3s, 0.42s; }
+[data-style='chateau'] .ly-segments:is(.b6, .b7) i.on:nth-child(3)::before { animation-delay: -0.6s, 0.54s; }
+[data-style='chateau'] .ly-segments:is(.b6, .b7) i.on:nth-child(4)::before { animation-delay: -0.9s, 0.66s; }
+[data-style='chateau'] .ly-segments:is(.b6, .b7) i.on:nth-child(5)::before { animation-delay: -1.2s, 0.78s; }
+[data-style='chateau'] .ly-tuile:has(.ly-segments.b6) { box-shadow: 0 0 0 1px #c9a227; }
+/* 7 jours : une couronne sur chaque étendard, des confettis d'or, une lueur. */
+[data-style='chateau'] .ly-segments.b7 i.on::after { content: ''; position: absolute; left: 50%; top: -13px; width: 14px; height: 9px; margin-left: -7px; background: linear-gradient(180deg, #f6dc7a, #c9a227); clip-path: polygon(0 100%, 0 20%, 25% 60%, 50% 0, 75% 60%, 100% 20%, 100% 100%); animation: ch-couronne 0.6s cubic-bezier(.3, 1.6, .5, 1) 1.1s both; }
+[data-style='chateau'] .ly-segments.b7 i.on:nth-child(2)::after { animation-delay: 1.25s; }
+[data-style='chateau'] .ly-segments.b7 i.on:nth-child(3)::after { animation-delay: 1.4s; }
+[data-style='chateau'] .ly-segments.b7 i.on:nth-child(4)::after { animation-delay: 1.55s; }
+[data-style='chateau'] .ly-segments.b7 i.on:nth-child(5)::after { animation-delay: 1.7s; }
+[data-style='chateau'] .ly-segments.b7::before { content: ''; position: absolute; left: -14px; right: -14px; top: -84px; height: 20px; pointer-events: none;
+  background: linear-gradient(#e8c547, #e8c547) 6% 0 / 5px 8px no-repeat, linear-gradient(#c9a227, #c9a227) 22% 10px / 5px 8px no-repeat, linear-gradient(#f6dc7a, #f6dc7a) 40% 4px / 5px 8px no-repeat, linear-gradient(#e8c547, #e8c547) 58% 12px / 5px 8px no-repeat, linear-gradient(#c9a227, #c9a227) 76% 2px / 5px 8px no-repeat, linear-gradient(#f6dc7a, #f6dc7a) 94% 8px / 5px 8px no-repeat;
+  animation: ch-confetti 2.6s linear infinite; }
+[data-style='chateau'] .ly-tuile:has(.ly-segments.b7) { animation: ch-lueur 1.8s ease-in-out infinite alternate; }
+
+/* ---------- Révision : le parchemin roulé ; les notes en écus ---------- */
+[data-style='chateau'] .studybg { background-color: #6a6357; background-image: linear-gradient(#57504a 2px, transparent 2px), linear-gradient(90deg, #57504a 2px, transparent 2px) !important; background-size: 46px 24px; background-repeat: repeat; }
+[data-style='chateau'] .studybg::after { display: none; }
+[data-style='chateau'] .studytop .pos { font-family: var(--titre); font-size: 14px; font-weight: 700; color: #f3e6c4; }
+[data-style='chateau'] .studytop .stop { background: #f3e6c4; color: #7a1f1f; border: 1.5px solid #c9a227; border-radius: 4px; }
+[data-style='chateau'] .progressbar { height: 10px; border-radius: 0; background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 0 0 1px #c9a227; }
+[data-style='chateau'] .progressbar i { border-radius: 0; background: #c9a227; }
+[data-style='chateau'] .ly-combo { border-radius: 2px; background: #7a1f1f; color: #f3e6c4; border: 1px solid #c9a227; }
+[data-style='chateau'] .studystage { --ink: #3b2a14; position: relative; margin: 26px 12px 22px; padding: 34px 22px 36px; border: none; border-radius: 0; background: #f3e6c4; color: #3b2a14; box-shadow: none; overflow: visible; }
+[data-style='chateau'] .studystage::before, [data-style='chateau'] .studystage::after { content: ''; position: absolute; left: -6px; right: -6px; z-index: 1; height: 18px; border-radius: 9px; background: linear-gradient(180deg, #e2cd9c, #a88a52); box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35); pointer-events: none; }
+[data-style='chateau'] .studystage::before { top: -8px; }
+[data-style='chateau'] .studystage::after { bottom: -8px; }
+[data-style='chateau'] .studystage .tag { border: none; border-radius: 0; background: transparent; color: #7a1f1f; font-family: var(--titre); font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+[data-style='chateau'] .ask { font-family: var(--titre); color: #7a1f1f; }
+[data-style='chateau'] .word, [data-style='chateau'] .answer { font-family: var(--deco); font-style: normal; font-weight: 700; letter-spacing: 0; line-height: 1.2; color: #3b2a14; }
+[data-style='chateau'] .answer { padding-bottom: 4px; }
+[data-style='chateau'] .wordsmall { color: #6b5434; }
+[data-style='chateau'] .ruleline { position: relative; width: 96px; height: 7px; border: none; background: linear-gradient(#7a5a2a, #7a5a2a) 0 50% / 40px 1px no-repeat, linear-gradient(#7a5a2a, #7a5a2a) 100% 50% / 40px 1px no-repeat; }
+[data-style='chateau'] .ruleline::before { content: ''; position: absolute; left: 50%; top: 0; width: 7px; height: 7px; margin-left: -3.5px; background: #7a1f1f; transform: rotate(45deg); }
+[data-style='chateau'] .example { font-style: normal; color: #6b5434; }
+[data-style='chateau'] .speak { background: transparent; border: 1.5px solid #7a1f1f; border-radius: 0; color: #7a1f1f; font-family: var(--titre); font-size: 12.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+[data-style='chateau'] .tap-hint { color: #f3e6c4; }
+[data-style='chateau'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+[data-style='chateau'] .grades .grade { position: relative; min-height: 100px; padding: 68px 0 4px; border: none; border-radius: 0; background: transparent; box-shadow: none; color: #f3e6c4; font-family: var(--titre); font-size: 14px; font-weight: 700; letter-spacing: 0; }
+[data-style='chateau'] .grades .grade small { font-family: var(--sans); font-size: 11.5px; font-weight: 400; color: rgba(243, 230, 196, 0.85); }
+[data-style='chateau'] .grades .grade::before, [data-style='chateau'] .grades .grade::after { content: ''; position: absolute; left: 50%; clip-path: polygon(0 0, 100% 0, 100% 58%, 50% 100%, 0 58%); }
+[data-style='chateau'] .grades .grade::before { top: 0; width: 54px; height: 62px; margin-left: -27px; background: #c9a227; transform-origin: 50% 31px; }
+[data-style='chateau'] .grades .grade::after { top: 2px; width: 46px; height: 54px; margin-left: -23px; background: var(--c); transform-origin: 50% 29px; }
+[data-style='chateau'] .grades .g-again { --c: #8b1e1e; }
+[data-style='chateau'] .grades .g-hard { --c: #b5651d; }
+[data-style='chateau'] .grades .g-good { --c: #1f3a8a; }
+[data-style='chateau'] .grades .g-easy { --c: #2e6b3a; }
+/* La note frappe l'écu, qui vibre ; Raté le fend, Bien et Facile font jaillir des éclats d'or. */
+[data-style='chateau'] .grades .grade.frappe::before, [data-style='chateau'] .grades .grade.frappe::after, [data-style='chateau'] .grades .grade.frappe .g-fx { animation: ch-ecu 0.8s ease-out; }
+[data-style='chateau'] .grades .g-hard.frappe::before, [data-style='chateau'] .grades .g-hard.frappe::after, [data-style='chateau'] .grades .g-hard.frappe .g-fx { animation-duration: 1s; }
+[data-style='chateau'] .grades .g-fx { position: absolute; left: 50%; top: 0; z-index: 2; width: 54px; height: 62px; margin-left: -27px; display: block; pointer-events: none; transform-origin: 50% 31px; }
+[data-style='chateau'] .grades .g-fx i { position: absolute; display: none; opacity: 0; }
+[data-style='chateau'] .grades .grade.frappe .g-fx i:nth-child(1) { display: block; left: 50%; top: 45%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 250, 220, 0.95), rgba(255, 230, 150, 0) 70%); animation: ch-choc 0.5s ease-out; }
+[data-style='chateau'] .grades .g-again.frappe .g-fx i:nth-child(2) { display: block; left: 21px; top: 6px; width: 12px; height: 44px; background: #2a1408; transform-origin: 50% 0; clip-path: polygon(40% 0, 60% 0, 45% 25%, 75% 45%, 40% 70%, 60% 100%, 45% 100%, 25% 70%, 55% 45%, 25% 25%); animation: ch-fente 0.8s ease-out both; }
+[data-style='chateau'] .grades :is(.g-good, .g-easy).frappe .g-fx i:nth-child(n+2) { display: block; left: 25px; top: 26px; width: 5px; height: 5px; background: #f6dc7a; animation: ch-eclat 0.7s ease-out 0.05s; }
+[data-style='chateau'] .grades :is(.g-good, .g-easy).frappe .g-fx i:nth-child(2) { --dx: -26px; --dy: -18px; }
+[data-style='chateau'] .grades :is(.g-good, .g-easy).frappe .g-fx i:nth-child(3) { --dx: 24px; --dy: -22px; }
+[data-style='chateau'] .grades :is(.g-good, .g-easy).frappe .g-fx i:nth-child(4) { --dx: -20px; --dy: 18px; }
+[data-style='chateau'] .grades :is(.g-good, .g-easy).frappe .g-fx i:nth-child(5) { --dx: 26px; --dy: 14px; }
+
+@keyframes ch-nuage { from { transform: translateX(-160px); } to { transform: translateX(110vw); } }
+@keyframes ch-drapeau { 0% { transform: scaleX(1) skewY(0deg); } 50% { transform: scaleX(0.82) skewY(7deg); } 100% { transform: scaleX(0.95) skewY(-5deg); } }
+@keyframes ch-banniere { from { transform: rotate(-3.5deg); } to { transform: rotate(3.5deg); } }
+@keyframes ch-nuit { 0%, 42% { opacity: 0; } 52%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ch-ombre { 0%, 42% { filter: none; } 52%, 92% { filter: brightness(0.5) saturate(0.7); } 100% { filter: none; } }
+@keyframes ch-lune { 0%, 44% { opacity: 0; transform: translateY(12px); } 56%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
+@keyframes ch-lumiere { 0%, 57% { opacity: 0; } 59% { opacity: 1; } 61% { opacity: 0.4; } 63% { opacity: 1; } 66% { opacity: 0.55; } 69% { opacity: 1; } 72% { opacity: 0.6; } 75% { opacity: 1; } 78% { opacity: 0.45; } 81% { opacity: 0.95; } 84% { opacity: 0.7; } 88%, 100% { opacity: 0; } }
+@keyframes ch-lumiere2 { 0%, 59% { opacity: 0; } 61% { opacity: 0.9; } 64% { opacity: 0.5; } 67% { opacity: 1; } 70% { opacity: 0.4; } 74% { opacity: 1; } 77% { opacity: 0.7; } 80% { opacity: 1; } 83% { opacity: 0.5; } 86% { opacity: 0.9; } 89%, 100% { opacity: 0; } }
+@keyframes ch-archer { 0%, 15% { transform: translateY(36px); } 19%, 23.4% { transform: none; } 24% { transform: translateX(-2px); } 25%, 27% { transform: none; } 31%, 100% { transform: translateY(36px); } }
+@keyframes ch-archer2 { 0%, 16.5% { transform: translateY(36px); } 20.5%, 24.9% { transform: none; } 25.5% { transform: translateX(-2px); } 26.5%, 28.5% { transform: none; } 32.5%, 100% { transform: translateY(36px); } }
+@keyframes ch-encoche { 0%, 23.4% { opacity: 1; } 23.5%, 100% { opacity: 0; } }
+@keyframes ch-encoche2 { 0%, 24.9% { opacity: 1; } 25%, 100% { opacity: 0; } }
+@keyframes ch-fleche { 0%, 23.4% { opacity: 0; transform: none; } 23.5% { opacity: 1; transform: none; } 24.5% { transform: translate(120px, -30px) rotate(-10deg); opacity: 1; } 25.5% { transform: translate(250px, -48px) rotate(-4deg); opacity: 1; } 25.6%, 100% { opacity: 0; transform: translate(250px, -48px); } }
+@keyframes ch-fleche2 { 0%, 24.9% { opacity: 0; transform: none; } 25% { opacity: 1; transform: none; } 26% { transform: translate(-120px, -30px) rotate(10deg); opacity: 1; } 27% { transform: translate(-250px, -48px) rotate(4deg); opacity: 1; } 27.1%, 100% { opacity: 0; transform: translate(-250px, -48px); } }
+@keyframes ch-pont-0 { 0% { transform: rotateX(-75deg); } 35%, 60% { transform: rotateX(0deg); } 86% { transform: rotateX(-79deg); } 93% { transform: rotateX(-72deg); } 100% { transform: rotateX(-75deg); } }
+@keyframes ch-pont-1 { 0% { transform: rotateX(-75deg); } 35%, 60% { transform: rotateX(0deg); } 86% { transform: rotateX(-79deg); } 93% { transform: rotateX(-72deg); } 100% { transform: rotateX(-75deg); } }
+@keyframes ch-entre-0 { 0%, 62% { opacity: 0; } 70%, 100% { opacity: 1; } }
+@keyframes ch-entre-1 { 0%, 62% { opacity: 0; } 70%, 100% { opacity: 1; } }
+@keyframes ch-sort-0 { 0%, 28% { opacity: 1; } 33%, 100% { opacity: 0; } }
+@keyframes ch-sort-1 { 0%, 28% { opacity: 1; } 33%, 100% { opacity: 0; } }
+@keyframes ch-hisse { 0% { transform: translateY(30px) scaleY(0.4); opacity: 0.2; } 60% { transform: translateY(-4px) scaleY(1.06); opacity: 1; } 80% { transform: skewX(-8deg); } 100% { transform: none; opacity: 1; } }
+@keyframes ch-claque { 0%, 100% { transform: none; } 20% { transform: skewX(-16deg) scaleY(0.88); } 40% { transform: skewX(12deg) scaleY(1.05); } 60% { transform: skewX(-6deg); } 80% { transform: skewX(3deg); } }
+@keyframes ch-trompette { 0% { transform: translateX(40px) rotate(14deg); opacity: 0; } 20% { transform: rotate(-8deg); opacity: 1; } 30% { transform: rotate(-8deg) scale(1.15); } 40%, 75% { transform: rotate(-8deg); opacity: 1; } 100% { transform: translateX(40px) rotate(14deg); opacity: 0; } }
+@keyframes ch-notes { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-6px, -30px) rotate(10deg); opacity: 0; } }
+@keyframes ch-or { from { filter: brightness(1); } to { filter: brightness(1.28); } }
+@keyframes ch-brode { 0% { filter: saturate(0) brightness(1.9); } 100% { filter: none; } }
+@keyframes ch-couronne { 0% { transform: translateY(8px) scale(0); } 100% { transform: none; } }
+@keyframes ch-confetti { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(130px); opacity: 0; } }
+@keyframes ch-lueur { from { box-shadow: 0 0 0 2px #c9a227, 0 0 6px rgba(201, 162, 39, 0.5); } to { box-shadow: 0 0 0 2px #e8c547, 0 0 20px rgba(232, 197, 71, 0.95); } }
+@keyframes ch-ecu { 0% { transform: none; } 10% { transform: rotate(-9deg) scale(1.08); } 20% { transform: rotate(8deg); } 30% { transform: rotate(-6deg); } 40% { transform: rotate(5deg); } 50% { transform: rotate(-3deg); } 60% { transform: rotate(2deg); } 70% { transform: rotate(-1deg); } 100% { transform: none; } }
+@keyframes ch-choc { 0% { transform: scale(0.3); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+@keyframes ch-fente { 0% { transform: scaleY(0); opacity: 1; } 30% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
+@keyframes ch-eclat { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(90deg); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='chateau'] *, [data-style='chateau'] *::before, [data-style='chateau'] *::after, .ch-salle * { animation: none !important; transition: none !important; }
+}

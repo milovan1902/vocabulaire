@@ -18,7 +18,7 @@
  * n'était qu'une erreur de vocabulaire. Ici, c'est « à revoir » : ce qui est
  * dû ce matin, et rien d'autre.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
@@ -189,6 +189,9 @@ export function Today({
   /* CHANTIER 166 — le temps de parole : undefined = en cours de lecture,
      null = sans compte, 'erreur' = service injoignable (hors ligne…). */
   const [budget, setBudget] = useState<Budget | null | 'erreur' | undefined>(undefined);
+  /* CHANTIER 235 — Plage et surf : l'éclaboussure de « À l'eau », avant d'entrer en révision. */
+  const [plouf, setPlouf] = useState(0);
+  const ploufEnCours = useRef(false);
 
   useEffect(() => {
     /* CHANTIER 229 — toutes les apparences montrent la tuile « Parler ». */
@@ -467,6 +470,11 @@ export function Today({
         ? { defi: 'La voie du jour', go: 'Entrer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} sushis` }
       : style === 'jazz'
         ? { defi: 'Ce soir sur scène', go: 'Lever de rideau', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} mesures` }
+      /* CHANTIER 235 — Plage et surf : la session ; Château : la quête. */
+      : style === 'plage'
+        ? { defi: 'Session du jour', go: 'À l’eau', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} vagues` }
+      : style === 'chateau'
+        ? { defi: 'Quête du jour', go: 'Entrer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} pierres posées` }
       : style === 'cabinet'
         ? { defi: 'L’expérience du jour', go: 'Expérimenter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} échantillons` }
       : style === 'tv'
@@ -504,7 +512,7 @@ export function Today({
       : style === 'fashion' ? <i className="chevron-mode" />
       /* CHANTIER 216 — Cinéma muet : un triangle de projecteur ; Bibliothèque : un chevron fin. */
       : style === 'cinema' ? <i className="fleche-cine" />
-      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' ? <i className="chevron-mode" />
+      : style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'plage' || style === 'chateau' ? <i className="chevron-mode" />
       : style === 'bd' ? <Eclair />
       : style === 'manga' ? <i className="fleche-manga" />
       : <Fusee />;
@@ -594,7 +602,7 @@ export function Today({
           <Eventail
             paquets={aFaire}
             centre={iCentre}
-            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : 'eventail'}
+            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : style === 'plage' ? 'planches' : style === 'chateau' ? 'chateau' : 'eventail'}
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
@@ -611,7 +619,7 @@ export function Today({
             || style === 'basket' || style === 'foot' || style === 'rugby'
             || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv'
             || style === 'tapis' || style === 'salon' || style === 'station' || style === 'fashion'
-            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz') && aFaire.length > 1 && (
+            || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'plage' || style === 'chateau') && aFaire.length > 1 && (
             <>
               <button
                 className="ly-fusee prec"
@@ -633,8 +641,20 @@ export function Today({
         </div>
         <p className="ly-nom">{pc.deck.name} <span>· {masteryLabel(pc.mastery.percent)}</span></p>
 
-        <button className="btn ly-go" onClick={() => onReview(pc.deck.id)}>
+        <button
+          className="btn ly-go"
+          onClick={() => {
+            if (style === 'plage' && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+              if (ploufEnCours.current) return;
+              ploufEnCours.current = true;
+              setPlouf((p) => p + 1);
+              const id = pc.deck.id;
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, 450);
+            } else onReview(pc.deck.id);
+          }}
+        >
           {mots.go} · {Math.min(pc.due, settings.cardsPerSession)} cartes
+          {style === 'plage' && plouf > 0 && <span className={`su-gouttes v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
         </button>
 
         {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,
