@@ -802,8 +802,9 @@ body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclat
 @keyframes fa-tp-coupe-d { 0% { transform: translate(0, 0) rotate(0); } 22%, 60% { transform: translate(42px, 8px) rotate(10deg); } 80%, 100% { transform: translate(0, 0) rotate(0); } }
 @keyframes fa-tp-feuille { from { transform: translate(var(--x), 8px) rotate(var(--r)); opacity: 0; } 30% { opacity: 1; } to { transform: translate(0, 0) rotate(0); opacity: 1; } }
 @keyframes fa-tp-tasse { 0% { transform: scale(1, 1); } 40% { transform: scale(1.03, 0.96); } 100% { transform: scale(1, 1); } }
-/* « Cette semaine » à 5 / 5 : les couleurs s'effacent, les jetons s'empilent, « Tapis ! », la pluie de jetons (FondAnime.tsx). */
-[data-style='tapis'] .ly-segments.plein i { animation: fa-tp-efface 4.8s ease both; }
+/* « Cette semaine » à 5 / 5 : les couleurs s'effacent, les jetons s'empilent, « Tapis ! », la pluie de jetons (FondAnime.tsx).
+   CHANTIER 241 — remplacé par la main de poker de la semaine (poker.css) : les cartes restent lisibles, plus de jetons poussés. */
+.fa-eclats.tapis .fa-tp-cinq { display: none; }
 .fa-tp-cinq { position: absolute; width: 0; height: 0; display: block; }
 .fa-tp-cinq i, .fa-tp-cinq b { position: absolute; display: block; }
 .fa-tp-cinq .pousse { top: -4px; width: 22px; height: 8px; border-radius: 50%; background: repeating-linear-gradient(90deg, var(--c) 0 4px, #f4ecd8 4px 7px); box-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.45); opacity: 0; animation: fa-tp-pousse 3s ease-in-out both; }
@@ -889,7 +890,7 @@ body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclat
   /* Salon privé : ni reflet, ni cigare, ni quinte flush. */
   .fa-sl-reflet, .fa-sl-cigare, .fa-sl-quinte { display: none; }
   /* Tapis vert : la lampe éclaire sans bouger, sans fumée ; la pile de jetons reste posée, sans croupier ni battage. */
-  .fond-anime .fa-tp-lampe, [data-style='tapis'] .ly-segments.plein i { animation: none; }
+  .fond-anime .fa-tp-lampe { animation: none; }
   .fa-tp-lampe .fumee, .fa-tp-rateau, .fa-tp-riffle { display: none; }
   /* La serveuse reste posée en haut de l'encart, immobile. */
   .fa-tour .fa-serveuse { animation: none; offset-distance: 12%; }

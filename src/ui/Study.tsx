@@ -322,7 +322,9 @@ export function Study({
                   /* CHANTIER 239 — Pelouse : le ballon touché part (roule, à côté, poteau, lucarne). */
                   : style === 'foot' ? 1250
                   /* CHANTIER 240 — Mêlée : le ballon touché part (en avant, à côté, poteau, entre les poteaux). */
-                  : style === 'rugby' ? 1350 : 0;
+                  : style === 'rugby' ? 1350
+                  /* CHANTIER 241 — Tapis vert : le jeton touché part au pot (se coucher, suivre, relancer, tapis). */
+                  : style === 'tapis' ? 1350 : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
@@ -331,7 +333,10 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis') && (
+                /* CHANTIER 241 — Tapis vert : dix morceaux (cartes jetées, jetons de la mise, jetons qui rebondissent). */
+                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : 5 }, (_, k) => <i key={k} />)}</i>
+              )}
             </button>
           ))}
         </div>
