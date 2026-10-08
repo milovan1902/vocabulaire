@@ -777,7 +777,15 @@ function joueurAuHasard(): Joueur {
   return { id: Date.now() + Math.random(), d: `M ${f(a.p[0])} ${f(a.p[1])} C ${cx()} ${cy()}, ${cx()} ${cy()}, ${f(b.p[0])} ${f(b.p[1])}`, dur: Math.max(2.6, lg / (110 + Math.random() * 60)) };
 }
 const OMBRES = [-150, 150, -35, 35];
+/* CHANTIER 239 — l'ambiance qui s'emballe : les pylônes s'allument plus fort et clignotent, la tribune fait une ola
+   rapide, des fumigènes montent, une salve de flashs, une bande de lumière balaie la pelouse (sport.css). */
+const FUMIGENES: Array<[string, string, number]> = [['16%', 'rgba(217, 54, 54, 0.85)', -30], ['38%', 'rgba(255, 212, 0, 0.85)', 20], ['62%', 'rgba(47, 111, 214, 0.85)', -20], ['84%', 'rgba(217, 54, 54, 0.85)', 30]];
 function Stade() {
+  const fete = useFete();
+  useEffect(() => {
+    const fond = document.querySelector('.fond-anime.foot');
+    fond?.classList.toggle('fa-fete', fete > 0);
+  }, [fete]);
   const [joueurs, setJoueurs] = useState<Joueur[]>([]);
   useCadence(800, 1200, 3000, () => {
     setJoueurs((l) => {
@@ -804,6 +812,15 @@ function Stade() {
         </span>
       ))}
       <Tribune />
+      {fete > 0 && (
+        <span key={fete} className="fa-salve">
+          <i className="fa-f-bande" />
+          {FUMIGENES.map(([x, c, dx], k) => <i key={k} className="fa-f-fumee" style={{ left: x, background: c, '--dx': `${dx}px`, animationDelay: `${k * 0.25}s` } as Css} />)}
+          {Array.from({ length: 10 }, (_, k) => (
+            <span key={k} className="fa-flash" style={{ left: `${6 + ((k * 37) % 88)}%`, top: `calc(env(safe-area-inset-top) + ${14 + ((k * 13) % 44)}px)`, '--t': `${10 + (k % 4) * 3}px`, animationDelay: `${k * 260}ms` } as Css}><i /><i /><i /></span>
+          ))}
+        </span>
+      )}
     </span>
   );
 }

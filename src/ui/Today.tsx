@@ -607,7 +607,7 @@ export function Today({
           <Eventail
             paquets={aFaire}
             centre={iCentre}
-            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : style === 'plage' ? 'planches' : style === 'chateau' ? 'chateau' : style === 'jungle' ? 'caisses' : style === 'western' ? 'train' : style === 'basket' ? 'panier' : 'eventail'}
+            forme={style === 'orbite' ? 'orbite' : style === 'fashion' ? 'portant' : style === 'cinema' ? 'pellicule' : style === 'biblio' ? 'rayon' : style === 'patisserie' ? 'cloche' : style === 'cabinet' ? 'bocaux' : style === 'japon' ? 'maison' : style === 'jazz' ? 'pupitres' : style === 'plage' ? 'planches' : style === 'chateau' ? 'chateau' : style === 'jungle' ? 'caisses' : style === 'western' ? 'train' : style === 'basket' ? 'panier' : style === 'foot' ? 'but' : 'eventail'}
             onCentre={(i) => choisir(aFaire[i].deck.id)}
             onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
           />
@@ -650,18 +650,18 @@ export function Today({
           className="btn ly-go"
           onClick={() => {
             /* CHANTIER 237 — Jungle (les feuilles) et Pacific Express (la vapeur) partent comme l'éclaboussure de Plage. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
           {mots.go} · {Math.min(pc.due, settings.cardsPerSession)} cartes
-          {(style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket') && plouf > 0 && <span className={`${style === 'jungle' ? 'jg-feuilles' : style === 'western' ? 'pe-vapeur' : style === 'basket' ? 'bk-rebond' : 'su-gouttes'} v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
+          {(style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot') && plouf > 0 && <span className={`${style === 'jungle' ? 'jg-feuilles' : style === 'western' ? 'pe-vapeur' : style === 'basket' ? 'bk-rebond' : style === 'foot' ? 'fb-sifflet' : 'su-gouttes'} v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
         </button>
 
         {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,

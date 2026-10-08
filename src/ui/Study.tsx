@@ -318,7 +318,9 @@ export function Study({
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
                   : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
-                  : style === 'basket' ? 1250 : 0;
+                  : style === 'basket' ? 1250
+                  /* CHANTIER 239 — Pelouse : le ballon touché part (roule, à côté, poteau, lucarne). */
+                  : style === 'foot' ? 1250 : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
@@ -327,7 +329,7 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot') && <i className="g-fx" aria-hidden="true"><i /><i /><i /><i /><i /></i>}
             </button>
           ))}
         </div>
