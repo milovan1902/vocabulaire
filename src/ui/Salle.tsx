@@ -216,7 +216,7 @@ function Jungle({ anime }: { anime: boolean }) {
       <span className="jg-liane" style={{ left: -12, height: 420 }}><i style={{ left: -6, top: 60, transform: 'rotate(-30deg)' }} /><i style={{ left: 2, top: 140, transform: 'rotate(30deg)' }} /><i style={{ left: -6, top: 230, transform: 'rotate(-30deg)' }} /><i style={{ left: 2, top: 320, transform: 'rotate(30deg)' }} /></span>
       <span className="jg-liane d" style={{ right: -12, height: 360, animationDuration: '5.4s', animationDelay: '-2s' }}><i style={{ right: -6, top: 60, transform: 'rotate(-30deg)' }} /><i style={{ right: 2, top: 140, transform: 'rotate(30deg)' }} /><i style={{ right: -6, top: 230, transform: 'rotate(-30deg)' }} /><i style={{ right: 2, top: 320, transform: 'rotate(30deg)' }} /></span>
       {FOUGERES.map(([c, x, h, a, d, r, col], k) => (
-        <i key={k} className="jg-fougere" style={{ ...(c === 'g' ? { left: x } : { right: x }), height: h, '--r': `${a}deg`, '--c': col, animationDuration: `${d}s`, animationDelay: `${r}s` } as CSSProperties} />
+        <i key={k} className="jg-fougere" style={{ left: c === 'g' ? x : undefined, right: c === 'd' ? x : undefined, height: h, '--r': `${a}deg`, '--c': col, animationDuration: `${d}s`, animationDelay: `${r}s` } as CSSProperties} />
       ))}
     </div>
   );
