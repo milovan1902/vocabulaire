@@ -30,6 +30,9 @@
   --anneau: #ff7a59;
   --plage: linear-gradient(180deg, #7fd0f2 0, #c9eef9 300px, #35c2c9 300px, #1b9aae 432px, #f2dcae 432px, #e8c98e 100%);
 }
+/* CHANTIER 236 — sur « Aujourd'hui », le fond n'est plus qu'un sable uni : le ciel et la mer sont peints
+   par la scène des planches (plus bas), au niveau du paquet, quel que soit l'écran. */
+[data-style='plage'] body:has(.today.ly) { background-image: none; overflow-x: clip; }
 [data-style='plage'] body { font-family: var(--sans); color: var(--ink); background-color: #e8c98e; background-image: var(--plage); background-repeat: no-repeat; background-attachment: fixed; }
 [data-style='plage'] .screen-title, [data-style='plage'] .topbar h1, [data-style='plage'] .welcome-head h1, [data-style='plage'] .done h2, [data-style='plage'] .sheet h3, [data-style='plage'] .today-count b { font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0; }
 [data-style='plage'] .tabbar { background: #fffaf0; border-top: 3px solid #ff7a59; }
@@ -46,14 +49,7 @@
 body:not(:has(.today.ly)) .su-salle { display: none; }
 .su-salle i { position: absolute; display: block; }
 .su-salle .su-soleil { right: -40px; top: -40px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #fff7c4 0 34%, rgba(255, 221, 102, 0.5) 36%, transparent 70%); animation: su-soleil 3s ease-in-out infinite alternate; }
-.su-salle .su-eau { left: 0; right: 0; top: 312px; height: 110px; background: repeating-linear-gradient(180deg, transparent 0 16px, rgba(255, 255, 255, 0.3) 16px 18px); animation: su-scintille 2.2s ease-in-out infinite alternate; }
-.su-salle .su-eclat { width: 9px; height: 9px; background: #fff; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: su-eclat 2.4s ease-in-out infinite; }
-.su-salle .su-eclat.e1 { left: 17%; top: 338px; animation-delay: -0.3s; }
-.su-salle .su-eclat.e2 { left: 69%; top: 362px; width: 8px; height: 8px; animation-duration: 2.8s; animation-delay: -1.4s; }
-.su-salle .su-eclat.e3 { left: 42%; top: 398px; width: 7px; height: 7px; animation-duration: 2.2s; animation-delay: -0.9s; }
-.su-salle .su-eclat.e4 { left: 84%; top: 326px; animation-duration: 3s; animation-delay: -2s; }
-.su-salle .su-mouille { left: -20px; right: -20px; top: 430px; height: 30px; border-radius: 50%; background: #dfc289; animation: su-ecume 3s ease-in-out infinite alternate; }
-.su-salle .su-ecume { left: -20px; right: -20px; top: 422px; height: 20px; border-radius: 50%; background: #fdfaf2; animation: su-ecume 3s ease-in-out -0.2s infinite alternate; }
+[data-style='plage'] .su-plage .su-eclat { z-index: 0; width: 9px; height: 9px; background: #fff; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: su-eclat 2.4s ease-in-out infinite; }
 
 /* ---------- l'en-tête ---------- */
 [data-style='plage'] .ly-niv { width: 44px; height: 44px; border: none; border-radius: 14px; background: #ff7a59; color: #fff; box-shadow: 0 3px 0 #d65a3c; }
@@ -79,6 +75,16 @@ body:not(:has(.today.ly)) .su-salle { display: none; }
 
 /* ---------- les paquets : les planches (Eventail.tsx, forme 'planches') ---------- */
 [data-style='plage'] .ly-scene { position: relative; }
+/* CHANTIER 236 — le ciel et la mer, d'un bord à l'autre de l'écran, derrière les planches ; le rivage passe
+   30 px au-dessus du bas de la scène : le pied des planches, les coquillages et le bernard-l'ermite sont
+   sur la grande plage. L'écume va et vient sur le rivage. */
+[data-style='plage'] .today.ly .ly-scene::before { content: ''; position: absolute; left: 50%; bottom: 30px; z-index: -1; width: 100vw; height: 1600px; margin-left: -50vw; pointer-events: none;
+  background: repeating-linear-gradient(180deg, transparent 0 16px, rgba(255, 255, 255, 0.22) 16px 18px) 0 100% / 100% 128px no-repeat, linear-gradient(180deg, #35c2c9, #1b9aae) 0 100% / 100% 128px no-repeat, linear-gradient(180deg, #7fd0f2, #c9eef9) 0 0 / 100% calc(100% - 128px) no-repeat; }
+[data-style='plage'] .today.ly .ly-scene::after { content: ''; position: absolute; left: 50%; bottom: 18px; z-index: -1; width: calc(100vw + 40px); height: 22px; margin-left: calc(-50vw - 20px); border-radius: 50%; pointer-events: none; background: #fdfaf2; box-shadow: 0 7px 0 #dfc289; animation: su-ecume 3s ease-in-out infinite alternate; }
+[data-style='plage'] .su-plage .e1 { left: 6%; bottom: 96px; }
+[data-style='plage'] .su-plage .e2 { left: 88%; bottom: 70px; width: 8px; height: 8px; animation-duration: 2.8s; animation-delay: -1.4s; }
+[data-style='plage'] .su-plage .e3 { left: 14%; bottom: 46px; width: 7px; height: 7px; animation-duration: 2.2s; animation-delay: -0.9s; }
+[data-style='plage'] .su-plage .e4 { left: 80%; bottom: 112px; animation-duration: 3s; animation-delay: -2s; }
 [data-style='plage'] .eventail.planches { height: 200px; margin-top: 12px; overflow: visible; }
 [data-style='plage'] .eventail.planches .eventail-carte { top: 6px; transform-origin: 50% 100%; }
 /* Le visuel du paquet devient la planche : découpé en planche, cerclé de jaune. */
@@ -96,10 +102,9 @@ body:not(:has(.today.ly)) .su-salle { display: none; }
 [data-style='plage'] .eventail.planches.v1 .eventail-carte.centre .eventail-due { animation: su-pastille-1 1.25s ease-out; }
 [data-style='plage'] .eventail-due { right: -12px; top: 6px; background: #ff7a59; color: #fff; }
 [data-style='plage'] .eventail.planches .eventail-carte .classdot.eventail-classe { bottom: 30px; background: #fffaf0; color: #0b3d4a; border-color: #ff7a59; }
-/* Le sable : la dune où la planche est plantée, trois coquillages, le bernard-l'ermite. */
+/* Le sable : trois coquillages, le bernard-l'ermite, sur la grande plage. */
 [data-style='plage'] .su-plage { position: absolute; inset: 0; display: block; pointer-events: none; }
 [data-style='plage'] .su-plage i, [data-style='plage'] .su-plage span { position: absolute; display: block; }
-[data-style='plage'] .su-dune { left: 12%; right: 12%; bottom: -16px; z-index: 11; height: 44px; border-radius: 50%; background: #efd5a2; }
 [data-style='plage'] .su-coq { z-index: 12; border-radius: 50% 50% 5px 5px / 80% 80% 20% 20%; box-shadow: 0 2px 0 rgba(90, 61, 34, 0.18); }
 [data-style='plage'] .su-coq.c1 { left: calc(50% - 100px); bottom: -6px; width: 22px; height: 18px; background: repeating-conic-gradient(from -90deg at 50% 100%, #f9d3c2 0 11deg, #e8957f 11deg 14deg); transform: rotate(-18deg); }
 [data-style='plage'] .su-coq.c2 { left: calc(50% + 80px); bottom: -2px; width: 16px; height: 13px; background: repeating-conic-gradient(from -90deg at 50% 100%, #fff3e0 0 11deg, #e3c08f 11deg 14deg); transform: rotate(22deg); }
@@ -236,7 +241,6 @@ body:not(:has(.today.ly)) .su-salle { display: none; }
 [data-style='plage'] .grades .g-good.frappe .g-fx i:nth-child(1) { display: block; inset: 0; border-radius: 50%; border: 2px solid #fff; animation: su-onde 0.56s ease-out 0.35s both; }
 
 @keyframes su-soleil { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.08); opacity: 1; } }
-@keyframes su-scintille { from { opacity: 0.55; } to { opacity: 1; } }
 @keyframes su-eclat { 0%, 100% { transform: scale(0); opacity: 0; } 50% { transform: scale(1); opacity: 1; } }
 @keyframes su-ecume { from { transform: translateY(-5px) scaleX(0.97); } to { transform: translateY(9px) scaleX(1.03); } }
 @keyframes su-crete { from { transform: rotate(-10deg) translateY(1px); } to { transform: rotate(8deg) translateY(-2px); } }

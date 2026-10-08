@@ -151,13 +151,13 @@ function Japon({ anime }: { anime: boolean }) {
   );
 }
 
-/* CHANTIER 235 — Plage et surf : le soleil qui pulse, l'eau qui scintille, l'écume qui va et vient. */
+/* CHANTIER 235 — Plage et surf : le soleil qui pulse.
+   CHANTIER 236 — la mer, ses éclats et l'écume sont passés dans la scène des planches (plage.css,
+   .ly-scene) : la plage suit le paquet au lieu d'être peinte à hauteur fixe derrière l'écran. */
 function Plage() {
   return (
     <div className="fond-anime plage su-salle" aria-hidden="true">
-      <i className="su-soleil" /><i className="su-eau" />
-      <i className="su-eclat e1" /><i className="su-eclat e2" /><i className="su-eclat e3" /><i className="su-eclat e4" />
-      <i className="su-mouille" /><i className="su-ecume" />
+      <i className="su-soleil" />
     </div>
   );
 }

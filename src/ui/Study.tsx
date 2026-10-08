@@ -36,10 +36,13 @@ const GRADES: Array<{ key: Grade; label: string; className: string }> = [
    une ligne, et on réduit la police jusqu'à ce que le plus long tienne dans la largeur de la
    carte. Les mots peuvent toujours passer à la ligne ENTRE eux, jamais au milieu.
    Recalculé à chaque carte, quand la carte change de largeur et quand les polices arrivent.
-   En tout dernier recours (sous 12 px), le mot se coupe. */
+   En tout dernier recours (sous 12 px), le mot se coupe.
+   CHANTIER 236 — la réponse n'existe à l'écran qu'après le toucher. La mesure, déclenchée au
+   changement de texte, tombait sur un paragraphe absent et ne se refaisait plus : la réponse
+   n'était jamais ajustée (« AROUN / D », « em- / bassy »). On remesure aussi quand elle apparaît. */
 const TAILLE_MIN = 12;
 
-function useAjuste(texte: string) {
+function useAjuste(texte: string, visible = true) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [passe, setPasse] = useState(0);
   useEffect(() => {
@@ -68,7 +71,7 @@ function useAjuste(texte: string) {
       document.fonts?.removeEventListener?.('loadingdone', relance);
       window.clearTimeout(t1); window.clearTimeout(t2);
     };
-  }, [texte]);
+  }, [texte, visible]);
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -101,7 +104,7 @@ function useAjuste(texte: string) {
     }
     sonde.remove();
     if (l > dispo) el.style.overflowWrap = 'anywhere';
-  }, [texte, passe]);
+  }, [texte, passe, visible]);
   return ref;
 }
 
@@ -138,8 +141,8 @@ export function Study({
   const back = current ? (settings.reversed ? current.card.fr : current.card.en) : '';
   const langFront = settings.reversed ? 'en' : 'fr';
   const langBack = settings.reversed ? 'fr' : 'en';
-  const refWord = useAjuste(front);
-  const refAnswer = useAjuste(back);
+  const refWord = useAjuste(front, !revealed);
+  const refAnswer = useAjuste(back, revealed);
 
   /*
    * CHANTIER 50 — LA VOIX SUIT L'ANGLAIS, PAS LA RÉPONSE.

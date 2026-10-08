@@ -133,10 +133,12 @@ export function Eventail({
           <span className="cerisier"><i className="tronc" /><i className="b1" /><i className="b2" /><i className="b3" /><i className="f1" /><i className="f2" /><i className="f3" /><i className="f4" /><i className="f5" /><i className="f6" /><i className="f7" /></span>
         </span>
       )}
-      {/* CHANTIER 235 — Plage et surf : la dune où les planches sont plantées, trois coquillages, le bernard-l'ermite. */}
+      {/* CHANTIER 235 — Plage et surf : trois coquillages, le bernard-l'ermite.
+          CHANTIER 236 — plus de dune : les planches sont plantées dans la grande plage ; des éclats sur la mer. */}
       {pla && (
         <span className="su-plage" aria-hidden="true">
-          <i className="su-dune" /><i className="su-coq c1" /><i className="su-coq c2" /><i className="su-coq c3" />
+          <i className="su-eclat e1" /><i className="su-eclat e2" /><i className="su-eclat e3" /><i className="su-eclat e4" />
+          <i className="su-coq c1" /><i className="su-coq c2" /><i className="su-coq c3" />
           <span className={`su-bernard${crabe ? ` v${crabe % 2}` : ''}`}><span className="corps"><i className="pattes" /><i className="yeux" /><i className="coquille" /></span></span>
         </span>
       )}
