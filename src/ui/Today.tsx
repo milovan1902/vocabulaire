@@ -18,7 +18,7 @@
  * n'était qu'une erreur de vocabulaire. Ici, c'est « à revoir » : ce qui est
  * dû ce matin, et rien d'autre.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
@@ -43,6 +43,18 @@ const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
  * sept : deux jours de repos par semaine ne sont pas un échec.
  */
 const OBJECTIF_SEMAINE = 5;
+
+/* CHANTIER 244 — Strass : les confettis dorés de la semaine faite (position, taille, couleur, dérive). */
+const SV_OR = ['#f0d388', '#c9962f', '#fff1c2', '#e8c46a'];
+const SV_CONFETTIS = Array.from({ length: 14 }, (_, k) => ({
+  left: `${8 + k * 10}px`,
+  width: `${k % 2 ? 4 : 6}px`,
+  height: `${k % 2 ? 7 : 4}px`,
+  background: SV_OR[k % 4],
+  animationDelay: `${(1.3 + (k % 5) * 0.08).toFixed(2)}s`,
+  '--dx': `${((k % 3) - 1) * 12}px`,
+  '--r': `${k % 2 ? 420 : -420}deg`,
+}) as unknown as CSSProperties);
 
 /*
  * CHANTIER 232 — les gels ne s'affichent plus ici, seulement dans Mes XP :
@@ -651,20 +663,22 @@ export function Today({
           onClick={() => {
             /* CHANTIER 237 — Jungle (les feuilles) et Pacific Express (la vapeur) partent comme l'éclaboussure de Plage. */
             /* CHANTIER 242 — Salon privé : l'as tombe sur le bouton. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 244 — Strass : le diamant tombe sur le bouton et s'y fond. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : 450);
             } else onReview(pc.deck.id);
           }}
         >
           {mots.go} · {Math.min(pc.due, settings.cardsPerSession)} cartes
           {(style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby') && plouf > 0 && <span className={`${style === 'jungle' ? 'jg-feuilles' : style === 'western' ? 'pe-vapeur' : style === 'basket' ? 'bk-rebond' : style === 'foot' ? 'fb-sifflet' : style === 'rugby' ? 'rg-chandelle' : 'su-gouttes'} v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
           {style === 'salon' && plouf > 0 && <span className="sl-mise" aria-hidden="true"><i className="eclat"><i /></i><i className="as" /></span>}
+          {style === 'strass' && plouf > 0 && <span className="sv-entree" aria-hidden="true"><i className="halo" /><i className="balaye"><i /></i><i className="diam" /><i className="etoile" /></span>}
         </button>
 
         {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,
@@ -694,7 +708,12 @@ export function Today({
                 <span className={`ly-segments${faits >= OBJECTIF_SEMAINE ? ' plein' : ''}${faits > OBJECTIF_SEMAINE ? ` b${Math.min(faits, 7)}` : ''}`} aria-hidden="true">
                   {/* CHANTIER 221 — « auj » : le jour validé aujourd'hui (Cinéma muet : l'étoile gravée). */}
                   {/* CHANTIER 242 — Salon privé : le <b> est l'or qui remplit le losange. */}
-                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'salon' && <b />}</i>)}
+                  {/* CHANTIER 244 — Strass : le <b> est le verre (et ses bulles), <u> la mousse, <em> les coulures. */}
+                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}</i>)}
+                  {/* CHANTIER 244 — Strass, la semaine faite : le bouchon saute, les confettis retombent. */}
+                  {style === 'strass' && faits >= OBJECTIF_SEMAINE && (
+                    <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
+                  )}
                 </span>
               </>
             )}

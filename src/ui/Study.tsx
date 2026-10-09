@@ -9,7 +9,7 @@
  * dans les réglages, sans effet sur cet écran, et pourront être retirés
  * lors du chantier « réglages ».
  */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Grade, Settings } from '../domain/types';
 import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
@@ -41,6 +41,16 @@ const GRADES: Array<{ key: Grade; label: string; className: string }> = [
    changement de texte, tombait sur un paragraphe absent et ne se refaisait plus : la réponse
    n'était jamais ajustée (« AROUN / D », « em- / bassy »). On remesure aussi quand elle apparaît. */
 const TAILLE_MIN = 12;
+
+/* CHANTIER 244 — Strass, « Facile » : la pluie de strass (position, couleur, vitesse, rotation). */
+const SV_TEINTES = ['#ffffff', '#bfe6ff', '#f0d388', '#ffd6e8'];
+const SV_PLUIE = Array.from({ length: 18 }, (_, k) => ({
+  left: `${(((k * 53) % 340) + 10) / 3.6}%`,
+  background: `var(--gemme), ${SV_TEINTES[k % 4]}`,
+  animationDuration: `${(1.3 + (k % 4) * 0.15).toFixed(2)}s`,
+  animationDelay: `${(0.3 + (k % 6) * 0.09).toFixed(2)}s`,
+  '--r': `${(k % 2 ? 1 : -1) * (200 + k * 20)}deg`,
+}) as unknown as CSSProperties);
 
 function useAjuste(texte: string, visible = true) {
   const ref = useRef<HTMLParagraphElement>(null);
@@ -128,6 +138,22 @@ export function Study({
   /* CHANTIER 221 — Cinéma muet et Bibliothèque : la note se « frappe » d'abord (le clap claque,
      le sceau s'écrase), la carte suivante arrive 0,28 s plus tard. */
   const [frappe, setFrappe] = useState<Grade | null>(null);
+  /* CHANTIER 244 — Strass : la place de l'invitation au moment du toucher. L'enveloppe, le tapis
+     rouge et la moitié droite de la carte déchirée se posent dessus (.sv-scene). */
+  const [cadre, setCadre] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const refStage = useRef<HTMLDivElement>(null);
+  const refScene = useRef<HTMLDivElement>(null);
+  /* Raté : la moitié droite est une copie exacte de la carte (mêmes mots, mêmes tailles de police). */
+  useLayoutEffect(() => {
+    if (style !== 'strass' || frappe !== 'again') return;
+    const carte = refStage.current;
+    const scene = refScene.current;
+    if (!carte || !scene) return;
+    const copie = carte.cloneNode(true) as HTMLElement;
+    copie.classList.remove('n-again');
+    scene.appendChild(copie);
+    return () => { copie.remove(); };
+  }, [frappe, style]);
 
   const total = queue.length;
   const current = items[index];
@@ -258,7 +284,8 @@ export function Study({
        * est bien plus large que le bouton, et le geste devient naturel.
        */}
       <div
-        className={`studystage t${index % 2}`}
+        ref={refStage}
+        className={`studystage t${index % 2}${style === 'strass' && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -296,7 +323,32 @@ export function Study({
             </button>
           </>
         )}
+        {/* CHANTIER 244 — Strass : les tampons « Liste d'attente » (Dur) et « Admis » (Bien). */}
+        {style === 'strass' && (
+          <span className="sv-tampons" aria-hidden="true"><b className="t-attente">Liste d’attente</b><b className="t-admis">Admis</b></span>
+        )}
       </div>
+
+      {/* CHANTIER 244 — Strass : ce qui se pose sur l'invitation pendant la note. */}
+      {style === 'strass' && frappe && cadre && (
+        <div className="sv-scene" ref={refScene} aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'good' && (
+            <>
+              <i className="env-fond" />
+              <i className="env-poche" />
+              <span className="env-rabat"><i /><b>◆</b></span>
+            </>
+          )}
+          {frappe === 'easy' && (
+            <>
+              <i className="tapis" />
+              <i className="rouleau" />
+              <span className="pluie">{SV_PLUIE.map((st, k) => <s key={k} style={st} />)}</span>
+              <b className="vip">Entrée VIP</b>
+            </>
+          )}
+        </div>
+      )}
 
       {!revealed ? (
         <>
@@ -326,8 +378,14 @@ export function Study({
                   /* CHANTIER 241 — Tapis vert : le jeton touché part au pot (se coucher, suivre, relancer, tapis). */
                   : style === 'tapis' ? 1350
                   /* CHANTIER 242 — Salon privé : la carte touchée est abattue (Facile : toute la main, en éventail). */
-                  : style === 'salon' ? (g.key === 'easy' ? 1600 : 1400) : 0;
+                  : style === 'salon' ? (g.key === 'easy' ? 1600 : 1400)
+                  /* CHANTIER 244 — Strass : l'invitation (déchirée, chassée, mise sous enveloppe, tapis rouge). */
+                  : style === 'strass' ? (g.key === 'again' ? 1300 : g.key === 'hard' ? 1400 : g.key === 'good' ? 1800 : 2000) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+                  if (style === 'strass') {
+                    const el = refStage.current;
+                    if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
+                  }
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
                 } else void grade(g.key);
@@ -335,10 +393,11 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon') && (
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon' || style === 'strass') && (
                 /* CHANTIER 241 — Tapis vert : dix morceaux (cartes jetées, jetons de la mise, jetons qui rebondissent). */
                 /* CHANTIER 242 — Salon privé : deux calques sur la carte (les plis, le dos). */
-                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : 5 }, (_, k) => <i key={k} />)}</i>
+                /* CHANTIER 244 — Strass : aucun morceau, le calque est l'étoile qui scintille sur la pierre. */
+                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
               )}
             </button>
           ))}
