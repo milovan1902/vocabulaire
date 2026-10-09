@@ -52,6 +52,27 @@ const SV_PLUIE = Array.from({ length: 18 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * (200 + k * 20)}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 246 — Diner : les éclats de l'assiette (Raté) et les notes du juke-box (Facile). */
+const DN_ECLATS = [[-120, 120, -300], [-60, 220, 220], [40, 190, -260], [120, 140, 300], [-150, 40, 180], [150, 60, -200], [-30, 280, 400], [70, 250, -380]].map(([dx, dy, r], k) => ({
+  marginLeft: `${(k % 4) * 8 - 12}px`,
+  marginTop: `${(k % 3) * 8}px`,
+  width: `${14 + (k % 3) * 4}px`,
+  height: `${12 + (k % 2) * 6}px`,
+  '--dx': `${dx}px`,
+  '--dy': `${dy}px`,
+  '--r': `${r}deg`,
+}) as unknown as CSSProperties);
+const DN_COULEURS = ['#d7263d', '#2f6fbf', '#23854a', '#f08c1a', '#b51d31'];
+const DN_MUSIQUE = Array.from({ length: 12 }, (_, k) => ({
+  left: `${(30 + ((k * 53) % 290)) / 3.6}%`,
+  top: `${28 + ((k * 71) % 240) / 7.6}%`,
+  color: DN_COULEURS[k % 5],
+  fontSize: `${22 + (k % 3) * 4}px`,
+  animationDelay: `${(0.15 + (k % 6) * 0.12).toFixed(2)}s`,
+  '--dx': `${((k % 3) - 1) * 30}px`,
+  '--r': `${k % 2 ? 20 : -20}deg`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 245 — Grille de départ : la fumée du tête-à-queue (Raté) et les confettis à damier (Facile). */
 const GC_FUMEES = [[-60, -40], [-20, -70], [34, -52], [-96, 6]].map(([dx, dy], k) => ({
   marginLeft: `${k * 6}px`,
@@ -301,7 +322,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -404,6 +425,40 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 246 — Diner : ce qui se pose sur le juke-box pendant la note. */}
+      {style === 'diner' && frappe && cadre && (
+        <div className="dn-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'again' && (
+            <>
+              <i className="assiette" />
+              {DN_ECLATS.map((st, k) => <i key={k} className="eclat" style={st} />)}
+            </>
+          )}
+          {frappe === 'hard' && (
+            <>
+              <i className="pique" />
+              <span className="ticket"><b>N° 12</b><i /><small>1 milk-shake</small><b className="tampon">En cuisine</b></span>
+              <i className="pointe" />
+            </>
+          )}
+          {frappe === 'good' && (
+            <>
+              <i className="onde" />
+              <i className="onde" />
+              <span className="cloche"><i /><i /><i /></span>
+              <b className="order">Order up !</b>
+              <span className="traits"><i /><i /><i /><i /><i /></span>
+            </>
+          )}
+          {frappe === 'easy' && (
+            <>
+              <span className="musique">{DN_MUSIQUE.map((st, k) => <b key={k} style={st}>{k % 2 ? '♫' : '♪'}</b>)}</span>
+              <b className="tip">Tip !</b>
+            </>
+          )}
+        </div>
+      )}
+
       {!revealed ? (
         <>
           <button className="reveal" onClick={reveal}>Afficher la réponse</button>
@@ -436,9 +491,11 @@ export function Study({
                   /* CHANTIER 244 — Strass : l'invitation (déchirée, chassée, mise sous enveloppe, tapis rouge). */
                   : style === 'strass' ? (g.key === 'again' ? 1300 : g.key === 'hard' ? 1400 : g.key === 'good' ? 1800 : 2000)
                   /* CHANTIER 245 — Grille de départ : le panneau (tête-à-queue, drapeau jaune, arrêt au stand, ligne d'arrivée). */
-                  : style === 'circuit' ? (g.key === 'again' ? 1500 : g.key === 'hard' ? 1600 : g.key === 'good' ? 1900 : 2100) : 0;
+                  : style === 'circuit' ? (g.key === 'again' ? 1500 : g.key === 'hard' ? 1600 : g.key === 'good' ? 1900 : 2100)
+                  /* CHANTIER 246 — Diner : le juke-box (assiette cassée, en cuisine, « Order up ! », « Tip ! »). */
+                  : style === 'diner' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }

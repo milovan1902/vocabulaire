@@ -557,9 +557,7 @@ body:not(:has(.today.ly)) .fond-anime.diner, body:not(:has(.today.ly)) .fa-eclat
 [data-style='diner'] .eventail-carte.centre.fa-d-change::after { animation: fa-d-change 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
 @keyframes fa-d-tourne { to { transform: rotate(360deg); } }
 @keyframes fa-d-change { 0% { translate: 0 0; opacity: 1; } 35% { translate: 160px 0; opacity: 0; } 36% { translate: -160px 0; opacity: 0; } 80% { translate: 6px 0; opacity: 1; } 90% { translate: -3px 0; } 100% { translate: 0 0; opacity: 1; } }
-/* « Cette semaine » : les disques des jours travaillés tournent ; à 5 / 5, ils accélèrent un moment. */
-[data-style='diner'] .ly-segments i.on { background: conic-gradient(rgba(255, 255, 255, 0.45) 0 26deg, transparent 26deg), radial-gradient(circle, #f7f2e6 0 8%, #d7263d 10% 32%, #1c1c1c 34%); animation: fa-d-tourne 1.8s linear infinite; }
-[data-style='diner'] .ly-segments.plein i.on { animation: fa-d-tourne 0.35s linear 5, fa-d-tourne 1.8s linear 1.75s infinite; }
+/* CHANTIER 246 — « Cette semaine » : les disques tournants sont remplacés par des milk-shakes (retro.css). */
 /* Les notes de musique (♪ et ♫ dessinées). */
 .fa-note, .fa-note span, .fa-note i { position: absolute; display: block; }
 .fa-note { width: 0; height: 0; }

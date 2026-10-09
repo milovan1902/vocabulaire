@@ -881,8 +881,166 @@ html[data-style='circuit']:has(.gc-scene) { overflow: hidden; }
 @keyframes gc-mt { 0%, 42% { transform: scale(0.4); opacity: 0; } 52% { transform: scale(1.12); opacity: 1; } 60% { transform: scale(1); } 90% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
 @keyframes gc-cd { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(var(--dx), 110vh) rotate(var(--r)); opacity: 0; } }
 
+/* ==================================================================
+   CHANTIER 246 — Diner animé (maquette 63a).
+   - « Mets une pièce » : une fente chromée à gauche du bouton (Today.tsx pose .dn-fente). Au
+     toucher, une pièce arrive par la gauche en roulant et entre dans la fente ; l'enseigne néon
+     « OPEN » grésille et s'allume au-dessus du bouton ; le bouton s'enfonce et s'illumine, une
+     guirlande d'ampoules clignote autour, des notes s'envolent (.dn-entree ; la révision s'ouvre
+     1,5 s après le toucher).
+   - « Cette semaine » : un milk-shake par jour. Celui du jour se remplit, la chantilly tombe,
+     un flash. 5 jours : une cerise tombe sur chaque verre. 6 jours : une paille dans chaque
+     verre, des bulles. 7 jours : la chantilly gonfle et déborde, des gouttes coulent sans arrêt.
+   - Révision : le vinyle touché tourne. Raté : une assiette tombe et se brise, la carte tombe
+     hors de l'écran. Dur : un ticket « N° 12 · En cuisine » est piqué sur la pique, la carte part
+     en cuisine (à droite). Bien : la sonnette sonne, « Order up ! », la carte glisse sur le
+     comptoir (à gauche). Facile : le juke-box s'allume (ampoules), des notes s'envolent,
+     « Tip ! » en néon, la carte monte hors de l'écran.
+     (Study.tsx : .n-again… sur la carte, et .dn-scene posée sur la carte.)
+   ================================================================== */
+/* « Mets une pièce » */
+[data-style='diner'] .btn.ly-go { position: relative; overflow: visible; }
+[data-style='diner'] .btn.ly-go:has(> .dn-entree) { animation: dn-presse 1.8s ease-out, dn-allume 1.8s linear; }
+[data-style='diner'] .dn-fente { position: absolute; left: 16px; top: calc(50% - 17px); width: 22px; height: 34px; box-sizing: border-box; display: grid; place-items: center; border-radius: 6px; pointer-events: none; background: linear-gradient(90deg, #8b9298, #e6e9ec 45%, #b9c0c6); box-shadow: inset 0 0 0 1px #6b7279, 0 1px 0 #8f1424; }
+[data-style='diner'] .dn-fente::after { content: ''; width: 4px; height: 22px; border-radius: 2px; background: #1c1c1c; box-shadow: inset 0 1px 2px #000; }
+[data-style='diner'] .dn-entree { position: absolute; inset: 0; display: block; pointer-events: none; border-radius: inherit; }
+[data-style='diner'] .dn-entree > i { position: absolute; display: block; font-style: normal; }
+[data-style='diner'] .dn-entree .ampoules { inset: -9px; border-radius: 999px; border: 3px dotted #f3c84b; opacity: 0; animation: dn-ampoules 1.8s linear both, dn-clignote 0.24s steps(1) infinite; }
+[data-style='diner'] .dn-entree .piece { left: 16px; top: calc(50% - 11px); width: 22px; height: 22px; border-radius: 50%; opacity: 0; background: radial-gradient(circle at 35% 30%, #fff6c8 0 12%, #f3c84b 40%, #b8860b 80%); box-shadow: inset 0 0 0 2px #a8761f, inset 0 0 0 4px #f7dc7a, 0 2px 3px rgba(0, 0, 0, 0.35); animation: dn-piece 1.8s ease-out both; }
+[data-style='diner'] .dn-entree .note { top: 4px; font-family: var(--sans); font-size: 20px; font-weight: 400; line-height: 1; color: #d7263d; text-shadow: 0 0 6px #fff; opacity: 0; --dx: -14px; --dy: -70px; --r: -16deg; animation: dn-note 0.9s ease-out 1.05s both; }
+[data-style='diner'] .dn-entree .note:nth-child(3) { left: 14%; }
+[data-style='diner'] .dn-entree .note:nth-child(4) { left: 36%; color: #2f6fbf; --dx: 14px; --r: 16deg; animation-delay: 1.13s; }
+[data-style='diner'] .dn-entree .note:nth-child(5) { left: 58%; color: #23854a; animation-delay: 1.21s; }
+[data-style='diner'] .dn-entree .note:nth-child(6) { left: 80%; color: #f08c1a; --dx: 14px; --r: 16deg; animation-delay: 1.29s; }
+[data-style='diner'] .dn-entree .neon { left: 50%; top: -50px; width: 96px; height: 32px; margin-left: -48px; box-sizing: border-box; display: grid; place-items: center; border-radius: 8px; border: 2.5px solid #7fd1b9; background: #2a1b1b; color: #ff4d63; font-family: var(--titre); font-size: 17px; font-weight: 900; font-style: italic; letter-spacing: 0.14em; line-height: 1; text-shadow: 0 0 6px #ff2e4a, 0 0 12px #ff2e4a; box-shadow: 0 0 10px rgba(127, 209, 185, 0.8), inset 0 0 8px rgba(127, 209, 185, 0.5); opacity: 0; animation: dn-neon 1.8s linear both; }
+
+/* « Cette semaine » : cinq coupes de milk-shake. */
+[data-style='diner'] .ly-segments { position: relative; gap: 8px; height: 32px; margin-top: 14px; align-items: flex-end; overflow: visible; }
+[data-style='diner'] .ly-segments > i, [data-style='diner'] .ly-segments > i.on { position: relative; overflow: visible; flex: none; width: 18px; height: 32px; box-sizing: content-box; border: none; border-radius: 0; background: none; animation: none; }
+[data-style='diner'] .ly-segments > i > * { position: absolute; display: none; text-decoration: none; }
+[data-style='diner'] .ly-segments > i > b { left: 0; top: 0; display: block; width: 18px; height: 32px; overflow: hidden; background: rgba(42, 27, 27, 0.16); clip-path: polygon(0 0, 18px 0, 12.5px 19px, 10px 20px, 10px 28px, 15px 29px, 15px 32px, 3px 32px, 3px 29px, 8px 28px, 8px 20px, 5.5px 19px); }
+[data-style='diner'] .ly-segments > i.on > b { background: linear-gradient(180deg, rgba(42, 27, 27, 0.1) 0 20px, #b9c0c6 20px); }
+[data-style='diner'] .ly-segments > i.on > b::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 20px; transform-origin: 50% 100%; background: linear-gradient(90deg, transparent 3px, rgba(255, 255, 255, 0.55) 3px 5px, transparent 5px), linear-gradient(180deg, #ffc9d3, #ef7f97); }
+[data-style='diner'] .ly-segments > i > b > s { position: absolute; display: none; width: 2.5px; height: 2.5px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); opacity: 0; text-decoration: none; }
+[data-style='diner'] .ly-segments > i.on > u { display: block; left: 1px; top: -7px; width: 16px; height: 9px; border-radius: 9px 9px 3px 3px; background: radial-gradient(circle at 35% 35%, #fff 0 40%, #f1e8da 85%); box-shadow: 0 1px 0 rgba(42, 27, 27, 0.18); transform-origin: 50% 100%; }
+/* Le jour même : la coupe se remplit, la chantilly tombe, un flash. */
+[data-style='diner'] .ly-segments:not(.b6):not(.b7) > i.on.auj > b::before { animation: dn-remplit 0.9s ease-out 0.3s both; }
+[data-style='diner'] .ly-segments:not(.b6):not(.b7) > i.on.auj > u { animation: dn-creme 0.5s ease-out 1.1s both; }
+[data-style='diner'] .ly-segments:not(.b6):not(.b7) > i.on.auj::after { content: ''; position: absolute; left: -8px; top: -10px; width: 34px; height: 34px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(255, 201, 211, 0.5) 45%, transparent 70%); opacity: 0; animation: dn-flash 0.7s ease-out 1s both; }
+/* 5 jours et plus : la cerise ; à 5 tout juste, elle tombe sur chaque verre, l'un après l'autre. */
+[data-style='diner'] .ly-segments.plein > i.on > .cerise { display: block; left: 5.5px; top: -13px; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff9aa6 0 18%, #d7263d 50%, #a3142a); }
+[data-style='diner'] .ly-segments.plein:not(.b6):not(.b7) > i.on > .cerise { animation: dn-cerise 0.6s ease-out 1.4s both; }
+[data-style='diner'] .ly-segments.plein:not(.b6):not(.b7) > i:nth-child(2) > .cerise { animation-delay: 1.55s; }
+[data-style='diner'] .ly-segments.plein:not(.b6):not(.b7) > i:nth-child(3) > .cerise { animation-delay: 1.7s; }
+[data-style='diner'] .ly-segments.plein:not(.b6):not(.b7) > i:nth-child(4) > .cerise { animation-delay: 1.85s; }
+[data-style='diner'] .ly-segments.plein:not(.b6):not(.b7) > i:nth-child(5) > .cerise { animation-delay: 2s; }
+/* 6 et 7 jours : la paille et les bulles. */
+[data-style='diner'] .ly-segments:is(.b6, .b7) > i.on > .paille { display: block; left: 11px; top: -17px; width: 2.5px; height: 17px; border-radius: 1px; transform-origin: 50% 100%; transform: rotate(18deg); background: repeating-linear-gradient(180deg, #d7263d 0 3px, #fff8ec 3px 6px); }
+[data-style='diner'] .ly-segments.b6 > i.on > .paille { animation: dn-paille 0.4s ease-out 0.3s both; }
+[data-style='diner'] .ly-segments.b6 > i:nth-child(2) > .paille { animation-delay: 0.42s; }
+[data-style='diner'] .ly-segments.b6 > i:nth-child(3) > .paille { animation-delay: 0.54s; }
+[data-style='diner'] .ly-segments.b6 > i:nth-child(4) > .paille { animation-delay: 0.66s; }
+[data-style='diner'] .ly-segments.b6 > i:nth-child(5) > .paille { animation-delay: 0.78s; }
+[data-style='diner'] .ly-segments:is(.b6, .b7) > i.on > b > s { display: block; animation: dn-bulle 1s ease-in infinite; }
+[data-style='diner'] .ly-segments > i > b > s:nth-child(1) { left: 4px; top: 14px; }
+[data-style='diner'] .ly-segments > i > b > s:nth-child(2) { left: 8px; top: 13px; animation-delay: 0.31s; }
+[data-style='diner'] .ly-segments > i > b > s:nth-child(3) { left: 12px; top: 12px; animation-delay: 0.62s; }
+[data-style='diner'] .ly-segments > i:nth-child(even) > b > s { animation-delay: 0.45s; }
+/* 7 jours : la chantilly gonfle et déborde, les gouttes coulent sans arrêt. */
+[data-style='diner'] .ly-segments.b7 > i.on > b > s { width: 3px; height: 3px; animation-duration: 0.7s; }
+[data-style='diner'] .ly-segments.b7 > i.on > u { left: -1px; top: -9px; width: 20px; height: 11px; animation: dn-mousse 0.8s ease-in-out infinite alternate; }
+[data-style='diner'] .ly-segments.b7 > i:nth-child(even) > u { animation-delay: 0.24s; }
+[data-style='diner'] .ly-segments.b7 > i.on > .cerise { top: -15px; }
+[data-style='diner'] .ly-segments.b7 > i.on > small { display: block; top: -1px; width: 4px; height: 6px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; background: #ef7f97; opacity: 0; animation: dn-coule 1.6s ease-in infinite; }
+[data-style='diner'] .ly-segments.b7 > i > small:nth-of-type(1) { left: -1px; }
+[data-style='diner'] .ly-segments.b7 > i > small:nth-of-type(2) { left: 15px; animation-delay: 0.8s; }
+[data-style='diner'] .ly-segments.b7 > i:nth-child(even) > small:nth-of-type(1) { animation-delay: 0.4s; }
+[data-style='diner'] .ly-segments.b7 > i:nth-child(even) > small:nth-of-type(2) { animation-delay: 1.2s; }
+
+/* Révision : le vinyle touché tourne (un reflet fait voir qu'il tourne). */
+[data-style='diner'] .grades .grade::before { background: conic-gradient(rgba(255, 255, 255, 0.16) 0 20deg, transparent 20deg 180deg, rgba(255, 255, 255, 0.1) 180deg 200deg, transparent 200deg), radial-gradient(circle, var(--c) 0 43%, #111 44% 46%, transparent 47%), repeating-radial-gradient(circle, #161616 0 2px, #2c2c2c 2px 4px); }
+[data-style='diner'] .grades .grade.frappe::before { animation: dn-tourne 0.5s linear infinite; }
+[data-style='diner'] .grades:has(.frappe) { position: relative; z-index: 6; }
+/* Pendant l'animation, rien ne fait défiler l'écran. */
+html[data-style='diner']:has(.dn-scene) { overflow: hidden; }
+[data-style='diner'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='diner'] .studystage.n-again { animation: dn-tombe 1.6s ease-in both; }
+[data-style='diner'] .studystage.n-hard { animation: dn-cuisine 1.7s ease-in-out both; }
+[data-style='diner'] .studystage.n-good { animation: dn-comptoir 1.9s ease-in-out both; }
+[data-style='diner'] .studystage.n-easy { outline: 4px dotted #f3c84b; outline-offset: -16px; animation: dn-juke 2.1s ease-in-out both, dn-feux 0.22s steps(1) infinite; }
+[data-style='diner'] .dn-scene { position: absolute; display: block; pointer-events: none; }
+[data-style='diner'] .dn-scene > * { position: absolute; display: block; }
+/* Raté : l'assiette et ses éclats. */
+[data-style='diner'] .dn-scene .assiette { left: calc(50% - 46px); top: 140px; z-index: 9; width: 92px; height: 92px; border-radius: 50%; opacity: 0; background: radial-gradient(circle, #fff 0 44%, #e7e1d4 45% 48%, #fff 49% 66%, #d7263d 67% 71%, #fff 72% 96%, transparent 97%); box-shadow: 0 6px 12px rgba(42, 27, 27, 0.3); animation: dn-assiette 1.6s ease-in both; }
+[data-style='diner'] .dn-scene .eclat { left: 50%; top: 178px; z-index: 9; opacity: 0; background: linear-gradient(160deg, #d7263d 0 3px, #fff 3px); clip-path: polygon(0 0, 100% 30%, 40% 100%); animation: dn-eclat 1.6s ease-out both; }
+/* Dur : la pique à commandes et le ticket. */
+[data-style='diner'] .dn-scene .pique, [data-style='diner'] .dn-scene .pointe { right: 60px; top: -46px; width: 3px; border-radius: 2px 2px 0 0; background: linear-gradient(90deg, #8b9298, #e6e9ec, #8b9298); opacity: 0; animation: dn-pique 1.7s ease-out both; }
+[data-style='diner'] .dn-scene .pique { z-index: 7; height: 96px; }
+[data-style='diner'] .dn-scene .pique::after { content: ''; position: absolute; left: -12px; top: 94px; width: 28px; height: 8px; border-radius: 3px; background: #8b9298; }
+[data-style='diner'] .dn-scene .pointe { z-index: 9; height: 16px; }
+[data-style='diner'] .dn-scene .ticket { right: 10px; top: -36px; z-index: 8; width: 72px; height: 88px; box-sizing: border-box; padding: 9px 7px; display: flex; flex-direction: column; align-items: center; gap: 5px; background: #fffdf6; box-shadow: 0 4px 8px rgba(42, 27, 27, 0.25); opacity: 0; animation: dn-ticket 1.7s ease-out both; }
+[data-style='diner'] .dn-scene .ticket > b { font-family: var(--titre); font-size: 13px; font-weight: 900; font-style: italic; line-height: 1.1; color: #b51d31; }
+[data-style='diner'] .dn-scene .ticket > i { width: 100%; height: 2px; display: block; background: repeating-linear-gradient(90deg, rgba(42, 27, 27, 0.35) 0 4px, transparent 4px 7px); }
+[data-style='diner'] .dn-scene .ticket > small { font-size: 9px; line-height: 1.2; color: #4a3434; white-space: nowrap; }
+[data-style='diner'] .dn-scene .ticket > .tampon { margin-top: 2px; padding: 1px 4px; border: 2px solid #d7263d; border-radius: 3px; font-family: var(--sans); font-size: 8.5px; font-weight: 800; font-style: normal; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; color: #d7263d; transform: rotate(-8deg); }
+/* Bien : la sonnette, ses ondes, « Order up ! », les traits de vitesse. */
+[data-style='diner'] .dn-scene .onde { left: calc(50% - 45px); top: 32px; z-index: 8; width: 90px; height: 60px; box-sizing: border-box; border-radius: 50%; border: 3px solid #f3c84b; border-bottom-color: transparent; opacity: 0; animation: dn-onde 1.9s ease-out both; }
+[data-style='diner'] .dn-scene .onde + .onde { animation-delay: 0.14s; }
+[data-style='diner'] .dn-scene .cloche { left: calc(50% - 30px); top: 46px; z-index: 8; width: 60px; height: 46px; transform-origin: 50% 100%; opacity: 0; animation: dn-cloche 1.9s ease-out both; }
+[data-style='diner'] .dn-scene .cloche > i { position: absolute; display: block; }
+[data-style='diner'] .dn-scene .cloche > i:nth-child(1) { left: 26px; top: 0; width: 8px; height: 8px; border-radius: 50%; background: #8b9298; animation: dn-frappe 1.9s linear both; }
+[data-style='diner'] .dn-scene .cloche > i:nth-child(2) { left: 6px; top: 6px; width: 48px; height: 30px; border-radius: 30px 30px 2px 2px; background: radial-gradient(circle at 35% 30%, #fff, #d0d5da 40%, #8b9298); }
+[data-style='diner'] .dn-scene .cloche > i:nth-child(3) { left: 0; top: 36px; width: 60px; height: 9px; border-radius: 3px; background: #2a1b1b; }
+[data-style='diner'] .dn-scene .order { left: 0; right: 0; top: -8px; z-index: 8; width: fit-content; margin: 0 auto; padding: 6px 16px; border-radius: 999px; background: #2a1b1b; border: 2px solid #f3c84b; color: #f3c84b; font-family: var(--titre); font-size: 18px; font-weight: 900; font-style: italic; white-space: nowrap; box-shadow: 0 0 14px rgba(243, 200, 75, 0.6); opacity: 0; animation: dn-orderup 1.9s ease-out both; }
+[data-style='diner'] .dn-scene .traits { inset: 0; z-index: 4; }
+[data-style='diner'] .dn-scene .traits > i { position: absolute; display: block; height: 3px; border-radius: 2px; background: rgba(42, 27, 27, 0.45); transform-origin: 100% 50%; opacity: 0; animation: dn-traits 1.9s ease-out both; }
+[data-style='diner'] .dn-scene .traits > i:nth-child(1) { left: 71%; top: 106px; width: 70px; }
+[data-style='diner'] .dn-scene .traits > i:nth-child(2) { left: 62%; top: 170px; width: 86px; }
+[data-style='diner'] .dn-scene .traits > i:nth-child(3) { left: 71%; top: 234px; width: 102px; }
+[data-style='diner'] .dn-scene .traits > i:nth-child(4) { left: 62%; top: 298px; width: 70px; }
+[data-style='diner'] .dn-scene .traits > i:nth-child(5) { left: 71%; top: 362px; width: 86px; }
+/* Facile : les notes du juke-box, « Tip ! » en néon. */
+[data-style='diner'] .dn-scene .musique { position: fixed; inset: 0; z-index: 9; overflow: hidden; }
+[data-style='diner'] .dn-scene .musique > b { position: absolute; display: block; font-family: var(--sans); font-weight: 400; line-height: 1; text-shadow: 0 0 6px #fff; opacity: 0; --dy: -260px; animation: dn-note 1.5s ease-out both; }
+[data-style='diner'] .dn-scene .tip { left: 0; right: 0; top: 40%; z-index: 9; width: fit-content; margin: 0 auto; padding: 2px 24px; border-radius: 14px; background: #2a1b1b; border: 3px solid #7fd1b9; color: #ff6fa3; font-family: var(--titre); font-size: 46px; font-weight: 900; font-style: italic; line-height: 1.2; white-space: nowrap; text-shadow: 0 0 6px #ff4d8d, 0 0 16px #ff4d8d; box-shadow: 0 0 16px rgba(127, 209, 185, 0.8), inset 0 0 10px rgba(127, 209, 185, 0.4); opacity: 0; animation: dn-tip 2.1s ease-out both; }
+
+@keyframes dn-tourne { to { transform: rotate(360deg); } }
+@keyframes dn-presse { 0%, 58% { transform: none; } 63% { transform: scale(0.96); } 70%, 100% { transform: none; } }
+@keyframes dn-allume { 0%, 58% { box-shadow: var(--cerclage); } 66%, 86% { box-shadow: var(--cerclage), 0 0 28px 6px rgba(255, 77, 99, 0.75); } 100% { box-shadow: var(--cerclage); } }
+@keyframes dn-ampoules { 0%, 60% { opacity: 0; } 64%, 86% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dn-clignote { 0% { border-color: #f3c84b; } 50% { border-color: #fff8ec; } }
+@keyframes dn-piece { 0% { transform: translateX(-90px) rotate(-540deg); opacity: 1; } 34% { transform: translateX(0) rotate(0); } 38% { transform: translateX(3px); } 42% { transform: none; } 50%, 54% { transform: scaleX(0.2); opacity: 1; } 60%, 100% { transform: scale(0.16, 0.7); opacity: 0; } }
+@keyframes dn-neon { 0% { opacity: 0; transform: translateY(-8px); } 8% { opacity: 1; transform: none; } 12% { opacity: 0.15; } 17% { opacity: 1; } 21% { opacity: 0.25; } 28%, 84% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-4px); } }
+@keyframes dn-note { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(1); opacity: 0; } }
+@keyframes dn-remplit { 0% { transform: scaleY(0); } 100% { transform: scaleY(1); } }
+@keyframes dn-creme { 0% { transform: translateY(-14px) scale(0.4); opacity: 0; } 60% { transform: translateY(1px) scale(1.12, 0.88); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes dn-flash { 0% { transform: scale(0.3); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes dn-cerise { 0% { transform: translateY(-40px); opacity: 0; } 10% { opacity: 1; } 70% { transform: translateY(2px); } 85% { transform: translateY(-3px); } 100% { transform: none; opacity: 1; } }
+@keyframes dn-paille { 0% { transform: translateY(14px) rotate(18deg); opacity: 0; } 100% { transform: rotate(18deg); opacity: 1; } }
+@keyframes dn-bulle { 0% { transform: translateY(0) scale(0.6); opacity: 0; } 20% { opacity: 0.9; } 100% { transform: translateY(-16px) scale(1); opacity: 0; } }
+@keyframes dn-mousse { from { transform: none; } to { transform: translateY(-1px) scale(1.12, 1.2); } }
+@keyframes dn-coule { 0% { transform: translateY(0) scaleY(0.6); opacity: 0; } 15% { opacity: 1; } 70% { transform: translateY(26px) scaleY(1.2); opacity: 1; } 100% { transform: translateY(34px); opacity: 0; } }
+@keyframes dn-assiette { 0% { transform: translateY(-380px) rotate(-30deg); opacity: 1; } 32% { transform: translateY(0) rotate(8deg); opacity: 1; } 35% { transform: scale(1.08, 0.88); opacity: 1; } 37%, 100% { transform: scale(1.1, 0.8); opacity: 0; } }
+@keyframes dn-eclat { 0%, 34% { transform: none; opacity: 0; } 36% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+@keyframes dn-tombe { 0%, 33% { transform: none; } 37% { transform: translateY(8px) rotate(-1.5deg); } 43% { transform: translateY(2px) rotate(1.5deg); } 50% { transform: none; } 100% { transform: translateY(120vh) rotate(16deg); } }
+@keyframes dn-pique { 0% { opacity: 0; transform: translateY(10px); } 10%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+@keyframes dn-ticket { 0% { transform: translateY(-160px) rotate(-6deg); opacity: 0; } 8% { opacity: 1; } 24% { transform: translateY(6px) rotate(2deg); } 30% { transform: none; } 88% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+@keyframes dn-cuisine { 0%, 32% { transform: none; } 38% { transform: translateX(-14px) rotate(-1deg); } 100% { transform: translateX(120vw) rotate(5deg); } }
+@keyframes dn-cloche { 0% { transform: scale(0); opacity: 0; } 10% { transform: scale(1.12); opacity: 1; } 16% { transform: scale(1); } 22% { transform: rotate(-12deg); } 28% { transform: rotate(10deg); } 34% { transform: rotate(-6deg); } 40% { transform: rotate(3deg); } 46%, 88% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes dn-frappe { 0%, 16% { transform: none; } 20% { transform: translateY(4px); } 26%, 100% { transform: none; } }
+@keyframes dn-onde { 0%, 20% { transform: scale(0.5); opacity: 0; } 26% { opacity: 0.9; } 60%, 100% { transform: scale(1.8); opacity: 0; } }
+@keyframes dn-orderup { 0%, 22% { transform: scale(0.4) rotate(-6deg); opacity: 0; } 30% { transform: scale(1.12) rotate(-3deg); opacity: 1; } 36%, 86% { transform: rotate(-3deg); opacity: 1; } 100% { transform: rotate(-3deg) translateY(-6px); opacity: 0; } }
+@keyframes dn-comptoir { 0%, 38% { transform: none; } 44% { transform: translateX(12px); } 100% { transform: translateX(-120vw); } }
+@keyframes dn-traits { 0%, 44% { transform: scaleX(0.2); opacity: 0; } 52% { opacity: 0.8; } 100% { transform: translateX(-200px) scaleX(1); opacity: 0; } }
+@keyframes dn-juke { 0% { transform: none; } 10% { transform: scale(1.03); } 18%, 62% { transform: none; } 68% { transform: translateY(8px); } 100% { transform: translateY(-120vh); } }
+@keyframes dn-feux { 0% { outline-color: #f3c84b; } 50% { outline-color: #ff4d63; } }
+@keyframes dn-tip { 0%, 12% { transform: scale(0.3); opacity: 0; } 20% { transform: scale(1.15); opacity: 1; } 24% { opacity: 0.3; } 28% { transform: none; opacity: 1; } 32% { opacity: 0.4; } 36%, 88% { transform: none; opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   :is([data-style='strass'], [data-style='circuit'], [data-style='diner'], [data-style='tv']) .grades .grade { transition: none; }
+  /* CHANTIER 246 — Diner : les milk-shakes restent pleins et immobiles, sans gouttes ; pas de pièce ni d'enseigne. */
+  [data-style='diner'] .ly-segments *, [data-style='diner'] .ly-segments *::before, [data-style='diner'] .ly-segments *::after, [data-style='diner'] .ly-segments > i::after { animation: none !important; }
+  [data-style='diner'] .ly-segments > i > small, [data-style='diner'] .ly-segments > i > b > s, [data-style='diner'] .ly-segments > i::after, [data-style='diner'] .dn-entree { display: none !important; }
   /* CHANTIER 245 — Grille de départ : feux et drapeau immobiles, sans portique ni monoplace. */
   [data-style='circuit'] .ly-segments > i, [data-style='circuit'] .gc-drapeau, [data-style='circuit'] .gc-drapeau > i { animation: none !important; }
   [data-style='circuit'] .ly-segments > i > b, [data-style='circuit'] .gc-depart { display: none !important; }
