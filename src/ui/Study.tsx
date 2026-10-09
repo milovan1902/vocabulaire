@@ -324,7 +324,9 @@ export function Study({
                   /* CHANTIER 240 — Mêlée : le ballon touché part (en avant, à côté, poteau, entre les poteaux). */
                   : style === 'rugby' ? 1350
                   /* CHANTIER 241 — Tapis vert : le jeton touché part au pot (se coucher, suivre, relancer, tapis). */
-                  : style === 'tapis' ? 1350 : 0;
+                  : style === 'tapis' ? 1350
+                  /* CHANTIER 242 — Salon privé : la carte touchée est abattue (Facile : toute la main, en éventail). */
+                  : style === 'salon' ? (g.key === 'easy' ? 1600 : 1400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   setFrappe(g.key);
                   window.setTimeout(() => { setFrappe(null); void grade(g.key); }, attente);
@@ -333,9 +335,10 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis') && (
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon') && (
                 /* CHANTIER 241 — Tapis vert : dix morceaux (cartes jetées, jetons de la mise, jetons qui rebondissent). */
-                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : 5 }, (_, k) => <i key={k} />)}</i>
+                /* CHANTIER 242 — Salon privé : deux calques sur la carte (les plis, le dos). */
+                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : 5 }, (_, k) => <i key={k} />)}</i>
               )}
             </button>
           ))}

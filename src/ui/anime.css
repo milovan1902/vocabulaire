@@ -760,6 +760,8 @@ body:not(:has(.today.ly)) .fa-eclats.salon { display: none; }
 @keyframes fa-sl-eventail { 0% { transform: translate(var(--sx), 12px) rotate(0) scale(0.6); opacity: 0; } 12% { opacity: 1; } 30%, 100% { transform: translate(var(--fx), 0) rotate(var(--r)) scale(1); opacity: 1; } }
 @keyframes fa-sl-lisere { 0%, 26% { clip-path: inset(0 100% 100% 0); } 40% { clip-path: inset(0 0 100% 0); } 48%, 100% { clip-path: inset(0 0 0 0); } }
 @keyframes fa-sl-ecrit { 0%, 46% { clip-path: inset(0 100% 0 0); } 64%, 100% { clip-path: inset(0 0 0 0); } }
+/* CHANTIER 242 — la quinte flush est retirée : les losanges de la semaine (poker.css) restent lisibles. */
+.fa-sl-quinte { display: none; }
 
 /* ---------- CHANTIER 207 — Tapis vert : lampe, croupier, paquet battu (maquette 38a) ---------- */
 body:not(:has(.today.ly)) .fond-anime.tapis, body:not(:has(.today.ly)) .fa-eclats.tapis { display: none; }

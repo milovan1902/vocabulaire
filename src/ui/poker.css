@@ -385,7 +385,132 @@
 @keyframes tp-carte { 0%, 45%, 100% { filter: none; } 55%, 82% { filter: brightness(1.08); } }
 @keyframes tp-glow { 0%, 68% { box-shadow: none; border-color: rgba(243, 226, 170, 0.3); } 80% { box-shadow: 0 0 18px rgba(240, 205, 115, 0.9), inset 0 0 12px rgba(240, 205, 115, 0.6); border-color: #f0cd73; } 100% { box-shadow: none; border-color: rgba(243, 226, 170, 0.3); } }
 
+/* ==================================================================
+   CHANTIER 242 — Salon privé animé (maquette 60a).
+   - « Miser » : un as de cœur bordé d'or tombe en tournoyant sur le bouton, s'y couche à plat,
+     le bouton s'enfonce et un éclat doré le traverse (Today.tsx pose .sl-mise).
+   - « Cette semaine » : cinq losanges dorés. Celui du jour se remplit d'or du bas vers le haut,
+     puis un petit carreau ♦ s'y allume (Today.tsx pose un <b> dans chaque losange).
+     5 jours : les cinq s'allument l'un après l'autre, puis un filet doré entoure la tuile.
+     6 jours : or brillant, et toutes les 3 s un reflet glisse sur l'un d'eux.
+     7 jours : pareil, et le cadre de la tuile devient une guirlande d'ampoules qui clignotent.
+   - Révision : on abat la carte touchée. Raté : elle se froisse et glisse hors de l'écran.
+     Dur : elle se retourne sur son dos noir et or, puis revient. Bien : elle vole au centre
+     et se pose à plat, avec un liseré doré. Facile : les quatre cartes s'abattent en éventail
+     au centre, un éclat doré jaillit, « Main gagnante ».
+   ================================================================== */
+[data-style='salon'] .ly-segments { gap: 0; height: 20px; justify-content: space-between; align-items: center; overflow: visible; }
+[data-style='salon'] .ly-segments i { position: relative; width: 18px; height: 18px; color: transparent; }
+[data-style='salon'] .ly-segments i::before { content: ''; position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; box-sizing: border-box; transform: rotate(45deg); border: 1.5px solid #4a4436; }
+[data-style='salon'] .ly-segments i.on::before { border-color: #d4af5a; }
+[data-style='salon'] .ly-segments i > b { position: absolute; inset: 0; display: none; overflow: hidden; }
+[data-style='salon'] .ly-segments i.on > b { display: block; }
+[data-style='salon'] .ly-segments i > b::before { content: ''; position: absolute; left: 3px; top: 3px; width: 12px; height: 12px; transform: rotate(45deg); background: linear-gradient(135deg, #ecd08a, #c09440); }
+[data-style='salon'] .ly-segments i.on::after { content: '♦'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 8px; line-height: 1; color: #9e1b2c; }
+/* Le losange du jour se remplit d'or, puis le carreau s'allume. */
+[data-style='salon'] .ly-segments i.auj.on > b { animation: sl-remplit 0.8s ease-out 0.3s both; }
+[data-style='salon'] .ly-segments i.auj.on::after { animation: sl-carreau 1.1s ease-out 0.3s both; }
+/* 5 jours : la rampe de casino, puis le filet doré. */
+[data-style='salon'] .ly-segments.plein:not(.b6):not(.b7) i:nth-child(1) { animation: sl-allume 0.5s ease-out 1.30s; }
+[data-style='salon'] .ly-segments.plein:not(.b6):not(.b7) i:nth-child(2) { animation: sl-allume 0.5s ease-out 1.48s; }
+[data-style='salon'] .ly-segments.plein:not(.b6):not(.b7) i:nth-child(3) { animation: sl-allume 0.5s ease-out 1.66s; }
+[data-style='salon'] .ly-segments.plein:not(.b6):not(.b7) i:nth-child(4) { animation: sl-allume 0.5s ease-out 1.84s; }
+[data-style='salon'] .ly-segments.plein:not(.b6):not(.b7) i:nth-child(5) { animation: sl-allume 0.5s ease-out 2.02s; }
+[data-style='salon'] .ly-tuile:has(.ly-segments.plein) { position: relative; }
+[data-style='salon'] .ly-tuile:has(.ly-segments.plein:not(.b7))::after { content: ''; position: absolute; inset: 4px; pointer-events: none; border: 1px solid #e6c675; }
+[data-style='salon'] .ly-tuile:has(.ly-segments.plein:not(.b6):not(.b7))::after { animation: sl-filet 0.6s ease-out 2.3s both; }
+/* 6 et 7 jours : or brillant ; toutes les 3 s, un reflet glisse sur l'un des losanges. */
+[data-style='salon'] .ly-tuile:has(.ly-segments:is(.b6, .b7)) { border-color: #e6c675; box-shadow: 0 0 14px rgba(230, 198, 117, 0.45); }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i > b::before { background: linear-gradient(135deg, #fff3c4, #e6c675 45%, #b8913f); }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i > b::after { content: ''; position: absolute; top: -4px; bottom: -4px; left: 0; width: 6px; background: rgba(255, 255, 255, 0.95); opacity: 0; animation: sl-reflet 15s ease-in-out infinite; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(1) { animation: sl-brille 1.4s ease-in-out 0s infinite alternate; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(2) { animation: sl-brille 1.4s ease-in-out -0.3s infinite alternate; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(3) { animation: sl-brille 1.4s ease-in-out -0.6s infinite alternate; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(4) { animation: sl-brille 1.4s ease-in-out -0.9s infinite alternate; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(5) { animation: sl-brille 1.4s ease-in-out -1.2s infinite alternate; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(4) > b::after { animation-delay: 3s; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(2) > b::after { animation-delay: 6s; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(5) > b::after { animation-delay: 9s; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(3) > b::after { animation-delay: 12s; }
+[data-style='salon'] .ly-segments:is(.b6, .b7) i:nth-child(1) > b::after { animation-delay: 15s; }
+/* 7 jours : la guirlande d'ampoules, deux rangs qui clignotent en alternance. */
+[data-style='salon'] .ly-tuile:has(.ly-segments.b7)::before, [data-style='salon'] .ly-tuile:has(.ly-segments.b7)::after { content: ''; position: absolute; inset: 3px; pointer-events: none; filter: drop-shadow(0 0 2px #ffe08a); }
+[data-style='salon'] .ly-tuile:has(.ly-segments.b7)::before {
+  background: repeating-linear-gradient(90deg, #ffe08a 0 3px, transparent 3px 9px) 0 0 / 100% 2px no-repeat, repeating-linear-gradient(90deg, #ffe08a 0 3px, transparent 3px 9px) 0 100% / 100% 2px no-repeat,
+    repeating-linear-gradient(180deg, #ffe08a 0 3px, transparent 3px 9px) 0 0 / 2px 100% no-repeat, repeating-linear-gradient(180deg, #ffe08a 0 3px, transparent 3px 9px) 100% 0 / 2px 100% no-repeat;
+  animation: sl-chenille-a 0.6s infinite; }
+[data-style='salon'] .ly-tuile:has(.ly-segments.b7)::after {
+  background: repeating-linear-gradient(90deg, transparent 0 4.5px, #ffe08a 4.5px 7.5px, transparent 7.5px 9px) 0 0 / 100% 2px no-repeat, repeating-linear-gradient(90deg, transparent 0 4.5px, #ffe08a 4.5px 7.5px, transparent 7.5px 9px) 0 100% / 100% 2px no-repeat,
+    repeating-linear-gradient(180deg, transparent 0 4.5px, #ffe08a 4.5px 7.5px, transparent 7.5px 9px) 0 0 / 2px 100% no-repeat, repeating-linear-gradient(180deg, transparent 0 4.5px, #ffe08a 4.5px 7.5px, transparent 7.5px 9px) 100% 0 / 2px 100% no-repeat;
+  animation: sl-chenille-b 0.6s infinite; }
+
+/* « Miser » : l'as qui tombe sur le bouton, l'éclat doré. */
+[data-style='salon'] .btn.ly-go { position: relative; overflow: visible; }
+[data-style='salon'] .btn.ly-go:has(> .sl-mise) { animation: sl-presse 1s ease-out; }
+[data-style='salon'] .sl-mise { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='salon'] .sl-mise .eclat { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: inherit; }
+[data-style='salon'] .sl-mise .eclat > i { position: absolute; top: -10px; bottom: -10px; left: 0; width: 50px; display: block; opacity: 0; background: linear-gradient(90deg, transparent, rgba(255, 250, 230, 0.9), transparent); animation: sl-eclat 1s ease-out; }
+[data-style='salon'] .sl-mise .as { position: absolute; left: 50%; top: -36px; width: 26px; height: 36px; margin-left: -13px; box-sizing: border-box; display: block; opacity: 0; transform-origin: 50% 100%; border-radius: 4px; background: #f5efe0; border: 1.5px solid #d4af5a; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.45); animation: sl-tombe 1s ease-in-out; }
+[data-style='salon'] .sl-mise .as::before { content: 'A\A♥'; position: absolute; left: 0; right: 0; top: 4px; white-space: pre; text-align: center; font-family: var(--titre); font-size: 12px; font-weight: 700; line-height: 1.05; color: #9e1b2c; }
+
+/* Révision : on abat la carte touchée. --x : du centre de la carte au centre de l'écran. */
+[data-style='salon'] .grades { position: relative; }
+[data-style='salon'] .grades .g-again { --x: calc(min(100vw - 40px, 420px) * 0.375); --fx: -36px; --fr: -15deg; }
+[data-style='salon'] .grades .g-hard { --x: calc(min(100vw - 40px, 420px) * 0.125); --fx: -12px; --fr: -5deg; }
+[data-style='salon'] .grades .g-good { --x: calc(min(100vw - 40px, 420px) * -0.125); --fx: 12px; --fr: 5deg; }
+[data-style='salon'] .grades .g-easy { --x: calc(min(100vw - 40px, 420px) * -0.375); --fx: 36px; --fr: 15deg; }
+[data-style='salon'] .grades .grade.frappe { z-index: 5; }
+[data-style='salon'] .grades .g-fx { position: absolute; inset: 0; z-index: 2; display: block; pointer-events: none; }
+[data-style='salon'] .grades .g-fx i { position: absolute; left: 50%; top: 0; width: 68px; height: 98px; margin-left: -34px; box-sizing: border-box; border-radius: 8px; display: none; opacity: 0; }
+/* Raté : la carte se froisse et glisse hors de l'écran. */
+[data-style='salon'] .grades .g-again.frappe { animation: sl-froisse 1.4s ease-out; }
+[data-style='salon'] .grades .g-again.frappe .g-fx i:nth-child(1) { display: block; background: linear-gradient(62deg, transparent 46%, rgba(0, 0, 0, 0.28) 48%, rgba(255, 255, 255, 0.5) 50%, transparent 53%), linear-gradient(-58deg, transparent 30%, rgba(0, 0, 0, 0.22) 32%, rgba(255, 255, 255, 0.45) 34%, transparent 37%), linear-gradient(10deg, transparent 64%, rgba(0, 0, 0, 0.2) 66%, transparent 69%); animation: sl-pli 1.4s linear; }
+/* Dur : elle se retourne sur son dos noir et or, puis revient. */
+[data-style='salon'] .grades .g-hard.frappe { animation: sl-retourne 1.4s ease-out; }
+[data-style='salon'] .grades .g-hard.frappe .g-fx i:nth-child(2) { display: block; border: 1.5px solid #d4af5a; background: repeating-conic-gradient(from -60deg at 50% 100%, rgba(212, 175, 90, 0.35) 0 3deg, transparent 3deg 10deg), #151515; box-shadow: inset 0 0 0 4px #151515, inset 0 0 0 5px rgba(212, 175, 90, 0.5), 0 6px 12px rgba(0, 0, 0, 0.5); animation: sl-dos 1.4s linear; }
+/* Bien : elle vole au centre et se pose à plat, avec un liseré doré. */
+[data-style='salon'] .grades .g-good.frappe { animation: sl-pose 1.4s ease-out; }
+[data-style='salon'] .grades .g-good.frappe::before { animation: sl-lisere 1.4s ease-out; }
+/* Facile : les quatre cartes s'abattent en éventail au centre, l'éclat doré, « Main gagnante ». */
+[data-style='salon'] .grades:has(.g-easy.frappe) .grade { animation: sl-abat 1.4s ease-out; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .grade::before { animation: sl-lisere 1.4s ease-out; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-again { z-index: 5; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-hard { z-index: 6; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-hard, [data-style='salon'] .grades:has(.g-easy.frappe) .g-hard::before { animation-delay: 0.06s; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-good { z-index: 7; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-good, [data-style='salon'] .grades:has(.g-easy.frappe) .g-good::before { animation-delay: 0.12s; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-easy { z-index: 8; }
+[data-style='salon'] .grades:has(.g-easy.frappe) .g-easy, [data-style='salon'] .grades:has(.g-easy.frappe) .g-easy::before { animation-delay: 0.18s; }
+[data-style='salon'] .grades:has(.g-easy.frappe)::before { content: ''; position: absolute; left: 50%; top: -215px; z-index: 3; width: 200px; height: 200px; margin-left: -100px; border-radius: 50%; pointer-events: none; opacity: 0;
+  background: repeating-conic-gradient(rgba(255, 224, 138, 0.75) 0 6deg, transparent 6deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 70%); mask-image: radial-gradient(circle, #000 20%, transparent 70%);
+  animation: sl-gerbe 1.6s ease-out; }
+[data-style='salon'] .grades:has(.g-easy.frappe)::after { content: 'Main gagnante'; position: absolute; left: 0; right: 0; top: -212px; z-index: 9; text-align: center; white-space: nowrap; pointer-events: none; font-family: var(--titre); font-size: 36px; font-style: italic; font-weight: 700; line-height: 1.2; color: #e6c675; text-shadow: 0 2px 0 #121212, 0 0 14px rgba(230, 198, 117, 0.6); opacity: 0; animation: sl-titre 1.7s ease-out; }
+
+@keyframes sl-tombe { 0% { transform: translateY(-70px) rotate(-220deg) scale(0.8); opacity: 0; } 10% { opacity: 1; } 50% { transform: translateY(0) rotate(-8deg) scale(1); } 58% { transform: translateY(6px) rotate(-8deg) scaleY(0.4); } 64% { transform: translateY(5px) rotate(-8deg) scale(1.04, 0.36); } 85% { transform: translateY(5px) rotate(-8deg) scaleY(0.38); opacity: 1; } 100% { transform: translateY(5px) rotate(-8deg) scaleY(0.38); opacity: 0; } }
+@keyframes sl-presse { 0%, 48%, 70%, 100% { transform: none; } 54% { transform: translateY(2px) scale(0.99, 0.95); } }
+@keyframes sl-eclat { 0%, 52% { transform: translateX(-80px) skewX(-20deg); opacity: 0; } 58% { opacity: 1; } 92% { transform: translateX(380px) skewX(-20deg); opacity: 1; } 100% { transform: translateX(380px) skewX(-20deg); opacity: 0; } }
+@keyframes sl-remplit { 0% { clip-path: inset(100% 0 0 0); } 100% { clip-path: inset(0 0 0 0); } }
+@keyframes sl-carreau { 0%, 60% { transform: scale(0); opacity: 0; } 80% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes sl-allume { 0%, 100% { filter: none; transform: none; } 30% { filter: brightness(1.7) drop-shadow(0 0 6px #ffe08a); transform: scale(1.25); } }
+@keyframes sl-filet { 0% { opacity: 0; transform: scale(1.06); } 100% { opacity: 1; transform: none; } }
+@keyframes sl-reflet { 0% { transform: translateX(-10px) skewX(-20deg); opacity: 0; } 1.07%, 4.27% { opacity: 1; } 5.33% { transform: translateX(20px) skewX(-20deg); opacity: 0; } 100% { transform: translateX(20px) skewX(-20deg); opacity: 0; } }
+@keyframes sl-brille { from { filter: drop-shadow(0 0 1px rgba(230, 198, 117, 0.5)); } to { filter: drop-shadow(0 0 5px rgba(255, 224, 138, 1)); } }
+@keyframes sl-chenille-a { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0.12; } }
+@keyframes sl-chenille-b { 0%, 49.9% { opacity: 0.12; } 50%, 100% { opacity: 1; } }
+@keyframes sl-froisse { 0% { transform: translateY(var(--dy)) rotate(var(--rot)); filter: none; } 14% { transform: translateY(calc(var(--dy) - 14px)) rotate(var(--rot)) scale(1.06); } 28% { transform: translateY(calc(var(--dy) - 18px)) rotate(calc(var(--rot) + 6deg)) scaleX(0.5) skewY(14deg); filter: brightness(0.85); } 40% { transform: translateY(calc(var(--dy) - 10px)) rotate(calc(var(--rot) + 30deg)) scale(0.42, 0.5) skewX(10deg); filter: brightness(0.75) contrast(1.2); } 70% { transform: translate(-50px, calc(var(--dy) + 130px)) rotate(calc(var(--rot) + 160deg)) scale(0.4, 0.46); opacity: 1; } 82% { transform: translate(-110px, calc(var(--dy) + 150px)) rotate(calc(var(--rot) + 220deg)) scale(0.4, 0.46); opacity: 0; } 90% { transform: translateY(var(--dy)) rotate(var(--rot)) scale(0.6); opacity: 0; filter: none; } 100% { transform: translateY(var(--dy)) rotate(var(--rot)); opacity: 1; } }
+@keyframes sl-pli { 0%, 24% { opacity: 0; } 32%, 80% { opacity: 1; } 90%, 100% { opacity: 0; } }
+@keyframes sl-retourne { 0% { transform: translateY(var(--dy)) rotate(var(--rot)); } 20% { transform: translateY(calc(var(--dy) - 22px)) rotate(var(--rot)) scaleX(0); } 30%, 70% { transform: translateY(calc(var(--dy) - 22px)) rotate(var(--rot)) scale(1.06); } 80% { transform: translateY(calc(var(--dy) - 22px)) rotate(var(--rot)) scaleX(0); } 100% { transform: translateY(var(--dy)) rotate(var(--rot)); } }
+@keyframes sl-dos { 0%, 20% { opacity: 0; } 20.1%, 80% { opacity: 1; } 80.1%, 100% { opacity: 0; } }
+@keyframes sl-pose { 0% { transform: translateY(var(--dy)) rotate(var(--rot)); opacity: 1; } 20% { transform: translateY(calc(var(--dy) - 30px)) rotate(var(--rot)) scale(1.04); } 55% { transform: translate(var(--x), -170px) rotate(0) scale(1.12); } 62% { transform: translate(var(--x), -167px) rotate(0) scale(1.16, 1.06); } 68%, 86% { transform: translate(var(--x), -170px) rotate(0) scale(1.12); opacity: 1; } 94% { opacity: 0; } 100% { transform: translateY(var(--dy)) rotate(var(--rot)); opacity: 1; } }
+@keyframes sl-lisere { 0%, 58% { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5); } 66%, 86% { box-shadow: 0 0 0 2px #e6c675, 0 0 20px rgba(230, 198, 117, 0.85); } 100% { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5); } }
+@keyframes sl-abat { 0% { transform: translateY(var(--dy)) rotate(var(--rot)); opacity: 1; } 30% { transform: translateY(calc(var(--dy) - 30px)) rotate(var(--rot)); } 55% { transform: translate(calc(var(--x) + var(--fx)), -178px) rotate(var(--fr)) scale(1.06); } 60% { transform: translate(calc(var(--x) + var(--fx)), -167px) rotate(var(--fr)) scale(1.1, 1); } 66%, 88% { transform: translate(calc(var(--x) + var(--fx)), -170px) rotate(var(--fr)); opacity: 1; } 95% { opacity: 0; } 100% { transform: translateY(var(--dy)) rotate(var(--rot)); opacity: 1; } }
+@keyframes sl-gerbe { 0%, 55% { transform: scale(0.2) rotate(0); opacity: 0; } 62% { transform: scale(1) rotate(10deg); opacity: 1; } 100% { transform: scale(1.45) rotate(45deg); opacity: 0; } }
+@keyframes sl-titre { 0%, 58% { transform: scale(0.4); opacity: 0; } 68% { transform: scale(1.12); opacity: 1; } 78% { transform: scale(1); } 92% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   :is([data-style='tapis'], [data-style='salon']) .grades .grade { transition: none; }
   [data-style='tapis'] *, [data-style='tapis'] *::before, [data-style='tapis'] *::after { animation: none !important; }
+  /* CHANTIER 242 — Salon privé : tout reste immobile. */
+  [data-style='salon'] *, [data-style='salon'] *::before, [data-style='salon'] *::after { animation: none !important; }
 }
