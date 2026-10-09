@@ -901,6 +901,24 @@ function Rugby() {
       flaques: [[11, 55, 90], [61, 43, 70], [69, 80, 100], [19, 87, 60], [42, 68, 54]].map(([x, y, w]) => ({ x, y, w, ronds: [0, 1, 2].map(() => ({ x: 20 + r() * 60, y: 25 + r() * 50, dur: 1.1 + r() * 0.8, del: -r() * 2 })) })),
     };
   }, []);
+  /* CHANTIER 243 — la tribune suit l'écran quand on le fait défiler : les joueurs et les poteaux
+     restent posés sur la pelouse. Elle reste coupée sous le bandeau du haut. */
+  const tribune = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    let f = 0;
+    const maj = () => {
+      f = 0;
+      const el = tribune.current;
+      if (!el) return;
+      const y = Math.max(0, Math.round(window.scrollY));
+      el.style.transform = y ? `translateY(${-y}px)` : '';
+      el.style.clipPath = y ? `inset(${y}px 0 0 0)` : '';
+    };
+    const defile = () => { if (!f) f = requestAnimationFrame(maj); };
+    window.addEventListener('scroll', defile, { passive: true });
+    maj();
+    return () => { window.removeEventListener('scroll', defile); cancelAnimationFrame(f); };
+  }, []);
   const [melee, setMelee] = useState<Melee | null>(null);
   useCadence(1500, 7000, 4000, () => {
     const w = window.innerWidth, h = window.innerHeight;
@@ -909,7 +927,7 @@ function Rugby() {
   return (
     <span className="fa-rugby">
       <i className="fa-r-ciel" />
-      <span className="fa-r-tribune">
+      <span className="fa-r-tribune" ref={tribune}>
         <i /><i /><i /><b>ALLEZ · ALLEZ · ALLEZ</b><i className="foule" /><i /><i className="foule" /><i /><i className="foule" /><i /><i className="foule" /><i /><i className="foule" /><i /><span><i /></span><span><i /></span><span><i /></span><span><i /></span>
       </span>
       {melee && (
