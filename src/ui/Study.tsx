@@ -52,6 +52,22 @@ const SV_PLUIE = Array.from({ length: 18 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * (200 + k * 20)}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 245 — Grille de départ : la fumée du tête-à-queue (Raté) et les confettis à damier (Facile). */
+const GC_FUMEES = [[-60, -40], [-20, -70], [34, -52], [-96, 6]].map(([dx, dy], k) => ({
+  marginLeft: `${k * 6}px`,
+  marginTop: `${k * 8}px`,
+  animationDelay: `${(k * 0.06).toFixed(2)}s`,
+  '--dx': `${dx}px`,
+  '--dy': `${dy}px`,
+}) as unknown as CSSProperties);
+const GC_CONFETTIS = Array.from({ length: 16 }, (_, k) => ({
+  left: `${(((k * 61) % 340) + 8) / 3.6}%`,
+  animationDuration: `${(1.2 + (k % 4) * 0.15).toFixed(2)}s`,
+  animationDelay: `${(0.8 + (k % 6) * 0.08).toFixed(2)}s`,
+  '--dx': `${((k % 5) - 2) * 18}px`,
+  '--r': `${(k % 2 ? 1 : -1) * (300 + k * 20)}deg`,
+}) as unknown as CSSProperties);
+
 function useAjuste(texte: string, visible = true) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [passe, setPasse] = useState(0);
@@ -285,7 +301,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${style === 'strass' && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -350,6 +366,44 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 245 — Grille de départ : ce qui se pose sur le panneau pendant la note. */}
+      {style === 'circuit' && frappe && cadre && (
+        <div className="gc-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'again' && (
+            <>
+              <i className="trace" />
+              {GC_FUMEES.map((st, k) => <i key={k} className="fumee" style={st} />)}
+            </>
+          )}
+          {frappe === 'hard' && (
+            <>
+              <i className="frein g" />
+              <i className="frein d" />
+              <span className="drap"><i /></span>
+              <b className="pancarte">Drapeau jaune</b>
+            </>
+          )}
+          {frappe === 'good' && (
+            <>
+              <i className="roue hg" />
+              <i className="roue hd" />
+              <i className="roue bg" />
+              <i className="roue bd" />
+              <b className="chrono">Pit stop · 2,1 s</b>
+              <span className="vitesse"><i /><i /><i /><i /><i /><i /></span>
+            </>
+          )}
+          {frappe === 'easy' && (
+            <>
+              <i className="arrivee" />
+              <i className="balaie" />
+              <b className="mt">Meilleur tour</b>
+              <span className="damiers">{GC_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
+            </>
+          )}
+        </div>
+      )}
+
       {!revealed ? (
         <>
           <button className="reveal" onClick={reveal}>Afficher la réponse</button>
@@ -380,9 +434,11 @@ export function Study({
                   /* CHANTIER 242 — Salon privé : la carte touchée est abattue (Facile : toute la main, en éventail). */
                   : style === 'salon' ? (g.key === 'easy' ? 1600 : 1400)
                   /* CHANTIER 244 — Strass : l'invitation (déchirée, chassée, mise sous enveloppe, tapis rouge). */
-                  : style === 'strass' ? (g.key === 'again' ? 1300 : g.key === 'hard' ? 1400 : g.key === 'good' ? 1800 : 2000) : 0;
+                  : style === 'strass' ? (g.key === 'again' ? 1300 : g.key === 'hard' ? 1400 : g.key === 'good' ? 1800 : 2000)
+                  /* CHANTIER 245 — Grille de départ : le panneau (tête-à-queue, drapeau jaune, arrêt au stand, ligne d'arrivée). */
+                  : style === 'circuit' ? (g.key === 'again' ? 1500 : g.key === 'hard' ? 1600 : g.key === 'good' ? 1900 : 2100) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass') {
+                  if (style === 'strass' || style === 'circuit') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
@@ -393,11 +449,12 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon' || style === 'strass') && (
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon' || style === 'strass' || style === 'circuit') && (
                 /* CHANTIER 241 — Tapis vert : dix morceaux (cartes jetées, jetons de la mise, jetons qui rebondissent). */
                 /* CHANTIER 242 — Salon privé : deux calques sur la carte (les plis, le dos). */
                 /* CHANTIER 244 — Strass : aucun morceau, le calque est l'étoile qui scintille sur la pierre. */
-                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
+                /* CHANTIER 245 — Grille de départ : le calque est la bouffée d'air du pneu crèvé. */
+                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' || style === 'circuit' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
               )}
             </button>
           ))}

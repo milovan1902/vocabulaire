@@ -727,8 +727,165 @@ html[data-style='strass']:has(.sv-scene) { overflow: hidden; }
 @keyframes sv-vip { 0%, 30% { transform: scale(0.4); opacity: 0; } 42% { transform: scale(1.12); opacity: 1; } 52% { transform: scale(1); } 88% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
 @keyframes sv-lueur { 0%, 100% { box-shadow: 0 0 0 1px #c9962f, 0 0 0 6px #fbf6ea, 0 0 0 7px #c9962f, 0 0 44px rgba(232, 196, 106, 0.35); } 40%, 80% { box-shadow: 0 0 0 1px #c9962f, 0 0 0 6px #fbf6ea, 0 0 0 7px #f0d388, 0 0 80px rgba(255, 230, 160, 0.9); } }
 
+/* ==================================================================
+   CHANTIER 245 — Grille de départ animée (maquette 62a).
+   - « Feu vert » : un portique de cinq feux apparaît au-dessus du bouton ; les feux rouges
+     s'allument un par un puis s'éteignent d'un coup, le bouton passe au vert, une monoplace le
+     traverse en laissant deux traces de gomme et des bouffées de fumée (Today.tsx pose
+     .gc-depart ; la révision s'ouvre 1,5 s après le toucher).
+   - « Cette semaine » : un feu par jour ; celui du jour s'allume avec un flash et une onde.
+     5 jours : les cinq feux s'éteignent ensemble, le portique s'allume en vert, ils se rallument
+     (anime.css) ; le drapeau à damier se dresse et flotte (Today.tsx pose .gc-drapeau).
+     6 jours : les cinq feux passent au vert, sans drapeau.
+     7 jours : les cinq feux au vert, et le drapeau à damier.
+   - Révision : le pneu touché tourne. Raté : il crève ; la carte part en tête-à-queue hors de
+     l'écran, avec fumée et traces. Dur : drapeau jaune, traces de freinage, la carte file au
+     stand hors de l'écran. Bien : arrêt au stand (la carte est soulevée, les quatre roues
+     changent, « Pit stop · 2,1 s »), puis elle repart vers le haut. Facile : le drapeau à damier
+     balaie l'écran, la carte franchit la ligne d'arrivée, « Meilleur tour » en violet.
+     (Study.tsx : .n-again… sur la carte, et .gc-scene posée sur la carte.)
+   ================================================================== */
+[data-style='circuit'] {
+  --gc-pneu-jante: repeating-conic-gradient(#5a5d63 0 12deg, #2e2f33 12deg 72deg);
+  --gc-vert: radial-gradient(circle at 40% 35%, #9dffbf, #1fbf5c 60%);
+}
+
+/* « Feu vert » */
+[data-style='circuit'] .btn.ly-go { position: relative; overflow: visible; }
+[data-style='circuit'] .btn.ly-go:has(> .gc-depart) { animation: gc-presse 1.6s ease-out, gc-bouton-vert 1.6s linear; }
+[data-style='circuit'] .gc-depart { position: absolute; inset: 0; display: block; pointer-events: none; border-radius: inherit; }
+[data-style='circuit'] .gc-depart .piste { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: inherit; }
+[data-style='circuit'] .gc-depart .gomme { position: absolute; left: 0; right: 0; top: calc(50% - 8px); height: 16px; display: block; transform-origin: 0 50%; opacity: 0; background: linear-gradient(180deg, rgba(10, 10, 12, 0.85) 0 5px, transparent 5px 11px, rgba(10, 10, 12, 0.85) 11px); animation: gc-gomme 1.6s ease-out both; }
+[data-style='circuit'] .gc-depart .fumee { position: absolute; left: 10px; top: calc(50% - 12px); width: 20px; height: 20px; display: block; border-radius: 50%; opacity: 0; background: radial-gradient(circle, rgba(205, 206, 212, 0.8), rgba(205, 206, 212, 0) 70%); filter: blur(2px); --dx: -10px; animation: gc-bouffee 1.6s ease-out both; }
+[data-style='circuit'] .gc-depart .fumee:nth-child(3) { left: 26px; margin-top: 4px; --dx: -2px; animation-delay: 0.05s; }
+[data-style='circuit'] .gc-depart .fumee:nth-child(4) { left: 42px; margin-top: 8px; --dx: 6px; animation-delay: 0.1s; }
+/* La monoplace, vue de dessus : aileron arrière, quatre roues, coque blanche, casque jaune, aileron avant. */
+[data-style='circuit'] .gc-depart .auto { position: absolute; left: 0; top: calc(50% - 12px); width: 56px; height: 24px; display: block; opacity: 0; animation: gc-auto 1.6s linear both; }
+[data-style='circuit'] .gc-depart .auto > i { position: absolute; display: block; border-radius: 2px; background: #111; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(1) { left: 0; top: 4px; width: 5px; height: 16px; border-radius: 1px; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(2) { left: 8px; top: 0; width: 10px; height: 6px; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(3) { left: 8px; top: 18px; width: 10px; height: 6px; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(4) { left: 34px; top: 0; width: 10px; height: 6px; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(5) { left: 34px; top: 18px; width: 10px; height: 6px; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(6) { left: 4px; top: 8px; width: 46px; height: 8px; border-radius: 2px 8px 8px 2px; background: #f4f4f4; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(7) { left: 24px; top: 9px; width: 8px; height: 6px; border-radius: 50%; background: #ffd400; }
+[data-style='circuit'] .gc-depart .auto > i:nth-child(8) { left: 47px; top: 3px; width: 6px; height: 18px; border-radius: 1px; }
+/* Le portique : les feux s'allument un par un (0,1 s, 0,25 s…) et s'éteignent tous à 0,95 s. */
+[data-style='circuit'] .gc-depart .portique { position: absolute; left: 50%; top: -34px; width: 104px; height: 24px; margin-left: -52px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 6px; background: #0e0f11; border: 2px solid #3a3c41; opacity: 0; animation: gc-portique 1.6s ease-out both; }
+[data-style='circuit'] .gc-depart .portique > i { flex: none; width: 12px; height: 12px; display: block; border-radius: 50%; background: #26272b; box-shadow: inset 0 0 0 1.5px #3a3c41; animation: gc-lampe linear both; }
+[data-style='circuit'] .gc-depart .portique > i:nth-child(1) { animation-duration: 0.85s; animation-delay: 0.1s; }
+[data-style='circuit'] .gc-depart .portique > i:nth-child(2) { animation-duration: 0.7s; animation-delay: 0.25s; }
+[data-style='circuit'] .gc-depart .portique > i:nth-child(3) { animation-duration: 0.55s; animation-delay: 0.4s; }
+[data-style='circuit'] .gc-depart .portique > i:nth-child(4) { animation-duration: 0.4s; animation-delay: 0.55s; }
+[data-style='circuit'] .gc-depart .portique > i:nth-child(5) { animation-duration: 0.25s; animation-delay: 0.7s; }
+
+/* « Cette semaine » : le feu du jour s'allume avec un flash et une onde (le <b> du feu). */
+[data-style='circuit'] .ly-segments > i { position: relative; }
+[data-style='circuit'] .ly-segments > i > b { position: absolute; inset: -3px; display: none; border-radius: 50%; border: 2px solid #ff6a60; opacity: 0; }
+[data-style='circuit'] .ly-segments:not(.plein) > i.on.auj { animation: gc-allume 1s ease-out 0.3s both; }
+[data-style='circuit'] .ly-segments:not(.plein) > i.on.auj > b { display: block; animation: gc-onde 1s ease-out 0.3s both; }
+/* 6 et 7 jours : les cinq feux passent au vert, l'un après l'autre. */
+[data-style='circuit'] .ly-segments:is(.b6, .b7) { border-color: #2bd96b; box-shadow: 0 0 12px rgba(43, 217, 107, 0.45); }
+[data-style='circuit'] .ly-segments:is(.b6, .b7) > i { background: var(--gc-vert); box-shadow: 0 0 9px #2bd96b; animation: gc-passe-vert 0.5s ease-out 0.3s both; }
+[data-style='circuit'] .ly-segments:is(.b6, .b7) > i:nth-child(2) { animation-delay: 0.42s; }
+[data-style='circuit'] .ly-segments:is(.b6, .b7) > i:nth-child(3) { animation-delay: 0.54s; }
+[data-style='circuit'] .ly-segments:is(.b6, .b7) > i:nth-child(4) { animation-delay: 0.66s; }
+[data-style='circuit'] .ly-segments:is(.b6, .b7) > i:nth-child(5) { animation-delay: 0.78s; }
+/* 5 et 7 jours : le drapeau à damier se dresse et flotte, en haut à droite de la tuile. */
+[data-style='circuit'] .ly-tuile:has(.gc-drapeau) { position: relative; }
+[data-style='circuit'] .gc-drapeau { position: absolute; right: 12px; top: 10px; width: 30px; height: 34px; display: block; pointer-events: none; transform-origin: 2px 100%; animation: gc-drapeau-in 1s ease-out both; }
+[data-style='circuit'] .ly-tuile:has(.ly-segments.plein:not(.b6):not(.b7)) .gc-drapeau { animation: gc-drapeau-in 2.6s ease-out 0.4s both; }
+[data-style='circuit'] .gc-drapeau::before { content: ''; position: absolute; left: 0; top: 0; width: 2.5px; height: 34px; border-radius: 1px; background: #d0d3d8; }
+[data-style='circuit'] .gc-drapeau > i { position: absolute; left: 2.5px; top: 1px; width: 24px; height: 16px; display: block; transform-origin: 0 50%; background: var(--damier); animation: gc-flotte 0.35s ease-in-out infinite alternate; }
+
+/* Révision : les pneus ont une jante à rayons, pour qu'on les voie tourner. */
+[data-style='circuit'] .grades .grade::before { background: radial-gradient(circle, transparent 0 34%, #1c1d20 35% 54%, var(--c) 55% 61%, #0d0d0e 62% 100%), var(--gc-pneu-jante); }
+[data-style='circuit'] .grades .grade.frappe::before { animation: gc-roue 0.6s ease-out; }
+[data-style='circuit'] .grades .g-again.frappe::before { animation: gc-creve 1.5s ease-out both; }
+[data-style='circuit'] .grades .g-fx { position: absolute; left: 50%; top: 44px; width: 30px; height: 30px; margin-left: -15px; display: block; pointer-events: none; opacity: 0; border-radius: 50%; background: radial-gradient(circle, rgba(225, 228, 234, 0.9), rgba(225, 228, 234, 0) 70%); filter: blur(1px); }
+[data-style='circuit'] .grades .g-again.frappe .g-fx { animation: gc-pschitt 1.5s ease-out both; }
+[data-style='circuit'] .grades:has(.frappe) { position: relative; z-index: 6; }
+/* Pendant l'animation, rien ne fait défiler l'écran (la carte qui sort, les drapeaux). */
+html[data-style='circuit']:has(.gc-scene) { overflow: hidden; }
+[data-style='circuit'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='circuit'] .studystage.n-again { animation: gc-tete 1.5s ease-in both; }
+[data-style='circuit'] .studystage.n-hard { animation: gc-freine 1.6s ease-in-out both; }
+[data-style='circuit'] .studystage.n-good { animation: gc-pit 1.9s ease-in-out both; }
+[data-style='circuit'] .studystage.n-easy { animation: gc-ligne 2.1s ease-in both; }
+[data-style='circuit'] .gc-scene { position: absolute; display: block; pointer-events: none; }
+/* Raté : les traces du tête-à-queue et la fumée. */
+[data-style='circuit'] .gc-scene .trace { position: absolute; left: calc(50% - 80px); top: calc(100% - 110px); z-index: 1; width: 160px; height: 200px; display: block; opacity: 0; animation: gc-trace 1.5s ease-out both; }
+[data-style='circuit'] .gc-scene .trace::before, [data-style='circuit'] .gc-scene .trace::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 7px solid transparent; border-left-color: rgba(12, 12, 14, 0.85); border-top-color: rgba(12, 12, 14, 0.6); transform: rotate(-20deg); }
+[data-style='circuit'] .gc-scene .trace::after { inset: 14px 0 0 22px; }
+[data-style='circuit'] .gc-scene .fumee { position: absolute; left: calc(50% - 22px); top: calc(100% - 50px); z-index: 4; width: 44px; height: 44px; display: block; border-radius: 50%; opacity: 0; background: radial-gradient(circle, rgba(205, 207, 213, 0.8), rgba(205, 207, 213, 0) 70%); filter: blur(4px); animation: gc-fumee 1.5s ease-out both; }
+/* Dur : les traces de freinage, le drapeau jaune. */
+[data-style='circuit'] .gc-scene .frein { position: absolute; top: calc(100% - 6px); z-index: 1; width: 8px; height: 74px; display: block; border-radius: 40%; transform-origin: 50% 0; opacity: 0; background: linear-gradient(180deg, rgba(10, 10, 12, 0.9), rgba(10, 10, 12, 0.4) 80%, transparent); animation: gc-freinage 1.6s ease-out both; }
+[data-style='circuit'] .gc-scene .frein.g { left: 30%; }
+[data-style='circuit'] .gc-scene .frein.d { left: 67%; }
+[data-style='circuit'] .gc-scene .drap { position: absolute; right: 12px; top: -56px; z-index: 8; width: 40px; height: 48px; display: block; transform-origin: 2px 100%; opacity: 0; animation: gc-drapjaune 1.6s ease-out both; }
+[data-style='circuit'] .gc-scene .drap::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 48px; border-radius: 1px; background: #d0d3d8; }
+[data-style='circuit'] .gc-scene .drap > i { position: absolute; left: 3px; top: 2px; width: 32px; height: 22px; display: block; transform-origin: 0 50%; background: #ffd400; box-shadow: 0 0 12px rgba(255, 212, 0, 0.6); animation: gc-flotte 0.3s ease-in-out infinite alternate; }
+[data-style='circuit'] .gc-scene .pancarte, [data-style='circuit'] .gc-scene .chrono { position: absolute; left: 0; right: 0; top: -50px; z-index: 8; width: fit-content; margin: 0 auto; display: block; padding: 5px 14px; border-radius: 4px; font-size: 15px; font-weight: 900; font-style: italic; text-transform: uppercase; white-space: nowrap; opacity: 0; }
+[data-style='circuit'] .gc-scene .pancarte { background: #ffd400; color: #111; box-shadow: 0 4px 0 #8a7300; animation: gc-pancarte 1.6s ease-out both; }
+/* Bien : les quatre roues qui changent, le chrono, les lignes de vitesse. */
+[data-style='circuit'] .gc-scene .roue { position: absolute; z-index: 5; width: 30px; height: 30px; display: block; border-radius: 50%; opacity: 0; background: radial-gradient(circle, transparent 0 34%, #1c1d20 35% 54%, #ffd400 55% 61%, #0d0d0e 62% 100%), var(--gc-pneu-jante); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6); animation: gc-change 1.9s ease-in-out both; }
+[data-style='circuit'] .gc-scene .roue.hg { left: -7px; top: -29px; --ox: -22px; }
+[data-style='circuit'] .gc-scene .roue.hd { right: -7px; top: -29px; --ox: 22px; animation-delay: 0.04s; }
+[data-style='circuit'] .gc-scene .roue.bg { left: -7px; top: calc(100% - 29px); --ox: -22px; animation-delay: 0.08s; }
+[data-style='circuit'] .gc-scene .roue.bd { right: -7px; top: calc(100% - 29px); --ox: 22px; animation-delay: 0.12s; }
+[data-style='circuit'] .gc-scene .chrono { padding: 6px 14px; background: #111; border: 2px solid #ffd400; color: #ffd400; font-size: 16px; animation: gc-chrono 1.9s ease-out both; }
+[data-style='circuit'] .gc-scene .vitesse { position: fixed; inset: 0; z-index: 7; display: block; overflow: hidden; }
+[data-style='circuit'] .gc-scene .vitesse > i { position: absolute; top: 0; width: 2px; height: 90px; display: block; opacity: 0; background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.85)); animation: gc-vitesse 1.9s linear both; }
+[data-style='circuit'] .gc-scene .vitesse > i:nth-child(1) { left: 10%; }
+[data-style='circuit'] .gc-scene .vitesse > i:nth-child(2) { left: 26%; height: 120px; animation-delay: 0.03s; }
+[data-style='circuit'] .gc-scene .vitesse > i:nth-child(3) { left: 42%; height: 150px; animation-delay: 0.06s; }
+[data-style='circuit'] .gc-scene .vitesse > i:nth-child(4) { left: 58%; }
+[data-style='circuit'] .gc-scene .vitesse > i:nth-child(5) { left: 74%; height: 120px; animation-delay: 0.03s; }
+[data-style='circuit'] .gc-scene .vitesse > i:nth-child(6) { left: 90%; height: 150px; animation-delay: 0.06s; }
+/* Facile : le drapeau à damier balaie l'écran, la ligne d'arrivée, « Meilleur tour », les confettis. */
+[data-style='circuit'] .gc-scene .balaie { position: absolute; left: 50%; top: -54px; z-index: 8; width: 140vw; height: 64px; margin-left: -70vw; display: block; opacity: 0; background: conic-gradient(#111 25%, #f4f4f4 0 50%, #111 0 75%, #f4f4f4 0) 0 0 / 32px 32px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); animation: gc-balaie 2.1s ease-in-out both; }
+[data-style='circuit'] .gc-scene .arrivee { position: absolute; left: 50%; top: -22px; z-index: 1; width: 100vw; height: 12px; margin-left: -50vw; display: block; opacity: 0; background: conic-gradient(#111 25%, #f4f4f4 0 50%, #111 0 75%, #f4f4f4 0) 0 0 / 12px 12px; animation: gc-arr 2.1s ease-out both; }
+[data-style='circuit'] .gc-scene .mt { position: absolute; left: 0; right: 0; top: 45%; z-index: 9; width: fit-content; margin: 0 auto; display: block; padding: 8px 20px; border-radius: 6px; background: #7b2cbf; border: 2px solid #d4a5ff; color: #fff; font-size: 26px; font-weight: 900; font-style: italic; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 26px rgba(160, 80, 255, 0.7); opacity: 0; animation: gc-mt 2.1s ease-out both; }
+[data-style='circuit'] .gc-scene .damiers { position: fixed; inset: 0; z-index: 9; display: block; overflow: hidden; }
+[data-style='circuit'] .gc-scene .damiers > s { position: absolute; top: -12px; width: 9px; height: 9px; box-sizing: border-box; display: block; opacity: 0; text-decoration: none; background: conic-gradient(#111 25%, #f4f4f4 0 50%, #111 0 75%, #f4f4f4 0) 0 0 / 4.5px 4.5px; border: 1px solid #111; animation: gc-cd 1.4s ease-in both; }
+
+@keyframes gc-presse { 0%, 54%, 70%, 100% { transform: skewX(-6deg); } 60% { transform: skewX(-6deg) translateY(3px) scale(0.99, 0.94); } }
+@keyframes gc-bouton-vert { 0%, 57% { background-color: #e10600; box-shadow: 0 4px 0 #8a0400; } 60%, 84% { background-color: #1fbf5c; box-shadow: 0 4px 0 #0d6e31, 0 0 26px rgba(43, 217, 107, 0.8); } 100% { background-color: #e10600; box-shadow: 0 4px 0 #8a0400; } }
+@keyframes gc-portique { 0% { transform: skewX(6deg) translateY(8px); opacity: 0; } 8%, 70% { transform: skewX(6deg); opacity: 1; } 86%, 100% { transform: skewX(6deg) translateY(-6px); opacity: 0; } }
+@keyframes gc-lampe { 0% { background: #26272b; box-shadow: inset 0 0 0 1.5px #3a3c41; } 6% { background: radial-gradient(circle at 40% 35%, #ffd0c8, #ff2a1a 60%); box-shadow: 0 0 12px 3px #ff3b30; } 16%, 97% { background: radial-gradient(circle at 40% 35%, #ff7a70, #e10600 60%); box-shadow: 0 0 8px #e10600; } 100% { background: #26272b; box-shadow: inset 0 0 0 1.5px #3a3c41; } }
+@keyframes gc-auto { 0%, 60% { transform: translateX(-70px); opacity: 0; } 62% { opacity: 1; } 86% { transform: translateX(440px); opacity: 1; } 100% { transform: translateX(440px); opacity: 0; } }
+@keyframes gc-gomme { 0%, 61% { transform: scaleX(0); opacity: 0; } 64% { opacity: 0.85; } 86% { transform: scaleX(1); opacity: 0.7; } 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes gc-bouffee { 0%, 60% { transform: translate(0, 0) scale(0.3); opacity: 0; } 66% { opacity: 0.8; } 100% { transform: translate(var(--dx), -26px) scale(2.6); opacity: 0; } }
+@keyframes gc-allume { 0%, 25% { background: #26272b; box-shadow: inset 0 0 0 2px #3a3c41; transform: none; } 32% { background: radial-gradient(circle at 40% 35%, #ffd0c8, #ff2a1a 60%); box-shadow: 0 0 16px 5px #ff3b30; transform: scale(1.4); } 60%, 100% { background: radial-gradient(circle at 40% 35%, #ff7a70, #e10600 60%); box-shadow: 0 0 9px #e10600; transform: none; } }
+@keyframes gc-onde { 0%, 28% { transform: scale(0.4); opacity: 0; } 34% { opacity: 1; } 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes gc-passe-vert { 0% { background: radial-gradient(circle at 40% 35%, #ff7a70, #e10600 60%); box-shadow: 0 0 9px #e10600; transform: none; } 40% { background: radial-gradient(circle at 40% 35%, #d8ffe6, #2bd96b 60%); box-shadow: 0 0 16px 4px #2bd96b; transform: scale(1.3); } 100% { transform: none; } }
+@keyframes gc-drapeau-in { 0%, 34% { transform: translateY(14px) rotate(20deg) scale(0.4); opacity: 0; } 48% { transform: rotate(-8deg) scale(1.1); opacity: 1; } 60%, 100% { transform: none; opacity: 1; } }
+@keyframes gc-flotte { from { transform: skewY(-7deg) scaleX(1); } to { transform: skewY(7deg) scaleX(0.84); } }
+@keyframes gc-roue { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes gc-creve { 0% { transform: none; } 12% { transform: rotate(40deg); } 26%, 86% { transform: translateY(8px) scale(1.1, 0.74) rotate(60deg); } 100% { transform: none; } }
+@keyframes gc-pschitt { 0%, 14% { transform: scale(0.3); opacity: 0; } 22% { opacity: 0.9; } 60%, 100% { transform: translate(14px, -18px) scale(2.2); opacity: 0; } }
+@keyframes gc-tete { 0%, 22% { transform: none; } 28% { transform: translate(4px, 4px) rotate(5deg); } 100% { transform: translate(-130vw, 30vh) rotate(-640deg); } }
+@keyframes gc-trace { 0%, 26% { opacity: 0; } 40%, 80% { opacity: 0.85; } 100% { opacity: 0; } }
+@keyframes gc-fumee { 0%, 24% { transform: translate(0, 0) scale(0.3); opacity: 0; } 34% { opacity: 0.8; } 100% { transform: translate(var(--dx), var(--dy)) scale(3); opacity: 0; } }
+@keyframes gc-freine { 0%, 18% { transform: none; } 26% { transform: translateY(10px) scale(1, 0.98); } 34% { transform: translateY(2px); } 44% { transform: translateX(-10px) rotate(-1deg); } 82%, 100% { transform: translateX(115vw) rotate(5deg); } }
+@keyframes gc-freinage { 0%, 18% { transform: scaleY(0); opacity: 0; } 22% { opacity: 0.9; } 34% { transform: scaleY(1); opacity: 0.9; } 88% { opacity: 0.6; } 100% { transform: scaleY(1); opacity: 0; } }
+@keyframes gc-drapjaune { 0% { transform: scale(0.3) rotate(-30deg); opacity: 0; } 12% { transform: scale(1.1) rotate(4deg); opacity: 1; } 20%, 88% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes gc-pancarte { 0% { transform: translateY(-10px) scale(0.6); opacity: 0; } 12%, 85% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes gc-pit { 0%, 14% { transform: none; } 22%, 60% { transform: translateY(-14px); } 66% { transform: translateY(0); } 72% { transform: translateY(5px) scale(1, 0.98); } 78% { transform: translateY(0); } 100% { transform: translateY(-120vh) scaleY(1.15); } }
+@keyframes gc-change { 0%, 20% { transform: scale(0) rotate(0); opacity: 0; } 26% { transform: scale(1) rotate(90deg); opacity: 1; } 36% { transform: translateX(var(--ox)) scale(0.8) rotate(360deg); opacity: 0.2; } 44% { transform: scale(1) rotate(540deg); opacity: 1; } 58% { transform: scale(1) rotate(900deg); opacity: 1; } 64%, 100% { transform: scale(0.6) rotate(960deg); opacity: 0; } }
+@keyframes gc-chrono { 0%, 18% { transform: translateY(-10px) scale(0.6); opacity: 0; } 26%, 84% { transform: none; opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+@keyframes gc-vitesse { 0%, 76% { transform: translateY(-200px) scaleY(0.4); opacity: 0; } 80% { opacity: 0.8; } 100% { transform: translateY(120vh) scaleY(1); opacity: 0; } }
+@keyframes gc-balaie { 0% { transform: translateX(-130%) skewY(-8deg); opacity: 1; } 30% { transform: translateX(-20%) skewY(8deg); } 55% { transform: translateX(80%) skewY(-8deg); opacity: 1; } 60%, 100% { transform: translateX(130%); opacity: 0; } }
+@keyframes gc-arr { 0%, 10% { transform: scaleX(0); opacity: 0; } 22%, 88% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes gc-ligne { 0%, 34% { transform: none; } 40% { transform: translateY(8px); } 100% { transform: translateY(-120vh); } }
+@keyframes gc-mt { 0%, 42% { transform: scale(0.4); opacity: 0; } 52% { transform: scale(1.12); opacity: 1; } 60% { transform: scale(1); } 90% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+@keyframes gc-cd { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(var(--dx), 110vh) rotate(var(--r)); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   :is([data-style='strass'], [data-style='circuit'], [data-style='diner'], [data-style='tv']) .grades .grade { transition: none; }
+  /* CHANTIER 245 — Grille de départ : feux et drapeau immobiles, sans portique ni monoplace. */
+  [data-style='circuit'] .ly-segments > i, [data-style='circuit'] .gc-drapeau, [data-style='circuit'] .gc-drapeau > i { animation: none !important; }
+  [data-style='circuit'] .ly-segments > i > b, [data-style='circuit'] .gc-depart { display: none !important; }
   /* CHANTIER 244 — Strass : les flûtes restent pleines et immobiles, sans mousse, coulures ni bouchon. */
   [data-style='strass'] .ly-segments *, [data-style='strass'] .ly-segments *::before, [data-style='strass'] .ly-segments *::after { animation: none !important; }
   [data-style='strass'] .ly-segments > i > u, [data-style='strass'] .ly-segments > i > em, [data-style='strass'] .ly-segments > i > b > s, [data-style='strass'] .sv-fete, [data-style='strass'] .sv-entree { display: none !important; }
