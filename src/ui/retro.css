@@ -1036,8 +1036,136 @@ html[data-style='diner']:has(.dn-scene) { overflow: hidden; }
 @keyframes dn-feux { 0% { outline-color: #f3c84b; } 50% { outline-color: #ff4d63; } }
 @keyframes dn-tip { 0%, 12% { transform: scale(0.3); opacity: 0; } 20% { transform: scale(1.15); opacity: 1; } 24% { opacity: 0.3; } 28% { transform: none; opacity: 1; } 32% { opacity: 0.4; } 36%, 88% { transform: none; opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
 
+/* ==================================================================
+   CHANTIER 247 — TV animé (maquette 64a, sans la mire).
+   - « C'est parti » : une télécommande glisse au-dessus du bouton, on appuie sur son bouton
+     rouge, des ondes partent vers le bouton ; le bouton s'allume comme un vieux poste (écran
+     noir, un trait blanc s'ouvre puis s'étire, l'image revient) ; une étoile éclatée tourne
+     au-dessus avec « En direct » (Today.tsx pose .tl-entree ; la révision s'ouvre 1,5 s après).
+   - « Cette semaine » : une télécommande par jour ; celle du jour allume son voyant vert, avec
+     un petit éclair. 5 jours : les cinq voyants clignotent ensemble. 6 jours : des antennes se
+     déploient au-dessus des télécommandes. 7 jours : les antennes émettent des ondes sans arrêt.
+   - Révision : le galet touché rebondit. Raté : neige, la carte grésille, l'image se resserre en
+     un point blanc, la carte tombe. Dur : « Incident technique », l'image se tord en zigzag, des
+     barres défilent, la carte sort à droite. Bien : on zappe (flash), « CH 2 » en coin, la carte
+     monte. Facile : « APPLAUSE » clignote, des confettis, un projecteur balaie l'écran, « Fin »,
+     la carte monte. (Study.tsx : .n-again… et .tl-ecran dans la carte, .tl-scene posée dessus.)
+   ================================================================== */
+/* « C'est parti » */
+[data-style='tv'] .btn.ly-go { position: relative; overflow: visible; }
+[data-style='tv'] .btn.ly-go:has(> .tl-entree) { animation: tl-bpresse 1.8s ease-out; }
+[data-style='tv'] .tl-entree { position: absolute; inset: 0; display: block; pointer-events: none; border-radius: inherit; }
+[data-style='tv'] .tl-entree > * { position: absolute; display: block; }
+[data-style='tv'] .tl-entree .ecran { inset: 0; overflow: hidden; border-radius: inherit; }
+[data-style='tv'] .tl-entree .ecran > i { position: absolute; inset: 0; display: block; opacity: 0; }
+[data-style='tv'] .tl-entree .noir { background: #1d1612; animation: tl-bnoir 1.8s linear both; }
+[data-style='tv'] .tl-entree .trait { background: #fffdf6; box-shadow: 0 0 12px #fffdf6; animation: tl-btrait 1.8s ease-out both; }
+[data-style='tv'] .tl-entree .telec { left: 6px; top: -30px; width: 46px; height: 18px; border-radius: 5px; background: #3d2c22; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25); opacity: 0; animation: tl-telec 1.8s ease-out both; }
+[data-style='tv'] .tl-entree .telec > i { position: absolute; display: block; width: 4px; height: 4px; border-radius: 50%; background: #f4ead5; }
+[data-style='tv'] .tl-entree .telec > i:nth-child(1) { left: 7px; top: 5px; background: #e9b44c; }
+[data-style='tv'] .tl-entree .telec > i:nth-child(2) { left: 7px; top: 10px; }
+[data-style='tv'] .tl-entree .telec > i:nth-child(3) { left: 15px; top: 5px; }
+[data-style='tv'] .tl-entree .telec > i:nth-child(4) { left: 15px; top: 10px; background: #e9b44c; }
+[data-style='tv'] .tl-entree .telec > .rouge { left: 26px; top: 4px; width: 10px; height: 10px; background: #e76f51; animation: tl-appui 1.8s linear both; }
+[data-style='tv'] .tl-entree .telec > .led { right: 2px; top: 7px; background: #5cff8a; box-shadow: 0 0 4px #1fd65a; }
+[data-style='tv'] .tl-entree .ir { left: 54px; top: -33px; width: 12px; height: 24px; box-sizing: border-box; border-radius: 0 50% 50% 0; border: 2px solid #e76f51; border-left: none; opacity: 0; animation: tl-ir 1.8s ease-out both; }
+[data-style='tv'] .tl-entree .ir:nth-child(4) { left: 63px; animation-delay: 0.08s; }
+[data-style='tv'] .tl-entree .ir:nth-child(5) { left: 72px; animation-delay: 0.16s; }
+[data-style='tv'] .tl-entree .direct { left: 50%; top: -52px; width: 150px; height: 44px; margin-left: -75px; display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; animation: tl-direct 1.8s ease-out both; }
+[data-style='tv'] .tl-entree .direct .etoile { flex: none; width: 40px; height: 40px; display: block; background: #2a9d8f; clip-path: polygon(50% 0, 58% 30%, 85% 15%, 70% 42%, 100% 50%, 70% 58%, 85% 85%, 58% 70%, 50% 100%, 42% 70%, 15% 85%, 30% 58%, 0 50%, 30% 42%, 15% 15%, 42% 30%); animation: tl-tourne 3s linear infinite; }
+[data-style='tv'] .tl-entree .direct b { display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 6px; background: #b5452a; border: 2px solid #3d2c22; color: #fffaf0; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; line-height: 1.2; text-transform: uppercase; white-space: nowrap; }
+[data-style='tv'] .tl-entree .direct b::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fffaf0; }
+
+/* « Cette semaine » : l'éclair du jour, les voyants, les antennes et leurs ondes. */
+[data-style='tv'] .ly-segments { position: relative; height: 22px; margin-top: 22px; overflow: visible; }
+[data-style='tv'] .ly-segments > i > * { position: absolute; display: none; text-decoration: none; }
+[data-style='tv'] .ly-segments:not(.b6):not(.b7) > i.on.auj::before { animation: tl-allume 0.8s ease-out 0.3s both; }
+[data-style='tv'] .ly-segments:not(.b6):not(.b7) > i.on.auj > .eclair { display: block; left: 2px; top: -16px; width: 9px; height: 13px; background: #e9b44c; clip-path: polygon(60% 0, 0 58%, 42% 58%, 30% 100%, 100% 38%, 56% 38%); opacity: 0; animation: tl-eclair 1s ease-out 0.3s both; }
+[data-style='tv'] .ly-segments.plein:not(.b6):not(.b7) > i.on:not(.auj)::before { animation: tl-led 0.3s steps(1) 0.4s 5 both; }
+[data-style='tv'] .ly-segments:is(.b6, .b7) > i.on > .ant { display: block; left: 6.5px; top: -12px; width: 0; height: 12px; transform-origin: 50% 100%; }
+[data-style='tv'] .ly-segments > i > .ant > i { position: absolute; left: -0.75px; bottom: 0; width: 1.5px; height: 12px; display: block; border-radius: 1px; background: #3d2c22; transform-origin: 50% 100%; transform: rotate(-28deg); }
+[data-style='tv'] .ly-segments > i > .ant > i + i { transform: rotate(28deg); }
+[data-style='tv'] .ly-segments.b6 > i.on > .ant { animation: tl-antenne 0.45s ease-out 0.3s both; }
+[data-style='tv'] .ly-segments.b6 > i:nth-child(2) > .ant { animation-delay: 0.42s; }
+[data-style='tv'] .ly-segments.b6 > i:nth-child(3) > .ant { animation-delay: 0.54s; }
+[data-style='tv'] .ly-segments.b6 > i:nth-child(4) > .ant { animation-delay: 0.66s; }
+[data-style='tv'] .ly-segments.b6 > i:nth-child(5) > .ant { animation-delay: 0.78s; }
+[data-style='tv'] .ly-segments.b7 > i.on > em { display: block; left: -5.5px; top: -26px; width: 24px; height: 14px; box-sizing: border-box; border-radius: 50% 50% 0 0; border: 2px solid #2a9d8f; border-bottom: none; opacity: 0; animation: tl-onde 1.4s ease-out var(--d, 0s) infinite; }
+[data-style='tv'] .ly-segments.b7 > i.on > em + em { animation-delay: calc(var(--d, 0s) + 0.7s); }
+[data-style='tv'] .ly-segments.b7 > i:nth-child(2) { --d: 0.2s; }
+[data-style='tv'] .ly-segments.b7 > i:nth-child(3) { --d: 0.4s; }
+[data-style='tv'] .ly-segments.b7 > i:nth-child(4) { --d: 0.6s; }
+[data-style='tv'] .ly-segments.b7 > i:nth-child(5) { --d: 0.8s; }
+
+/* Révision : le galet touché rebondit. */
+[data-style='tv'] .grades .grade.frappe::before { animation: tl-rebond 0.55s ease-out both; }
+[data-style='tv'] .grades:has(.frappe) { position: relative; z-index: 6; }
+/* Pendant l'animation, rien ne fait défiler l'écran. */
+html[data-style='tv']:has(.studystage:is(.n-again, .n-hard, .n-good, .n-easy)) { overflow: hidden; }
+[data-style='tv'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='tv'] .studystage.n-again { animation: tl-grille 1.6s ease-in both; }
+[data-style='tv'] .studystage.n-hard { animation: tl-zigzag 1.7s ease-in-out both; }
+[data-style='tv'] .studystage.n-good { animation: tl-zappe 1.9s ease-in-out both; }
+[data-style='tv'] .studystage.n-easy { animation: tl-fin 2.1s ease-in-out both; }
+/* L'écran : ce qui s'y passe reste dans le cadre du poste. */
+[data-style='tv'] .tl-ecran { position: absolute; inset: 0; z-index: 5; display: block; overflow: hidden; border-radius: 20px; pointer-events: none; }
+[data-style='tv'] .tl-ecran > * { position: absolute; display: block; opacity: 0; }
+[data-style='tv'] .tl-ecran .neige { inset: 0; background: repeating-radial-gradient(circle at 30% 40%, #d8d2c4 0 1px, #5a524a 1px 2px, #ece6da 2px 3px), repeating-radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.35) 0 1px, transparent 1px 3px); background-size: 7px 7px, 5px 5px; animation: tl-neige 1.6s linear both, tl-grain 0.12s steps(1) infinite; }
+[data-style='tv'] .tl-ecran .noir { inset: 0; background: #1d1612; animation: tl-noir 1.6s linear both; }
+[data-style='tv'] .tl-ecran .trait { inset: 0; background: #fffdf6; box-shadow: 0 0 16px #fffdf6; animation: tl-trait 1.6s ease-out both; }
+[data-style='tv'] .tl-ecran .barres { inset: 0; background: repeating-linear-gradient(180deg, transparent 0 18px, rgba(61, 44, 34, 0.28) 18px 30px); animation: tl-barres 1.7s linear both, tl-defile 0.4s linear infinite; }
+[data-style='tv'] .tl-ecran .incident { left: 50%; top: 50%; width: max-content; margin: -34px 0 0; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 18px; border-radius: 10px; background: #3d2c22; color: #f4ead5; box-shadow: 4px 4px 0 #b5452a; animation: tl-incident 1.7s ease-out both; }
+[data-style='tv'] .tl-ecran .incident b { font-size: 17px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+[data-style='tv'] .tl-ecran .incident small { font-size: 12px; }
+[data-style='tv'] .tl-ecran .flash { inset: 0; background: #fffdf6; animation: tl-flash 1.9s linear both; }
+[data-style='tv'] .tl-ecran .chaine { right: 20px; top: 12px; display: flex; align-items: baseline; gap: 3px; color: #2bd96b; font-size: 38px; font-weight: 800; line-height: 1; text-shadow: 0 0 8px rgba(92, 255, 138, 0.8), 2px 2px 0 #1d1612; animation: tl-chaine 1.9s linear both; }
+[data-style='tv'] .tl-ecran .chaine small { font-size: 13px; }
+[data-style='tv'] .tl-ecran .spot { left: 0; top: -20px; width: 150px; height: calc(100% + 40px); border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 240, 190, 0.85), rgba(255, 240, 190, 0) 70%); animation: tl-spot 2.1s ease-in-out both; }
+[data-style='tv'] .tl-ecran .fin { left: 50%; top: 50%; margin: -40px 0 0; translate: -50% 0; padding: 2px 26px 8px; border-radius: 999px; background: #fffaf0; border: 3px solid #3d2c22; color: #b5452a; font-size: 56px; font-weight: 800; font-style: italic; line-height: 1.1; text-shadow: 3px 3px 0 #e9b44c; animation: tl-motfin 2.1s ease-out both; }
+/* Facile : « APPLAUSE » au-dessus du poste et les confettis. */
+[data-style='tv'] .tl-scene { position: absolute; display: block; pointer-events: none; }
+[data-style='tv'] .tl-scene .applause { position: absolute; left: 18px; top: -54px; z-index: 8; display: block; padding: 6px 12px; border-radius: 6px; border: 2px solid #3d2c22; color: #fffaf0; font-size: 12px; font-weight: 800; letter-spacing: 0.14em; opacity: 0; animation: tl-applause 2.1s ease-out both, tl-clig 0.3s steps(1) infinite; }
+[data-style='tv'] .tl-scene .confettis { position: fixed; inset: 0; z-index: 9; display: block; overflow: hidden; }
+[data-style='tv'] .tl-scene .confettis > s { position: absolute; top: -12px; display: block; border-radius: 1px; opacity: 0; text-decoration: none; animation: tl-conf 1.4s ease-in both; }
+
+@keyframes tl-tourne { to { transform: rotate(360deg); } }
+@keyframes tl-bpresse { 0%, 32% { transform: none; } 36% { transform: translateY(2px); } 44%, 100% { transform: none; } }
+@keyframes tl-bnoir { 0%, 38% { opacity: 0; } 40%, 62% { opacity: 1; } 74%, 100% { opacity: 0; } }
+@keyframes tl-btrait { 0%, 40% { transform: scale(0, 0.04); opacity: 0; } 41% { opacity: 1; } 47% { transform: scale(1, 0.04); opacity: 1; } 58% { transform: none; opacity: 1; } 72%, 100% { transform: none; opacity: 0; } }
+@keyframes tl-telec { 0% { transform: translateX(-90px); opacity: 0; } 6% { opacity: 1; } 28% { transform: translateX(0); } 32% { transform: translateX(-3px); } 36%, 84% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes tl-appui { 0%, 30% { transform: none; } 34% { transform: scale(0.55); background: #ff9a7a; } 42%, 100% { transform: none; } }
+@keyframes tl-ir { 0%, 34% { transform: scale(0.4); opacity: 0; } 38% { opacity: 1; } 56%, 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes tl-direct { 0%, 58% { transform: scale(0.3); opacity: 0; } 66% { transform: scale(1.1); opacity: 1; } 72%, 90% { transform: none; opacity: 1; } 100% { transform: translateY(-6px); opacity: 0; } }
+@keyframes tl-allume { 0%, 30% { background: #1d3a24; box-shadow: none; transform: none; } 42% { background: #e6ffef; box-shadow: 0 0 10px 3px #5cff8a; transform: scale(1.8); } 100% { background: #5cff8a; box-shadow: 0 0 4px #1fd65a; transform: none; } }
+@keyframes tl-eclair { 0%, 35% { transform: scale(0.3); opacity: 0; } 45% { transform: scale(1.2); opacity: 1; } 70% { transform: none; opacity: 1; } 100% { transform: translateY(-4px); opacity: 0; } }
+@keyframes tl-led { 0% { background: #5cff8a; box-shadow: 0 0 8px 2px #5cff8a; } 50% { background: #1d3a24; box-shadow: none; } }
+@keyframes tl-antenne { 0% { transform: scaleY(0); } 70% { transform: scaleY(1.15); } 100% { transform: none; } }
+@keyframes tl-onde { 0% { transform: scale(0.3); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-6px) scale(1.6); opacity: 0; } }
+@keyframes tl-rebond { 0% { transform: none; } 30% { transform: translateY(-12px) scale(0.96, 1.04); } 55% { transform: translateY(0) scale(1.08, 0.9); } 75% { transform: translateY(-4px); } 100% { transform: none; } }
+@keyframes tl-grille { 0% { transform: none; } 6% { transform: translate(3px, -1px); } 10% { transform: translate(-3px, 1px); } 14% { transform: translate(2px, 2px); } 18% { transform: translate(-2px, -1px); } 22% { transform: translate(3px, 0); } 26% { transform: translate(-2px, 1px); } 30%, 66% { transform: none; } 100% { transform: translateY(120vh) rotate(8deg); } }
+@keyframes tl-neige { 0% { opacity: 0; } 4%, 46% { opacity: 1; } 52%, 100% { opacity: 0; } }
+@keyframes tl-grain { 0% { background-position: 0 0, 3px 2px; } 50% { background-position: 2px 3px, 0 1px; } }
+@keyframes tl-noir { 0%, 46% { opacity: 0; } 50%, 100% { opacity: 1; } }
+@keyframes tl-trait { 0%, 48% { transform: none; opacity: 0; } 50% { transform: none; opacity: 1; } 56% { transform: scale(1, 0.02); opacity: 1; } 62% { transform: scale(0.03, 0.02); } 66% { transform: scale(0.035, 0.035); opacity: 1; } 72%, 100% { transform: scale(0); opacity: 0; } }
+@keyframes tl-zigzag { 0%, 8% { transform: none; } 12% { transform: skewX(12deg) translateX(-6px); } 16% { transform: skewX(-12deg) translateX(6px); } 20% { transform: skewX(9deg); } 24% { transform: skewX(-9deg); } 28% { transform: skewX(10deg) translateY(-3px); } 32% { transform: skewX(-10deg) translateY(3px); } 36% { transform: skewX(6deg); } 40% { transform: skewX(-6deg); } 46% { transform: skewX(3deg); } 52% { transform: none; } 60% { transform: translateX(-12px) rotate(-1deg); } 100% { transform: translateX(120vw) rotate(4deg); } }
+@keyframes tl-barres { 0%, 8% { opacity: 0; } 12%, 52% { opacity: 1; } 58%, 100% { opacity: 0; } }
+@keyframes tl-defile { from { background-position: 0 0; } to { background-position: 0 60px; } }
+@keyframes tl-incident { 0%, 10% { transform: scale(0.4); opacity: 0; } 18% { transform: scale(1.08); opacity: 1; } 24%, 88% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes tl-zappe { 0%, 12% { transform: none; } 16% { transform: translateY(-6px); } 20% { transform: translateY(4px); } 24%, 50% { transform: none; } 56% { transform: translateY(8px); } 100% { transform: translateY(-120vh); } }
+@keyframes tl-flash { 0%, 10% { opacity: 0; } 14% { opacity: 0.95; } 20% { opacity: 0; } 24% { opacity: 0.6; } 30%, 100% { opacity: 0; } }
+@keyframes tl-chaine { 0%, 20% { opacity: 0; } 24%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes tl-fin { 0% { transform: none; } 8% { transform: scale(1.03); } 14%, 64% { transform: none; } 70% { transform: translateY(8px); } 100% { transform: translateY(-120vh); } }
+@keyframes tl-spot { 0% { transform: translateX(-200px); opacity: 0; } 8% { opacity: 1; } 46% { transform: translateX(360px); opacity: 1; } 52%, 100% { transform: translateX(360px); opacity: 0; } }
+@keyframes tl-motfin { 0%, 40% { transform: scale(0.3); opacity: 0; } 48% { transform: scale(1.12); opacity: 1; } 54%, 90% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes tl-applause { 0% { transform: scale(0.4); opacity: 0; } 8%, 88% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes tl-clig { 0% { background: #b5452a; box-shadow: 0 0 0 transparent; } 50% { background: #e76f51; box-shadow: 0 0 16px rgba(231, 111, 81, 0.9); } }
+@keyframes tl-conf { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(var(--dx), 110vh) rotate(var(--r)); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   :is([data-style='strass'], [data-style='circuit'], [data-style='diner'], [data-style='tv']) .grades .grade { transition: none; }
+  /* CHANTIER 247 — TV : les voyants restent allumés et immobiles, sans éclair ni ondes ; pas de télécommande ni d'allumage. */
+  [data-style='tv'] .ly-segments > i, [data-style='tv'] .ly-segments > i::before, [data-style='tv'] .ly-segments > i > * { animation: none !important; }
+  [data-style='tv'] .ly-segments > i > .eclair, [data-style='tv'] .ly-segments > i > em, [data-style='tv'] .tl-entree { display: none !important; }
   /* CHANTIER 246 — Diner : les milk-shakes restent pleins et immobiles, sans gouttes ; pas de pièce ni d'enseigne. */
   [data-style='diner'] .ly-segments *, [data-style='diner'] .ly-segments *::before, [data-style='diner'] .ly-segments *::after, [data-style='diner'] .ly-segments > i::after { animation: none !important; }
   [data-style='diner'] .ly-segments > i > small, [data-style='diner'] .ly-segments > i > b > s, [data-style='diner'] .ly-segments > i::after, [data-style='diner'] .dn-entree { display: none !important; }

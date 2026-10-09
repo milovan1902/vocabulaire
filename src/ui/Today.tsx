@@ -666,14 +666,15 @@ export function Today({
             /* CHANTIER 244 — Strass : le diamant tombe sur le bouton et s'y fond. */
             /* CHANTIER 245 — Grille de départ : les feux s'éteignent, le bouton passe au vert, la monoplace part. */
             /* CHANTIER 246 — Diner : la pièce entre dans la fente, l'enseigne « OPEN » s'allume, le bouton s'illumine. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 247 — TV : la télécommande allume le bouton comme un vieux poste, « En direct ». */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -689,6 +690,15 @@ export function Today({
           )}
           {/* CHANTIER 246 — Diner : la fente à pièces, toujours là ; au toucher, la pièce, les ampoules, les notes et l'enseigne. */}
           {style === 'diner' && <i className="dn-fente" aria-hidden="true" />}
+          {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
+          {style === 'tv' && plouf > 0 && (
+            <span className="tl-entree" aria-hidden="true">
+              <span className="ecran"><i className="noir" /><i className="trait" /></span>
+              <span className="telec"><i /><i /><i /><i /><i className="rouge" /><i className="led" /></span>
+              <i className="ir" /><i className="ir" /><i className="ir" />
+              <span className="direct"><i className="etoile" /><b>En direct</b></span>
+            </span>
+          )}
           {style === 'diner' && plouf > 0 && (
             <span className="dn-entree" aria-hidden="true"><i className="ampoules" /><i className="piece" /><i className="note">♪</i><i className="note">♫</i><i className="note">♪</i><i className="note">♫</i><i className="neon">OPEN</i></span>
           )}
@@ -722,8 +732,9 @@ export function Today({
                   {/* CHANTIER 221 — « auj » : le jour validé aujourd'hui (Cinéma muet : l'étoile gravée). */}
                   {/* CHANTIER 242 — Salon privé : le <b> est l'or qui remplit le losange. */}
                   {/* CHANTIER 244 — Strass : le <b> est le verre (et ses bulles), <u> la mousse, <em> les coulures. */}
+                  {/* CHANTIER 247 — TV : l'éclair du jour (<b>), les antennes (<span>) et leurs deux ondes (<em>). */}
                   {/* CHANTIER 246 — Diner : le <b> est la coupe (le milk-shake, les bulles), <u> la chantilly, puis la paille, la cerise et deux gouttes (<small>). */}
-                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}</i>)}
+                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}</i>)}
                   {/* CHANTIER 244 — Strass, la semaine faite : le bouchon saute, les confettis retombent. */}
                   {style === 'strass' && faits >= OBJECTIF_SEMAINE && (
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>

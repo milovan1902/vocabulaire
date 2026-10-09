@@ -52,6 +52,19 @@ const SV_PLUIE = Array.from({ length: 18 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * (200 + k * 20)}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 247 — TV : les confettis des applaudissements (Facile). */
+const TL_COULEURS = ['#2a9d8f', '#e9b44c', '#e76f51', '#b5452a', '#2f6f9e'];
+const TL_CONFETTIS = Array.from({ length: 18 }, (_, k) => ({
+  left: `${(((k * 61) % 340) + 8) / 3.6}%`,
+  width: `${k % 2 ? 6 : 9}px`,
+  height: `${k % 2 ? 10 : 6}px`,
+  background: TL_COULEURS[k % 5],
+  animationDuration: `${(1.2 + (k % 4) * 0.15).toFixed(2)}s`,
+  animationDelay: `${(0.1 + (k % 6) * 0.1).toFixed(2)}s`,
+  '--dx': `${((k % 5) - 2) * 18}px`,
+  '--r': `${(k % 2 ? 1 : -1) * (300 + k * 20)}deg`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 246 — Diner : les éclats de l'assiette (Raté) et les notes du juke-box (Facile). */
 const DN_ECLATS = [[-120, 120, -300], [-60, 220, 220], [40, 190, -260], [120, 140, 300], [-150, 40, 180], [150, 60, -200], [-30, 280, 400], [70, 250, -380]].map(([dx, dy, r], k) => ({
   marginLeft: `${(k % 4) * 8 - 12}px`,
@@ -322,7 +335,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -359,6 +372,15 @@ export function Study({
               Écouter
             </button>
           </>
+        )}
+        {/* CHANTIER 247 — TV : ce qui passe à l'écran pendant la note (neige, incident, zapping, « Fin »). */}
+        {style === 'tv' && frappe && (
+          <span className="tl-ecran" aria-hidden="true">
+            {frappe === 'again' && <><i className="neige" /><i className="noir" /><i className="trait" /></>}
+            {frappe === 'hard' && <><i className="barres" /><span className="incident"><b>Incident technique</b><small>Veuillez nous excuser…</small></span></>}
+            {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
+            {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
+          </span>
         )}
         {/* CHANTIER 244 — Strass : les tampons « Liste d'attente » (Dur) et « Admis » (Bien). */}
         {style === 'strass' && (
@@ -422,6 +444,14 @@ export function Study({
               <span className="damiers">{GC_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
             </>
           )}
+        </div>
+      )}
+
+      {/* CHANTIER 247 — TV, Facile : « APPLAUSE » au-dessus du poste et les confettis. */}
+      {style === 'tv' && frappe === 'easy' && cadre && (
+        <div className="tl-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <b className="applause">APPLAUSE</b>
+          <span className="confettis">{TL_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
         </div>
       )}
 
@@ -493,9 +523,11 @@ export function Study({
                   /* CHANTIER 245 — Grille de départ : le panneau (tête-à-queue, drapeau jaune, arrêt au stand, ligne d'arrivée). */
                   : style === 'circuit' ? (g.key === 'again' ? 1500 : g.key === 'hard' ? 1600 : g.key === 'good' ? 1900 : 2100)
                   /* CHANTIER 246 — Diner : le juke-box (assiette cassée, en cuisine, « Order up ! », « Tip ! »). */
-                  : style === 'diner' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100) : 0;
+                  : style === 'diner' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100)
+                  /* CHANTIER 247 — TV : l'écran (neige, incident technique, zapping, « Fin »). */
+                  : style === 'tv' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
