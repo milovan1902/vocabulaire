@@ -52,6 +52,39 @@ const SV_PLUIE = Array.from({ length: 18 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * (200 + k * 20)}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 248 — Station 1936 : le nuage de poudreuse (Raté), le vent (Dur), les embruns et les flocons dorés (Facile). */
+const SK_POUDRE = [[-90, -60], [-40, -110], [20, -120], [80, -70], [-120, 0], [120, -10]].map(([dx, dy], k) => ({
+  marginLeft: `${k * 6 - 15}px`,
+  marginTop: `${(k % 2) * 10}px`,
+  '--dx': `${dx}px`,
+  '--dy': `${dy}px`,
+}) as unknown as CSSProperties);
+const SK_VENT = Array.from({ length: 5 }, (_, k) => ({
+  top: `${18 + k * 12}%`,
+  width: `${90 + (k % 3) * 30}px`,
+  animationDelay: `${(0.1 + k * 0.12).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const SK_SOUFFLE = Array.from({ length: 5 }, (_, k) => ({
+  top: `${15 + k * 14}%`,
+  animationDelay: `${(0.15 + k * 0.1).toFixed(2)}s`,
+  '--dy': `${((k % 3) - 1) * 30}px`,
+}) as unknown as CSSProperties);
+const SK_EMBRUN = [[30, -40], [50, -10], [14, -60], [44, -70]].map(([dx, dy], k) => ({
+  marginLeft: `${(k % 2) * 6}px`,
+  marginTop: `${k * 4}px`,
+  '--dx': `${dx}px`,
+  '--dy': `${dy}px`,
+}) as unknown as CSSProperties);
+const SK_OR = Array.from({ length: 16 }, (_, k) => ({
+  left: `${(((k * 61) % 340) + 8) / 3.6}%`,
+  width: `${k % 2 ? 6 : 8}px`,
+  height: `${k % 2 ? 6 : 8}px`,
+  animationDuration: `${(1.3 + (k % 4) * 0.15).toFixed(2)}s`,
+  animationDelay: `${(0.9 + (k % 6) * 0.08).toFixed(2)}s`,
+  '--dx': `${((k % 5) - 2) * 16}px`,
+  '--r': `${(k % 2 ? 1 : -1) * 200}deg`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 247 — TV : les confettis des applaudissements (Facile). */
 const TL_COULEURS = ['#2a9d8f', '#e9b44c', '#e76f51', '#b5452a', '#2f6f9e'];
 const TL_CONFETTIS = Array.from({ length: 18 }, (_, k) => ({
@@ -335,7 +368,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -447,6 +480,49 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 248 — Station 1936 : ce qui se pose autour de la carte pendant la note. */}
+      {style === 'station' && frappe && cadre && (
+        <div className="sk-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'again' && (
+            <>
+              <i className="congere" />
+              {SK_POUDRE.map((st, k) => <i key={k} className="poudre" style={st} />)}
+              <i className="ski g" />
+              <i className="ski d" />
+            </>
+          )}
+          {frappe === 'hard' && (
+            <>
+              <span className="vent">{SK_VENT.map((st, k) => <i key={k} style={st} />)}{SK_SOUFFLE.map((st, k) => <s key={k} style={st} />)}</span>
+              <span className="panneau"><i /><b>Piste<br />fermée</b></span>
+            </>
+          )}
+          {frappe === 'good' && (
+            <svg className="traces" viewBox="0 0 360 760" aria-hidden="true">
+              <path d="M170 300 C 230 330, 236 380, 200 420 S 110 490, 130 540 S 236 610, 216 660 S 140 720, 150 800" pathLength="100" />
+              <path d="M190 300 C 250 330, 256 380, 220 420 S 130 490, 150 540 S 256 610, 236 660 S 160 720, 170 800" pathLength="100" />
+            </svg>
+          )}
+          {frappe === 'easy' && (
+            <>
+              <svg className="tremplin" viewBox="0 0 310 170" aria-hidden="true">
+                <path className="bois" d="M70 92 L70 168 M130 112 L130 168 M190 110 L190 168 M250 86 L250 168 M286 62 L286 168" />
+                <path className="contour" d="M70 92 L70 168 M130 112 L130 168 M190 110 L190 168 M250 86 L250 168 M286 62 L286 168" />
+                <path className="croix" d="M70 130 L130 150 M130 140 L190 130 M190 150 L250 120 M250 140 L286 100 M70 150 L130 128 M190 128 L250 148" />
+                <path className="planche" d="M0 20 C 60 112, 160 132, 236 96 C 262 84, 282 68, 300 54 L300 66 C 280 82, 262 98, 236 110 C 160 146, 60 128, 0 36 Z" />
+                <path className="neige" d="M0 10 C 60 102, 160 122, 236 86 C 262 74, 282 58, 300 44 L300 56 C 282 70, 262 86, 236 98 C 160 134, 60 116, 0 24 Z" />
+                <path className="ombre" d="M20 30 C 80 104, 170 114, 236 90" />
+                <path className="mat" d="M300 44 L300 8 M300 56 L300 66" />
+                <path className="fanion" d="M301 9 L322 16 L301 23 Z" />
+              </svg>
+              {SK_EMBRUN.map((st, k) => <i key={k} className="embrun" style={st} />)}
+              <b className="record">Record !</b>
+              <span className="or">{SK_OR.map((st, k) => <s key={k} style={st} />)}</span>
+            </>
+          )}
+        </div>
+      )}
+
       {/* CHANTIER 247 — TV, Facile : « APPLAUSE » au-dessus du poste et les confettis. */}
       {style === 'tv' && frappe === 'easy' && cadre && (
         <div className="tl-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -525,9 +601,11 @@ export function Study({
                   /* CHANTIER 246 — Diner : le juke-box (assiette cassée, en cuisine, « Order up ! », « Tip ! »). */
                   : style === 'diner' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100)
                   /* CHANTIER 247 — TV : l'écran (neige, incident technique, zapping, « Fin »). */
-                  : style === 'tv' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100) : 0;
+                  : style === 'tv' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100)
+                  /* CHANTIER 248 — Station 1936 : la chute, la bourrasque, la godille, le saut. */
+                  : style === 'station' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
@@ -538,12 +616,13 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon' || style === 'strass' || style === 'circuit') && (
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'station') && (
                 /* CHANTIER 241 — Tapis vert : dix morceaux (cartes jetées, jetons de la mise, jetons qui rebondissent). */
                 /* CHANTIER 242 — Salon privé : deux calques sur la carte (les plis, le dos). */
                 /* CHANTIER 244 — Strass : aucun morceau, le calque est l'étoile qui scintille sur la pierre. */
                 /* CHANTIER 245 — Grille de départ : le calque est la bouffée d'air du pneu crèvé. */
-                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' || style === 'circuit' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
+                /* CHANTIER 248 — Station 1936 : le calque est le panneau (poteau en bois, tas de neige). */
+                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' || style === 'circuit' || style === 'station' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
               )}
             </button>
           ))}

@@ -679,14 +679,7 @@ body:not(:has(.today.ly)) .fa-st-anime, body:not(:has(.today.ly)) .fa-eclats.sta
 .fa-st-poudre { position: absolute; width: 0; height: 0; display: block; }
 .fa-st-poudre i { position: absolute; display: block; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(64, 97, 143, 0.45); opacity: 0; animation: fa-st-poudre 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) both; }
 @keyframes fa-st-poudre { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 6% { opacity: 1; } 45% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 1; } 100% { transform: translate(calc(var(--dx) * 1.1), calc(var(--dy) + 26px)) scale(0.7); opacity: 0; } }
-/* « Cette semaine » à 5 / 5 : les pistes se tracent une à une, de haut en bas ; la noire s'illumine. */
-[data-style='station'] .ly-segments.plein i { animation: fa-st-trace-piste 0.4s ease-out both; }
-[data-style='station'] .ly-segments.plein i:nth-child(2) { animation-delay: 0.4s; }
-[data-style='station'] .ly-segments.plein i:nth-child(3) { animation-delay: 0.8s; }
-[data-style='station'] .ly-segments.plein i:nth-child(4) { animation-delay: 1.2s; }
-[data-style='station'] .ly-segments.plein i:nth-child(5) { animation: fa-st-trace-piste 0.4s ease-out 1.6s both, fa-st-lueur 0.7s ease-in-out 2s 2; }
-@keyframes fa-st-trace-piste { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes fa-st-lueur { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(233, 162, 59, 0)); } 50% { transform: scale(1.25); filter: drop-shadow(0 0 5px rgba(233, 162, 59, 1)); } }
+/* CHANTIER 248 — « Cette semaine » : les pistes animées sont dans montagne.css (bloc « CHANTIER 248 »). */
 /* Puis un skieur saute au-dessus de la tuile (un tour complet), et « GRAND CHELEM ! ». */
 .fa-st-saut { position: absolute; width: 0; height: 0; display: block; }
 .fa-st-saut .sauteur { position: absolute; left: -16px; top: -26px; width: 14px; height: 21px; display: block; transform-origin: 50% 60%; opacity: 0; animation: fa-st-saut 1.3s cubic-bezier(0.3, 0.5, 0.6, 1) 2.4s both; }
