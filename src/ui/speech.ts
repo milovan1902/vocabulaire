@@ -39,8 +39,30 @@
  *   - « Tu peux dire "I went". » laissait un passage fait du seul « . »
  *     après la citation, que la voix française lisait « point ». Un
  *     passage sans lettre ni chiffre n'est plus jamais prononcé.
+ *
+ * CHANTIER 249 — LA VOIX MUETTE SUR ANDROID.
+ *   Sur PC tout parlait, sur Android plus rien. Trois causes, trois parades :
+ *   - LA VOIX EN LIGNE. Le classement du 117 donnait un bonus aux voix
+ *     « non locales » et « Google ». Sur Android, ce sont des voix réseau :
+ *     sans données, ou si elles ne sont pas téléchargées, l'énoncé échoue
+ *     sans un bruit. Sur Android, les voix locales passent maintenant
+ *     devant ; et un énoncé qui échoue, ou qui ne démarre pas, est redit
+ *     avec la voix par défaut du téléphone (langue seule, sans voix imposée).
+ *   - COUPER PUIS PARLER AUSSITÔT. `cancel()` suivi de `speak()` dans la
+ *     même seconde : Chrome Android avale souvent le nouvel énoncé. On ne
+ *     coupe plus que s'il y a vraiment quelque chose à couper, et on laisse
+ *     alors un court instant au moteur avant de reparler.
+ *   - LA FILE BLOQUÉE. La phrase vide du déverrouillage (chantier 50, prévu
+ *     pour l'iPhone) ne se termine parfois jamais sur Android et bloque tout
+ *     ce qui suit. Elle n'est plus envoyée que sur iPhone / iPad. Et le
+ *     moteur, s'il est resté en pause, est relancé (`resume()`) avant
+ *     chaque prise de parole.
  */
 let cached: SpeechSynthesisVoice[] = [];
+
+const ANDROID = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
+const IOS = typeof navigator !== 'undefined'
+  && (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 function voices(): SpeechSynthesisVoice[] {
   if (typeof speechSynthesis === 'undefined') return [];
@@ -67,7 +89,8 @@ if (typeof speechSynthesis !== 'undefined') {
 let deverrouille = false;
 
 function deverrouiller(): void {
-  if (deverrouille || typeof speechSynthesis === 'undefined') return;
+  /* CHANTIER 249 — iPhone seulement : sur Android, cette phrase vide peut bloquer la file. */
+  if (!IOS || deverrouille || typeof speechSynthesis === 'undefined') return;
   deverrouille = true;
   try {
     const u = new SpeechSynthesisUtterance('');
@@ -94,10 +117,11 @@ function rang(v: SpeechSynthesisVoice, exact: string): number {
   const n = v.name.toLowerCase();
   let r = 0;
   if (/natural|neural|naturelle/.test(n)) r += 50;
-  if (/online|en ligne|network/.test(n)) r += 30;
+  /* CHANTIER 249 — sur Android, les voix en ligne échouent sans bruit : les voix locales passent devant. */
+  if (/online|en ligne|network/.test(n)) r += ANDROID ? -30 : 30;
   if (/premium|enhanced|améliorée|siri/.test(n)) r += 30;
-  if (/google/.test(n)) r += 20;
-  if (!v.localService) r += 10;
+  if (/google/.test(n) && !ANDROID) r += 20;
+  if (!v.localService) r += ANDROID ? -40 : 10;
   if (v.lang?.replace('_', '-') === exact) r += 5;
   if (/compact|espeak/.test(n)) r -= 40;
   return r;
@@ -115,20 +139,75 @@ function prononcable(t: string): boolean {
   return /[\p{L}\p{N}]/u.test(t);
 }
 
-function enonce(texte: string, langue: string, rate: number): void {
+/*
+ * CHANTIER 249 — les énoncés en cours sont gardés ici : sans référence, Chrome
+ * peut les ramasser en route, et leurs événements (fin, erreur) se perdent.
+ */
+const enCours = new Set<SpeechSynthesisUtterance>();
+
+/** Délai avant de reparler, quand on vient de couper une voix (Chrome Android). */
+const APRES_COUPURE = 120;
+/** Un énoncé qui n'a pas démarré après ce délai est redit avec la voix par défaut. */
+const DEMARRAGE_MAX = 1500;
+
+function enonce(texte: string, langue: string, rate: number, voixImposee = true): SpeechSynthesisUtterance {
   const u = new SpeechSynthesisUtterance(texte);
   u.lang = langue;
   u.rate = rate;
-  const v = langue === 'fr-FR' ? voix('fr', 'fr-FR') : voix('en', 'en-US');
+  const v = voixImposee ? (langue === 'fr-FR' ? voix('fr', 'fr-FR') : voix('en', 'en-US')) : undefined;
   if (v) u.voice = v;
-  speechSynthesis.speak(u);
+  let demarre = false;
+  const fini = () => { enCours.delete(u); };
+  u.onstart = () => { demarre = true; };
+  u.onend = fini;
+  u.onerror = (e) => {
+    fini();
+    /* La voix choisie a échoué avant de dire quoi que ce soit : on redit avec celle du téléphone. */
+    if (!demarre && v && e.error !== 'interrupted' && e.error !== 'canceled') {
+      try { speechSynthesis.speak(enonce(texte, langue, rate, false)); } catch { /* rien */ }
+    }
+  };
+  enCours.add(u);
+  return u;
+}
+
+/** Coupe ce qui parle encore. Vrai s'il y avait quelque chose à couper. */
+function coupe(): boolean {
+  const occupe = speechSynthesis.speaking || speechSynthesis.pending;
+  if (occupe) speechSynthesis.cancel();
+  return occupe;
+}
+
+/** Envoie les énoncés au moteur, en laissant souffler Chrome Android après une coupure. */
+function envoie(liste: SpeechSynthesisUtterance[], apresCoupure: boolean): void {
+  const go = () => {
+    try { speechSynthesis.resume(); } catch { /* rien */ }
+    for (const u of liste) speechSynthesis.speak(u);
+    /* Filet : rien n'a démarré (moteur figé, voix réseau muette) — on reprend à zéro, voix par défaut. */
+    const premier = liste[0];
+    if (!premier) return;
+    let parti = false;
+    premier.addEventListener('start', () => { parti = true; });
+    premier.addEventListener('error', () => { parti = true; });
+    window.setTimeout(() => {
+      if (parti || !premier.voice) return;
+      try {
+        speechSynthesis.cancel();
+        window.setTimeout(() => {
+          for (const u of liste) speechSynthesis.speak(enonce(u.text, u.lang, u.rate, false));
+        }, APRES_COUPURE);
+      } catch { /* rien */ }
+    }, DEMARRAGE_MAX);
+  };
+  if (apresCoupure && ANDROID) window.setTimeout(go, APRES_COUPURE);
+  else go();
 }
 
 export function speak(text: string, rate: number): void {
   if (typeof speechSynthesis === 'undefined') return;
   try {
-    speechSynthesis.cancel();
-    enonce(text, 'en-US', rate);
+    const coupee = coupe();
+    envoie([enonce(text, 'en-US', rate)], coupee);
   } catch {
     // Une voix absente ne doit jamais interrompre la révision.
   }
@@ -276,10 +355,8 @@ const DEBIT_FR = 0.95;
 export function parle(texte: string, rate: number): void {
   if (typeof speechSynthesis === 'undefined') return;
   try {
-    speechSynthesis.cancel();
-    for (const p of passages(texte)) {
-      enonce(p.texte, p.langue, p.langue === 'fr-FR' ? DEBIT_FR : rate);
-    }
+    const coupee = coupe();
+    envoie(passages(texte).map((p) => enonce(p.texte, p.langue, p.langue === 'fr-FR' ? DEBIT_FR : rate)), coupee);
   } catch {
     // Une voix absente ne doit jamais interrompre la conversation.
   }
