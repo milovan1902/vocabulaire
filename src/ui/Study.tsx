@@ -85,6 +85,26 @@ const SK_OR = Array.from({ length: 16 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * 200}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 250 — Fashion week : les flashs (Bien, Facile), les épingles (Dur) et les pétales de rose (Facile).
+   Positions en % du cadre de la carte. */
+const fsFlash = (x: number, y: number, z: number, d: number) => ({
+  left: `${x}%`, top: `${y}%`, width: `${z}px`, height: `${z}px`, margin: `${-z / 2}px 0 0 ${-z / 2}px`, animationDelay: `${d.toFixed(2)}s`,
+}) as CSSProperties;
+const FS_FLASH_BIEN = [[13, 24], [89, 36], [10, 68], [90, 13], [16, 3], [86, 75]].map(([x, y], k) => fsFlash(x, y, [70, 64, 60, 54, 50, 58][k], 0.25 + k * 0.22));
+const FS_FLASH_FACILE = Array.from({ length: 14 }, (_, k) => fsFlash(Math.round(((14 + ((k * 97) % 320)) / 348) * 100), Math.round(((-6 + ((k * 151) % 440)) / 430) * 100), 44 + (k % 4) * 12, 0.35 + k * 0.1));
+const FS_EPINGLES = [[4.6, 7, 0], [88, 9.3, 90], [5.7, 86, -90], [86.2, 86.5, 180]].map(([x, y, r], k) => ({
+  left: `${x}%`, top: `${y}%`, transform: `rotate(${r}deg)`, '--d': `${[0.43, 0.62, 0.81, 1.0][k]}s`,
+}) as unknown as CSSProperties);
+const FS_PETALES = Array.from({ length: 18 }, (_, k) => ({
+  left: `${(((k * 53) % 340) + 8) / 3.6}%`,
+  width: `${k % 2 ? 9 : 11}px`,
+  height: `${k % 2 ? 13 : 15}px`,
+  animationDuration: `${(1.4 + (k % 4) * 0.15).toFixed(2)}s`,
+  animationDelay: `${(0.5 + (k % 6) * 0.1).toFixed(2)}s`,
+  '--dx': `${((k % 5) - 2) * 18}px`,
+  '--r': `${(k % 2 ? 1 : -1) * 260}deg`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 247 — TV : les confettis des applaudissements (Facile). */
 const TL_COULEURS = ['#2a9d8f', '#e9b44c', '#e76f51', '#b5452a', '#2f6f9e'];
 const TL_CONFETTIS = Array.from({ length: 18 }, (_, k) => ({
@@ -368,7 +388,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -523,6 +543,39 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 250 — Fashion week : ce qui se pose autour de la carte pendant la note. */}
+      {style === 'fashion' && frappe && cadre && (
+        <div className="fs-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'again' && (
+            <>
+              <i className="penombre" />
+              <i className="talon" />
+              <b className="tampon">Faux pas</b>
+            </>
+          )}
+          {frappe === 'hard' && (
+            <span className="atelier">
+              <span className="metre"><i /><i /></span>
+              {FS_EPINGLES.map((st, k) => <span key={k} className="epingle" style={st}><i /></span>)}
+              <b className="retouche">Retouche</b>
+            </span>
+          )}
+          {frappe === 'good' && (
+            <>
+              <i className="podium" />
+              {FS_FLASH_BIEN.map((st, k) => <i key={k} className="flash" style={st} />)}
+            </>
+          )}
+          {frappe === 'easy' && (
+            <>
+              <span className="couv"><b className="titre">Lexique</b><span className="pastille"><small>Le mot</small><b>du jour</b></span><small className="numero">Numéro spécial</small></span>
+              {FS_FLASH_FACILE.map((st, k) => <i key={k} className="flash" style={st} />)}
+              <span className="petales">{FS_PETALES.map((st, k) => <s key={k} style={st} />)}</span>
+            </>
+          )}
+        </div>
+      )}
+
       {/* CHANTIER 247 — TV, Facile : « APPLAUSE » au-dessus du poste et les confettis. */}
       {style === 'tv' && frappe === 'easy' && cadre && (
         <div className="tl-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -603,9 +656,11 @@ export function Study({
                   /* CHANTIER 247 — TV : l'écran (neige, incident technique, zapping, « Fin »). */
                   : style === 'tv' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100)
                   /* CHANTIER 248 — Station 1936 : la chute, la bourrasque, la godille, le saut. */
-                  : style === 'station' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100) : 0;
+                  : style === 'station' ? (g.key === 'again' ? 1600 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1900 : 2100)
+                  /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
+                  : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }

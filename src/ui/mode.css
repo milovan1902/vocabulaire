@@ -234,4 +234,159 @@ body:not(:has(.today.ly)) .fw-defile { display: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-style='fashion'] .portant-vol.v0, [data-style='fashion'] .portant-vol.v1 { animation: none; }
   [data-style='fashion'] .eventail.portant .eventail-carte { transition: none; }
+  /* CHANTIER 250 — Fashion week : escarpins et tapis immobiles ; ni empreintes, ni flashs, ni vernis. */
+  [data-style='fashion'] .ly-segments > i, [data-style='fashion'] .ly-segments > i > *, [data-style='fashion'] .ly-segments .fs-tapis, [data-style='fashion'] .ly-tuile, [data-style='fashion'] .grades .grade { animation: none !important; clip-path: none !important; }
+  [data-style='fashion'] .fs-entree, [data-style='fashion'] .fs-crepite, [data-style='fashion'] .ly-segments > i > s, [data-style='fashion'] .ly-segments > i > b > em { display: none !important; }
 }
+
+/* ==================================================================
+   CHANTIER 250 — Fashion week animée (maquette 66a).
+   - « Défiler » : le bouton s'enfonce, sept empreintes de talons aiguilles rouges le traversent
+     en enfilade, sur une seule ligne (le pas croisé du mannequin), puis le mur des photographes
+     crépite : huit flashs autour, le bouton blanchit un instant (Today.tsx pose .fs-entree ;
+     la révision s'ouvre 1,5 s après).
+   - « Cette semaine » : l'escarpin du jour rougit du talon à la pointe, puis claque avec une
+     étoile rouge. 5 jours : les cinq claquent l'un après l'autre. 6 jours : un reflet de vernis
+     glisse. 7 jours : un tapis rouge en perspective, bordé d'or, se déroule sous les escarpins ;
+     des flashs dorés mitraillent autour de la tuile, qui s'illumine à chaque éclair.
+   - Révision : la note touchée prend la pose. Raté : la carte vacille, le talon casse et tombe,
+     la carte s'effondre, la salle s'assombrit, « Faux pas ». Dur : mètre ruban, quatre épingles,
+     « Retouche », la carte part à droite. Bien : le podium s'allume, la carte remonte vers le fond
+     en roulant des hanches, sous les flashs. Facile : la carte devient une couverture de magazine,
+     flashs, pétales de rose, elle s'envole. (Study.tsx : .n-again… sur la carte, .fs-scene autour.)
+   ================================================================== */
+/* Les flashs : un halo blanc et une étoile fine. */
+[data-style='fashion'] :is(.fs-entree .flash, .fs-crepite > i, .fs-scene .flash) { position: absolute; display: block; pointer-events: none; opacity: 0; border-radius: 50%; background: radial-gradient(circle, #fff 0 14%, rgba(255, 255, 255, 0.75) 26%, rgba(255, 255, 255, 0) 66%); }
+[data-style='fashion'] :is(.fs-entree .flash, .fs-crepite > i, .fs-scene .flash)::before { content: ''; position: absolute; inset: 0; background: #fff; clip-path: polygon(50% 0, 53% 47%, 100% 50%, 53% 53%, 50% 100%, 47% 53%, 0 50%, 47% 47%); }
+
+/* « Défiler » */
+[data-style='fashion'] .btn.ly-go { position: relative; z-index: 5; overflow: visible; }
+[data-style='fashion'] .btn.ly-go:has(> .fs-entree) { animation: fs-presse 1.8s ease-out; }
+[data-style='fashion'] .fs-entree { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='fashion'] .fs-entree .eclair { position: absolute; inset: 0; display: block; background: #fff; opacity: 0; animation: fs-eclair 1.8s linear both; }
+[data-style='fashion'] .fs-entree .pas { position: absolute; bottom: 6px; width: 18px; height: 8px; display: block; opacity: 0; animation: fs-pas 1s ease-out both; }
+[data-style='fashion'] .fs-entree .pas::before { content: ''; position: absolute; left: 6px; top: 0; width: 12px; height: 8px; border-radius: 45% 55% 55% 45% / 50%; background: #d0103a; }
+[data-style='fashion'] .fs-entree .pas::after { content: ''; position: absolute; left: 0; top: 2.5px; width: 3px; height: 3px; border-radius: 50%; background: #d0103a; }
+[data-style='fashion'] .fs-entree .pas:nth-child(2) { left: 4.3%; animation-delay: 0.12s; }
+[data-style='fashion'] .fs-entree .pas:nth-child(3) { left: 17.9%; animation-delay: 0.23s; }
+[data-style='fashion'] .fs-entree .pas:nth-child(4) { left: 31.5%; animation-delay: 0.34s; }
+[data-style='fashion'] .fs-entree .pas:nth-child(5) { left: 45.1%; animation-delay: 0.45s; }
+[data-style='fashion'] .fs-entree .pas:nth-child(6) { left: 58.6%; animation-delay: 0.56s; }
+[data-style='fashion'] .fs-entree .pas:nth-child(7) { left: 72.2%; animation-delay: 0.67s; }
+[data-style='fashion'] .fs-entree .pas:nth-child(8) { left: 85.8%; animation-delay: 0.78s; }
+[data-style='fashion'] .fs-entree .flash { z-index: 20; animation: fs-flash 0.7s ease-out both; }
+[data-style='fashion'] .fs-entree .flash:nth-child(9) { left: 7.4%; top: -26px; width: 54px; height: 54px; margin: -27px 0 0 -27px; animation-delay: 0.4s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(10) { left: 28.4%; top: -58px; width: 44px; height: 44px; margin: -22px 0 0 -22px; animation-delay: 0.53s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(11) { left: 49.4%; top: -22px; width: 64px; height: 64px; margin: -32px 0 0 -32px; animation-delay: 0.66s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(12) { left: 72.8%; top: -60px; width: 48px; height: 48px; margin: -24px 0 0 -24px; animation-delay: 0.79s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(13) { left: 92.6%; top: -28px; width: 56px; height: 56px; margin: -28px 0 0 -28px; animation-delay: 0.92s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(14) { left: -1.2%; top: 27px; width: 40px; height: 40px; margin: -20px 0 0 -20px; animation-delay: 1.05s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(15) { left: 101.2%; top: 27px; width: 44px; height: 44px; margin: -22px 0 0 -22px; animation-delay: 1.18s; }
+[data-style='fashion'] .fs-entree .flash:nth-child(16) { left: 60.5%; top: -86px; width: 38px; height: 38px; margin: -19px 0 0 -19px; animation-delay: 1.31s; }
+
+/* « Cette semaine » : l'escarpin passe sur ses calques (gris, rouge, vernis), l'étoile reste hors du masque. */
+[data-style='fashion'] .ly-segments { position: relative; }
+[data-style='fashion'] .ly-segments > i, [data-style='fashion'] .ly-segments > i.on { position: relative; overflow: visible; -webkit-mask: none; mask: none; background: none; transform-origin: 25% 100%; }
+[data-style='fashion'] .ly-segments > i > :is(u, b) { position: absolute; inset: 0; display: block; text-decoration: none; -webkit-mask: var(--escarpin) center bottom / contain no-repeat; mask: var(--escarpin) center bottom / contain no-repeat; }
+[data-style='fashion'] .ly-segments > i > u { background: linear-gradient(180deg, #a8a8a8, #7a7a7a); }
+[data-style='fashion'] .ly-segments > i > b { display: none; overflow: hidden; background: linear-gradient(180deg, #e01a44, #a50a2c); }
+[data-style='fashion'] .ly-segments > i.on > b { display: block; }
+[data-style='fashion'] .ly-segments > i > b > em { position: absolute; top: 0; bottom: 0; left: 0; width: 7px; display: none; background: rgba(255, 255, 255, 0.85); animation: fs-vernis 2.6s ease-in-out infinite; }
+[data-style='fashion'] .ly-segments:is(.b6, .b7) > i.on > b > em { display: block; }
+[data-style='fashion'] .ly-segments > i:nth-of-type(2) > b > em { animation-delay: 0.25s; }
+[data-style='fashion'] .ly-segments > i:nth-of-type(3) > b > em { animation-delay: 0.5s; }
+[data-style='fashion'] .ly-segments > i:nth-of-type(4) > b > em { animation-delay: 0.75s; }
+[data-style='fashion'] .ly-segments > i:nth-of-type(5) > b > em { animation-delay: 1s; }
+[data-style='fashion'] .ly-segments > i > s { position: absolute; left: 0; bottom: -3px; width: 12px; height: 12px; display: none; background: #d0103a; clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); opacity: 0; text-decoration: none; }
+[data-style='fashion'] .ly-segments > i.on.auj > b { animation: fs-rougit 0.7s ease-out 0.3s both; }
+[data-style='fashion'] .ly-segments > i.on.auj > s { display: block; animation: fs-etoile 0.7s ease-out 1.15s both; }
+[data-style='fashion'] .ly-segments > i.on.auj { animation: fs-clac 0.6s ease-out 1s both; }
+/* 5 jours : les cinq claquent l'un après l'autre. */
+[data-style='fashion'] .ly-segments.plein:not(.b6):not(.b7) > i.on:not(.auj) { animation: fs-clac 0.5s ease-out var(--d, 1.9s) both; }
+[data-style='fashion'] .ly-segments.plein > i:nth-of-type(2) { --d: 2.05s; }
+[data-style='fashion'] .ly-segments.plein > i:nth-of-type(3) { --d: 2.2s; }
+[data-style='fashion'] .ly-segments.plein > i:nth-of-type(4) { --d: 2.35s; }
+[data-style='fashion'] .ly-segments.plein > i:nth-of-type(5) { --d: 2.5s; }
+/* 7 jours : le tapis rouge en perspective, bordé d'or. */
+[data-style='fashion'] .ly-segments .fs-tapis { position: absolute; left: -8px; right: -8px; bottom: -8px; height: 18px; display: block; clip-path: inset(100% -2px -4px -2px); animation: fs-deroule 0.9s ease-out 0.3s both; }
+[data-style='fashion'] .fs-tapis > * { position: absolute; display: block; text-decoration: none; }
+[data-style='fashion'] .fs-tapis > b { inset: 0; clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%); background: linear-gradient(90deg, #b08a2a, #f0d47a 50%, #b08a2a); }
+[data-style='fashion'] .fs-tapis > u { left: 4px; right: 4px; top: 1px; bottom: 0; clip-path: polygon(16.5% 0, 83.5% 0, 100% 100%, 0 100%); background: repeating-linear-gradient(180deg, transparent 0 4px, rgba(0, 0, 0, 0.14) 4px 5px), linear-gradient(180deg, #6e061c, #a50a2c 45%, #e01a44); }
+[data-style='fashion'] .fs-tapis > s { left: 0; right: 0; bottom: -3px; height: 3px; background: #7a0820; }
+/* 7 jours : la tuile s'illumine à chaque éclair ; les flashs dorés débordent tout autour. */
+[data-style='fashion'] .ly-tuile:has(.fs-crepite) { position: relative; z-index: 2; overflow: visible; animation: fs-halo 1.2s ease-out 1.2s infinite; }
+[data-style='fashion'] .fs-crepite { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='fashion'] .fs-crepite > i { z-index: 20; background: radial-gradient(circle, #fff 0 16%, rgba(255, 244, 200, 0.95) 28%, rgba(255, 214, 110, 0.5) 46%, rgba(255, 214, 110, 0) 68%); filter: drop-shadow(0 0 3px rgba(176, 138, 42, 0.9)); animation: fs-mitraille 2.4s ease-out infinite; }
+[data-style='fashion'] .fs-crepite > i:nth-child(1) { left: -3.8%; top: -5.8%; width: 46px; height: 46px; margin: -23px 0 0 -23px; animation-delay: 1.2s; }
+[data-style='fashion'] .fs-crepite > i:nth-child(2) { left: 103.8%; top: 3.8%; width: 40px; height: 40px; margin: -20px 0 0 -20px; animation-delay: 1.6s; }
+[data-style='fashion'] .fs-crepite > i:nth-child(3) { left: 95.5%; top: 100%; width: 44px; height: 44px; margin: -22px 0 0 -22px; animation-delay: 2s; }
+[data-style='fashion'] .fs-crepite > i:nth-child(4) { left: -2.5%; top: 92%; width: 38px; height: 38px; margin: -19px 0 0 -19px; animation-delay: 2.4s; }
+[data-style='fashion'] .fs-crepite > i:nth-child(5) { left: 51%; top: -9.6%; width: 34px; height: 34px; margin: -17px 0 0 -17px; animation-delay: 2.8s; }
+[data-style='fashion'] .fs-crepite > i:nth-child(6) { left: 63.7%; top: 105.8%; width: 36px; height: 36px; margin: -18px 0 0 -18px; animation-delay: 3.2s; }
+
+/* Révision : la note touchée prend la pose. */
+[data-style='fashion'] .grades:has(.frappe) { position: relative; z-index: 6; }
+[data-style='fashion'] .grades .grade.frappe { animation: fs-pose 0.5s ease-out both; }
+/* Pendant l'animation, rien ne fait défiler l'écran. */
+html[data-style='fashion']:has(.fs-scene) { overflow: hidden; }
+[data-style='fashion'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='fashion'] .studystage.n-again { animation: fs-fauxpas 1.7s ease-in both; }
+[data-style='fashion'] .studystage.n-hard { animation: fs-retouche 1.9s ease-in-out both; }
+[data-style='fashion'] .studystage.n-good { animation: fs-tour 1.9s ease-in-out both; }
+[data-style='fashion'] .studystage.n-easy { animation: fs-une 2.4s ease-in-out both; }
+[data-style='fashion'] .fs-scene { position: absolute; display: block; pointer-events: none; }
+[data-style='fashion'] .fs-scene > * { position: absolute; display: block; }
+[data-style='fashion'] .fs-scene .flash { z-index: 20; animation: fs-flash 0.6s ease-out both; }
+/* Raté : la pénombre, le talon cassé, « Faux pas ». */
+[data-style='fashion'] .fs-scene .penombre { position: fixed; inset: 0; z-index: 2; background: #000; opacity: 0; animation: fs-penombre 1.7s linear both; }
+[data-style='fashion'] .fs-scene .talon { left: 80%; top: calc(100% - 26px); z-index: 7; width: 9px; height: 30px; background: linear-gradient(90deg, #a50a2c, #e01a44 50%, #a50a2c); clip-path: polygon(0 0, 100% 0, 65% 100%, 35% 100%); opacity: 0; animation: fs-talon 1.7s ease-in both; }
+[data-style='fashion'] .fs-scene .tampon { left: 0; right: 0; top: 36%; z-index: 9; width: fit-content; margin: 0 auto; padding: 0 20px 6px; background: #f6f4f0; border: 2px solid #d0103a; color: #d0103a; font-family: var(--titre); font-size: 60px; font-weight: 400; line-height: 1.1; white-space: nowrap; opacity: 0; animation: fs-tampon 1.7s ease-out both; }
+/* Dur : l'atelier suit la carte (mètre ruban, épingles, « Retouche »). */
+[data-style='fashion'] .fs-scene .atelier { inset: 0; z-index: 4; overflow: hidden; animation: fs-retouche 1.9s ease-in-out both; }
+[data-style='fashion'] .fs-scene .atelier > * { position: absolute; display: block; }
+[data-style='fashion'] .fs-scene .metre { left: -10px; right: -10px; top: 58px; height: 24px; animation: fs-metre 1.9s ease-out both; }
+[data-style='fashion'] .fs-scene .metre > i:nth-child(1) { position: absolute; inset: 0; display: block; box-sizing: border-box; border: 1px solid #0d0d0d; background: repeating-linear-gradient(90deg, #0d0d0d 0 1px, transparent 1px 10px) left bottom / 100% 7px no-repeat, repeating-linear-gradient(90deg, #0d0d0d 0 1px, transparent 1px 50px) left bottom / 100% 13px no-repeat, #fff; }
+[data-style='fashion'] .fs-scene .metre > i:nth-child(2) { position: absolute; right: 10px; top: -3px; width: 16px; height: 30px; display: block; background: #d0103a; }
+[data-style='fashion'] .fs-scene .epingle { width: 26px; height: 26px; }
+[data-style='fashion'] .fs-scene .epingle > i { position: absolute; inset: 0; display: block; opacity: 0; animation: fs-epingle 0.25s ease-out var(--d) both; }
+[data-style='fashion'] .fs-scene .epingle > i::before { content: ''; position: absolute; left: 4px; top: 4px; width: 24px; height: 1.5px; background: linear-gradient(90deg, #8e96a3, #f4f6fa, #8e96a3); transform: rotate(45deg); transform-origin: 0 50%; }
+[data-style='fashion'] .fs-scene .epingle > i::after { content: ''; position: absolute; left: 0; top: 0; width: 8px; height: 8px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff8aa0, #d0103a 60%, #8a0820); }
+[data-style='fashion'] .fs-scene .retouche { left: 0; right: 0; bottom: 22px; width: fit-content; margin: 0 auto; padding: 0 16px 4px; background: #0d0d0d; color: #f6f4f0; font-family: var(--titre); font-size: 28px; font-weight: 400; line-height: 1.2; opacity: 0; animation: fs-mot 1.9s ease-out both; }
+/* Bien : le podium s'allume sous la carte. */
+[data-style='fashion'] .fs-scene .podium { position: fixed; left: 50%; top: 20vh; bottom: 0; z-index: 1; width: 117vw; margin-left: -58.5vw; clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, #2a2a2a, #cfcac2 85%); opacity: 0; animation: fs-podium 1.9s ease-out both; }
+/* Facile : la couverture de magazine, les pétales de rose. */
+[data-style='fashion'] .fs-scene .couv { inset: 0; z-index: 4; opacity: 0; animation: fs-couv 2.4s ease-out both, fs-une 2.4s ease-in-out both; }
+[data-style='fashion'] .fs-scene .couv::before { content: ''; position: absolute; inset: 0; box-sizing: border-box; border: 3px solid #d0103a; }
+[data-style='fashion'] .fs-scene .couv .titre { position: absolute; left: 0; right: 0; top: 0; height: 86px; display: flex; align-items: center; justify-content: center; background: #f6f4f0; border-bottom: 1px solid #0d0d0d; font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 62px; line-height: 1; letter-spacing: -0.02em; color: #0d0d0d; }
+[data-style='fashion'] .fs-scene .couv .pastille { position: absolute; right: 16px; top: 96px; width: 64px; height: 64px; border-radius: 50%; background: #d0103a; color: #f6f4f0; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(12deg); line-height: 1; }
+[data-style='fashion'] .fs-scene .couv .pastille small { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; }
+[data-style='fashion'] .fs-scene .couv .pastille b { font-family: var(--titre); font-weight: 400; font-size: 24px; }
+[data-style='fashion'] .fs-scene .couv .numero { position: absolute; left: 0; right: 0; bottom: 20px; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; color: #0d0d0d; }
+[data-style='fashion'] .fs-scene .petales { position: fixed; inset: 0; z-index: 9; overflow: hidden; }
+[data-style='fashion'] .fs-scene .petales > s { position: absolute; top: -16px; display: block; border-radius: 60% 0 60% 0; background: linear-gradient(135deg, #e8264f, #a50a2c); opacity: 0; text-decoration: none; animation: fs-petale 1.4s ease-in both; }
+
+@keyframes fs-presse { 0%, 16% { transform: none; } 22%, 30% { transform: translateY(2px) scale(0.985); background-color: #dcd8d0; } 38%, 100% { transform: none; } }
+@keyframes fs-eclair { 0%, 30% { opacity: 0; } 34% { opacity: 0.9; } 50%, 100% { opacity: 0; } }
+@keyframes fs-pas { 0% { opacity: 0; transform: scale(0.4); } 10% { opacity: 1; transform: scale(1.15); } 20%, 60% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+@keyframes fs-flash { 0% { transform: scale(0.2); opacity: 0; } 12% { transform: scale(1.25); opacity: 1; } 30% { transform: scale(0.8); opacity: 0.7; } 60%, 100% { transform: scale(0.5); opacity: 0; } }
+@keyframes fs-rougit { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes fs-clac { 0%, 100% { transform: none; } 30% { transform: translateY(-7px) rotate(-12deg); } 55% { transform: translateY(1px) rotate(2deg); } 70% { transform: none; } }
+@keyframes fs-etoile { 0% { transform: scale(0) rotate(0); opacity: 0; } 30% { transform: scale(1.3) rotate(30deg); opacity: 1; } 100% { transform: scale(0.4) rotate(90deg); opacity: 0; } }
+@keyframes fs-vernis { 0%, 55% { transform: translateX(-12px) skewX(-20deg); } 100% { transform: translateX(40px) skewX(-20deg); } }
+@keyframes fs-deroule { from { clip-path: inset(100% -2px -4px -2px); } to { clip-path: inset(-2px -2px -4px -2px); } }
+@keyframes fs-mitraille { 0%, 100% { transform: scale(0.2) rotate(0); opacity: 0; } 10% { transform: scale(1.2) rotate(30deg); opacity: 1; } 24% { transform: scale(0.6) rotate(60deg); opacity: 0; } }
+@keyframes fs-halo { 0%, 100% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); } 6% { box-shadow: 0 0 0 2px #fff, 0 0 30px 10px rgba(255, 255, 255, 0.9); } 22% { box-shadow: 0 0 0 rgba(255, 255, 255, 0); } }
+@keyframes fs-pose { 0% { transform: none; } 35% { transform: translateY(-6px) scale(1.06); } 100% { transform: none; } }
+@keyframes fs-fauxpas { 0%, 6% { transform: none; } 12% { transform: rotate(-3deg); } 18% { transform: rotate(2deg); } 26% { transform: translate(8px, 24px) rotate(10deg); } 40% { transform: translate(8px, 28px) rotate(9deg); } 100% { transform: translate(40px, 110vh) rotate(26deg); } }
+@keyframes fs-talon { 0%, 24% { transform: translate(0, 0) rotate(0); opacity: 0; } 27% { opacity: 1; } 100% { transform: translate(30px, 320px) rotate(620deg); opacity: 1; } }
+@keyframes fs-tampon { 0%, 32% { transform: scale(1.8) rotate(-8deg); opacity: 0; } 40% { transform: scale(0.95) rotate(-6deg); opacity: 1; } 46%, 88% { transform: rotate(-6deg); opacity: 1; } 100% { transform: rotate(-6deg) translateY(-10px); opacity: 0; } }
+@keyframes fs-penombre { 0%, 20% { opacity: 0; } 36%, 80% { opacity: 0.55; } 100% { opacity: 0; } }
+@keyframes fs-metre { 0%, 4% { transform: rotate(-5deg) translateX(-110%); } 26%, 100% { transform: rotate(-5deg); } }
+@keyframes fs-epingle { from { transform: translate(-12px, -12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fs-retouche { 0%, 28% { transform: none; } 33% { transform: scaleX(0.97); } 38% { transform: none; } 43% { transform: scaleX(0.97); } 48% { transform: none; } 53% { transform: scaleX(0.97); } 58% { transform: none; } 63% { transform: scaleX(0.97); } 68%, 72% { transform: none; } 78% { transform: translateX(-12px) rotate(-1deg); } 100% { transform: translateX(120vw) rotate(5deg); } }
+@keyframes fs-mot { 0%, 62% { opacity: 0; transform: translateY(8px); } 70%, 100% { opacity: 1; transform: none; } }
+@keyframes fs-tour { 0% { transform: none; opacity: 1; } 12% { transform: translateX(-4px) rotate(-2deg); } 24% { transform: translateY(-30px) scale(0.9) rotate(2deg); } 36% { transform: translateY(-70px) scale(0.78) rotate(-2.5deg); } 48% { transform: translateY(-110px) scale(0.64) rotate(2.5deg); } 60% { transform: translateY(-150px) scale(0.52) rotate(-2deg); } 72% { transform: translateY(-185px) scale(0.42) rotate(2deg); } 84% { transform: translateY(-210px) scale(0.34) rotate(-1deg); opacity: 1; } 100% { transform: translateY(-235px) scale(0.26); opacity: 0; } }
+@keyframes fs-podium { 0% { opacity: 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fs-une { 0% { transform: none; } 10% { transform: scale(1.03); } 18%, 74% { transform: scale(0.94); } 80% { transform: scale(0.94) translateY(10px); } 100% { transform: scale(0.94) translateY(-110vh); } }
+@keyframes fs-couv { 0%, 12% { opacity: 0; } 20%, 100% { opacity: 1; } }
+@keyframes fs-petale { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(var(--dx), 110vh) rotate(var(--r)); opacity: 0.9; } }
