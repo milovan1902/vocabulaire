@@ -683,7 +683,7 @@ export function Today({
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -783,6 +783,12 @@ export function Today({
               <span className="torche g"><i /><i /><i /><i /></span><span className="torche d"><i /><i /><i /><i /></span>
             </span>
           )}
+          {/* CHANTIER 258 — Plage : la vague déferle lentement sur le bouton, le surfeur la descend (les gouttes suivent, plus tard). */}
+          {style === 'plage' && plouf > 0 && (
+            <span key={plouf} className="pg-vague" aria-hidden="true">
+              <span className="houle"><i className="eau" /><i className="crete" /><i className="ecume" /><span className="surfeur"><i /><i /><i /><i /></span></span>
+            </span>
+          )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
           {style === 'tv' && plouf > 0 && (
             <span className="tl-entree" aria-hidden="true">
@@ -850,6 +856,9 @@ export function Today({
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
                   )}
                 </span>
+                {/* CHANTIER 258 — Plage : le parasol (6 jours et plus), le château de sable et son fanion (7 jours). */}
+                {style === 'plage' && faits >= 6 && <span className="pg-parasol" aria-hidden="true"><i className="mat" /><span className="toile"><i /><i /></span></span>}
+                {style === 'plage' && faits >= 7 && <span className="pg-chateau" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /></span>}
                 {/* CHANTIER 257 — Château : une tour s'élève au bout des étendards (6 jours et plus), un feu d'artifice (7 jours). */}
                 {style === 'chateau' && faits >= 6 && <span className="cs-tour" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>}
                 {style === 'chateau' && faits >= 7 && <span className="cs-feux" aria-hidden="true">{[0, 1, 2].map((f) => <span key={f}>{Array.from({ length: 10 }, (_, r) => <i key={r} style={{ rotate: `${r * 36}deg` }} />)}</span>)}</span>}

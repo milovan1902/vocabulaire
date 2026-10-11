@@ -224,6 +224,16 @@ const csPluie = (n: number, petale: boolean, debut: number) => Array.from({ leng
 const CS_OR = csPluie(16, false, 1.0);
 const CS_PETALES = csPluie(20, true, 1.3);
 
+/* CHANTIER 258 — Plage : les bulles (Raté), les mouettes et l'écume dorée (Facile). */
+const PG_BULLES = Array.from({ length: 12 }, (_, k) => ({
+  left: `${8 + ((k * 37) % 84)}%`, width: `${6 + (k % 3) * 4}px`, height: `${6 + (k % 3) * 4}px`, '--dx': `${((k % 5) - 2) * 8}px`, animationDelay: `${((k % 4) * 0.08).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const PG_MOUETTES = [[-30, 16, 0.2], [-60, 21, 0.4], [-20, 26, 0.7]].map(([x, y, d]) => ({ left: `${x}px`, top: `${y}%`, animationDelay: `${d}s` }) as CSSProperties);
+const PG_ECUME = Array.from({ length: 14 }, (_, k) => ({
+  left: `${10 + ((k * 23) % 80)}%`, top: `${40 + ((k * 17) % 60)}px`, width: `${k % 2 ? 5 : 7}px`, height: `${k % 2 ? 5 : 7}px`,
+  '--dx': `${((k % 5) - 2) * 16}px`, '--dy': `${20 + (k % 3) * 20}px`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -521,7 +531,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -567,6 +577,31 @@ export function Study({
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
           </span>
+        )}
+        {/* CHANTIER 258 — Plage : la vague qui fait chavirer (Raté), le maître-nageur (Dur), le surfeur et le dauphin (Bien), le tube (Facile). */}
+        {style === 'plage' && frappe === 'again' && (
+          <>
+            <span className="pg-deferle" aria-hidden="true"><i /><i /></span>
+            {PG_BULLES.map((st, k) => <i key={k} className="pg-bulle" aria-hidden="true" style={st} />)}
+          </>
+        )}
+        {style === 'plage' && frappe === 'hard' && (
+          <>
+            <span className="pg-drapeau" aria-hidden="true"><i /><i /><i /></span>
+            <span className="pg-sifflet" aria-hidden="true"><i /><i /><i /><b>Tuut !</b></span>
+          </>
+        )}
+        {style === 'plage' && frappe === 'good' && (
+          <>
+            <span className="pg-dauphin" aria-hidden="true"><i /><i /><i /><i /><i /></span>
+            <span className="pg-crete" aria-hidden="true"><i className="vague" /><span className="surfeur"><i /><i /><i /><i /></span></span>
+          </>
+        )}
+        {style === 'plage' && frappe === 'easy' && (
+          <>
+            <span className="pg-tube" aria-hidden="true"><i className="rouleau" /><i className="ecume" /><span className="surfeur"><i /><i /><i /><i /></span></span>
+            {PG_ECUME.map((st, k) => <i key={k} className="pg-ecume" aria-hidden="true" style={st} />)}
+          </>
         )}
         {/* CHANTIER 257 — Château : la flèche (Raté), le bélier et le sceau (Dur), l'épée (Bien), les trompettes, les bannières et la couronne (Facile). */}
         {style === 'chateau' && frappe === 'again' && (
@@ -918,6 +953,13 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 258 — Plage, Facile : le coucher de soleil derrière la carte, les mouettes. */}
+      {style === 'plage' && frappe === 'easy' && cadre && (
+        <div className="pg-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className="coucher"><i className="ciel" /><i className="soleil" /><i className="mer" />{PG_MOUETTES.map((st, k) => <span key={k} className="mouette" style={st}><i /><i /></span>)}</span>
+        </div>
+      )}
+
       {/* CHANTIER 257 — Château : la pluie d'or (Bien) et de pétales (Facile). */}
       {style === 'chateau' && (frappe === 'good' || frappe === 'easy') && cadre && (
         <div className="cs-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -1101,7 +1143,7 @@ export function Study({
                 const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
                   : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? (g.key === 'hard' ? 2200 : g.key === 'easy' ? 2800 : 1900) : style === 'jazz' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
-                  : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
+                  : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
                   : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
@@ -1127,7 +1169,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
