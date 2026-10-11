@@ -675,14 +675,15 @@ export function Today({
             /* CHANTIER 254 — Cabinet 1900 : la bobine de Tesla se charge, un arc saute jusqu'au bouton, qui s'illumine. */
             /* CHANTIER 255 — Japon zen : les shōji se ferment puis s'ouvrent sur le bouton, qui s'éclaire en lanterne. */
             /* CHANTIER 256 — Cotton Club : le rideau tombe sur le bouton puis se lève, le projecteur le balaie, il brille. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 257 — Château : le pont-levis s'abaisse sur ses chaînes, la herse remonte, deux torches s'allument. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -774,6 +775,14 @@ export function Today({
               <i className="lambrequin" />
             </span>
           )}
+          {/* CHANTIER 257 — Château : la herse et le pont-levis dans le bouton, les deux chaînes, les deux torches. */}
+          {style === 'chateau' && plouf > 0 && (
+            <span key={plouf} className="cs-entrer" aria-hidden="true">
+              <span className="porte"><i className="herse" /><i className="pont" /></span>
+              <i className="chaine g" /><i className="chaine d" />
+              <span className="torche g"><i /><i /><i /><i /></span><span className="torche d"><i /><i /><i /><i /></span>
+            </span>
+          )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
           {style === 'tv' && plouf > 0 && (
             <span className="tl-entree" aria-hidden="true">
@@ -841,6 +850,9 @@ export function Today({
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
                   )}
                 </span>
+                {/* CHANTIER 257 — Château : une tour s'élève au bout des étendards (6 jours et plus), un feu d'artifice (7 jours). */}
+                {style === 'chateau' && faits >= 6 && <span className="cs-tour" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>}
+                {style === 'chateau' && faits >= 7 && <span className="cs-feux" aria-hidden="true">{[0, 1, 2].map((f) => <span key={f}>{Array.from({ length: 10 }, (_, r) => <i key={r} style={{ rotate: `${r * 36}deg` }} />)}</span>)}</span>}
                 {/* CHANTIER 256 — Cotton Club, 7 jours : le micro rétro s'allume sous un petit projecteur. */}
                 {style === 'jazz' && faits >= 7 && <span className="cc-micro" aria-hidden="true"><i className="faisceau" /><i className="tete" /><i className="col" /><i className="pied" /><i className="socle" /></span>}
                 {/* CHANTIER 255 — Japon zen, 7 jours : deux lanternes s'allument au-dessus de la tuile. */}

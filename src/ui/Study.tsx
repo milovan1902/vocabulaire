@@ -209,6 +209,21 @@ const CC_CONFETTIS = Array.from({ length: 22 }, (_, k) => ({
   animationDuration: `${(1.3 + (k % 4) * 0.15).toFixed(2)}s`, animationDelay: `${(0.8 + (k % 6) * 0.1).toFixed(2)}s`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 257 — Château : les éclats de la flèche (Raté), la poussière du bélier (Dur), la pluie d'or (Bien) et de pétales (Facile). */
+const CS_ECLATS = [[-20, -16], [-24, 10], [-12, 22], [-28, -2]].map(([dx, dy]) => ({ '--dx': `${dx}px`, '--dy': `${dy}px` }) as unknown as CSSProperties);
+const CS_POUSSIERE = Array.from({ length: 12 }, (_, k) => ({
+  left: `${10 + ((k * 29) % 80)}%`, width: `${2 + (k % 3)}px`, height: `${2 + (k % 3)}px`, '--dx': `${((k % 5) - 2) * 6}px`,
+  animationDelay: `${([0.28, 0.72, 1.16][k % 3] + (k % 4) * 0.04).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const csPluie = (n: number, petale: boolean, debut: number) => Array.from({ length: n }, (_, k) => ({
+  left: `${(((k * 53) % 340) + 8) / 3.6}%`, width: `${petale ? (k % 2 ? 9 : 11) : (k % 2 ? 5 : 7)}px`, height: `${petale ? (k % 2 ? 11 : 13) : (k % 2 ? 5 : 7)}px`,
+  background: petale ? `linear-gradient(135deg, #fff, ${k % 3 ? '#f3b7c6' : '#eea3b6'} 60%)` : ['#f6dc7a', '#e8c547', '#fff2c0'][k % 3],
+  '--dx': `${((k % 5) - 2) * 18}px`, '--r': `${(k % 2 ? 1 : -1) * 300}deg`,
+  animationDuration: `${(1.3 + (k % 4) * 0.15).toFixed(2)}s`, animationDelay: `${(debut + (k % 6) * 0.09).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const CS_OR = csPluie(16, false, 1.0);
+const CS_PETALES = csPluie(20, true, 1.3);
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -506,7 +521,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -552,6 +567,34 @@ export function Study({
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
           </span>
+        )}
+        {/* CHANTIER 257 — Château : la flèche (Raté), le bélier et le sceau (Dur), l'épée (Bien), les trompettes, les bannières et la couronne (Facile). */}
+        {style === 'chateau' && frappe === 'again' && (
+          <>
+            <span className="cs-fleche" aria-hidden="true"><i className="pointe" /><span className="queue"><i className="tige" /><i className="plume h" /><i className="plume b" /></span></span>
+            {CS_ECLATS.map((st, k) => <i key={k} className="cs-eclat" aria-hidden="true" style={st} />)}
+          </>
+        )}
+        {style === 'chateau' && frappe === 'hard' && (
+          <>
+            <span className="cs-belier" aria-hidden="true"><i className="tronc" /><i className="cercle a" /><i className="cercle b" /><i className="tete" /></span>
+            {CS_POUSSIERE.map((st, k) => <i key={k} className="cs-poussiere" aria-hidden="true" style={st} />)}
+            <span className="cs-sceau" aria-hidden="true"><small>À</small><b>Reprendre</b><small>⚜</small></span>
+          </>
+        )}
+        {style === 'chateau' && frappe === 'good' && (
+          <>
+            <span className="cs-epee" aria-hidden="true"><i className="lame" /><i className="fil" /><i className="garde" /><i className="poignee" /><i className="pommeau" /></span>
+            <i className="cs-touche g" aria-hidden="true" /><i className="cs-touche d" aria-hidden="true" />
+          </>
+        )}
+        {style === 'chateau' && frappe === 'easy' && (
+          <>
+            <span className="cs-banniere g" aria-hidden="true"><i /><i /></span><span className="cs-banniere d" aria-hidden="true"><i /><i /></span>
+            <span className="cs-couronne" aria-hidden="true"><i /><i /><i /><i /><i /></span>
+            <span className="cs-trompette g" aria-hidden="true"><i /><i /><i /></span><span className="cs-trompette d" aria-hidden="true"><i /><i /><i /></span>
+            <span className="cs-notes" aria-hidden="true"><b>♪</b><b>♪</b><b>♪</b><b>♪</b></span>
+          </>
         )}
         {/* CHANTIER 256 — Cotton Club : la corde de contrebasse et les notes qui se brisent (Raté), la batterie (Dur), le saxophone (Bien). */}
         {style === 'jazz' && frappe === 'again' && (
@@ -875,6 +918,13 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 257 — Château : la pluie d'or (Bien) et de pétales (Facile). */}
+      {style === 'chateau' && (frappe === 'good' || frappe === 'easy') && cadre && (
+        <div className="cs-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className={`pluie${frappe === 'easy' ? ' petales' : ''}`}>{(frappe === 'easy' ? CS_PETALES : CS_OR).map((st, k) => <s key={k} style={st} />)}</span>
+        </div>
+      )}
+
       {/* CHANTIER 256 — Cotton Club, Facile : la salle s'éclaire, le projecteur sur le saxophoniste, ses trois notes, « Encore ! », les confettis. */}
       {style === 'jazz' && frappe === 'easy' && cadre && (
         <div className="cc-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -1051,7 +1101,7 @@ export function Study({
                 const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
                   : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? (g.key === 'hard' ? 2200 : g.key === 'easy' ? 2800 : 1900) : style === 'jazz' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
-                  : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
+                  : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
                   : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
@@ -1077,7 +1127,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
