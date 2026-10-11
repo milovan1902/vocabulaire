@@ -669,14 +669,15 @@ export function Today({
             /* CHANTIER 247 — TV : la télécommande allume le bouton comme un vieux poste, « En direct ». */
             /* CHANTIER 248 — Station 1936 : la télécabine passe sur son câble au-dessus du bouton. */
             /* CHANTIER 250 — Fashion week : les talons traversent le bouton, le mur des photographes crépite. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 251 — Cinéma muet : le clap claque au-dessus du bouton, puis le bouton devient une amorce (3, 2, 1). */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -706,6 +707,20 @@ export function Today({
               <i className="eclair" />
               <i className="pas" /><i className="pas" /><i className="pas" /><i className="pas" /><i className="pas" /><i className="pas" /><i className="pas" />
               <i className="flash" /><i className="flash" /><i className="flash" /><i className="flash" /><i className="flash" /><i className="flash" /><i className="flash" /><i className="flash" />
+            </span>
+          )}
+          {/* CHANTIER 251 — Cinéma muet : le clap (ardoise, barre qui claque), puis l'amorce : l'aiguille tourne, 3, 2, 1. */}
+          {style === 'cinema' && plouf > 0 && (
+            <span key={plouf} className="ci-projeter" aria-hidden="true">
+              <span className="clap">
+                <span className="ardoise"><span><span>Scène</span><span>{pc.due}</span></span><span><span>Prise</span><span>1</span></span></span>
+                <i className="bas" /><i className="barre" />
+              </span>
+              <span className="amorce">
+                <i className="trait" />
+                <span className="cercle"><i className="anneau" /><i className="croix h" /><i className="croix v" /><i className="aiguille" /><b>3</b><b>2</b><b>1</b></span>
+                <i className="trait" />
+              </span>
             </span>
           )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}

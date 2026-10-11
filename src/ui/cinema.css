@@ -249,3 +249,104 @@ body:not(:has(.today.ly)) .ci-salle { display: none; }
   .ci-salle .ci-faisceau, .ci-amorce, [data-style='cinema'] .pellicule-saut, [data-style='cinema'] .grades .grade.frappe,
   [data-style='cinema'] .studystage, [data-style='cinema'] .ly-segments i.auj, [data-style='cinema'] .ly-segments i.auj::before { animation: none !important; }
 }
+
+/* ==================================================================
+   CHANTIER 251 — Cinéma muet animé (maquette 67a)
+   « Projeter » : le clap, puis l'amorce 3, 2, 1 dans le bouton.
+   Révision : « Coupez ! » et Dur (grand clap, carton, la bobine emporte la carte),
+   Bien (fondu à l'iris), Facile (« Fin », rideaux, public qui applaudit).
+   ================================================================== */
+/* ---------- « Projeter » ---------- */
+[data-style='cinema'] .btn.ly-go { position: relative; z-index: 5; overflow: visible; }
+[data-style='cinema'] .btn.ly-go:has(> .ci-projeter) { animation: cm-presse 1.8s ease-out; }
+[data-style='cinema'] .ci-projeter { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='cinema'] .ci-projeter .clap { position: absolute; left: 50%; top: -64px; z-index: 10; width: 76px; height: 56px; margin-left: -38px; display: block; opacity: 0; animation: cm-clap 1.8s ease-out both; }
+[data-style='cinema'] .ci-projeter .ardoise { position: absolute; left: 0; right: 0; top: 14px; bottom: 0; box-sizing: border-box; padding: 6px 6px 0; display: flex; flex-direction: column; gap: 3px; background: #0b0b0b; border: 1.5px solid #f4f1ea; font-family: var(--sans); font-size: 7px; font-weight: 400; line-height: 1.2; letter-spacing: 0.18em; text-transform: uppercase; color: #f4f1ea; text-align: left; }
+[data-style='cinema'] .ci-projeter .ardoise > span { display: flex; justify-content: space-between; }
+[data-style='cinema'] .ci-projeter .ardoise > span:first-child { padding-bottom: 2px; border-bottom: 1px solid rgba(244, 241, 234, 0.5); }
+[data-style='cinema'] .ci-projeter :is(.bas, .barre) { position: absolute; left: 0; right: 0; height: 7px; display: block; box-sizing: border-box; border: 1px solid #f4f1ea; background: repeating-linear-gradient(-55deg, #0b0b0b 0 6px, #f4f1ea 6px 12px); }
+[data-style='cinema'] .ci-projeter .bas { top: 7px; }
+[data-style='cinema'] .ci-projeter .barre { top: 0; transform-origin: 0 100%; animation: cm-barre 1.8s ease-in both; }
+[data-style='cinema'] .ci-projeter .amorce { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 18px; background: #2a2622; opacity: 0; animation: cm-amorce 1.8s linear both; }
+[data-style='cinema'] .ci-projeter .trait { width: 2px; height: 30px; display: block; background: rgba(244, 241, 234, 0.5); }
+[data-style='cinema'] .ci-projeter .cercle { position: relative; width: 44px; height: 44px; display: block; border-radius: 50%; overflow: hidden; background: radial-gradient(circle, #3a3631, #1a1714); box-shadow: 0 0 0 1.5px #f4f1ea; }
+[data-style='cinema'] .ci-projeter .cercle > * { position: absolute; display: block; }
+[data-style='cinema'] .ci-projeter .anneau { inset: 4px; border-radius: 50%; border: 1px solid rgba(244, 241, 234, 0.7); }
+[data-style='cinema'] .ci-projeter .croix.h { left: 0; right: 0; top: 50%; height: 1px; background: rgba(244, 241, 234, 0.5); }
+[data-style='cinema'] .ci-projeter .croix.v { top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(244, 241, 234, 0.5); }
+[data-style='cinema'] .ci-projeter .aiguille { left: 50%; bottom: 50%; width: 1.5px; height: 22px; margin-left: -0.75px; background: #f4f1ea; transform-origin: 50% 100%; animation: ci-tour 0.4s linear 0.56s 3; }
+[data-style='cinema'] .ci-projeter .cercle b { inset: 0; display: grid; place-items: center; font-family: var(--titre); font-size: 24px; font-weight: 400; line-height: 1; letter-spacing: 0; color: #f4f1ea; opacity: 0; animation: ci-n 0.4s linear 0.56s; }
+[data-style='cinema'] .ci-projeter .cercle b:nth-of-type(2) { animation-delay: 0.96s; }
+[data-style='cinema'] .ci-projeter .cercle b:nth-of-type(3) { animation-delay: 1.36s; }
+
+/* ---------- Révision ---------- */
+/* Pendant l'animation, rien ne fait défiler l'écran. */
+html[data-style='cinema']:has(.ci-scene) { overflow: hidden; }
+[data-style='cinema'] .studystage { position: relative; }
+[data-style='cinema'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='cinema'] .studystage:is(.n-good, .n-easy) { animation: none; }
+/* Coupez ! et Dur : la carte tressaute sous le clap, puis la bobine l'emporte vers le bas, image par image. */
+[data-style='cinema'] .studystage:is(.n-again, .n-hard) { animation: cm-defile 2s ease-in both; }
+/* Les cartons d'intertitre, posés sur la carte. */
+[data-style='cinema'] .ci-carton { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 0 18px; background: #0b0b0b; outline: 1px solid #f4f1ea; outline-offset: -8px; pointer-events: none; opacity: 0; animation: cm-coupez 2s ease-out both; }
+[data-style='cinema'] .ci-carton small { font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: #bdb8ad; }
+[data-style='cinema'] .ci-carton b { font-family: var(--titre); font-size: 56px; font-weight: 400; line-height: 1.1; text-align: center; color: #f4f1ea; }
+[data-style='cinema'] .ci-carton > i { width: 40px; display: block; border-top: 1px solid #e9d8a6; }
+[data-style='cinema'] .ci-carton em { font-style: normal; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: #e9d8a6; }
+[data-style='cinema'] .ci-carton.fin { gap: 12px; animation: cm-fin 2.7s ease-out both; }
+[data-style='cinema'] .ci-carton.fin b { font-size: 110px; line-height: 1; }
+[data-style='cinema'] .ci-carton .orne { display: flex; align-items: center; gap: 10px; }
+[data-style='cinema'] .ci-carton .orne i { width: 7px; height: 7px; display: block; background: #e9d8a6; transform: rotate(45deg); }
+[data-style='cinema'] .ci-carton .orne i:nth-child(2) { width: 60px; height: 0; background: none; border-top: 1px solid #e9d8a6; transform: none; }
+[data-style='cinema'] .ci-scene { position: absolute; z-index: 7; display: block; pointer-events: none; }
+[data-style='cinema'] .ci-scene > * { position: absolute; display: block; }
+/* Le grand clap descend devant la carte et claque. */
+[data-style='cinema'] .ci-scene .clap-d { left: 50%; top: 54px; z-index: 8; width: 200px; height: 150px; margin-left: -100px; animation: cm-clapd 2s ease-out both; }
+[data-style='cinema'] .ci-scene .clap-d .ardoise { position: absolute; left: 0; right: 0; top: 30px; bottom: 0; box-sizing: border-box; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; background: #0b0b0b; border: 2px solid #f4f1ea; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #f4f1ea; }
+[data-style='cinema'] .ci-scene .clap-d .ardoise > span { display: flex; justify-content: space-between; }
+[data-style='cinema'] .ci-scene .clap-d .ardoise > span:not(:last-child) { padding-bottom: 6px; border-bottom: 1px solid rgba(244, 241, 234, 0.5); }
+[data-style='cinema'] .ci-scene .clap-d .ardoise b { font-family: var(--titre); font-weight: 400; letter-spacing: 0.06em; text-transform: none; }
+[data-style='cinema'] .ci-scene .clap-d :is(.bas, .barre) { position: absolute; left: 0; right: 0; height: 15px; display: block; box-sizing: border-box; border: 2px solid #f4f1ea; background: repeating-linear-gradient(-55deg, #0b0b0b 0 12px, #f4f1ea 12px 24px); }
+[data-style='cinema'] .ci-scene .clap-d .bas { top: 15px; }
+[data-style='cinema'] .ci-scene .clap-d .barre { top: 0; transform-origin: 0 100%; animation: cm-barred 2s ease-in both; }
+/* Bien : le fondu à l'iris se referme sur le mot, s'arrête, puis se ferme. */
+[data-style='cinema'] .ci-scene .iris { left: 50%; top: 44%; width: 0; height: 0; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 3px rgba(5, 5, 5, 0.55), 0 0 0 200vmax #050505; animation: cm-iris 2s ease-in-out both; }
+/* Facile : le lambrequin tombe, les rideaux se ferment, le public se lève et applaudit. */
+[data-style='cinema'] .ci-scene .salle-fin { position: fixed; inset: 0; z-index: 9; overflow: hidden; }
+[data-style='cinema'] .salle-fin > * { position: absolute; display: block; }
+[data-style='cinema'] .salle-fin .rideau { top: 0; bottom: 0; width: 54%; background: linear-gradient(180deg, #f0c860, #8a5e14) bottom / 100% 10px no-repeat, linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 25%, transparent 70%, rgba(0, 0, 0, 0.4)), repeating-linear-gradient(90deg, #5e0b12 0, #9e1824 10px, #c42a33 15px, #9e1824 20px, #5e0b12 30px); }
+[data-style='cinema'] .salle-fin .rideau.g { left: 0; box-shadow: 6px 0 14px rgba(0, 0, 0, 0.5); animation: cm-rideau-g 2.7s ease-in-out both; }
+[data-style='cinema'] .salle-fin .rideau.d { right: 0; box-shadow: -6px 0 14px rgba(0, 0, 0, 0.5); animation: cm-rideau-d 2.7s ease-in-out both; }
+[data-style='cinema'] .salle-fin .lambrequin { left: -10px; right: -10px; top: 0; z-index: 2; height: 70px; animation: cm-lambrequin 2.7s ease-out both; }
+[data-style='cinema'] .salle-fin .lambrequin i { position: absolute; left: 0; right: 0; display: block; }
+[data-style='cinema'] .salle-fin .lambrequin i:nth-child(1) { top: 0; height: 46px; background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 25%, transparent 70%, rgba(0, 0, 0, 0.4)), repeating-linear-gradient(90deg, #5e0b12 0, #9e1824 10px, #c42a33 15px, #9e1824 20px, #5e0b12 30px); }
+[data-style='cinema'] .salle-fin .lambrequin i:nth-child(2) { top: 44px; height: 20px; background: radial-gradient(circle 20px at 20px 0, #8e1420 95%, transparent 100%) 0 0 / 40px 20px repeat-x; }
+[data-style='cinema'] .salle-fin .lambrequin i:nth-child(3) { top: 42px; height: 4px; background: linear-gradient(90deg, #f0c860, #8a5e14, #f0c860); }
+[data-style='cinema'] .salle-fin .public { left: 0; right: 0; bottom: -6px; z-index: 3; height: 90px; filter: drop-shadow(0 -1px 1px rgba(244, 241, 234, 0.7)); animation: cm-public 2.7s ease-out both; }
+[data-style='cinema'] .salle-fin .public > span { position: absolute; width: 48px; height: 62px; display: block; }
+[data-style='cinema'] .salle-fin .public > span > i { position: absolute; inset: 0; display: block; animation: cm-applaudit 0.22s ease-in-out var(--d, 1.4s) infinite alternate; }
+[data-style='cinema'] .salle-fin .public > span > i::before { content: ''; position: absolute; left: 50%; top: 0; width: 24px; height: 26px; margin-left: -12px; border-radius: 50%; background: #050505; }
+[data-style='cinema'] .salle-fin .public > span > i::after { content: ''; position: absolute; left: 0; right: 0; top: 22px; bottom: 0; border-radius: 22px 22px 0 0; background: #050505; }
+[data-style='cinema'] .salle-fin .mot { z-index: 4; font-family: var(--titre); font-weight: 400; color: #f4f1ea; text-shadow: 0 2px 0 #5e0b12; white-space: nowrap; opacity: 0; animation: cm-mot 0.7s ease-out both; }
+
+@keyframes cm-presse { 0%, 14% { transform: none; } 18%, 26% { transform: translateY(2px) scale(0.985); background-color: #d9d4c9; } 32%, 100% { transform: none; } }
+@keyframes cm-clap { 0% { transform: translateY(-14px); opacity: 0; } 8%, 38% { transform: none; opacity: 1; } 50%, 100% { transform: translateY(-10px); opacity: 0; } }
+@keyframes cm-barre { 0%, 8% { transform: rotate(-28deg); } 14% { transform: rotate(-32deg); } 18%, 100% { transform: rotate(0deg); } }
+@keyframes cm-amorce { 0%, 28% { opacity: 0; } 32%, 96% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cm-defile { 0%, 34% { transform: none; } 36% { transform: translate(-2px, 2px); } 38% { transform: translate(2px, -1px); } 40%, 66% { transform: none; animation-timing-function: steps(7); } 100% { transform: translateY(820px); } }
+@keyframes cm-coupez { 0%, 34% { opacity: 0; transform: scale(1.06); } 38%, 100% { opacity: 1; transform: none; } }
+@keyframes cm-clapd { 0% { transform: translateY(-440px) rotate(-8deg); } 18% { transform: translateY(0) rotate(-3deg); } 22% { transform: translateY(6px) rotate(-3deg); } 26%, 50% { transform: rotate(-3deg); } 64%, 100% { transform: translateY(-440px) rotate(-6deg); } }
+@keyframes cm-barred { 0%, 20% { transform: rotate(-30deg); } 30% { transform: rotate(-34deg); } 34%, 100% { transform: rotate(0deg); } }
+@keyframes cm-iris { 0%, 10% { width: 1000px; height: 1000px; } 60%, 74% { width: 120px; height: 120px; } 90%, 100% { width: 0; height: 0; } }
+@keyframes cm-fin { 0% { opacity: 0; transform: scale(1.08); } 10%, 100% { opacity: 1; transform: none; } }
+@keyframes cm-lambrequin { 0%, 14% { transform: translateY(-90px); } 26%, 100% { transform: none; } }
+@keyframes cm-rideau-g { 0%, 22% { transform: translateX(-102%); } 48% { transform: none; } 53% { transform: skewX(1.5deg); } 58%, 100% { transform: none; } }
+@keyframes cm-rideau-d { 0%, 22% { transform: translateX(102%); } 48% { transform: none; } 53% { transform: skewX(-1.5deg); } 58%, 100% { transform: none; } }
+@keyframes cm-public { 0%, 40% { transform: translateY(110px); } 52%, 100% { transform: none; } }
+@keyframes cm-applaudit { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+@keyframes cm-mot { 0% { transform: scale(0.3) rotate(var(--r)); opacity: 0; } 30% { transform: scale(1.15) rotate(var(--r)); opacity: 1; } 70% { transform: scale(1) rotate(var(--r)); opacity: 1; } 100% { transform: scale(1) translateY(-14px) rotate(var(--r)); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='cinema'] .ci-projeter, [data-style='cinema'] .ci-scene, [data-style='cinema'] .ci-carton { display: none !important; }
+  [data-style='cinema'] .btn.ly-go, [data-style='cinema'] .studystage:is(.n-again, .n-hard) { animation: none !important; }
+}

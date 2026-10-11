@@ -105,6 +105,20 @@ const FS_PETALES = Array.from({ length: 18 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * 260}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
+const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
+  left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
+  bottom: `${k % 2 ? 0 : 10}px`,
+  '--d': `${(1.4 + (k % 3) * 0.07).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const CI_MOTS = [[40, 250, -12], [230, 200, 10], [120, 330, 6], [250, 390, -8], [30, 430, 8], [150, 160, -6], [210, 470, 12]].map(([x, y, r], k) => ({
+  left: `${((x / 360) * 100).toFixed(1)}%`,
+  top: `${((y / 760) * 100).toFixed(1)}%`,
+  fontSize: `${22 + (k % 3) * 4}px`,
+  animationDelay: `${(1.45 + k * 0.15).toFixed(2)}s`,
+  '--r': `${r}deg`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 247 — TV : les confettis des applaudissements (Facile). */
 const TL_COULEURS = ['#2a9d8f', '#e9b44c', '#e76f51', '#b5452a', '#2f6f9e'];
 const TL_CONFETTIS = Array.from({ length: 18 }, (_, k) => ({
@@ -388,7 +402,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -433,6 +447,22 @@ export function Study({
             {frappe === 'hard' && <><i className="barres" /><span className="incident"><b>Incident technique</b><small>Veuillez nous excuser…</small></span></>}
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
+          </span>
+        )}
+        {/* CHANTIER 251 — Cinéma muet : le carton « Coupez ! » ou « Deuxième prise » (Coupez !, Dur), le carton « Fin » (Facile). */}
+        {style === 'cinema' && (frappe === 'again' || frappe === 'hard') && (
+          <span className="ci-carton" aria-hidden="true">
+            <small>Scène {index + 1} · prise 1</small>
+            <b>{frappe === 'hard' ? 'Deuxième prise' : 'Coupez !'}</b>
+            <i />
+            <em>On la refait</em>
+          </span>
+        )}
+        {style === 'cinema' && frappe === 'easy' && (
+          <span className="ci-carton fin" aria-hidden="true">
+            <span className="orne"><i /><i /><i /></span>
+            <b>Fin</b>
+            <span className="orne"><i /><i /><i /></span>
           </span>
         )}
         {/* CHANTIER 244 — Strass : les tampons « Liste d'attente » (Dur) et « Admis » (Bien). */}
@@ -576,6 +606,31 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 251 — Cinéma muet : le grand clap (Coupez !, Dur), l'iris (Bien), les rideaux et le public (Facile). */}
+      {style === 'cinema' && frappe && cadre && (
+        <div className="ci-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {(frappe === 'again' || frappe === 'hard') && (
+            <span className="clap-d">
+              <span className="ardoise">
+                <span><span>Prod.</span><b>Lexique</b></span>
+                <span><span>Scène</span><b>{index + 1}</b></span>
+                <span><span>Prise</span><b>1</b></span>
+              </span>
+              <i className="bas" /><i className="barre" />
+            </span>
+          )}
+          {frappe === 'good' && <i className="iris" />}
+          {frappe === 'easy' && (
+            <span className="salle-fin">
+              <i className="rideau g" /><i className="rideau d" />
+              <span className="lambrequin"><i /><i /><i /></span>
+              <span className="public">{CI_TETES.map((st, k) => <span key={k} style={st}><i /></span>)}</span>
+              {CI_MOTS.map((st, k) => <b key={k} className="mot" style={st}>Clap !</b>)}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* CHANTIER 247 — TV, Facile : « APPLAUSE » au-dessus du poste et les confettis. */}
       {style === 'tv' && frappe === 'easy' && cadre && (
         <div className="tl-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -632,7 +687,8 @@ export function Study({
               onClick={() => {
                 if (frappe) return;
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
-                const attente = style === 'cinema' || style === 'biblio' ? 280 : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
+                /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
+                const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) : style === 'biblio' ? 280 : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
@@ -660,7 +716,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
