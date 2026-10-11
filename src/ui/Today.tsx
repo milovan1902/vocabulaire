@@ -670,14 +670,15 @@ export function Today({
             /* CHANTIER 248 — Station 1936 : la télécabine passe sur son câble au-dessus du bouton. */
             /* CHANTIER 250 — Fashion week : les talons traversent le bouton, le mur des photographes crépite. */
             /* CHANTIER 251 — Cinéma muet : le clap claque au-dessus du bouton, puis le bouton devient une amorce (3, 2, 1). */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 252 — Bibliothèque : un livre s'ouvre au-dessus du bouton, le signet glisse jusqu'à lui. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -720,6 +721,15 @@ export function Today({
                 <i className="trait" />
                 <span className="cercle"><i className="anneau" /><i className="croix h" /><i className="croix v" /><i className="aiguille" /><b>3</b><b>2</b><b>1</b></span>
                 <i className="trait" />
+              </span>
+            </span>
+          )}
+          {/* CHANTIER 252 — Bibliothèque : le reflet d'or du bouton ; le livre (pages, feuilles qui tournent, couverture, signet). */}
+          {style === 'biblio' && plouf > 0 && (
+            <span key={plouf} className="bi-ouvrir" aria-hidden="true">
+              <span className="reflet"><i /></span>
+              <span className="livre">
+                <i className="gauche" /><i className="droite" /><i className="feuille" /><i className="feuille" /><i className="feuille" /><i className="couv">❦</i><i className="ruban" />
               </span>
             </span>
           )}
@@ -770,7 +780,11 @@ export function Today({
                   {/* CHANTIER 246 — Diner : le <b> est la coupe (le milk-shake, les bulles), <u> la chantilly, puis la paille, la cerise et deux gouttes (<small>). */}
                   {/* CHANTIER 250 — Fashion week : le tapis rouge (7 jours), sous les escarpins ; dans chaque escarpin, <u> le gris, <b> le rouge, <em> le reflet de vernis, <s> l'étoile du jour. */}
                   {style === 'fashion' && faits >= 7 && <span className="fs-tapis"><b /><u /><s /></span>}
-                  {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 252 — Bibliothèque : un signet par jour tenu, jusqu'à sept ; les 6e et 7e sont dorés, avec un pompon (<u>). */}
+                  {Array.from({ length: style === 'biblio' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 252 — Bibliothèque : le filet qui se dore (5 jours et plus), la poussière d'or (7 jours). */}
+                  {style === 'biblio' && faits >= OBJECTIF_SEMAINE && <b className="bi-filet" />}
+                  {style === 'biblio' && faits >= 7 && <span className="bi-poudre"><s /><s /><s /><s /><s /><s /><s /><s /></span>}
                   {/* CHANTIER 244 — Strass, la semaine faite : le bouchon saute, les confettis retombent. */}
                   {style === 'strass' && faits >= OBJECTIF_SEMAINE && (
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
@@ -779,6 +793,14 @@ export function Today({
                 {/* CHANTIER 248 — Station 1936 : les flocons sur la tuile (6 et 7 jours) et le soleil qui se lève (7 jours). */}
                 {style === 'station' && faits > OBJECTIF_SEMAINE && (
                   <span className={`sk-ciel b${Math.min(faits, 7)}`} aria-hidden="true"><i className="soleil" /><s /><s /><s /><s /><s /><s /><s /><s /><s /></span>
+                )}
+                {/* CHANTIER 252 — Bibliothèque, 7 jours : un double filet d'or se trace autour de la tuile, le cachet « VII » s'écrase. */}
+                {style === 'biblio' && faits >= 7 && (
+                  <>
+                    <svg className="bi-cadre" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" pathLength={100} /></svg>
+                    <svg className="bi-cadre b" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" pathLength={100} /></svg>
+                    <span className="bi-cachet" aria-hidden="true">VII</span>
+                  </>
                 )}
                 {/* CHANTIER 250 — Fashion week, 7 jours : les flashs mitraillent autour de la tuile. */}
                 {style === 'fashion' && faits >= 7 && <span className="fs-crepite" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>}

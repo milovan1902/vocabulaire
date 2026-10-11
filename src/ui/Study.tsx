@@ -105,6 +105,22 @@ const FS_PETALES = Array.from({ length: 18 }, (_, k) => ({
   '--r': `${(k % 2 ? 1 : -1) * 260}deg`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 252 — Bibliothèque : la tache d'encre (Raté), ses éclaboussures et ses coulures (repère de 344 × 430,
+   la taille de la carte) ; le rayon où le livre se range et ses étincelles (Facile, en % de la carte). */
+const BI_TACHE = 'M172 168 C 200 166, 214 186, 232 184 C 252 182, 262 204, 248 220 C 238 232, 256 246, 246 262 C 234 282, 210 274, 196 290 C 182 306, 156 300, 146 284 C 136 270, 110 282, 100 264 C 90 246, 108 236, 102 220 C 96 202, 116 190, 132 194 C 148 198, 150 170, 172 168 Z';
+const BI_GICLES = [[96, 172, 4], [258, 170, 3], [70, 260, 5], [276, 280, 3.5], [214, 150, 2.5], [120, 304, 3], [290, 236, 2], [60, 214, 2.5], [236, 310, 4]].map(([x, y, r], k) => ({
+  x, y, r, style: { animationDelay: `${(0.64 + (k % 4) * 0.03).toFixed(2)}s` } as CSSProperties,
+}));
+const BI_COULURES: Array<[string, number, number]> = [['M150 292 C 151 310, 149 326, 150 352', 7, 0.95], ['M196 286 C 197 300, 195 318, 197 340', 5, 1.08], ['M232 268 C 233 280, 232 290, 233 304', 4, 1.2]];
+const BI_DOS = ['#5a1e1e', '#1f3f2c', '#2b3d5a', '#3b2a5a', '#6b3a1a'];
+const BI_RAYON = [
+  ...[18, 15, 20, 16, 19, 14].map((w, k) => ({ w, h: [62, 56, 70, 58, 66, 54][k], c: BI_DOS[(k + 1) % 5] })),
+  ...[16, 20, 14, 19, 15, 18].map((w, k) => ({ w, h: [58, 68, 54, 64, 60, 70][k], c: BI_DOS[(k + 4) % 5] })),
+].map((d, k) => ({ left: `${(k < 6 ? 5 + k * 5.4 : 62 + (k - 6) * 5.4).toFixed(1)}%`, width: `${d.w}px`, height: `${d.h}px`, top: `${86 - d.h}px`, background: `linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.35)), ${d.c}` }) as CSSProperties);
+const BI_ETOILES = [[36, 30], [60, 28], [33, 54], [63, 52], [48, 16], [49, 74]].map(([x, y], k) => ({
+  left: `${x}%`, top: `${y}px`, fontSize: `${12 + (k % 3) * 4}px`, animationDelay: `${(2.0 + (k % 3) * 0.08).toFixed(2)}s`,
+}) as CSSProperties);
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -402,7 +418,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -448,6 +464,45 @@ export function Study({
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
           </span>
+        )}
+        {/* CHANTIER 252 — Bibliothèque : ce qui s'écrit, se plie ou se colle sur la page pendant la note. */}
+        {style === 'biblio' && frappe === 'again' && (
+          <svg className="bi-encre" viewBox="0 0 344 430" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <filter id="bi-plume" x="-10%" y="-40%" width="120%" height="180%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves={2} seed={3} /><feDisplacementMap in="SourceGraphic" scale={2.5} /></filter>
+              <filter id="bi-buvard" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves={3} seed={8} /><feDisplacementMap in="SourceGraphic" scale={22} /><feGaussianBlur stdDeviation={0.5} /></filter>
+              <filter id="bi-bord" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves={3} seed={2} /><feDisplacementMap in="SourceGraphic" scale={26} /><feGaussianBlur stdDeviation={2.2} /></filter>
+            </defs>
+            <g filter="url(#bi-plume)">
+              <path className="trait t1 fort" d="M42 200 C 70 194, 96 196, 128 190 C 168 183, 204 188, 236 178 C 262 171, 284 170, 302 176" pathLength={100} />
+              <path className="trait t1 fin" d="M44 203 C 80 199, 120 197, 160 190 C 200 186, 240 182, 298 179" pathLength={100} />
+              <path className="trait t2 fort" d="M306 206 C 282 214, 246 210, 214 222 C 180 234, 146 226, 112 236 C 88 243, 64 246, 46 240 C 40 238, 38 234, 42 232" pathLength={100} />
+              <path className="trait t2 fin" d="M302 210 C 260 220, 210 226, 160 232 C 120 238, 80 244, 50 238" pathLength={100} />
+            </g>
+            <path className="halo" d={BI_TACHE} filter="url(#bi-bord)" />
+            <path className="tache" d={BI_TACHE} filter="url(#bi-buvard)" />
+            <ellipse className="tache lustre" cx="160" cy="214" rx="26" ry="12" />
+            {BI_GICLES.map((o, k) => <circle key={k} className="gicle" cx={o.x} cy={o.y} r={o.r} style={o.style} filter="url(#bi-plume)" />)}
+            <g filter="url(#bi-plume)">
+              {BI_COULURES.map(([d, w, dl], k) => <path key={k} className="coulure" d={d} pathLength={100} style={{ strokeWidth: w, animationDelay: `${dl}s` }} />)}
+            </g>
+          </svg>
+        )}
+        {style === 'biblio' && frappe === 'hard' && (
+          <>
+            <span className="bi-corne" aria-hidden="true"><i /><i /></span>
+            <i className="bi-crochet" aria-hidden="true" />
+            <span className="bi-relire" aria-hidden="true">À relire<i /></span>
+          </>
+        )}
+        {style === 'biblio' && frappe === 'good' && (
+          <span className="bi-tampon" aria-hidden="true"><small>Lexique</small><span>Lu</span><small>Bon à ranger</small></span>
+        )}
+        {style === 'biblio' && frappe === 'easy' && (
+          <>
+            <span className="bi-exlibris" aria-hidden="true"><em>Ex-libris</em><span>Lexique</span><span className="fleuron">❦</span><i /></span>
+            <span className="bi-couv" aria-hidden="true"><span className="fleuron">❦</span><span>Lexique</span><i /><small>Tome {index + 1}</small></span>
+          </>
         )}
         {/* CHANTIER 251 — Cinéma muet : le carton « Coupez ! » ou « Deuxième prise » (Coupez !, Dur), le carton « Fin » (Facile). */}
         {style === 'cinema' && (frappe === 'again' || frappe === 'hard') && (
@@ -606,6 +661,14 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 252 — Bibliothèque, Facile : le rayon où le livre va se ranger, et ses étincelles. */}
+      {style === 'biblio' && frappe === 'easy' && cadre && (
+        <div className="bi-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className="rayon">{BI_RAYON.map((st, k) => <i key={k} style={st} />)}<b /></span>
+          {BI_ETOILES.map((st, k) => <i key={k} className="etoile" style={st}>★</i>)}
+        </div>
+      )}
+
       {/* CHANTIER 251 — Cinéma muet : le grand clap (Coupez !, Dur), l'iris (Bien), les rideaux et le public (Facile). */}
       {style === 'cinema' && frappe && cadre && (
         <div className="ci-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -688,7 +751,8 @@ export function Study({
                 if (frappe) return;
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
-                const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) : style === 'biblio' ? 280 : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
+                const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
+                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
@@ -716,7 +780,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
