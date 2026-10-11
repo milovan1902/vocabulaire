@@ -177,6 +177,20 @@ const CX_ETINCELLES = Array.from({ length: 14 }, (_, k) => {
   return { width: `${k % 2 ? 5 : 7}px`, height: `${k % 2 ? 5 : 7}px`, '--dx': `${Math.round(Math.cos(a) * r)}px`, '--dy': `${Math.round(Math.sin(a) * r)}px`, animationDelay: `${(1.55 + (k % 4) * 0.05).toFixed(2)}s` } as unknown as CSSProperties;
 });
 
+/* CHANTIER 255 — Japon zen : les ondes du gong (Bien), les fleurs des branches et les pétales (Bien, Facile). */
+const JZ_ONDES = [0.55, 0.75, 0.95, 1.15].map((d) => ({ animationDelay: `${d}s` }) as CSSProperties);
+const JZ_FLEURS = [[-6, 50, 40], [30, 66, 46], [70, 80, 38], [110, 96, 34], [10, 96, 30], [300, 96, 40], [262, 112, 44], [226, 130, 36], [330, 70, 30], [190, 146, 30]].map(([x, y, w], k) => ({
+  [x > 180 ? 'right' : 'left']: `${x > 180 ? 360 - x - w : x}px`, top: `${y}px`, width: `${w}px`, height: `${Math.round(w * 0.82)}px`, animationDelay: `${(0.3 + k * 0.06).toFixed(2)}s`,
+}) as CSSProperties);
+const jzPetales = (n: number, debut: number) => Array.from({ length: n }, (_, k) => ({
+  left: `${(((k * 53) % 340) + 8) / 3.6}%`, width: `${k % 2 ? 8 : 10}px`, height: `${k % 2 ? 10 : 12}px`,
+  background: `linear-gradient(135deg, #fff, ${k % 3 ? '#f6a9c0' : '#f39ab4'} 60%)`,
+  '--dx': `${((k % 5) - 2) * 22 + 40}px`, '--r': `${(k % 2 ? 1 : -1) * 320}deg`,
+  animationDuration: `${(1.5 + (k % 4) * 0.2).toFixed(1)}s`, animationDelay: `${(debut + (k % 6) * 0.12).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const JZ_PETALES_BIEN = jzPetales(7, 0.7);
+const JZ_PETALES_FACILE = jzPetales(22, 0.6);
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -474,7 +488,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -519,6 +533,28 @@ export function Study({
             {frappe === 'hard' && <><i className="barres" /><span className="incident"><b>Incident technique</b><small>Veuillez nous excuser…</small></span></>}
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
+          </span>
+        )}
+        {/* CHANTIER 255 — Japon zen : l'encre sumi et le trait rouge (Raté), le sceau 「難」 (Dur), le gong (Bien). */}
+        {style === 'japon' && frappe === 'again' && (
+          <svg className="jz-encre" viewBox="0 0 340 426" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <filter id="jz-sumi" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves={3} seed={5} /><feDisplacementMap in="SourceGraphic" scale={20} /><feGaussianBlur stdDeviation={0.6} /></filter>
+              <filter id="jz-poil" x="-10%" y="-60%" width="120%" height="220%"><feTurbulence type="fractalNoise" baseFrequency="0.6 0.05" numOctaves={2} seed={9} /><feDisplacementMap in="SourceGraphic" scale={6} /></filter>
+            </defs>
+            <ellipse className="goutte" cx="172" cy="0" rx="6" ry="8" />
+            <path className="tache" filter="url(#jz-sumi)" d="M172 172 C 200 170, 214 188, 232 186 C 250 184, 258 204, 244 220 C 232 234, 248 246, 236 262 C 222 280, 200 270, 186 284 C 170 298, 150 290, 142 276 C 134 262, 110 270, 104 252 C 98 234, 114 226, 110 210 C 106 194, 124 184, 140 188 C 154 192, 152 174, 172 172 Z" />
+            <path className="trait fort" filter="url(#jz-poil)" d="M30 268 C 90 236, 170 214, 300 150" pathLength={100} />
+            <path className="trait fin" filter="url(#jz-poil)" d="M40 266 C 100 238, 176 218, 296 156" pathLength={100} />
+          </svg>
+        )}
+        {style === 'japon' && frappe === 'hard' && <span className="jz-sceau" aria-hidden="true">難</span>}
+        {style === 'japon' && frappe === 'good' && (
+          <span className="jz-gong" aria-hidden="true">
+            <i className="traverse" /><i className="montant g" /><i className="montant d" /><i className="corde g" /><i className="corde d" />
+            <span className="disque" />
+            {JZ_ONDES.map((st, k) => <i key={k} className="onde" style={st} />)}
+            <span className="maillet"><i /><i /></span>
           </span>
         )}
         {/* CHANTIER 254 — Cabinet 1900 : le ballon qui explose (Raté), le microscope et la loupe (Dur), la fiole (Bien), les électrodes et la médaille (Facile). */}
@@ -787,6 +823,36 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 255 — Japon zen : le Fuji et le soleil levant derrière l'ema (Facile) ; le jardin zen (Dur), les branches en fleurs et les pétales devant. */}
+      {style === 'japon' && frappe === 'easy' && cadre && (
+        <div className="jz-scene fond" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className="aube"><i className="soleil" /><i className="fuji" /></span>
+        </div>
+      )}
+      {style === 'japon' && (frappe === 'hard' || frappe === 'good' || frappe === 'easy') && cadre && (
+        <div className="jz-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'hard' && (
+            <span className="jardin">
+              <i className="sable" />
+              <svg viewBox="0 0 312 122" preserveAspectRatio="none">
+                <ellipse className="s1" cx="156" cy="64" rx="40" ry="20" pathLength={100} />
+                <ellipse className="s2" cx="156" cy="64" rx="58" ry="30" pathLength={100} />
+                <ellipse className="s3" cx="156" cy="64" rx="76" ry="40" pathLength={100} />
+                <path className="s4" d="M14 22 L 70 22 M14 34 L 62 34 M14 96 L 66 96 M14 108 L 74 108 M298 22 L 242 22 M298 34 L 250 34 M298 96 L 246 96 M298 108 L 238 108" pathLength={100} />
+              </svg>
+              <i className="pierre" />
+              <span className="rateau"><i /><i /></span>
+            </span>
+          )}
+          {frappe === 'easy' && (
+            <span className="branches"><i className="b g" /><i className="b d" />{JZ_FLEURS.map((st, k) => <i key={k} className="fleur" style={st} />)}</span>
+          )}
+          {(frappe === 'good' || frappe === 'easy') && (
+            <span className="petales">{(frappe === 'easy' ? JZ_PETALES_FACILE : JZ_PETALES_BIEN).map((st, k) => <s key={k} style={st} />)}</span>
+          )}
+        </div>
+      )}
+
       {/* CHANTIER 253 — Salon de thé, Facile : le présentoir monte devant l'étiquette, les gourmandises s'y posent, les pétales tombent. */}
       {style === 'patisserie' && frappe === 'easy' && cadre && (
         <div className="pt-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -894,7 +960,7 @@ export function Study({
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
                 const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
-                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? 650 : style === 'jazz' ? 600
+                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? (g.key === 'hard' ? 2200 : g.key === 'easy' ? 2800 : 1900) : style === 'jazz' ? 600
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
@@ -922,7 +988,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }

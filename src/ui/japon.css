@@ -222,3 +222,168 @@ body:not(:has(.today.ly)) .jp-salle { display: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-style='japon'] *, [data-style='japon'] *::before, [data-style='japon'] *::after, .jp-salle * { animation: none !important; transition: none !important; }
 }
+
+/* ==================================================================
+   CHANTIER 255 — Japon zen animé (maquette 71a)
+   « Entrer » : les shōji, les pétales, la lanterne.
+   « Cette semaine » : des sushis et un maki plus fins ; baguettes et rebond ; 6 jours : wasabi
+   et feuille ; 7 jours : bateau à sushis, lanternes.
+   Révision : l'encre sumi (Raté), le jardin zen et le sceau (Dur), le gong (Bien), le soleil levant (Facile).
+   ================================================================== */
+/* ---------- « Entrer » ---------- */
+[data-style='japon'] .btn.ly-go { position: relative; z-index: 5; overflow: visible; }
+[data-style='japon'] .btn.ly-go:has(> .jz-entrer) { animation: jz-presse 1.8s ease-out; }
+[data-style='japon'] .jz-entrer { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='japon'] .jz-entrer i { position: absolute; display: block; }
+[data-style='japon'] .jz-entrer .lueur { inset: 0; z-index: -1; border-radius: 2px; background: radial-gradient(ellipse at 50% 50%, #fff2c0, #f2a04a 55%, #d9472b); opacity: 0; animation: jz-lanterne 1.8s ease-in-out both; }
+[data-style='japon'] .jz-entrer .cadre { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: 2px; }
+[data-style='japon'] .jz-entrer .shoji { top: 0; bottom: 0; width: 50%; background: linear-gradient(90deg, transparent calc(50% - 1px), #6b4a2e calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)), repeating-linear-gradient(180deg, transparent 0 16px, #6b4a2e 16px 18px), #f7f0e2; box-shadow: inset 0 0 0 3px #6b4a2e; }
+[data-style='japon'] .jz-entrer .shoji.g { left: 0; transform: translateX(-101%); animation: jz-shoji-g 1.8s cubic-bezier(0.5, 0, 0.3, 1) both; }
+[data-style='japon'] .jz-entrer .shoji.d { right: 0; transform: translateX(101%); animation: jz-shoji-d 1.8s cubic-bezier(0.5, 0, 0.3, 1) both; }
+[data-style='japon'] .jz-entrer .petale { right: -30px; top: -20px; z-index: 6; width: 9px; height: 11px; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #fff, #f6a9c0 60%); --dx: -110px; --r: 260deg; opacity: 0; animation: jz-petale-b 1s linear 0.7s both; }
+[data-style='japon'] .jz-entrer .petale:nth-child(4) { right: 10px; top: -30px; --dx: -60px; --r: -200deg; animation-delay: 0.85s; }
+[data-style='japon'] .jz-entrer .petale:nth-child(5) { right: -10px; top: -10px; --dx: -150px; --r: 300deg; animation-delay: 1s; }
+
+/* ---------- « Cette semaine » : des sushis plus fins ---------- */
+/* Chaque sushi : <u> le riz (grains, ombre), <b> le poisson drapé (sa couleur, son modelé), <em> le reflet, <s> la bande de nori (tamago) ou la queue (crevette). */
+[data-style='japon'] .ly-segments i.on { z-index: 2; background: none; border-radius: 0; }
+[data-style='japon'] .ly-segments i > :is(u, b, em, s) { position: absolute; display: none; text-decoration: none; pointer-events: none; }
+[data-style='japon'] .ly-segments i.on > :is(u, b, em) { display: block; }
+[data-style='japon'] .ly-segments i.on > u { left: 1px; right: 1px; bottom: 0; height: 10px; border-radius: 6px 6px 4px 4px / 4px 4px 3px 3px; background: radial-gradient(ellipse 1.4px 1px at 30% 40%, #fff 0 60%, transparent 70%) 0 0 / 4px 3px, radial-gradient(ellipse 1.2px 0.9px at 70% 70%, #fff 0 60%, transparent 70%) 1px 1px / 5px 3px, radial-gradient(circle, #dcd5c0 0 0.5px, transparent 0.8px) 2px 1px / 3px 3px, linear-gradient(180deg, #fdfcf7, #ece6d4); box-shadow: inset 0 -1.5px 0 rgba(120, 100, 70, 0.18), inset 1px 0 0 rgba(255, 255, 255, 0.8); }
+[data-style='japon'] .ly-segments i.on > b { left: -1px; right: -1px; top: 1px; height: 8px; border-radius: 9px 9px 4px 4px / 6px 6px 3px 3px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 45%, rgba(60, 10, 0, 0.16)), var(--dessus); box-shadow: 0 1px 0 rgba(60, 20, 10, 0.18); }
+[data-style='japon'] .ly-segments i.on > em { left: 5px; top: 2px; width: 8px; height: 1.6px; border-radius: 2px; background: rgba(255, 255, 255, 0.6); transform: rotate(-4deg); }
+/* Saumon : veines claires obliques ; thon : rouge profond ; crevette : bandes et queue ; tamago : omelette et nori. */
+[data-style='japon'] .ly-segments i:nth-child(1) { --dessus: repeating-linear-gradient(118deg, #f07a3c 0 3.5px, #ffc9a6 3.5px 4.6px), #f07a3c; }
+[data-style='japon'] .ly-segments i:nth-child(2) { --dessus: radial-gradient(ellipse 60% 70% at 40% 30%, #e0485a, #b51f34 60%, #8a1426); }
+[data-style='japon'] .ly-segments i:nth-child(3) { --dessus: repeating-linear-gradient(90deg, #ff8f5c 0 3px, #ffe8da 3px 4px, #ff8f5c 4px 5px); }
+[data-style='japon'] .ly-segments i:nth-child(3).on > s { display: block; right: -4px; top: 0; width: 6px; height: 7px; background: linear-gradient(135deg, #e0482a, #ff8f5c); clip-path: polygon(0 30%, 100% 0, 70% 50%, 100% 100%, 0 70%); }
+[data-style='japon'] .ly-segments i:nth-child(4) { --dessus: linear-gradient(180deg, #ffe680, #f6c94a 70%, #d9a52e); }
+[data-style='japon'] .ly-segments i:nth-child(4).on > b { height: 9px; border-radius: 3px 3px 2px 2px; background: radial-gradient(ellipse 30% 40% at 30% 30%, rgba(160, 90, 20, 0.35), transparent 70%), linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent 45%), var(--dessus); }
+[data-style='japon'] .ly-segments i:nth-child(4).on > s { display: block; left: 8px; top: 0; bottom: 0; z-index: 2; width: 6px; border-radius: 1px; background: linear-gradient(90deg, #0f1a12, #2c3d30 40%, #14201a); box-shadow: inset 0 0 0 0.5px rgba(120, 160, 120, 0.3); }
+/* Le maki, vu de trois quarts : le cylindre de nori, puis le dessus : nori, riz, et au cœur saumon, avocat, concombre. */
+[data-style='japon'] .ly-segments i:nth-child(5).on { border-radius: 0; background: none; }
+[data-style='japon'] .ly-segments i:nth-child(5).on > u { left: 1px; right: 1px; bottom: 0; height: 9px; border-radius: 0 0 50% 50% / 0 0 45% 45%; background: linear-gradient(90deg, #0b140e, #2c3d30 28%, #3c5040 36%, #14201a 70%, #0b140e); box-shadow: none; }
+[data-style='japon'] .ly-segments i:nth-child(5).on > b { left: 1px; right: 1px; top: 0; height: 11px; border-radius: 50%; box-shadow: 0 0 0 0.6px #0b140e;
+  background: radial-gradient(ellipse 22% 26% at 44% 46%, #f07a3c 0 70%, transparent 75%), radial-gradient(ellipse 12% 16% at 62% 54%, #7ac24a 0 70%, transparent 75%), radial-gradient(ellipse 10% 14% at 38% 62%, #c9e88a 0 70%, transparent 75%), radial-gradient(ellipse 1.4px 1px at 30% 40%, #fff 0 60%, transparent 70%) 0 0 / 4px 3px, radial-gradient(ellipse 1.2px 0.9px at 70% 70%, #fff 0 60%, transparent 70%) 1px 1px / 5px 3px, radial-gradient(circle, #dcd5c0 0 0.5px, transparent 0.8px) 2px 1px / 3px 3px, radial-gradient(ellipse 50% 50% at 50% 50%, #fbfaf5 0 72%, #1c2a20 78%); }
+[data-style='japon'] .ly-segments i:nth-child(5).on > em { left: 3px; top: 2px; width: 4px; height: 2px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); transform: none; }
+/* Le sushi du jour : les baguettes le posent, il rebondit un peu. */
+[data-style='japon'] .ly-segments i.auj.on { animation: jz-pose 1.3s ease-out both; }
+/* 6 jours : wasabi et feuille sur la planche ; 7 jours : bateau à sushis, sushis qui tanguent, lanternes. */
+[data-style='japon'] .jz-wasabi, [data-style='japon'] .jz-feuille { position: absolute; bottom: 5px; z-index: 3; display: block; opacity: 0; animation: jz-garnit 0.5s ease-out 0.9s both; }
+[data-style='japon'] .jz-wasabi { left: -2px; width: 10px; height: 7px; border-radius: 50% 50% 40% 40% / 70% 70% 30% 30%; background: radial-gradient(circle at 40% 30%, #c9e88a, #7ab23a 60%, #4f8a22); }
+[data-style='japon'] .jz-feuille { right: -4px; width: 14px; height: 6px; border-radius: 80% 0; background: linear-gradient(135deg, #4f9a3a, #2e6e22); box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.25); transform: rotate(-18deg); animation-delay: 1.05s; }
+[data-style='japon'] .ly-segments.b7 i.on { animation: jz-tangue 1.8s ease-in-out 1.4s infinite; }
+[data-style='japon'] .ly-segments.b7 i.on:nth-child(2n) { animation-delay: 1.6s; }
+[data-style='japon'] .ly-segments.b7 i.auj.on { animation: jz-pose 1.3s ease-out both, jz-tangue 1.8s ease-in-out 1.4s infinite; }
+[data-style='japon'] .jz-bateau { position: absolute; left: -6px; right: -6px; bottom: -2px; z-index: 1; height: 18px; display: block; animation: jz-bateau 1.1s cubic-bezier(0.2, 0.8, 0.3, 1) 0.3s both; }
+[data-style='japon'] .jz-bateau i { position: absolute; display: block; }
+[data-style='japon'] .jz-bateau i:nth-child(1) { left: 0; right: 0; bottom: 0; height: 12px; border-radius: 0 0 40% 40% / 0 0 100% 100%; background: linear-gradient(180deg, #b07a46, #6b4a2e); box-shadow: inset 0 2px 0 #d9a86a; }
+[data-style='japon'] .jz-bateau i:nth-child(2) { left: -8px; bottom: 6px; width: 16px; height: 12px; background: #8a5e38; clip-path: polygon(0 0, 100% 60%, 100% 100%, 40% 100%); }
+[data-style='japon'] .jz-bateau i:nth-child(3) { right: -8px; bottom: 6px; width: 16px; height: 12px; background: #8a5e38; clip-path: polygon(0 60%, 100% 0, 60% 100%, 0 100%); }
+[data-style='japon'] .jz-bateau i:nth-child(4) { left: 10%; right: 10%; bottom: -6px; height: 5px; border-radius: 50%; background: rgba(120, 170, 220, 0.5); }
+[data-style='japon'] .ly-tuile:has(.jz-lanternes) { position: relative; overflow: visible; box-shadow: 0 0 0 1px #d9472b, 0 0 18px rgba(255, 190, 100, 0.55); }
+[data-style='japon'] .jz-lanternes { position: absolute; right: 8px; top: -30px; z-index: 3; width: 60px; height: 32px; display: block; pointer-events: none; }
+[data-style='japon'] .jz-lanternes > span { position: absolute; top: 0; width: 14px; height: 32px; display: block; transform-origin: 50% 0; animation: jz-balance 3s ease-in-out 1.4s infinite; }
+[data-style='japon'] .jz-lanternes > span:first-child { right: 30px; }
+[data-style='japon'] .jz-lanternes > span:last-child { right: 0; animation-delay: 1.6s; }
+[data-style='japon'] .jz-lanternes i { position: absolute; display: block; }
+[data-style='japon'] .jz-lanternes i:nth-child(1) { left: 50%; top: 0; width: 1px; height: 8px; background: #2a2233; }
+[data-style='japon'] .jz-lanternes i:nth-child(2) { left: 0; right: 0; top: 8px; height: 3px; border-radius: 1px; background: #2a2233; }
+[data-style='japon'] .jz-lanternes i:nth-child(3) { left: -1px; right: -1px; top: 10px; height: 18px; border-radius: 45%; background: repeating-linear-gradient(180deg, transparent 0 4px, rgba(120, 40, 20, 0.3) 4px 5px), radial-gradient(circle at 50% 45%, #fff2c0, #f2a04a 60%, #d9472b); animation: jz-allume 0.8s ease-out 1.4s both, jp-lanterne 2.2s ease-in-out 2.2s infinite; }
+[data-style='japon'] .jz-lanternes > span:last-child i:nth-child(3) { animation-delay: 1.6s, 2.4s; }
+[data-style='japon'] .jz-lanternes i:nth-child(4) { left: 0; right: 0; top: 27px; height: 3px; border-radius: 1px; background: #2a2233; }
+
+/* ---------- Révision ---------- */
+html[data-style='japon']:has(.studystage:is(.n-again, .n-hard, .n-good, .n-easy)) { overflow: hidden; }
+[data-style='japon'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='japon'] .studystage.n-again { animation: jz-fondu 1.9s linear both; }
+[data-style='japon'] .studystage.n-hard { animation: jz-fondu 2.2s linear both; }
+[data-style='japon'] .studystage.n-good { animation: jz-fondu 1.9s linear both; }
+[data-style='japon'] .studystage.n-easy { animation: jz-efface 2.8s ease-out both; }
+/* Raté : la goutte d'encre, la tache, le trait de pinceau rouge. */
+[data-style='japon'] .jz-encre { position: absolute; left: 0; top: 0; z-index: 4; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+[data-style='japon'] .jz-encre .goutte { fill: #14100c; animation: jz-goutte 1.9s cubic-bezier(0.5, 0, 0.9, 0.6) both; }
+[data-style='japon'] .jz-encre .tache { fill: #14100c; fill-opacity: 0.92; transform-box: fill-box; transform-origin: 50% 50%; transform: scale(0); animation: jz-tache 1.9s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+[data-style='japon'] .jz-encre .trait { fill: none; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: jz-trait 1.9s cubic-bezier(0.4, 0, 0.2, 1) both; }
+[data-style='japon'] .jz-encre .trait.fort { stroke: #c8281a; stroke-width: 14; }
+[data-style='japon'] .jz-encre .trait.fin { stroke: #e0503a; stroke-width: 4; stroke-opacity: 0.6; }
+/* Dur : le sceau rouge 「難」. */
+[data-style='japon'] .jz-sceau { position: absolute; right: 30px; top: 28%; z-index: 6; width: 76px; height: 76px; box-sizing: border-box; display: grid; place-items: center; pointer-events: none; border-radius: 6px; background: #c8281a; box-shadow: inset 0 0 0 3px #e8cfa4, inset 0 0 0 5px #c8281a; color: #f7e9d6; font-family: var(--titre); font-size: 48px; line-height: 1; mix-blend-mode: multiply; opacity: 0; animation: jz-sceau 2.2s ease-out both; }
+/* Bien : le gong. */
+[data-style='japon'] .jz-gong { position: absolute; left: 50%; top: 60px; z-index: 5; width: 150px; height: 170px; margin-left: -75px; display: block; pointer-events: none; animation: jz-gong 1.9s ease-out both; }
+[data-style='japon'] .jz-gong i { position: absolute; display: block; }
+[data-style='japon'] .jz-gong .traverse { left: 4px; top: 0; width: 142px; height: 10px; border-radius: 3px; background: linear-gradient(180deg, #8a5e38, #4a3324); }
+[data-style='japon'] .jz-gong .montant { top: 6px; width: 8px; height: 160px; background: linear-gradient(90deg, #4a3324, #8a5e38, #4a3324); }
+[data-style='japon'] .jz-gong .montant.g { left: 12px; }
+[data-style='japon'] .jz-gong .montant.d { right: 12px; }
+[data-style='japon'] .jz-gong .corde { top: 10px; width: 1.5px; height: 24px; background: #2a2233; }
+[data-style='japon'] .jz-gong .corde.g { left: 52px; transform: rotate(-14deg); }
+[data-style='japon'] .jz-gong .corde.d { right: 52px; transform: rotate(14deg); }
+[data-style='japon'] .jz-gong .disque { position: absolute; left: 30px; top: 30px; width: 90px; height: 90px; display: block; border-radius: 50%; transform-origin: 50% 0;
+  background: radial-gradient(circle at 50% 50%, #e8c06a 0 12%, #b8862e 13% 16%, #d9a84a 17% 40%, #a8762a 42% 44%, #d9a84a 46%), #c8963a;
+  box-shadow: inset -6px -8px 14px rgba(80, 40, 10, 0.45), inset 6px 6px 10px rgba(255, 240, 190, 0.4), 0 6px 10px rgba(0, 0, 0, 0.35); animation: jz-disque 1.9s ease-out both; }
+[data-style='japon'] .jz-gong .onde { left: 30px; top: 30px; width: 90px; height: 90px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(232, 192, 106, 0.85); opacity: 0; animation: jz-onde 0.9s ease-out both; }
+[data-style='japon'] .jz-gong .maillet { position: absolute; right: -40px; top: 56px; width: 70px; height: 12px; display: block; transform-origin: 100% 50%; animation: jz-maillet 1.9s ease-in-out both; }
+[data-style='japon'] .jz-gong .maillet i:first-child { left: 14px; right: 0; top: 4px; height: 4px; background: #8a5e38; }
+[data-style='japon'] .jz-gong .maillet i:last-child { left: 0; top: 0; width: 18px; height: 12px; border-radius: 6px; background: #f2e2c0; box-shadow: inset -2px -2px 0 #c8b48a; }
+/* Les scènes autour de l'ema. */
+[data-style='japon'] .jz-scene { position: absolute; z-index: 7; display: block; pointer-events: none; }
+[data-style='japon'] .jz-scene.fond { z-index: 2; }
+[data-style='japon'] .jz-scene .aube { position: fixed; inset: 0; display: block; overflow: hidden; opacity: 0; animation: jz-aube 2.8s ease-out both; }
+[data-style='japon'] .jz-scene .aube i { position: absolute; display: block; }
+[data-style='japon'] .jz-scene .aube .fuji { left: -20px; right: -20px; top: 40vh; height: 34vh; background: linear-gradient(180deg, #f7f0f4 0 18%, #6a5f8c 22%, #4a416b); clip-path: polygon(0 100%, 30% 30%, 40% 8%, 46% 4%, 54% 4%, 60% 8%, 70% 30%, 100% 100%); }
+[data-style='japon'] .jz-scene .aube .soleil { left: 50%; top: 55vh; width: 130px; height: 130px; margin-left: -65px; border-radius: 50%; background: radial-gradient(circle, #ff5a3a, #d9472b 60%, #b8361e); box-shadow: 0 0 40px rgba(255, 90, 58, 0.6); transform: translateY(8vh); animation: jz-soleil 2.8s cubic-bezier(0.3, 0.6, 0.3, 1) both; }
+[data-style='japon'] .jz-scene .jardin { position: absolute; left: 14px; right: 14px; top: 73%; height: 122px; display: block; animation: jz-jardin 2.2s ease-out both; }
+[data-style='japon'] .jz-scene .jardin > i, [data-style='japon'] .jz-scene .jardin svg { position: absolute; display: block; }
+[data-style='japon'] .jz-scene .jardin .sable { inset: 0; border-radius: 3px; background: radial-gradient(rgba(255, 255, 255, 0.35) 0.6px, transparent 1px) 0 0 / 4px 4px, linear-gradient(180deg, #eee4cc, #e2d5b6); box-shadow: inset 0 0 0 5px #6b4a2e, 0 10px 20px rgba(20, 14, 30, 0.35); }
+[data-style='japon'] .jz-scene .jardin svg { inset: 0; width: 100%; height: 100%; overflow: visible; }
+[data-style='japon'] .jz-scene .jardin :is(ellipse, path) { fill: none; stroke: #b8a67e; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+[data-style='japon'] .jz-scene .jardin .s1 { animation: jz-s1 2.2s linear both; }
+[data-style='japon'] .jz-scene .jardin .s2 { animation: jz-s2 2.2s linear both; }
+[data-style='japon'] .jz-scene .jardin .s3 { animation: jz-s3 2.2s linear both; }
+[data-style='japon'] .jz-scene .jardin .s4 { animation: jz-s4 2.2s linear both; }
+[data-style='japon'] .jz-scene .jardin .pierre { left: 50%; top: 48px; width: 48px; height: 32px; margin-left: -24px; border-radius: 52% 48% 44% 56% / 60% 58% 42% 40%; background: radial-gradient(ellipse at 35% 30%, #a8a49a, #6e6a62 60%, #4a4640); box-shadow: 0 4px 4px rgba(0, 0, 0, 0.3); }
+[data-style='japon'] .jz-scene .jardin .rateau { position: absolute; left: 0; top: 0; width: 40px; height: 60px; display: block; opacity: 0; animation: jz-rateau 2.2s ease-in-out both; }
+[data-style='japon'] .jz-scene .jardin .rateau i { position: absolute; display: block; }
+[data-style='japon'] .jz-scene .jardin .rateau i:first-child { left: 18px; top: -50px; width: 4px; height: 60px; background: #8a5e38; }
+[data-style='japon'] .jz-scene .jardin .rateau i:last-child { left: 4px; top: 8px; width: 32px; height: 5px; border-radius: 1px; background: #6b4a2e; box-shadow: 0 5px 0 -2px #6b4a2e; }
+[data-style='japon'] .jz-scene .branches { position: fixed; inset: 0; z-index: 9; display: block; overflow: hidden; }
+[data-style='japon'] .jz-scene .branches i { position: absolute; display: block; }
+[data-style='japon'] .jz-scene .branches .b { top: 60px; width: 170px; height: 7px; border-radius: 6px; background: linear-gradient(180deg, #5a3626, #2e1a12); }
+[data-style='japon'] .jz-scene .branches .b.g { left: -30px; transform: rotate(18deg); transform-origin: 0 50%; }
+[data-style='japon'] .jz-scene .branches .b.d { right: -30px; top: 120px; width: 150px; height: 6px; transform: rotate(-22deg); transform-origin: 100% 50%; }
+[data-style='japon'] .jz-scene .branches .fleur { border-radius: 50% 50% 46% 54% / 55% 50% 50% 45%; background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0 1.3px, transparent 1.8px) 0 0 / 8px 7px, radial-gradient(circle at 38% 32%, #ffeef3, #f6a9c0 60%, #d0688a); box-shadow: inset -3px -4px 7px rgba(170, 50, 90, 0.25); transform: scale(0); animation: jz-fleur 0.5s ease-out both; }
+[data-style='japon'] .jz-scene .petales { position: fixed; inset: 0; z-index: 10; display: block; overflow: hidden; }
+[data-style='japon'] .jz-scene .petales > s { position: absolute; top: -20px; display: block; border-radius: 80% 0 80% 0; opacity: 0; text-decoration: none; animation-name: jz-petale; animation-timing-function: linear; animation-fill-mode: both; }
+
+@keyframes jz-presse { 0%, 22% { transform: none; } 26% { transform: translateY(2px); box-shadow: 0 2px 0 #8f2a17; } 30%, 58% { transform: none; box-shadow: 0 4px 0 #8f2a17; } 72%, 90% { box-shadow: 0 4px 0 #8f2a17, 0 0 20px 6px rgba(255, 190, 100, 0.65); } 100% { box-shadow: 0 4px 0 #8f2a17, 0 0 0 0 rgba(255, 190, 100, 0); } }
+@keyframes jz-shoji-g { 0%, 6% { transform: translateX(-101%); } 24%, 40% { transform: translateX(0); } 26% { transform: translateX(2px); } 62%, 100% { transform: translateX(-101%); } }
+@keyframes jz-shoji-d { 0%, 6% { transform: translateX(101%); } 24%, 40% { transform: translateX(0); } 26% { transform: translateX(-2px); } 62%, 100% { transform: translateX(101%); } }
+@keyframes jz-lanterne { 0%, 58% { opacity: 0; } 72% { opacity: 1; } 80% { opacity: 0.85; } 88% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes jz-petale-b { 0% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(var(--dx), 70px) rotate(var(--r)); opacity: 0; } }
+@keyframes jz-pose { 0%, 40% { translate: 0 -14px; opacity: 0; } 58% { translate: 0 0; opacity: 1; } 68% { translate: 0 -4px; } 78% { translate: 0 0; scale: 1.06 0.92; } 88% { translate: 0 -1px; scale: 1; } 100% { translate: 0 0; opacity: 1; } }
+@keyframes jz-tangue { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-1.5px) rotate(-2deg); } 75% { transform: translateY(-0.5px) rotate(2deg); } }
+@keyframes jz-garnit { 0% { transform: scale(0) rotate(-30deg); opacity: 0; } 70% { transform: scale(1.2); opacity: 1; } 100% { opacity: 1; } }
+@keyframes jz-bateau { 0% { transform: translateX(-180px); } 70% { transform: translateX(4px); } 85% { transform: translateX(-2px); } 100% { transform: none; } }
+@keyframes jz-balance { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes jz-allume { 0% { filter: brightness(0.4) saturate(0.4); box-shadow: none; } 40% { filter: brightness(1.5); } 100% { filter: none; box-shadow: 0 0 10px rgba(255, 190, 100, 0.85); } }
+@keyframes jz-fondu { 0%, 86% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes jz-efface { 0%, 10% { opacity: 1; } 30%, 100% { opacity: 0.18; } }
+@keyframes jz-goutte { 0% { transform: translateY(-40px); opacity: 0; } 5% { opacity: 1; } 22% { transform: translateY(228px) scale(1, 1.3); opacity: 1; } 24%, 100% { transform: translateY(232px) scale(2, 0.4); opacity: 0; } }
+@keyframes jz-tache { 0%, 22% { transform: scale(0); } 30% { transform: scale(0.55); } 44% { transform: scale(0.9); } 100% { transform: scale(1); } }
+@keyframes jz-trait { 0%, 46% { stroke-dashoffset: 100; } 64%, 100% { stroke-dashoffset: 0; } }
+@keyframes jz-sceau { 0%, 62% { opacity: 0; transform: scale(2.2) rotate(-14deg); } 70% { opacity: 0.95; transform: scale(0.92) rotate(-6deg); } 74% { transform: scale(1.04) rotate(-6deg); } 78%, 100% { opacity: 0.92; transform: scale(1) rotate(-6deg); } }
+@keyframes jz-jardin { 0% { opacity: 0; transform: translateY(40px); } 12%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+@keyframes jz-s1 { 0%, 14% { stroke-dashoffset: 100; } 28%, 100% { stroke-dashoffset: 0; } }
+@keyframes jz-s2 { 0%, 24% { stroke-dashoffset: 100; } 38%, 100% { stroke-dashoffset: 0; } }
+@keyframes jz-s3 { 0%, 34% { stroke-dashoffset: 100; } 48%, 100% { stroke-dashoffset: 0; } }
+@keyframes jz-s4 { 0%, 46% { stroke-dashoffset: 100; } 60%, 100% { stroke-dashoffset: 0; } }
+@keyframes jz-rateau { 0%, 12% { transform: translate(176px, 20px); opacity: 0; } 14% { opacity: 1; } 22% { transform: translate(196px, 44px); } 30% { transform: translate(116px, 64px); } 38% { transform: translate(196px, 74px); } 46% { transform: translate(86px, 50px); } 54% { transform: translate(16px, 24px); } 60% { transform: translate(250px, 84px); opacity: 1; } 66%, 100% { transform: translate(280px, 90px); opacity: 0; } }
+@keyframes jz-gong { 0% { opacity: 0; transform: translateY(-30px); } 10%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes jz-maillet { 0%, 12% { transform: rotate(0deg); } 22% { transform: rotate(-28deg); } 28% { transform: rotate(8deg); } 34%, 100% { transform: rotate(0deg) translateX(10px); } }
+@keyframes jz-disque { 0%, 26% { transform: none; } 30% { transform: rotate(-5deg) translateX(-3px); } 36% { transform: rotate(4deg) translateX(2px); } 42% { transform: rotate(-3deg); } 50% { transform: rotate(2deg); } 58% { transform: rotate(-1deg); } 66%, 100% { transform: none; } }
+@keyframes jz-onde { 0% { transform: scale(0.5); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes jz-aube { 0%, 8% { opacity: 0; } 22%, 100% { opacity: 1; } }
+@keyframes jz-soleil { 0%, 28% { transform: translateY(8vh); } 70%, 100% { transform: translateY(-26vh); } }
+@keyframes jz-fleur { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes jz-petale { 0% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(var(--dx), 105vh) rotate(var(--r)); opacity: 0.9; } }
