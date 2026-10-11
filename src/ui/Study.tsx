@@ -191,6 +191,24 @@ const jzPetales = (n: number, debut: number) => Array.from({ length: n }, (_, k)
 const JZ_PETALES_BIEN = jzPetales(7, 0.7);
 const JZ_PETALES_FACILE = jzPetales(22, 0.6);
 
+/* CHANTIER 256 — Cotton Club : les notes qui tombent et se brisent (Raté), les ondes de la cymbale (Dur),
+   la spirale de notes (Bien), les notes du saxophoniste et les confettis (Facile). */
+const CC_TOMBENT = [[11, '♪', 0.6, 300, -30], [29, '♫', 0.7, 270, 20], [49, '♪', 0.8, 320, -16], [66, '♬', 0.75, 290, 28], [83, '♫', 0.9, 310, -24]].map(([x, c, d, dy, r]) => ({
+  c: c as string, style: { left: `${x}%`, '--dy': `${dy}px`, '--r': `${r}deg`, '--d': `${d}s` } as unknown as CSSProperties,
+}));
+const CC_CHOCS = [1.22, 1.34, 1.46].map((d) => ({ animationDelay: `${d}s` }) as CSSProperties);
+const CC_SPIRALE = (['♪', '♫', '♪', '♬', '♫', '♪'] as const).map((c, k) => ({
+  c, style: { left: `${22 + (k % 3) * 9}px`, top: `calc(70% - ${(k % 2) * 8}px)`, fontSize: `${22 + (k % 3) * 4}px`, animationDelay: `${(0.35 + k * 0.15).toFixed(2)}s` } as CSSProperties,
+}));
+const CC_JNOTES = (['♪', '♫', '♪'] as const).map((c, k) => ({
+  c, style: { fontSize: `${26 + k * 4}px`, '--nx': `${40 + k * 22}px`, '--ny': `${-(70 + k * 24)}px`, animationDelay: `${(1.0 + k * 0.35).toFixed(2)}s` } as unknown as CSSProperties,
+}));
+const CC_CONFETTIS = Array.from({ length: 22 }, (_, k) => ({
+  left: `${(((k * 61) % 340) + 8) / 3.6}%`, width: `${k % 2 ? 6 : 9}px`, height: `${k % 2 ? 10 : 5}px`, background: ['#e8b04a', '#f6dc9a', '#fff2c0', '#c8963a'][k % 4],
+  '--dx': `${((k % 5) - 2) * 20}px`, '--r': `${(k % 2 ? 1 : -1) * (300 + k * 20)}deg`,
+  animationDuration: `${(1.3 + (k % 4) * 0.15).toFixed(2)}s`, animationDelay: `${(0.8 + (k % 6) * 0.1).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -488,7 +506,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -534,6 +552,40 @@ export function Study({
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
           </span>
+        )}
+        {/* CHANTIER 256 — Cotton Club : la corde de contrebasse et les notes qui se brisent (Raté), la batterie (Dur), le saxophone (Bien). */}
+        {style === 'jazz' && frappe === 'again' && (
+          <>
+            <span className="cc-corde" aria-hidden="true"><i className="haut" /><i className="bas" /><i className="casse" /></span>
+            {CC_TOMBENT.map((o, k) => <span key={k} className="cc-tombe" aria-hidden="true" style={o.style}><b>{o.c}</b><i /><i /><i /></span>)}
+          </>
+        )}
+        {style === 'jazz' && frappe === 'hard' && (
+          <span className="cc-batterie" aria-hidden="true">
+            <span className="cymbale"><i className="pied" /><span className="plateau"><i /></span>{CC_CHOCS.map((st, k) => <i key={k} className="choc" style={st} />)}</span>
+            <i className="fut" /><i className="peau" /><i className="fond" />
+            <span className="baguette g"><i /></span><span className="baguette d"><i /></span>
+          </span>
+        )}
+        {style === 'jazz' && frappe === 'good' && (
+          <>
+            <svg className="cc-sax" viewBox="0 0 90 170" aria-hidden="true">
+              <defs>
+                <linearGradient id="cc-laiton" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#8a5e1c" /><stop offset="0.35" stopColor="#f8e2a2" /><stop offset="0.55" stopColor="#e8b04a" /><stop offset="1" stopColor="#7a5218" /></linearGradient>
+                <radialGradient id="cc-pavillon" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stopColor="#2a1608" /><stop offset="0.55" stopColor="#5a3a12" /><stop offset="0.75" stopColor="#e8b04a" /><stop offset="1" stopColor="#8a5e1c" /></radialGradient>
+              </defs>
+              <path d="M30 4 L42 1 L44 9 L33 13 Z" fill="#14100c" />
+              <path d="M40 8 C 52 10, 60 18, 60 32" fill="none" stroke="url(#cc-laiton)" strokeWidth={6} strokeLinecap="round" />
+              <path d="M54 30 L66 30 L68 116 C 68 150, 32 158, 20 136 L12 114 L28 106 L34 124 C 37 134, 52 132, 54 118 Z" fill="url(#cc-laiton)" />
+              <path d="M59 34 L61 116 C 61 140, 40 146, 30 132" fill="none" stroke="rgba(255,248,220,0.55)" strokeWidth={1.6} strokeLinecap="round" />
+              <ellipse cx="19" cy="110" rx="17" ry="9" transform="rotate(-28 19 110)" fill="url(#cc-pavillon)" stroke="#f6cf72" strokeWidth={1.5} />
+              <g fill="#fff2c0" stroke="#8a5e1c" strokeWidth={1}><circle cx="60" cy="46" r="3.6" /><circle cx="61" cy="58" r="3.8" /><circle cx="61" cy="70" r="3.8" /><circle cx="62" cy="84" r="4" /><circle cx="62" cy="96" r="4" /><circle cx="62" cy="108" r="3.6" /></g>
+              <g fill="none" stroke="#c8963a" strokeWidth={1.2}><path d="M66 46 L72 46 L72 108 L66 108" /><path d="M54 52 L50 52 L50 100 L55 100" /></g>
+              <circle cx="48" cy="130" r="3" fill="#fff2c0" stroke="#8a5e1c" strokeWidth={1} />
+            </svg>
+            {CC_SPIRALE.map((o, k) => <b key={k} className="cc-spirale" aria-hidden="true" style={o.style}>{o.c}</b>)}
+            <i className="cc-fumee" aria-hidden="true" />
+          </>
         )}
         {/* CHANTIER 255 — Japon zen : l'encre sumi et le trait rouge (Raté), le sceau 「難」 (Dur), le gong (Bien). */}
         {style === 'japon' && frappe === 'again' && (
@@ -823,6 +875,43 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 256 — Cotton Club, Facile : la salle s'éclaire, le projecteur sur le saxophoniste, ses trois notes, « Encore ! », les confettis. */}
+      {style === 'jazz' && frappe === 'easy' && cadre && (
+        <div className="cc-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <i className="salle" />
+          <span className="plateau">
+            <i className="cone" /><i className="halo" />
+            <svg className="jazzman" viewBox="0 0 140 220">
+                <defs><linearGradient id="cc-laiton2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#8a5e1c" /><stop offset="0.4" stopColor="#f8e2a2" /><stop offset="0.6" stopColor="#e8b04a" /><stop offset="1" stopColor="#7a5218" /></linearGradient></defs>
+                <g fill="#0b0504">
+                  <path d="M51 21 C 51 14, 55 10.5, 60.5 10.5 C 63 10.5, 64 12, 65 12 C 66 12, 67 10.5, 68.5 11 C 70 12.5, 70.5 16, 70 21 L 69.5 24 L 51.5 24 Z" />
+                  <path d="M44.5 25 C 51 22, 68 21.8, 78 27.5 C 71 28, 54 27, 44.5 25 Z" />
+                  <path d="M53 25 C 51 32, 52 39, 56 43 C 58 45, 61 46, 63 45 L 64 43 L 67 42.5 L 66 40.5 L 69 38.5 L 66.5 37 L 67 33 C 67 28, 65 25.5, 62 25.5 Z" />
+                  <path d="M55 43 L 61 44 L 60 51 L 54 51 Z" />
+                  <path d="M50 51 C 44 62, 41 82, 42 104 L 44 120 L 64 120 C 66 100, 68 78, 66 58 C 63 52, 56 50, 50 51 Z" />
+                  <path d="M44 118 L 41 198 L 51 198 L 54 136 L 57 136 L 60 198 L 70 198 L 64 118 Z" />
+                  <path d="M37 196 L 52 196 L 53 203 L 34 203 Z" />
+                  <path d="M58 196 L 73 196 L 77 203 L 58 203 Z" />
+                  <path d="M58 55 C 64 60, 68 68, 70 76 L 75 73 L 77 76 L 72 82 C 68 84, 64 80, 62 74 C 60 68, 57 62, 55 58 Z" />
+                  <path d="M48 62 C 50 78, 58 92, 71 97 L 74 95 L 76 99 L 72 103 C 60 102, 48 88, 44 70 Z" />
+                </g>
+                <path d="M52 22.6 L 69.6 22.6 L 69.6 24.2 L 52 24.2 Z" fill="#3a2410" />
+                <path d="M64 40 L 70 41 L 69.5 43 L 64 42.5 Z" fill="#14100c" />
+                <path d="M69 41.6 C 74 42, 77 45, 77 51" fill="none" stroke="url(#cc-laiton2)" strokeWidth={2.6} strokeLinecap="round" />
+                <path d="M74 51 L 80 51 L 79 112 C 79 122, 89 124, 91 115 L 93 106 L 100 100 L 98 113 C 95 130, 73 131, 73 113 Z" fill="url(#cc-laiton2)" />
+                <path d="M78 54 L 77.4 112 C 77.4 120, 84 122, 88 117" fill="none" stroke="rgba(255,248,220,0.6)" strokeWidth={0.9} strokeLinecap="round" />
+                <ellipse cx="97.5" cy="101.5" rx="7" ry="3.6" transform="rotate(-38 97.5 101.5)" fill="#3a2410" stroke="#f6cf72" strokeWidth={1.1} />
+                <g fill="#fff2c0"><circle cx="77" cy="62" r="1.3" /><circle cx="77" cy="70" r="1.3" /><circle cx="77" cy="86" r="1.3" /><circle cx="77" cy="94" r="1.3" /><circle cx="77" cy="104" r="1.3" /></g>
+                <path d="M80.5 60 L 83 60 L 83 104 L 80.5 104" fill="none" stroke="#c8963a" strokeWidth={0.8} />
+                <g fill="#0b0504"><ellipse cx="77" cy="75" rx="3.4" ry="2.6" /><ellipse cx="76" cy="99" rx="3.4" ry="2.6" /></g>
+              </svg>
+            {CC_JNOTES.map((o, k) => <b key={k} className="jnote" style={o.style}>{o.c}</b>)}
+          </span>
+          <b className="encore">Encore !</b>
+          <span className="confettis">{CC_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
+        </div>
+      )}
+
       {/* CHANTIER 255 — Japon zen : le Fuji et le soleil levant derrière l'ema (Facile) ; le jardin zen (Dur), les branches en fleurs et les pétales devant. */}
       {style === 'japon' && frappe === 'easy' && cadre && (
         <div className="jz-scene fond" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -960,7 +1049,7 @@ export function Study({
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
                 const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
-                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? (g.key === 'hard' ? 2200 : g.key === 'easy' ? 2800 : 1900) : style === 'jazz' ? 600
+                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? (g.key === 'hard' ? 2200 : g.key === 'easy' ? 2800 : 1900) : style === 'jazz' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
@@ -988,7 +1077,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }

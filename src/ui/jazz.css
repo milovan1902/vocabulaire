@@ -200,3 +200,144 @@
 @media (prefers-reduced-motion: reduce) {
   [data-style='jazz'] *, [data-style='jazz'] *::before, [data-style='jazz'] *::after { animation: none !important; }
 }
+
+/* ==================================================================
+   CHANTIER 256 — Cotton Club animé (maquette 72a)
+   « Lever de rideau » : le rideau tombe sur le bouton puis se lève, le projecteur le balaie.
+   « Cette semaine » : clé de sol et croches (6 jours et plus), micro rétro (7 jours).
+   Révision : la corde cassée (Raté), la batterie (Dur), le saxophone (Bien), l'ovation (Facile).
+   Billets : le talon détachable se sépare vraiment (le billet n'a plus de masque, ses encoches
+   sont dessinées dans les fonds du billet et du talon).
+   ================================================================== */
+/* ---------- « Lever de rideau » ---------- */
+[data-style='jazz'] .btn.ly-go { position: relative; z-index: 5; overflow: visible; }
+[data-style='jazz'] .btn.ly-go:has(> .cc-lever) { animation: cc-brille 1.8s ease-out; }
+[data-style='jazz'] .cc-lever { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: 25px; pointer-events: none; }
+[data-style='jazz'] .cc-lever > i, [data-style='jazz'] .cc-lever .rideau i { position: absolute; display: block; }
+[data-style='jazz'] .cc-lever .faisceau { top: -14px; bottom: -14px; left: 0; width: 76px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 252, 230, 0.95), rgba(255, 236, 190, 0.45) 45%, transparent 70%); opacity: 0; animation: cc-balaye 1.8s ease-in-out both; }
+[data-style='jazz'] .cc-lever .rideau { position: absolute; left: 0; right: 0; top: 0; height: 100%; display: block; transform: translateY(-104%); animation: cc-rideau 1.8s linear both; }
+[data-style='jazz'] .cc-lever .rideau i:nth-child(1) { inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.3)), repeating-linear-gradient(90deg, #5a0e1a 0 10px, #8e1d2e 10px 18px, #6b1220 18px 26px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.55); }
+[data-style='jazz'] .cc-lever .rideau i:nth-child(2) { left: 0; right: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, #b07e26, #f6cf72 50%, #b07e26); }
+[data-style='jazz'] .cc-lever .rideau i:nth-child(3) { left: 0; right: 0; bottom: -6px; height: 7px; background: radial-gradient(circle at 50% 30%, #f6cf72 0 2px, #b07e26 2.6px, transparent 3px) 0 0 / 9px 7px repeat-x; }
+[data-style='jazz'] .cc-lever .lambrequin { left: -4px; right: -4px; top: 0; height: 11px; background: radial-gradient(circle 9px at 9px 0, #8e1d2e 95%, transparent 100%) 0 0 / 18px 11px repeat-x; filter: drop-shadow(0 2px 0 #e8b04a); opacity: 0; animation: cc-lambrequin 1.8s linear both; }
+
+/* ---------- « Cette semaine » ---------- */
+[data-style='jazz'] .ly-segments { position: relative; }
+[data-style='jazz'] .cc-cle { position: absolute; left: -6px; bottom: -6px; display: block; font-family: serif; font-weight: 400; font-size: 38px; line-height: 1; color: #e8b04a; text-shadow: 0 0 6px rgba(232, 176, 74, 0.6); opacity: 0; pointer-events: none; animation: cc-cle 0.9s ease-out 0.3s both; }
+[data-style='jazz'] .cc-croche { position: absolute; top: 2px; display: block; font-size: 13px; line-height: 1; color: #e8b04a; text-decoration: none; text-shadow: 0 0 6px rgba(232, 176, 74, 0.7); opacity: 0; pointer-events: none; animation: cc-croche 0.5s ease-out 1s both; }
+[data-style='jazz'] .cc-croche:nth-of-type(1) { left: 22%; }
+[data-style='jazz'] .cc-croche:nth-of-type(2) { left: 48%; top: -6px; animation-delay: 1.15s; }
+[data-style='jazz'] .cc-croche:nth-of-type(3) { left: 74%; top: 0; animation-delay: 1.3s; }
+[data-style='jazz'] .ly-tuile:has(.cc-micro) { position: relative; overflow: visible; box-shadow: 0 0 0 1px #e8b04a, 0 0 18px rgba(232, 176, 74, 0.45); }
+[data-style='jazz'] .cc-micro { position: absolute; right: 14px; top: 10px; z-index: 2; width: 16px; height: 48px; display: block; pointer-events: none; opacity: 0; animation: cc-micro 0.6s ease-out 0.8s both; }
+[data-style='jazz'] .cc-micro i { position: absolute; display: block; }
+[data-style='jazz'] .cc-micro .faisceau { left: -14px; top: -26px; width: 44px; height: 50px; background: radial-gradient(ellipse at 50% 0%, rgba(255, 236, 190, 0.5), transparent 70%); clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); opacity: 0; animation: cc-allume 1.6s linear both, cc-pulse 2s ease-in-out 1.6s infinite; }
+[data-style='jazz'] .cc-micro .tete { left: 0; top: 0; width: 16px; height: 22px; border-radius: 8px; background: repeating-linear-gradient(180deg, #d9dde2 0 1.5px, #6e757d 1.5px 3px); box-shadow: inset 0 0 0 1.5px #e8b04a; animation: cc-microtete 0.8s ease-out 1.2s both; }
+[data-style='jazz'] .cc-micro .col { left: 3px; top: 20px; width: 10px; height: 5px; border-radius: 0 0 5px 5px; background: #e8b04a; }
+[data-style='jazz'] .cc-micro .pied { left: 7px; top: 24px; width: 2px; height: 20px; background: linear-gradient(90deg, #8a6a2e, #e8b04a, #6e4f1c); }
+[data-style='jazz'] .cc-micro .socle { left: 1px; top: 44px; width: 14px; height: 3px; border-radius: 2px; background: #e8b04a; }
+
+/* ---------- Billets : le vrai talon se détache ---------- */
+[data-style='jazz'] .grades .grade { -webkit-mask: none; mask: none;
+  background: radial-gradient(circle, rgba(26, 13, 10, 0.5) 0 1px, transparent 1.4px) 0 calc(100% - 15px) / 5px 3px repeat-x,
+    radial-gradient(circle at 0 100%, transparent 4px, var(--c) 4.5px) 0 0 / 51% calc(100% - 16px) no-repeat,
+    radial-gradient(circle at 100% 100%, transparent 4px, var(--c) 4.5px) 100% 0 / 51% calc(100% - 16px) no-repeat; }
+[data-style='jazz'] .grades .grade::after { border-top: none;
+  background: radial-gradient(circle, rgba(26, 13, 10, 0.5) 0 1px, transparent 1.4px) 0 0 / 5px 3px repeat-x,
+    radial-gradient(circle at 0 0, transparent 4px, var(--c) 4.5px) 0 0 / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 0, transparent 4px, var(--c) 4.5px) 100% 0 / 51% 100% no-repeat; }
+
+/* ---------- Révision ---------- */
+html[data-style='jazz']:has(.studystage:is(.n-again, .n-hard, .n-good, .n-easy)) { overflow: hidden; }
+[data-style='jazz'] .studystage { position: relative; }
+[data-style='jazz'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='jazz'] .studystage.n-again { animation: cc-secoue 1.9s linear both; }
+[data-style='jazz'] .studystage.n-hard { animation: cc-tremble 2s linear both; }
+[data-style='jazz'] .studystage.n-good { animation: cc-fondu 1.9s linear both; }
+[data-style='jazz'] .studystage.n-easy { animation: cc-efface 2.6s ease-out both; }
+/* Raté : la corde vibre, casse et fouette ; les notes tombent et se brisent. */
+[data-style='jazz'] .cc-corde { position: absolute; left: 78%; top: 20px; bottom: 20px; z-index: 5; width: 20px; margin-left: -10px; display: block; pointer-events: none; }
+[data-style='jazz'] .cc-corde i { position: absolute; display: block; }
+[data-style='jazz'] .cc-corde .haut, [data-style='jazz'] .cc-corde .bas { left: 9px; width: 2px; height: 50%; background: linear-gradient(90deg, #b8862e, #f6dc9a, #b8862e); animation: cc-vibre 1.9s linear both, cc-fouette-h 1.9s cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+[data-style='jazz'] .cc-corde .haut { top: 0; transform-origin: 50% 0; }
+[data-style='jazz'] .cc-corde .bas { bottom: 0; transform-origin: 50% 100%; animation-name: cc-vibre, cc-fouette-b; }
+[data-style='jazz'] .cc-corde .casse { left: -6px; top: calc(50% - 8px); width: 32px; height: 16px; background: radial-gradient(circle, #fff8d8 0 15%, #ffd56a 35%, transparent 65%); clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); opacity: 0; animation: cc-casse 1.9s ease-out both; }
+[data-style='jazz'] .cc-tombe { position: absolute; top: -10px; z-index: 6; width: 26px; height: 30px; display: block; pointer-events: none; }
+[data-style='jazz'] .cc-tombe b { position: absolute; left: 0; top: 0; display: block; font-size: 26px; line-height: 1; color: #e8b04a; text-shadow: 0 0 6px rgba(232, 176, 74, 0.7); opacity: 0; animation: cc-tombe 0.9s cubic-bezier(0.5, 0, 0.9, 0.5) var(--d) both; }
+[data-style='jazz'] .cc-tombe i { position: absolute; top: var(--dy); display: block; background: #e8b04a; opacity: 0; animation: cc-brise 0.9s ease-out var(--d) both; }
+[data-style='jazz'] .cc-tombe i:nth-of-type(1) { left: 6px; width: 6px; height: 5px; clip-path: polygon(0 0, 100% 40%, 30% 100%); --ex: -16px; --ey: -14px; --er: -160deg; }
+[data-style='jazz'] .cc-tombe i:nth-of-type(2) { left: 10px; width: 5px; height: 6px; clip-path: polygon(0 0, 100% 40%, 30% 100%); --ex: 14px; --ey: -18px; --er: 200deg; }
+[data-style='jazz'] .cc-tombe i:nth-of-type(3) { left: 8px; width: 4px; height: 4px; border-radius: 50%; --ex: 4px; --ey: -24px; --er: 90deg; }
+/* Dur : roulement sur la caisse claire, puis la cymbale. */
+[data-style='jazz'] .cc-batterie { position: absolute; left: 50%; top: 61%; z-index: 5; width: 150px; height: 130px; margin-left: -75px; display: block; pointer-events: none; animation: cc-apparait 2s ease-out both; }
+[data-style='jazz'] .cc-batterie i, [data-style='jazz'] .cc-batterie span { position: absolute; display: block; }
+[data-style='jazz'] .cc-batterie .cymbale { left: 120px; top: -150px; width: 90px; height: 150px; }
+[data-style='jazz'] .cc-batterie .cymbale .pied { left: 43px; top: 16px; width: 3px; height: 134px; background: linear-gradient(90deg, #8a8f96, #e6e9ec, #8a8f96); }
+[data-style='jazz'] .cc-batterie .cymbale .plateau { left: 0; top: 6px; width: 90px; height: 20px; animation: cc-cymbale 2s ease-out both; }
+[data-style='jazz'] .cc-batterie .cymbale .plateau i { inset: 0; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, #fff2c0 0 8%, #d9a84a 10%, #f2d07a 30%, #c8963a 60%, #8a6020); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+[data-style='jazz'] .cc-batterie .choc { left: 15px; top: -4px; width: 60px; height: 40px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(255, 214, 120, 0.8); opacity: 0; animation: cc-choc 0.6s ease-out both; }
+[data-style='jazz'] .cc-batterie .fut { left: 25px; top: 60px; width: 100px; height: 44px; background: linear-gradient(90deg, #7a1020, #c8283a 40%, #e85a6a 50%, #c8283a 60%, #7a1020); box-shadow: inset 0 2px 0 #e6e9ec, inset 0 -3px 0 #8a8f96; }
+[data-style='jazz'] .cc-batterie .peau { left: 25px; top: 50px; width: 100px; height: 22px; border-radius: 50%; background: radial-gradient(ellipse at 45% 40%, #fffaf0, #e9e2d4 70%); box-shadow: 0 0 0 2px #c8cdd2; animation: cc-peau 2s linear both; }
+[data-style='jazz'] .cc-batterie .fond { left: 25px; top: 94px; width: 100px; height: 20px; border-radius: 50%; background: #7a1020; box-shadow: 0 0 0 2px #c8cdd2; }
+[data-style='jazz'] .cc-batterie .baguette { top: -20px; width: 6px; height: 80px; transform-origin: 50% 100%; }
+[data-style='jazz'] .cc-batterie .baguette i { inset: 0; border-radius: 3px; background: linear-gradient(90deg, #c8a070, #f2dcb4, #c8a070); transform-origin: 50% 100%; }
+[data-style='jazz'] .cc-batterie .baguette.g { left: 30px; animation: cc-baguette-g 2s linear both; }
+[data-style='jazz'] .cc-batterie .baguette.g i { transform: rotate(-30deg); }
+[data-style='jazz'] .cc-batterie .baguette.d { left: 110px; animation: cc-baguette-d 2s linear both; }
+[data-style='jazz'] .cc-batterie .baguette.d i { transform: rotate(30deg); }
+/* Bien : le saxophone alto, la spirale de notes au-dessus du pavillon, la fumée bleue. */
+[data-style='jazz'] .cc-sax { position: absolute; left: 18px; top: 53%; z-index: 5; width: 90px; height: 170px; overflow: visible; pointer-events: none; transform-origin: 40px 160px; filter: drop-shadow(0 0 6px rgba(255, 213, 106, 0.45)) drop-shadow(0 6px 6px rgba(0, 0, 0, 0.5)); animation: cc-sax 1.9s ease-in-out both; }
+[data-style='jazz'] .cc-spirale { position: absolute; z-index: 6; display: block; line-height: 1; color: #ffd56a; text-shadow: 0 0 8px rgba(255, 213, 106, 0.9); pointer-events: none; opacity: 0; animation: cc-spirale 1.1s ease-out both; }
+[data-style='jazz'] .cc-fumee { position: absolute; left: -60px; top: 28%; z-index: 4; width: 150px; height: 110px; display: block; border-radius: 50%; background: radial-gradient(ellipse at 40% 40%, rgba(140, 180, 255, 0.55), rgba(90, 120, 220, 0.25) 50%, transparent 70%); filter: blur(4px); pointer-events: none; opacity: 0; animation: cc-fumee 1.9s ease-out both; }
+/* Facile : l'ovation. */
+[data-style='jazz'] .cc-scene { position: absolute; z-index: 7; display: block; pointer-events: none; }
+[data-style='jazz'] .cc-scene .salle { position: fixed; inset: 0; z-index: -1; display: block; background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 236, 190, 0.55), transparent 70%), rgba(255, 220, 150, 0.12); opacity: 0; animation: cc-salle 2.6s ease-out both; }
+[data-style='jazz'] .cc-scene .plateau { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: 8px; }
+[data-style='jazz'] .cc-scene .plateau > i { position: absolute; display: block; opacity: 0; animation: cc-salle 2.6s ease-out both; }
+[data-style='jazz'] .cc-scene .cone { left: 10px; top: -20px; width: 200px; height: 460px; background: linear-gradient(180deg, rgba(255, 240, 200, 0.45), rgba(255, 236, 190, 0.12) 85%, transparent); clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%); }
+[data-style='jazz'] .cc-scene .halo { left: 4px; bottom: 10px; width: 210px; height: 50px; border-radius: 50%; background: radial-gradient(ellipse, rgba(255, 240, 200, 0.55), transparent 70%); }
+[data-style='jazz'] .cc-scene .jazzman { position: absolute; left: 40px; bottom: 14px; width: 140px; height: 220px; overflow: visible; transform-origin: 50% 100%; filter: drop-shadow(0 0 1.2px rgba(232, 176, 74, 0.95)) drop-shadow(0 0 9px rgba(232, 176, 74, 0.35)); opacity: 0; animation: cc-jazz 2.6s ease-out both; }
+[data-style='jazz'] .cc-scene .jnote { position: absolute; left: 134px; bottom: 132px; z-index: 6; display: block; line-height: 1; color: #ffd56a; text-shadow: 0 0 8px rgba(255, 213, 106, 0.95); opacity: 0; animation: cc-jnote 1s ease-out both; }
+[data-style='jazz'] .cc-scene .encore { position: absolute; left: 0; right: 0; top: 44px; z-index: 8; display: block; text-align: center; font-family: var(--deco); font-weight: 400; font-size: 46px; letter-spacing: 0.08em; color: #ffe3f0; text-shadow: 0 0 6px #ff5aa8, 0 0 16px #ff2a8a, 0 0 30px #e8b04a; opacity: 0; animation: cc-encore 2.6s linear both; }
+[data-style='jazz'] .cc-scene .confettis { position: fixed; inset: 0; z-index: 10; display: block; overflow: hidden; }
+[data-style='jazz'] .cc-scene .confettis > s { position: absolute; top: -14px; display: block; opacity: 0; text-decoration: none; animation-name: cc-confetti; animation-timing-function: linear; animation-fill-mode: both; }
+
+@keyframes cc-brille { 0%, 70% { box-shadow: 0 4px 0 #6e4a14; text-shadow: none; } 78% { box-shadow: 0 4px 0 #6e4a14, 0 0 22px 6px rgba(255, 214, 120, 0.85); text-shadow: 0 0 6px #fff8d8, 0 0 12px #ffd56a; } 84% { box-shadow: 0 4px 0 #6e4a14, 0 0 10px 2px rgba(255, 214, 120, 0.5); } 90% { box-shadow: 0 4px 0 #6e4a14, 0 0 24px 7px rgba(255, 214, 120, 0.9); text-shadow: 0 0 6px #fff8d8, 0 0 12px #ffd56a; } 100% { box-shadow: 0 4px 0 #6e4a14, 0 0 0 0 rgba(255, 214, 120, 0); text-shadow: none; } }
+@keyframes cc-rideau { 0% { transform: translateY(-104%); } 8% { transform: translateY(0); } 12% { transform: translateY(3px) scaleY(1.04); } 16%, 30% { transform: translateY(0); } 34% { transform: translateY(-6%); } 56%, 100% { transform: translateY(-106%); } }
+@keyframes cc-lambrequin { 0% { opacity: 0; } 6%, 88% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cc-balaye { 0%, 52% { opacity: 0; transform: translateX(-60px); } 56% { opacity: 1; } 70% { transform: translateX(250px); } 84% { opacity: 1; transform: translateX(124px); } 100% { opacity: 0; transform: translateX(124px); } }
+@keyframes cc-cle { 0% { clip-path: inset(100% 0 0 0); opacity: 0; } 10% { opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 1; } }
+@keyframes cc-croche { 0% { transform: translateY(-14px) scale(0.3); opacity: 0; } 60% { transform: translateY(2px) scale(1.15); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes cc-micro { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: none; } }
+@keyframes cc-allume { 0%, 70% { opacity: 0; } 76%, 100% { opacity: 1; } }
+@keyframes cc-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+@keyframes cc-microtete { 0% { box-shadow: inset 0 0 0 1.5px #e8b04a, 0 0 0 0 rgba(232, 176, 74, 0); filter: brightness(0.6); } 50% { filter: brightness(1.4); } 100% { box-shadow: inset 0 0 0 1.5px #e8b04a, 0 0 10px 3px rgba(232, 176, 74, 0.6); filter: none; } }
+@keyframes cc-fondu { 0%, 86% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cc-efface { 0%, 10% { opacity: 1; } 30%, 100% { opacity: 0.22; } }
+@keyframes cc-secoue { 0%, 26% { transform: none; } 28% { transform: translate(-3px, 1px); } 30% { transform: translate(3px, -1px); } 32% { transform: translate(-2px, 0); } 34%, 86% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+@keyframes cc-vibre { 0%, 6% { scale: 1; translate: 0; } 8% { scale: 2 1; translate: 1px 0; } 10% { scale: 2 1; translate: -1px 0; } 12% { scale: 2.5 1; translate: 1px 0; } 14% { scale: 2 1; translate: -1px 0; } 16% { scale: 2.5 1; translate: 1px 0; } 18% { scale: 2 1; translate: -1px 0; } 20% { scale: 3 1; translate: 1px 0; } 22% { scale: 2 1; translate: -1px 0; } 24% { scale: 3 1; translate: 1px 0; } 27%, 100% { scale: 1; translate: 0; } }
+@keyframes cc-fouette-h { 0%, 27% { transform: none; opacity: 1; } 34% { transform: rotate(-70deg) scaleY(0.8); } 40% { transform: rotate(-30deg) scaleY(0.6); } 48% { transform: rotate(-55deg) scaleY(0.5); } 60%, 100% { transform: rotate(-40deg) scaleY(0.45); opacity: 0.8; } }
+@keyframes cc-fouette-b { 0%, 27% { transform: none; opacity: 1; } 34% { transform: rotate(80deg) scaleY(0.8); } 40% { transform: rotate(40deg) scaleY(0.6); } 48% { transform: rotate(60deg) scaleY(0.5); } 60%, 100% { transform: rotate(48deg) scaleY(0.45); opacity: 0.8; } }
+@keyframes cc-casse { 0%, 26% { opacity: 0; transform: scale(0.3); } 28% { opacity: 1; transform: scale(1.6); } 40%, 100% { opacity: 0; transform: scale(2); } }
+@keyframes cc-tombe { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 80% { transform: translateY(var(--dy)) rotate(var(--r)); opacity: 1; } 82%, 100% { transform: translateY(var(--dy)) rotate(var(--r)); opacity: 0; } }
+@keyframes cc-brise { 0%, 80% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 82% { opacity: 1; } 100% { transform: translate(var(--ex), var(--ey)) rotate(var(--er)); opacity: 0; } }
+@keyframes cc-apparait { 0% { opacity: 0; transform: translateY(20px); } 8%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes cc-baguette-g { 0%, 10% { transform: rotate(0deg); } 14%, 22%, 30%, 38%, 46% { transform: rotate(14deg); } 18%, 26%, 34%, 42%, 50% { transform: rotate(0deg); } 56% { transform: rotate(-40deg); } 62%, 100% { transform: rotate(0deg); } }
+@keyframes cc-baguette-d { 0%, 12% { transform: rotate(0deg); } 16%, 24%, 32%, 40%, 48% { transform: rotate(-14deg); } 20%, 28%, 36%, 44%, 52% { transform: rotate(0deg); } 58% { transform: rotate(-40deg) translateY(-30px); } 62% { transform: rotate(10deg) translate(20px, -60px); } 70%, 100% { transform: rotate(0deg); } }
+@keyframes cc-peau { 0%, 12% { transform: none; } 14%, 22%, 30%, 38%, 46% { transform: scaleY(0.88); } 18%, 26%, 34%, 42%, 50%, 100% { transform: none; } }
+@keyframes cc-cymbale { 0%, 60% { transform: none; } 62% { transform: rotate(-16deg); } 66% { transform: rotate(12deg); } 70% { transform: rotate(-9deg); } 74% { transform: rotate(6deg); } 78% { transform: rotate(-3deg); } 84%, 100% { transform: none; } }
+@keyframes cc-choc { 0% { transform: scale(0.3); opacity: 0.9; } 100% { transform: scale(2.4); opacity: 0; } }
+@keyframes cc-tremble { 0%, 60% { transform: none; } 62% { transform: translate(-2px, 1px) rotate(-0.4deg); } 64% { transform: translate(2px, -1px) rotate(0.4deg); } 66% { transform: translate(-2px, 0) rotate(-0.3deg); } 68% { transform: translate(2px, 1px) rotate(0.3deg); } 70% { transform: translate(-1px, 0); } 72% { transform: translate(1px, 0); } 76%, 86% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+@keyframes cc-sax { 0% { opacity: 0; transform: translateX(-30px) rotate(-10deg); } 12% { opacity: 1; transform: none; } 30% { transform: rotate(4deg); } 50% { transform: rotate(-3deg); } 70% { transform: rotate(4deg); } 88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes cc-spirale { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 10% { opacity: 1; } 25% { transform: translate(30px, -40px) scale(0.9); } 45% { transform: translate(-10px, -90px) scale(1); } 65% { transform: translate(40px, -140px) scale(1.1) rotate(15deg); } 85% { transform: translate(10px, -190px) scale(1.15) rotate(-10deg); opacity: 1; } 100% { transform: translate(30px, -220px) scale(1.2); opacity: 0; } }
+@keyframes cc-fumee { 0%, 20% { opacity: 0; transform: translateX(0) scale(0.7); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateX(300px) translateY(-40px) scale(1.4); } }
+@keyframes cc-salle { 0%, 8% { opacity: 0; } 24%, 100% { opacity: 1; } }
+@keyframes cc-jazz { 0%, 12% { opacity: 0; transform: translateX(-20px) rotate(-2deg); } 30% { opacity: 1; transform: none; } 45% { transform: rotate(-3deg); } 60% { transform: rotate(2deg); } 75% { transform: rotate(-3deg); } 90%, 100% { opacity: 1; transform: rotate(1deg); } }
+@keyframes cc-jnote { 0% { transform: translate(0, 0) scale(0.4); opacity: 0; } 15% { opacity: 1; transform: translate(6px, -6px) scale(1); } 60% { transform: translate(calc(var(--nx) * 0.6), calc(var(--ny) * 0.6)) rotate(12deg); } 100% { transform: translate(var(--nx), var(--ny)) scale(1.15) rotate(-8deg); opacity: 0; } }
+@keyframes cc-encore { 0%, 40% { opacity: 0; } 42% { opacity: 1; } 44% { opacity: 0.2; } 47% { opacity: 1; } 49% { opacity: 0.4; } 52%, 100% { opacity: 1; } }
+@keyframes cc-confetti { 0% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 100% { transform: translate(var(--dx), 105vh) rotate(var(--r)); opacity: 0.9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='jazz'] .cc-lever, [data-style='jazz'] .cc-corde, [data-style='jazz'] .cc-tombe, [data-style='jazz'] .cc-batterie, [data-style='jazz'] .cc-sax, [data-style='jazz'] .cc-spirale, [data-style='jazz'] .cc-fumee, [data-style='jazz'] .cc-scene { display: none !important; }
+  [data-style='jazz'] .cc-cle, [data-style='jazz'] .cc-croche, [data-style='jazz'] .cc-micro, [data-style='jazz'] .cc-micro .faisceau { opacity: 1; clip-path: none; }
+}

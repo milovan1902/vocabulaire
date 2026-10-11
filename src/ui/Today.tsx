@@ -674,14 +674,15 @@ export function Today({
             /* CHANTIER 253 — Salon de thé : la théière verse le thé dans une tasse posée sur le bouton, qui se remplit. */
             /* CHANTIER 254 — Cabinet 1900 : la bobine de Tesla se charge, un arc saute jusqu'au bouton, qui s'illumine. */
             /* CHANTIER 255 — Japon zen : les shōji se ferment puis s'ouvrent sur le bouton, qui s'éclaire en lanterne. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 256 — Cotton Club : le rideau tombe sur le bouton puis se lève, le projecteur le balaie, il brille. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -765,6 +766,14 @@ export function Today({
               <i className="petale" /><i className="petale" /><i className="petale" />
             </span>
           )}
+          {/* CHANTIER 256 — Cotton Club : le projecteur, le rideau de velours (frange dorée, pompons), le lambrequin. */}
+          {style === 'jazz' && plouf > 0 && (
+            <span key={plouf} className="cc-lever" aria-hidden="true">
+              <i className="faisceau" />
+              <span className="rideau"><i /><i /><i /></span>
+              <i className="lambrequin" />
+            </span>
+          )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
           {style === 'tv' && plouf > 0 && (
             <span className="tl-entree" aria-hidden="true">
@@ -815,6 +824,8 @@ export function Today({
                   {/* CHANTIER 252 — Bibliothèque : un signet par jour tenu, jusqu'à sept ; les 6e et 7e sont dorés, avec un pompon (<u>). */}
                   {/* CHANTIER 253 — Salon de thé : jusqu'à sept bougies ; les 6e et 7e, dorées, sortent du gâteau. */}
                   {Array.from({ length: style === 'biblio' || style === 'patisserie' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'cabinet' && <><u /><b /><s /><s /><s /><s /><s /><em /><em /><em /></>}{style === 'japon' && <><u /><b /><em /><s /></>}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 256 — Cotton Club : la clé de sol et trois croches (6 jours et plus). */}
+                  {style === 'jazz' && faits >= 6 && <><b className="cc-cle">𝄞</b><s className="cc-croche">♪</s><s className="cc-croche">♪</s><s className="cc-croche">♪</s></>}
                   {/* CHANTIER 255 — Japon zen : wasabi et feuille (6 jours et plus), le bateau à sushis (7 jours). */}
                   {style === 'japon' && faits >= 6 && <><b className="jz-wasabi" /><b className="jz-feuille" /></>}
                   {style === 'japon' && faits >= 7 && <span className="jz-bateau"><i /><i /><i /><i /></span>}
@@ -830,6 +841,8 @@ export function Today({
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
                   )}
                 </span>
+                {/* CHANTIER 256 — Cotton Club, 7 jours : le micro rétro s'allume sous un petit projecteur. */}
+                {style === 'jazz' && faits >= 7 && <span className="cc-micro" aria-hidden="true"><i className="faisceau" /><i className="tete" /><i className="col" /><i className="pied" /><i className="socle" /></span>}
                 {/* CHANTIER 255 — Japon zen, 7 jours : deux lanternes s'allument au-dessus de la tuile. */}
                 {style === 'japon' && faits >= 7 && <span className="jz-lanternes" aria-hidden="true"><span><i /><i /><i /><i /></span><span><i /><i /><i /><i /></span></span>}
                 {/* CHANTIER 248 — Station 1936 : les flocons sur la tuile (6 et 7 jours) et le soleil qui se lève (7 jours). */}
