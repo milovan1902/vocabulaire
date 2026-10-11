@@ -234,6 +234,15 @@ const PG_ECUME = Array.from({ length: 14 }, (_, k) => ({
   '--dx': `${((k % 5) - 2) * 16}px`, '--dy': `${20 + (k % 3) * 20}px`,
 }) as unknown as CSSProperties);
 
+/* CHANTIER 259 — Pacific Express : étincelles (Raté, Dur), poussière (Raté), confettis et fumée (Bien), éclats de l'étoile (Facile). */
+const PX_ETINCELLES = Array.from({ length: 12 }, (_, k) => ({
+  [k % 2 ? 'left' : 'right']: `${10 + (k % 3) * 8}px`, '--dx': `${(k % 2 ? 1 : -1) * (20 + (k % 4) * 14)}px`, '--dy': `${-(20 + (k % 5) * 12)}px`, animationDelay: `${((k % 4) * 0.05).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const PX_POUSSIERE = Array.from({ length: 7 }, (_, k) => ({ left: `${8 + k * 13}%`, '--dx': `${((k % 3) - 1) * 20}px`, '--s': `${2 + (k % 3) * 0.5}`, animationDelay: `${(k * 0.04).toFixed(2)}s` }) as unknown as CSSProperties);
+const PX_CONFETTIS = Array.from({ length: 6 }, (_, k) => ({ right: `${74 + (k % 3) * 4}px`, '--dx': `${((k % 3) - 1) * 14}px`, '--r': `${k % 2 ? 300 : -260}deg` }) as unknown as CSSProperties);
+const PX_FUMEES = Array.from({ length: 6 }, (_, k) => ({ top: `${8 + (k % 3) * 18}px`, animationDelay: `${(k * 0.06).toFixed(2)}s` }) as CSSProperties);
+const PX_ECLATS = Array.from({ length: 12 }, (_, k) => { const a = (k / 12) * Math.PI * 2; return { '--dx': `${Math.round(Math.cos(a) * 90)}px`, '--dy': `${Math.round(Math.sin(a) * 90)}px` } as unknown as CSSProperties; });
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -531,7 +540,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -577,6 +586,35 @@ export function Study({
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
           </span>
+        )}
+        {/* CHANTIER 259 — Pacific Express : le déraillement (Raté), le drapeau rouge et « RETARD » (Dur), le poinçon (Bien), l'étoile du shérif (Facile). */}
+        {style === 'western' && (frappe === 'again' || frappe === 'hard') && PX_ETINCELLES.map((st, k) => <i key={k} className={`px-etincelle${frappe === 'hard' ? ' tard' : ''}`} aria-hidden="true" style={st} />)}
+        {style === 'western' && frappe === 'again' && (
+          <>
+            {PX_POUSSIERE.map((st, k) => <i key={k} className="px-poussiere" aria-hidden="true" style={st} />)}
+            <i className="px-buisson" aria-hidden="true" />
+          </>
+        )}
+        {style === 'western' && frappe === 'hard' && (
+          <>
+            <span className="px-drapeau" aria-hidden="true"><i /><i /></span>
+            <span className="px-retard" aria-hidden="true">RETARD</span>
+          </>
+        )}
+        {style === 'western' && frappe === 'good' && (
+          <>
+            <span className="px-pince" aria-hidden="true"><i /><i /><i /></span>
+            <i className="px-trou" aria-hidden="true" />
+            {PX_CONFETTIS.map((st, k) => <i key={k} className="px-confetti" aria-hidden="true" style={st} />)}
+            {PX_FUMEES.map((st, k) => <i key={k} className="px-fumee" aria-hidden="true" style={st} />)}
+          </>
+        )}
+        {style === 'western' && frappe === 'easy' && (
+          <>
+            <span className="px-chapeau" aria-hidden="true"><i /><i /></span>
+            <span className="px-etoile" aria-hidden="true"><i /><i /><b>SHÉRIF</b></span>
+            {PX_ECLATS.map((st, k) => <i key={k} className="px-eclat" aria-hidden="true" style={st} />)}
+          </>
         )}
         {/* CHANTIER 258 — Plage : la vague qui fait chavirer (Raté), le maître-nageur (Dur), le surfeur et le dauphin (Bien), le tube (Facile). */}
         {style === 'plage' && frappe === 'again' && (
@@ -953,6 +991,13 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 259 — Pacific Express, Facile : le soleil couchant, le train en ombre sur l'horizon. */}
+      {style === 'western' && frappe === 'easy' && cadre && (
+        <div className="px-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className="couchant"><i className="ciel" /><i className="soleil" /><span className="ombre"><span className="px-loco"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span><span className="px-wagon w1"><i /><i /><i /><i /><i /><i /></span><span className="px-wagon w2"><i /><i /><i /><i /><i /><i /></span></span><i className="horizon" /></span>
+        </div>
+      )}
+
       {/* CHANTIER 258 — Plage, Facile : le coucher de soleil derrière la carte, les mouettes. */}
       {style === 'plage' && frappe === 'easy' && cadre && (
         <div className="pg-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -1145,7 +1190,7 @@ export function Study({
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
-                  : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? 1000
+                  : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? (g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
                   : style === 'basket' ? 1250
                   /* CHANTIER 239 — Pelouse : le ballon touché part (roule, à côté, poteau, lucarne). */
@@ -1169,7 +1214,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
