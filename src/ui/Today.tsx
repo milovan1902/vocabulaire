@@ -671,14 +671,15 @@ export function Today({
             /* CHANTIER 250 — Fashion week : les talons traversent le bouton, le mur des photographes crépite. */
             /* CHANTIER 251 — Cinéma muet : le clap claque au-dessus du bouton, puis le bouton devient une amorce (3, 2, 1). */
             /* CHANTIER 252 — Bibliothèque : un livre s'ouvre au-dessus du bouton, le signet glisse jusqu'à lui. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 253 — Salon de thé : la théière verse le thé dans une tasse posée sur le bouton, qui se remplit. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -733,6 +734,15 @@ export function Today({
               </span>
             </span>
           )}
+          {/* CHANTIER 253 — Salon de thé : le thé qui monte dans le bouton, la tasse et sa vapeur, la théière, le filet de thé. */}
+          {style === 'patisserie' && plouf > 0 && (
+            <span key={plouf} className="pt-deguster" aria-hidden="true">
+              <span className="the"><i /></span>
+              <span className="tasse"><i className="soucoupe" /><i className="anse" /><i className="corps" /><i className="bord" /><i className="niveau" /><i className="vapeur" /><i className="vapeur" /><i className="vapeur" /></span>
+              <span className="theiere"><i className="bec" /><i className="poignee" /><i className="panse" /><i className="couvercle" /><i className="bouton" /><i className="frise" /></span>
+              <i className="filet" />
+            </span>
+          )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
           {style === 'tv' && plouf > 0 && (
             <span className="tl-entree" aria-hidden="true">
@@ -781,7 +791,10 @@ export function Today({
                   {/* CHANTIER 250 — Fashion week : le tapis rouge (7 jours), sous les escarpins ; dans chaque escarpin, <u> le gris, <b> le rouge, <em> le reflet de vernis, <s> l'étoile du jour. */}
                   {style === 'fashion' && faits >= 7 && <span className="fs-tapis"><b /><u /><s /></span>}
                   {/* CHANTIER 252 — Bibliothèque : un signet par jour tenu, jusqu'à sept ; les 6e et 7e sont dorés, avec un pompon (<u>). */}
-                  {Array.from({ length: style === 'biblio' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 253 — Salon de thé : jusqu'à sept bougies ; les 6e et 7e, dorées, sortent du gâteau. */}
+                  {Array.from({ length: style === 'biblio' || style === 'patisserie' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 253 — Salon de thé, 7 jours : le nœud de ruban sur le gâteau. */}
+                  {style === 'patisserie' && faits >= 7 && <b className="pt-noeud"><i /><i /><i /><i /><i /></b>}
                   {/* CHANTIER 252 — Bibliothèque : le filet qui se dore (5 jours et plus), la poussière d'or (7 jours). */}
                   {style === 'biblio' && faits >= OBJECTIF_SEMAINE && <b className="bi-filet" />}
                   {style === 'biblio' && faits >= 7 && <span className="bi-poudre"><s /><s /><s /><s /><s /><s /><s /><s /></span>}

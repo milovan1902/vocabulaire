@@ -121,6 +121,39 @@ const BI_ETOILES = [[36, 30], [60, 28], [33, 54], [63, 52], [48, 16], [49, 74]].
   left: `${x}%`, top: `${y}px`, fontSize: `${12 + (k % 3) * 4}px`, animationDelay: `${(2.0 + (k % 3) * 0.08).toFixed(2)}s`,
 }) as CSSProperties);
 
+/* CHANTIER 253 — Salon de thé : les gouttes de thé (Raté), les sucres et les ronds (Dur), le sucre glace (Bien),
+   le présentoir à trois étages et les pétales (Facile, positions en px depuis le haut de la carte). */
+const PT_GOUTTES = [[60, -50], [90, -30], [110, 10], [40, -70], [130, -10], [76, 20]].map(([dx, dy], k) => ({
+  width: `${6 + (k % 3) * 3}px`, height: `${6 + (k % 3) * 3}px`, '--dx': `${dx}px`, '--dy': `${dy}px`, animationDelay: `${(0.62 + (k % 3) * 0.04).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const PT_SUCRES = [[34, 6, -40, 22, 0.1], [62, 9, 50, -16, 0.3]].map(([x, y, x0, r, d]) => ({
+  left: `${x}px`, top: `${y}px`, '--x0': `${x0}px`, '--r': `${r}deg`, animationDelay: `${d}s`,
+}) as unknown as CSSProperties);
+const PT_RONDS = [0.85, 1.05, 1.25, 1.45].map((d) => ({ animationDelay: `${d}s` }) as CSSProperties);
+const PT_MIETTES = Array.from({ length: 12 }, (_, k) => ({
+  width: `${k % 2 ? 4 : 6}px`, height: `${k % 2 ? 4 : 6}px`, '--dx': `${((k % 6) - 2.5) * 24}px`, '--dy': `${-(30 + (k % 4) * 16)}px`, animationDelay: `${(0.5 + (k % 3) * 0.04).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+const PT_MACARONS: Record<string, string[]> = { rose: ['#d9567a', '#ef9fb5', '#a8344f', '#f6c1cf'], pistache: ['#9cc47e', '#cfe3b9', '#6f9654', '#eef5df'], violette: ['#a58bd0', '#d2c3ea', '#7a5fa8', '#e9e0f5'], caramel: ['#d9924a', '#f0c08a', '#a8662a', '#f3d6a6'], citron: ['#f1d38a', '#fbe9bd', '#c9a54a', '#fff3d6'] };
+const PT_ETAGES = [
+  { top: 144, w: 120, items: ['rose', 'chou'] },
+  { top: 244, w: 180, items: ['pistache', 'violette', 'tarte'] },
+  { top: 344, w: 240, items: ['caramel', 'citron', 'rose', 'pistache'] },
+];
+const PT_RETARDS = [0, 0.1, 0.25, 0.35, 0.45, 0.6, 0.7, 0.8, 0.9];
+const PT_PETALES = Array.from({ length: 18 }, (_, k) => ({
+  left: `${(((k * 53) % 340) + 8) / 3.6}%`, width: `${k % 2 ? 9 : 11}px`, height: `${k % 2 ? 12 : 14}px`,
+  background: `linear-gradient(135deg, #fff, ${k % 3 ? '#f3b7c6' : '#eea3b6'} 60%)`,
+  '--dx': `${((k % 5) - 2) * 18}px`, '--r': `${(k % 2 ? 1 : -1) * 300}deg`,
+  animationDuration: `${(1.4 + (k % 4) * 0.15).toFixed(2)}s`, animationDelay: `${(1.1 + (k % 6) * 0.1).toFixed(2)}s`,
+}) as unknown as CSSProperties);
+function ptGourmandise(nom: string, k: number) {
+  const st = { animationDelay: `${(0.95 + PT_RETARDS[k]).toFixed(2)}s` } as CSSProperties;
+  if (nom === 'chou') return <span key={k} className="pop" style={st}><i className="chou" /></span>;
+  if (nom === 'tarte') return <span key={k} className="pop" style={st}><i className="tarte" /></span>;
+  const [c, cl, f, g] = PT_MACARONS[nom];
+  return <span key={k} className="pop" style={st}><span className="macaron" style={{ '--c': c, '--clair': cl, '--fonce': f, '--ganache': g } as unknown as CSSProperties}><i /><i /><i /></span></span>;
+}
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -418,7 +451,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -463,6 +496,31 @@ export function Study({
             {frappe === 'hard' && <><i className="barres" /><span className="incident"><b>Incident technique</b><small>Veuillez nous excuser…</small></span></>}
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
+          </span>
+        )}
+        {/* CHANTIER 253 — Salon de thé : la tasse (Raté : elle se renverse ; Dur : le sucre), la flaque, le macaron sur sa soucoupe (Bien). */}
+        {style === 'patisserie' && frappe === 'again' && <i className="pt-flaque" aria-hidden="true" />}
+        {style === 'patisserie' && (frappe === 'again' || frappe === 'hard') && (
+          <span className="pt-tasse" aria-hidden="true">
+            <i className="soucoupe" />
+            <span className="bascule">
+              <i className="anse" /><i className="corps" /><i className="bord" /><i className="surface" />
+              {frappe === 'hard' && (
+                <>
+                  {PT_RONDS.map((st, k) => <i key={k} className="rond" style={st} />)}
+                  {PT_SUCRES.map((st, k) => <i key={k} className="sucre" style={st} />)}
+                  <span className="cuillere"><i /><i /></span>
+                </>
+              )}
+            </span>
+            {frappe === 'again' && PT_GOUTTES.map((st, k) => <i key={k} className="goutte" style={st} />)}
+          </span>
+        )}
+        {style === 'patisserie' && frappe === 'good' && (
+          <span className="pt-soucoupe" aria-hidden="true">
+            <i className="assiette" />
+            <span className="tombe"><span className="macaron"><i /><i /><i /></span></span>
+            {PT_MIETTES.map((st, k) => <i key={k} className="miette" style={st} />)}
           </span>
         )}
         {/* CHANTIER 252 — Bibliothèque : ce qui s'écrit, se plie ou se colle sur la page pendant la note. */}
@@ -661,6 +719,22 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 253 — Salon de thé, Facile : le présentoir monte devant l'étiquette, les gourmandises s'y posent, les pétales tombent. */}
+      {style === 'patisserie' && frappe === 'easy' && cadre && (
+        <div className="pt-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className="presentoir">
+            <i className="tige" /><i className="pommeau" /><i className="pied" />
+            {PT_ETAGES.map((e, j) => (
+              <span key={j} className="etage" style={{ top: e.top, width: e.w, marginLeft: -e.w / 2 }}>
+                <i className="plateau" />
+                <span className="rang">{e.items.map((nom, k) => ptGourmandise(nom, [0, 2, 5][j] + k))}</span>
+              </span>
+            ))}
+          </span>
+          <span className="petales">{PT_PETALES.map((st, k) => <s key={k} style={st} />)}</span>
+        </div>
+      )}
+
       {/* CHANTIER 252 — Bibliothèque, Facile : le rayon où le livre va se ranger, et ses étincelles. */}
       {style === 'biblio' && frappe === 'easy' && cadre && (
         <div className="bi-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -752,7 +826,7 @@ export function Study({
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
                 const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
-                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? 650 : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
+                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
@@ -780,7 +854,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
