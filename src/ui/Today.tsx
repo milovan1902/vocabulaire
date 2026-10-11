@@ -672,14 +672,15 @@ export function Today({
             /* CHANTIER 251 — Cinéma muet : le clap claque au-dessus du bouton, puis le bouton devient une amorce (3, 2, 1). */
             /* CHANTIER 252 — Bibliothèque : un livre s'ouvre au-dessus du bouton, le signet glisse jusqu'à lui. */
             /* CHANTIER 253 — Salon de thé : la théière verse le thé dans une tasse posée sur le bouton, qui se remplit. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            /* CHANTIER 254 — Cabinet 1900 : la bobine de Tesla se charge, un arc saute jusqu'au bouton, qui s'illumine. */
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -743,6 +744,18 @@ export function Today({
               <i className="filet" />
             </span>
           )}
+          {/* CHANTIER 254 — Cabinet 1900 : la lueur du bouton, la bobine de Tesla et ses étincelles, les trois tracés de l'arc. */}
+          {style === 'cabinet' && plouf > 0 && (
+            <span key={plouf} className="cx-tesla" aria-hidden="true">
+              <i className="lueur" />
+              <span className="bobine"><i className="socle" /><i className="spires" /><i className="tige" /><i className="tore" /><s /><s /><s /><s /><s /></span>
+              <svg className="arc" viewBox="0 0 160 100">
+                <polyline points="150,12 138,24 144,32 126,44 132,52 110,62 116,70 90,80 96,86 62,96" />
+                <polyline points="150,12 132,20 140,34 120,40 128,56 104,58 112,74 84,76 92,90 60,96" />
+                <polyline points="150,12 142,28 128,30 134,46 114,50 120,66 98,66 102,82 76,84 60,96" />
+              </svg>
+            </span>
+          )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
           {style === 'tv' && plouf > 0 && (
             <span className="tl-entree" aria-hidden="true">
@@ -792,7 +805,9 @@ export function Today({
                   {style === 'fashion' && faits >= 7 && <span className="fs-tapis"><b /><u /><s /></span>}
                   {/* CHANTIER 252 — Bibliothèque : un signet par jour tenu, jusqu'à sept ; les 6e et 7e sont dorés, avec un pompon (<u>). */}
                   {/* CHANTIER 253 — Salon de thé : jusqu'à sept bougies ; les 6e et 7e, dorées, sortent du gâteau. */}
-                  {Array.from({ length: style === 'biblio' || style === 'patisserie' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {Array.from({ length: style === 'biblio' || style === 'patisserie' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'cabinet' && <><u /><b /><s /><s /><s /><s /><s /><em /><em /><em /></>}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 254 — Cabinet 1900, 7 jours : l'arc électrique qui court de tube en tube. */}
+                  {style === 'cabinet' && faits >= 7 && <svg className="cx-arc-tubes" viewBox="0 0 100 14" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,10 6,4 12,9 19,3 25,10 31,5 38,9 44,2 50,10 56,4 63,9 69,3 75,10 81,5 88,9 94,3 100,10" vectorEffect="non-scaling-stroke" /></svg>}
                   {/* CHANTIER 253 — Salon de thé, 7 jours : le nœud de ruban sur le gâteau. */}
                   {style === 'patisserie' && faits >= 7 && <b className="pt-noeud"><i /><i /><i /><i /><i /></b>}
                   {/* CHANTIER 252 — Bibliothèque : le filet qui se dore (5 jours et plus), la poussière d'or (7 jours). */}

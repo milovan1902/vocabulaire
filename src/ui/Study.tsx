@@ -154,6 +154,29 @@ function ptGourmandise(nom: string, k: number) {
   return <span key={k} className="pop" style={st}><span className="macaron" style={{ '--c': c, '--clair': cl, '--fonce': f, '--ganache': g } as unknown as CSSProperties}><i /><i /><i /></span></span>;
 }
 
+/* CHANTIER 254 — Cabinet 1900 : le ballon (bulles, mousse, éclats, fumée verte), la fiole (gouttes, bulles),
+   les étincelles de la médaille. Positions en px dans chaque objet. */
+const CX_BULLES = Array.from({ length: 8 }, (_, k) => ({
+  left: `${24 + ((k * 9) % 42)}px`, top: `${74 + (k % 3) * 6}px`, width: `${4 + (k % 3)}px`, height: `${4 + (k % 3)}px`, animationDelay: `${(0.05 + k * 0.08).toFixed(2)}s`,
+}) as CSSProperties);
+const CX_MOUSSE = [[34, -8, 18], [46, -14, 22], [56, -6, 16], [40, -22, 14], [28, 4, 12], [60, 8, 12]].map(([x, y, z]) => ({
+  left: `${x}px`, top: `${y}px`, width: `${z}px`, height: `${z}px`,
+}) as CSSProperties);
+const CX_ECLATS = [[-110, -80, 220], [-60, -130, -180], [40, -140, 260], [110, -70, -240], [-130, 20, 160], [130, 30, -200], [-40, 60, 300], [70, 70, -280]].map(([dx, dy, r], k) => ({
+  width: `${10 + (k % 3) * 4}px`, height: `${8 + (k % 2) * 6}px`, '--dx': `${dx}px`, '--dy': `${dy}px`, '--r': `${r}deg`,
+}) as unknown as CSSProperties);
+const CX_FUMEES = [[-70, -70, 4], [0, -110, 5], [70, -60, 4.5], [-40, -20, 3.5], [50, -10, 3.5], [0, -50, 6]].map(([dx, dy, s]) => ({
+  '--dx': `${dx}px`, '--dy': `${dy}px`, '--s': s,
+}) as unknown as CSSProperties);
+const CX_GOUTTES = Array.from({ length: 6 }, (_, k) => ({ animationDelay: `${(0.15 + Math.floor(k / 2) * 0.22 + (k % 2) * 0.1).toFixed(2)}s` }) as CSSProperties);
+const CX_BULLES_F = Array.from({ length: 8 }, (_, k) => ({
+  left: `${24 + ((k * 7) % 34)}px`, bottom: `${6 + (k % 3) * 6}px`, width: `${4 + (k % 2) * 2}px`, height: `${4 + (k % 2) * 2}px`, animationDelay: `${(0.95 + k * 0.09).toFixed(2)}s`,
+}) as CSSProperties);
+const CX_ETINCELLES = Array.from({ length: 14 }, (_, k) => {
+  const a = (k / 14) * Math.PI * 2, r = 90 + (k % 3) * 30;
+  return { width: `${k % 2 ? 5 : 7}px`, height: `${k % 2 ? 5 : 7}px`, '--dx': `${Math.round(Math.cos(a) * r)}px`, '--dy': `${Math.round(Math.sin(a) * r)}px`, animationDelay: `${(1.55 + (k % 4) * 0.05).toFixed(2)}s` } as unknown as CSSProperties;
+});
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -451,7 +474,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -497,6 +520,51 @@ export function Study({
             {frappe === 'good' && <><i className="flash" /><b className="chaine"><small>CH</small>2</b></>}
             {frappe === 'easy' && <><i className="spot" /><b className="fin">Fin</b></>}
           </span>
+        )}
+        {/* CHANTIER 254 — Cabinet 1900 : le ballon qui explose (Raté), le microscope et la loupe (Dur), la fiole (Bien), les électrodes et la médaille (Facile). */}
+        {style === 'cabinet' && frappe === 'again' && (
+          <span className="cx-ballon" aria-hidden="true">
+            <i className="bec" /><i className="flamme" />
+            <span className="verre">
+              <i className="col" /><i className="panse" />
+              {CX_BULLES.map((st, k) => <i key={k} className="bulle" style={st} />)}
+              {CX_MOUSSE.map((st, k) => <i key={k} className="mousse" style={st} />)}
+            </span>
+            <i className="flash" />
+            {CX_ECLATS.map((st, k) => <i key={k} className="eclat" style={st} />)}
+            {CX_FUMEES.map((st, k) => <i key={k} className="fumee" style={st} />)}
+          </span>
+        )}
+        {style === 'cabinet' && frappe === 'hard' && (
+          <>
+            <span className="cx-micro" aria-hidden="true"><i className="tube" /><i className="tourelle" /><i className="objectif" /><i className="lentille" /><i className="molette" /></span>
+            <span className="cx-loupe" aria-hidden="true"><span>{back}</span></span>
+          </>
+        )}
+        {style === 'cabinet' && frappe === 'good' && (
+          <span className="cx-fiole" aria-hidden="true">
+            <i className="pipette g" /><i className="pipette d" />
+            {CX_GOUTTES.map((st, k) => <i key={k} className={`goutte ${k % 2 ? 'd' : 'g'}`} style={st} />)}
+            <span className="cone"><i className="liquide" />{CX_BULLES_F.map((st, k) => <i key={k} className="bulle" style={st} />)}</span>
+            <svg className="contour" viewBox="0 0 80 96"><polygon points="30.4,0 49.6,0 49.6,32.6 80,96 0,96 30.4,32.6" /></svg>
+            <i className="halo" />
+          </span>
+        )}
+        {style === 'cabinet' && frappe === 'easy' && (
+          <>
+            <svg className="cx-eclair" viewBox="0 0 348 80" preserveAspectRatio="none" aria-hidden="true">
+              <polyline points="52,40 74,30 88,46 110,28 128,48 150,30 170,50 192,28 212,46 232,30 250,48 272,30 296,40" />
+              <polyline points="52,40 70,48 92,30 112,50 134,32 152,52 176,30 198,50 218,32 240,50 262,34 280,46 296,40" />
+            </svg>
+            <span className="cx-electrode g" aria-hidden="true"><i /><i /></span>
+            <span className="cx-electrode d" aria-hidden="true"><i /><i /></span>
+            <span className="cx-medaille" aria-hidden="true">
+              <i className="ruban g" /><i className="ruban d" />
+              <span className="disque"><small>Académie</small><small>des sciences</small><span>1900</span><small>✦ ✦ ✦</small></span>
+              <i className="reflet"><i /></i>
+            </span>
+            {CX_ETINCELLES.map((st, k) => <i key={k} className="cx-etincelle" aria-hidden="true" style={st} />)}
+          </>
         )}
         {/* CHANTIER 253 — Salon de thé : la tasse (Raté : elle se renverse ; Dur : le sucre), la flaque, le macaron sur sa soucoupe (Bien). */}
         {style === 'patisserie' && frappe === 'again' && <i className="pt-flaque" aria-hidden="true" />}
@@ -826,7 +894,7 @@ export function Study({
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
                 const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
-                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? 450 : style === 'japon' ? 650 : style === 'jazz' ? 600
+                  : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? 650 : style === 'jazz' ? 600
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'again' ? 1820 : g.key === 'easy' ? 910 : 630) : style === 'chateau' ? 650
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */

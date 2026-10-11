@@ -294,3 +294,181 @@ body:not(:has(.today.ly)) .cb-salle { display: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-style='cabinet'] .bocal-lueur, [data-style='cabinet'] .ly-segments i, [data-style='cabinet'] .ly-segments i::before, [data-style='cabinet'] .ly-segments i::after { animation: none !important; }
 }
+
+/* ==================================================================
+   CHANTIER 254 — Cabinet 1900 animé (maquette 70a)
+   « Expérimenter » : la bobine de Tesla et l'arc électrique.
+   « Cette semaine » : bulles qui éclatent (jour), fumées colorées (6 et 7), vraies bulles et arc (7).
+   Révision : le ballon explose (Raté), le microscope (Dur), la fiole (Bien), la médaille (Facile).
+   ================================================================== */
+/* ---------- « Expérimenter » ---------- */
+[data-style='cabinet'] .btn.ly-go { position: relative; z-index: 5; overflow: visible; }
+[data-style='cabinet'] .btn.ly-go:has(> .cx-tesla) { animation: cx-secousse 1.8s ease-out; }
+[data-style='cabinet'] .cx-tesla { position: absolute; inset: 0; display: block; pointer-events: none; }
+[data-style='cabinet'] .cx-tesla i, [data-style='cabinet'] .cx-tesla s { position: absolute; display: block; text-decoration: none; }
+/* La lueur passe sous le texte (le bouton forme un contexte d'empilement). */
+[data-style='cabinet'] .cx-tesla .lueur { inset: 0; z-index: -1; border-radius: 3px; background: radial-gradient(ellipse at 50% 0%, #eaffea, #8dff9a 40%, rgba(141, 255, 154, 0.2) 80%); opacity: 0; animation: cx-lueur 1.8s linear both; }
+[data-style='cabinet'] .cx-tesla .bobine { position: absolute; right: 4px; top: -96px; z-index: 10; width: 40px; height: 100px; display: block; opacity: 0; animation: cx-bobine 1.8s ease-out both; }
+[data-style='cabinet'] .cx-tesla .socle { left: 4px; right: 4px; bottom: 0; height: 10px; border-radius: 2px; background: linear-gradient(90deg, #7a5a22, #e2bd6e 40%, #c79a4b 60%, #6e4f1c); }
+[data-style='cabinet'] .cx-tesla .spires { left: 12px; right: 12px; bottom: 10px; height: 58px; border-radius: 2px; background: repeating-linear-gradient(180deg, #c27a3e 0 2px, #7a4020 2px 3px); box-shadow: inset 3px 0 4px rgba(255, 220, 180, 0.35), inset -3px 0 4px rgba(0, 0, 0, 0.4); }
+[data-style='cabinet'] .cx-tesla .tige { left: 18px; width: 4px; bottom: 66px; height: 8px; background: linear-gradient(90deg, #7a5a22, #e2bd6e 40%, #c79a4b 60%, #6e4f1c); }
+[data-style='cabinet'] .cx-tesla .tore { left: 0; right: 0; top: 12px; height: 16px; border-radius: 50%; background: radial-gradient(ellipse at 40% 35%, #fff, #cfd6dc 40%, #7d868e); animation: cx-tore 1.8s ease-in-out both; }
+[data-style='cabinet'] .cx-tesla .bobine s { width: 6px; height: 6px; background: #eaffea; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); filter: drop-shadow(0 0 3px #8dff9a); opacity: 0; animation: cx-crepit 0.18s linear 0.25s 2 both; }
+[data-style='cabinet'] .cx-tesla .bobine s:nth-of-type(1) { left: 2px; top: 8px; }
+[data-style='cabinet'] .cx-tesla .bobine s:nth-of-type(2) { left: 30px; top: 6px; animation-delay: 0.38s; }
+[data-style='cabinet'] .cx-tesla .bobine s:nth-of-type(3) { left: 16px; top: 2px; animation-delay: 0.5s; }
+[data-style='cabinet'] .cx-tesla .bobine s:nth-of-type(4) { left: 6px; top: 22px; animation-delay: 0.62s; }
+[data-style='cabinet'] .cx-tesla .bobine s:nth-of-type(5) { left: 32px; top: 24px; animation-delay: 0.7s; }
+[data-style='cabinet'] .cx-tesla .arc { position: absolute; right: 16px; top: -84px; z-index: 9; width: 160px; height: 100px; overflow: visible; filter: drop-shadow(0 0 4px #8dff9a) drop-shadow(0 0 10px #8dff9a); }
+[data-style='cabinet'] .cx-tesla .arc polyline { fill: none; stroke: #eaffea; stroke-width: 2.2; stroke-linejoin: round; opacity: 0; animation: cx-arc-a 1.8s linear both; }
+[data-style='cabinet'] .cx-tesla .arc polyline:nth-child(2) { stroke-width: 2; animation-name: cx-arc-b; }
+[data-style='cabinet'] .cx-tesla .arc polyline:nth-child(3) { stroke-width: 2.4; animation-name: cx-arc-c; }
+
+/* ---------- « Cette semaine » ---------- */
+/* Les éléments ajoutés dans chaque tube : <u> une 2e fumée, <b> l'écume (7 jours), <s> les bulles (7 jours), <em> les bulles qui éclatent (le jour). */
+[data-style='cabinet'] .ly-segments { position: relative; }
+[data-style='cabinet'] .ly-segments i > :is(u, b, s, em) { position: absolute; display: none; text-decoration: none; pointer-events: none; }
+/* Le jour : trois petites bulles crèvent la surface quand le tube a fini de monter. */
+[data-style='cabinet'] .ly-segments:not(.b6):not(.b7) i.auj > em { display: block; top: 10px; width: 4px; height: 4px; box-sizing: border-box; border-radius: 50%; border: 1px solid #c6ffcc; opacity: 0; animation: cx-eclot 0.45s ease-out 1.5s both; }
+[data-style='cabinet'] .ly-segments:not(.b6):not(.b7) i.auj > em:nth-of-type(2) { left: 5px; animation-delay: 1.62s; }
+[data-style='cabinet'] .ly-segments:not(.b6):not(.b7) i.auj > em:nth-of-type(3) { left: 2px; animation-delay: 1.78s; }
+/* 6 et 7 jours : la fumée prend la couleur du liquide, une 2e bouffée plus grosse. */
+[data-style='cabinet'] .ly-segments.b6 i.on::before { background: radial-gradient(circle, rgba(255, 220, 110, 0.75), rgba(255, 220, 110, 0) 70%); }
+[data-style='cabinet'] .ly-segments.b7 i.on::before { background: radial-gradient(circle, rgba(255, 120, 100, 0.75), rgba(255, 120, 100, 0) 70%); }
+[data-style='cabinet'] .ly-segments:is(.b6, .b7) i.on > u { display: block; left: -4px; top: -22px; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 220, 110, 0.7), rgba(255, 220, 110, 0) 70%); opacity: 0; animation: cb-fume 2.4s ease-out -0.7s infinite; }
+[data-style='cabinet'] .ly-segments.b7 i.on > u { background: radial-gradient(circle, rgba(255, 120, 100, 0.7), rgba(255, 120, 100, 0) 70%); animation-duration: 1.4s; }
+[data-style='cabinet'] .ly-segments:is(.b6, .b7) i.on:nth-child(2) > u { animation-delay: -1.15s; }
+[data-style='cabinet'] .ly-segments:is(.b6, .b7) i.on:nth-child(3) > u { animation-delay: -1.6s; }
+[data-style='cabinet'] .ly-segments:is(.b6, .b7) i.on:nth-child(4) > u { animation-delay: -0.3s; }
+[data-style='cabinet'] .ly-segments:is(.b6, .b7) i.on:nth-child(5) > u { animation-delay: -1.9s; }
+/* 7 jours : de vraies bulles, de tailles variées, qui montent en zigzag et crèvent la surface ; l'écume bouillonne et saute du tube. */
+[data-style='cabinet'] .ly-segments.b7 i.on::after { opacity: 0; animation: none; }
+[data-style='cabinet'] .ly-segments.b7 i.on > s { display: block; bottom: 2px; left: 3px; width: 4px; height: 4px; box-sizing: border-box; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.92);
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.95) 0 22%, rgba(255, 255, 255, 0.12) 45%, transparent 70%); opacity: 0; animation: cx-bulle 1s ease-in infinite; }
+[data-style='cabinet'] .ly-segments.b7 i.on > s:nth-of-type(1) { left: 1px; width: 3px; height: 3px; animation-duration: 0.8s; }
+[data-style='cabinet'] .ly-segments.b7 i.on > s:nth-of-type(2) { left: 5px; width: 4.5px; height: 4.5px; animation-duration: 1.15s; animation-delay: -0.35s; }
+[data-style='cabinet'] .ly-segments.b7 i.on > s:nth-of-type(3) { left: 2px; width: 3.5px; height: 3.5px; animation-duration: 0.95s; animation-delay: -0.7s; }
+[data-style='cabinet'] .ly-segments.b7 i.on > s:nth-of-type(4) { left: 6px; width: 2.5px; height: 2.5px; animation-duration: 0.7s; animation-delay: -0.2s; }
+[data-style='cabinet'] .ly-segments.b7 i.on > s:nth-of-type(5) { left: 3px; width: 5px; height: 5px; animation-duration: 1.3s; animation-delay: -0.9s; }
+[data-style='cabinet'] .ly-segments.b7 i.on:nth-child(2n) > s { animation-delay: -0.5s; }
+[data-style='cabinet'] .ly-segments.b7 i.on:nth-child(3) > s:nth-of-type(2) { animation-delay: -0.1s; }
+[data-style='cabinet'] .ly-segments.b7 i.on > b { display: block; left: -1px; right: -1px; top: 5px; height: 5px; border-radius: 50%;
+  background: radial-gradient(circle at 20% 60%, rgba(255, 235, 230, 0.95) 0 1.6px, transparent 2px), radial-gradient(circle at 55% 40%, rgba(255, 235, 230, 0.9) 0 2px, transparent 2.4px), radial-gradient(circle at 85% 60%, rgba(255, 235, 230, 0.9) 0 1.4px, transparent 1.8px), rgba(255, 160, 150, 0.55);
+  animation: cx-ecume 0.28s ease-in-out infinite alternate; }
+[data-style='cabinet'] .ly-segments.b7 i.on > b::before, [data-style='cabinet'] .ly-segments.b7 i.on > b::after { content: ''; position: absolute; top: 0; width: 2.5px; height: 2.5px; border-radius: 50%; background: #ffb0a6; box-shadow: 0 0 3px #ff4a3a; opacity: 0; animation: cx-saute 0.9s ease-out infinite; }
+[data-style='cabinet'] .ly-segments.b7 i.on > b::before { left: 1px; --sx: -4px; }
+[data-style='cabinet'] .ly-segments.b7 i.on > b::after { right: 1px; --sx: 4px; animation-delay: -0.45s; }
+[data-style='cabinet'] .cx-arc-tubes { position: absolute; left: 10px; top: 4px; width: calc(100% - 20px); height: 14px; overflow: visible; pointer-events: none; filter: drop-shadow(0 0 3px #ff8e84) drop-shadow(0 0 6px #ffd23a); }
+[data-style='cabinet'] .cx-arc-tubes polyline { fill: none; stroke: #fff3c8; stroke-width: 1.4; opacity: 0; animation: cx-arc-sem 2.6s linear 1.4s infinite; }
+
+/* ---------- Révision ---------- */
+html[data-style='cabinet']:has(.studystage:is(.n-again, .n-hard, .n-good, .n-easy)) { overflow: hidden; }
+[data-style='cabinet'] .studystage { position: relative; }
+[data-style='cabinet'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy) { z-index: 3; }
+[data-style='cabinet'] .studystage.n-again { animation: cx-fondu 1.9s linear both; }
+[data-style='cabinet'] .studystage.n-hard { animation: cx-fondu 2s linear both; }
+[data-style='cabinet'] .studystage.n-good { animation: cx-fondu 1.9s linear both; }
+[data-style='cabinet'] .studystage.n-easy { animation: cx-irradie 2.6s ease-out both; }
+[data-style='cabinet'] .studystage :is(.cx-ballon, .cx-micro, .cx-loupe, .cx-fiole, .cx-medaille, .cx-electrode) i { position: absolute; display: block; font-style: normal; }
+/* Raté : le ballon sur son bec, qui bout, mousse, tremble et explose. */
+[data-style='cabinet'] .cx-ballon { position: absolute; left: 50%; top: 55%; z-index: 5; width: 90px; height: 140px; margin-left: -45px; display: block; pointer-events: none; animation: cx-apparait 1.9s ease-out both; }
+[data-style='cabinet'] .cx-ballon .bec { left: 40px; bottom: 0; width: 10px; height: 24px; border-radius: 2px; background: linear-gradient(90deg, #7a5a22, #e2bd6e 40%, #c79a4b 60%, #6e4f1c); }
+[data-style='cabinet'] .cx-ballon .flamme { left: 39px; bottom: 22px; width: 12px; height: 18px; border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%; background: radial-gradient(circle at 50% 75%, #e9fff0 0 20%, #7ee7ff 45%, rgba(60, 140, 255, 0.5) 70%, transparent 72%); transform-origin: 50% 100%; animation: cb-flamme 0.25s ease-in-out infinite alternate; }
+[data-style='cabinet'] .cx-ballon .verre { position: absolute; left: 0; top: 0; width: 90px; height: 100px; display: block; animation: cx-verre 1.9s linear both; }
+[data-style='cabinet'] .cx-ballon .col { left: 36px; top: 0; width: 18px; height: 34px; box-sizing: border-box; border: 1.5px solid rgba(232, 239, 230, 0.7); border-bottom: none; background: rgba(255, 255, 255, 0.05); }
+[data-style='cabinet'] .cx-ballon .panse { left: 10px; top: 30px; width: 70px; height: 70px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(232, 239, 230, 0.7); background: linear-gradient(0deg, #8dff9a 0 48%, rgba(141, 255, 154, 0.3) 48% 52%, rgba(255, 255, 255, 0.05) 52%); box-shadow: 0 0 18px rgba(141, 255, 154, 0.5), inset 8px 6px 10px rgba(255, 255, 255, 0.18); }
+[data-style='cabinet'] .cx-ballon .bulle { box-sizing: border-box; border-radius: 50%; border: 1px solid rgba(234, 255, 234, 0.9); opacity: 0; animation: cx-bulle-b 0.5s ease-out 2 both; }
+[data-style='cabinet'] .cx-ballon .mousse { border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #d6ffdc 50%, #8dff9a); box-shadow: 0 0 8px rgba(141, 255, 154, 0.7); transform: scale(0); animation: cx-mousse 1.9s ease-out both; }
+[data-style='cabinet'] .cx-ballon .flash { left: 45px; top: 65px; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: radial-gradient(circle, #fff, #eaffea 30%, rgba(141, 255, 154, 0.6) 60%, transparent 70%); transform: scale(0); animation: cx-flash 1.9s ease-out both; }
+[data-style='cabinet'] .cx-ballon .eclat { left: 45px; top: 65px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(190, 230, 210, 0.4)); clip-path: polygon(0 0, 100% 30%, 40% 100%); opacity: 0; animation: cx-eclat 1.9s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+[data-style='cabinet'] .cx-ballon .fumee { left: 25px; top: 45px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, rgba(141, 255, 154, 0.7), rgba(60, 140, 90, 0.45) 50%, rgba(60, 140, 90, 0) 72%); opacity: 0; animation: cx-fumee 1.9s ease-out both; }
+/* Dur : le microscope descend, le mot devient flou puis net, la loupe le grossit. */
+[data-style='cabinet'] .studystage.n-hard :is(.word, .answer) { animation: cx-flou 2s ease-in-out both; }
+[data-style='cabinet'] .cx-micro { position: absolute; left: 50%; top: 0; z-index: 5; width: 70px; height: 170px; margin-left: -35px; display: block; pointer-events: none; transform: translateY(-220px); animation: cx-micro 2s cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+[data-style='cabinet'] .cx-micro .tube { left: 24px; top: 0; width: 22px; height: 96px; border-radius: 3px; background: linear-gradient(90deg, #7a5a22, #e2bd6e 40%, #c79a4b 60%, #6e4f1c); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.3); }
+[data-style='cabinet'] .cx-micro .tourelle { left: 20px; top: 96px; width: 30px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, #3a3a3a, #9a9a9a 40%, #444); }
+[data-style='cabinet'] .cx-micro .objectif { left: 28px; top: 106px; width: 14px; height: 22px; border-radius: 0 0 4px 4px; background: linear-gradient(90deg, #7a5a22, #e2bd6e 40%, #c79a4b 60%, #6e4f1c); }
+[data-style='cabinet'] .cx-micro .lentille { left: 31px; top: 126px; width: 8px; height: 6px; border-radius: 50%; background: radial-gradient(circle, #eaffea, #8dff9a 50%, #3d6a52); box-shadow: 0 0 8px #8dff9a; }
+[data-style='cabinet'] .cx-micro .molette { left: 46px; top: 48px; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; border: 3px solid #c79a4b; background: repeating-conic-gradient(#e2bd6e 0 15deg, #7a5a22 15deg 30deg); animation: cx-molette 2s ease-in-out both; }
+[data-style='cabinet'] .cx-loupe { position: absolute; left: 50%; top: 35%; z-index: 6; width: 150px; height: 150px; margin-left: -75px; box-sizing: border-box; display: grid; place-items: center; overflow: hidden; pointer-events: none; border-radius: 50%; border: 5px solid #c79a4b; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.18), rgba(16, 27, 23, 0.92) 60%); box-shadow: 0 0 0 1px #7a5a22, 0 10px 20px rgba(0, 0, 0, 0.6); transform: scale(0); animation: cx-loupe 2s ease-out both; }
+[data-style='cabinet'] .cx-loupe span { font-family: var(--titre); font-size: 52px; line-height: 1; white-space: nowrap; color: #f4fff2; text-shadow: 0 0 12px rgba(141, 255, 154, 0.7), 0 0 30px rgba(141, 255, 154, 0.35); }
+/* Bien : deux pipettes, le mélange qui vire au vert radium. */
+[data-style='cabinet'] .cx-fiole { position: absolute; left: 50%; top: 54%; z-index: 5; width: 120px; height: 150px; margin-left: -60px; display: block; pointer-events: none; animation: cx-apparait 1.9s ease-out both; }
+[data-style='cabinet'] .cx-fiole .pipette { top: 0; width: 6px; height: 44px; border-radius: 0 0 3px 3px; transform-origin: 50% 0; }
+[data-style='cabinet'] .cx-fiole .pipette.g { left: 20px; background: linear-gradient(180deg, rgba(232, 239, 230, 0.3), rgba(126, 200, 255, 0.8)); transform: rotate(18deg); }
+[data-style='cabinet'] .cx-fiole .pipette.d { right: 20px; background: linear-gradient(180deg, rgba(232, 239, 230, 0.3), rgba(255, 193, 90, 0.85)); transform: rotate(-18deg); }
+[data-style='cabinet'] .cx-fiole .goutte { top: 40px; width: 6px; height: 8px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; opacity: 0; animation: cx-goutte-f 0.35s ease-in both; }
+[data-style='cabinet'] .cx-fiole .goutte.g { left: 27px; background: #7ec8ff; box-shadow: 0 0 5px #7ec8ff; }
+[data-style='cabinet'] .cx-fiole .goutte.d { left: 73px; background: #ffc15a; box-shadow: 0 0 5px #ffc15a; }
+[data-style='cabinet'] .cx-fiole .cone { position: absolute; left: 20px; top: 50px; width: 80px; height: 96px; display: block; clip-path: polygon(38% 0, 62% 0, 62% 34%, 100% 100%, 0 100%, 38% 34%); background: rgba(255, 255, 255, 0.07); }
+[data-style='cabinet'] .cx-fiole .liquide { left: 0; right: 0; bottom: 0; height: 0; background: #7ec8ff; animation: cx-melange 1.9s ease-in-out both; }
+[data-style='cabinet'] .cx-fiole .bulle { box-sizing: border-box; border-radius: 50%; border: 1px solid rgba(234, 255, 234, 0.9); opacity: 0; animation: cx-bulle-f 0.6s ease-out both; }
+[data-style='cabinet'] .cx-fiole .contour { position: absolute; left: 20px; top: 50px; width: 80px; height: 96px; overflow: visible; }
+[data-style='cabinet'] .cx-fiole .contour polygon { fill: none; stroke: rgba(232, 239, 230, 0.7); stroke-width: 1.5; }
+[data-style='cabinet'] .cx-fiole .halo { left: 10px; right: 10px; bottom: -6px; height: 20px; border-radius: 50%; background: radial-gradient(ellipse, rgba(141, 255, 154, 0.6), transparent 70%); opacity: 0; animation: cx-halo 1.9s ease-out both; }
+/* Facile : les électrodes, l'éclair, la médaille de l'Académie, les étincelles. */
+[data-style='cabinet'] .cx-eclair { position: absolute; left: 0; top: -4px; z-index: 6; width: 100%; height: 80px; overflow: visible; pointer-events: none; filter: drop-shadow(0 0 4px #7ec8ff) drop-shadow(0 0 10px #8dff9a); }
+[data-style='cabinet'] .cx-eclair polyline { fill: none; stroke: #f0fff4; stroke-width: 2.4; stroke-linejoin: round; opacity: 0; animation: cx-eclair-a 2.6s linear both; }
+[data-style='cabinet'] .cx-eclair polyline:nth-child(2) { stroke-width: 2; animation-name: cx-eclair-b; }
+[data-style='cabinet'] .cx-electrode { position: absolute; top: 22px; z-index: 6; width: 36px; height: 60px; display: block; pointer-events: none; animation: cx-electrode 2.6s ease-out both; }
+[data-style='cabinet'] .cx-electrode.g { left: 20px; }
+[data-style='cabinet'] .cx-electrode.d { right: 20px; }
+[data-style='cabinet'] .cx-electrode i:first-child { top: 0; width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff2cc, #e2bd6e 40%, #7a5a22); box-shadow: 0 0 14px rgba(141, 255, 154, 0.6); }
+[data-style='cabinet'] .cx-electrode.g i:first-child { left: 0; }
+[data-style='cabinet'] .cx-electrode.d i:first-child { right: 4px; }
+[data-style='cabinet'] .cx-electrode i:last-child { top: 30px; width: 4px; height: 30px; background: linear-gradient(90deg, #7a5a22, #e2bd6e 40%, #c79a4b 60%, #6e4f1c); }
+[data-style='cabinet'] .cx-electrode.g i:last-child { left: 14px; }
+[data-style='cabinet'] .cx-electrode.d i:last-child { right: 18px; }
+[data-style='cabinet'] .cx-medaille { position: absolute; left: 50%; top: 28%; z-index: 7; width: 140px; height: 190px; margin-left: -70px; display: block; pointer-events: none; opacity: 0; animation: cx-medaille 2.6s cubic-bezier(0.4, 0, 0.6, 1) both; }
+[data-style='cabinet'] .cx-medaille .ruban { top: 0; width: 26px; height: 70px; }
+[data-style='cabinet'] .cx-medaille .ruban.g { left: 38px; background: linear-gradient(90deg, #1f4a8a, #3a6fc0 50%, #1f4a8a); transform: skewX(14deg); }
+[data-style='cabinet'] .cx-medaille .ruban.d { right: 38px; background: linear-gradient(90deg, #8a1f2a, #c03a48 50%, #8a1f2a); transform: skewX(-14deg); }
+[data-style='cabinet'] .cx-medaille .disque { position: absolute; left: 10px; top: 56px; width: 120px; height: 120px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 50%; color: #4a3412; text-align: center;
+  background: radial-gradient(circle at 35% 30%, #fff2cc, #e2bd6e 35%, #c79a4b 60%, #7a5a22); box-shadow: inset 0 0 0 6px rgba(122, 90, 34, 0.5), inset 0 0 0 8px #f2dca6, 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 26px rgba(255, 210, 120, 0.5); }
+[data-style='cabinet'] .cx-medaille .disque small { font-family: var(--sans); font-size: 7.5px; letter-spacing: 0.18em; text-transform: uppercase; }
+[data-style='cabinet'] .cx-medaille .disque span { font-family: var(--titre); font-size: 26px; font-weight: 600; line-height: 1; }
+[data-style='cabinet'] .cx-medaille .reflet { left: 10px; top: 56px; width: 120px; height: 120px; overflow: hidden; border-radius: 50%; }
+[data-style='cabinet'] .cx-medaille .reflet i { top: -20%; bottom: -20%; left: 0; width: 30%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.8), transparent); transform: translateX(-160%) rotate(10deg); animation: cx-medreflet 2.6s ease-in-out both; }
+[data-style='cabinet'] .cx-etincelle { position: absolute; left: 50%; top: 54%; z-index: 8; display: block; background: #fff2cc; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); filter: drop-shadow(0 0 3px #ffd27a); pointer-events: none; opacity: 0; animation: cx-etincelle 0.8s ease-out both; }
+
+@keyframes cx-secousse { 0%, 52% { transform: none; } 56% { transform: translate(-1px, 1px); } 60% { transform: translate(1px, -1px); } 64%, 100% { transform: none; } }
+@keyframes cx-lueur { 0%, 50% { opacity: 0; } 54% { opacity: 1; } 60% { opacity: 0.5; } 64% { opacity: 0.95; } 82% { opacity: 0.6; } 100% { opacity: 0; } }
+@keyframes cx-bobine { 0% { opacity: 0; transform: translateY(10px); } 10%, 84% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+@keyframes cx-tore { 0%, 10% { box-shadow: 0 0 0 0 rgba(141, 255, 154, 0); } 40% { box-shadow: 0 0 10px 3px rgba(141, 255, 154, 0.8); } 50% { box-shadow: 0 0 18px 6px rgba(234, 255, 234, 0.95); } 70% { box-shadow: 0 0 6px 2px rgba(141, 255, 154, 0.6); } 100% { box-shadow: 0 0 0 0 rgba(141, 255, 154, 0); } }
+@keyframes cx-crepit { 0%, 100% { opacity: 0; transform: scale(0.4); } 40% { opacity: 1; transform: scale(1); } 60% { opacity: 0; } }
+@keyframes cx-arc-a { 0%, 47% { opacity: 0; } 48%, 51% { opacity: 1; } 52%, 55% { opacity: 0; } 56%, 59% { opacity: 1; } 60%, 63% { opacity: 0; } 64%, 66% { opacity: 1; } 67%, 100% { opacity: 0; } }
+@keyframes cx-arc-b { 0%, 50% { opacity: 0; } 51%, 54% { opacity: 1; } 55%, 61% { opacity: 0; } 62%, 65% { opacity: 1; } 66%, 100% { opacity: 0; } }
+@keyframes cx-arc-c { 0%, 53% { opacity: 0; } 54%, 57% { opacity: 1; } 58%, 66% { opacity: 0; } 67%, 70% { opacity: 1; } 71%, 100% { opacity: 0; } }
+@keyframes cx-eclot { 0% { transform: translateY(0) scale(0.3); opacity: 0; } 40% { opacity: 1; transform: translateY(-4px) scale(1); } 70% { transform: translateY(-7px) scale(1.4); opacity: 0.8; } 100% { transform: translateY(-8px) scale(1.8); opacity: 0; } }
+@keyframes cx-bulle { 0% { transform: translate(0, 0) scale(0.5); opacity: 0; } 10% { opacity: 1; } 30% { transform: translate(1.2px, -7px) scale(0.75); } 55% { transform: translate(-1px, -14px) scale(0.9); } 80% { transform: translate(0.8px, -20px) scale(1.05); opacity: 1; } 88% { transform: translate(0, -22px) scale(1.5); opacity: 0.7; } 100% { transform: translate(0, -23px) scale(1.9); opacity: 0; } }
+@keyframes cx-ecume { from { transform: translateY(0) scaleY(1); } to { transform: translateY(-1px) scaleY(1.3); } }
+@keyframes cx-saute { 0%, 30% { transform: translate(0, 0); opacity: 0; } 40% { opacity: 1; } 100% { transform: translate(var(--sx), -12px); opacity: 0; } }
+@keyframes cx-arc-sem { 0%, 70% { opacity: 0; } 72%, 75% { opacity: 1; } 76%, 79% { opacity: 0.2; } 80%, 84% { opacity: 1; } 86%, 100% { opacity: 0; } }
+@keyframes cx-fondu { 0%, 86% { transform: none; opacity: 1; } 100% { transform: translateY(6px); opacity: 0; } }
+@keyframes cx-irradie { 0%, 12% { box-shadow: 0 0 30px rgba(141, 255, 154, 0.18), inset 0 0 30px rgba(141, 255, 154, 0.08); } 30% { box-shadow: 0 0 60px rgba(141, 255, 154, 0.6), inset 0 0 50px rgba(141, 255, 154, 0.3); } 100% { box-shadow: 0 0 40px rgba(141, 255, 154, 0.35), inset 0 0 30px rgba(141, 255, 154, 0.15); } }
+@keyframes cx-apparait { 0% { opacity: 0; transform: translateY(-12px); } 8%, 100% { opacity: 1; transform: none; } }
+@keyframes cx-verre { 0%, 38% { transform: none; opacity: 1; } 40% { transform: translateX(-2px) rotate(-2deg); } 42% { transform: translateX(2px) rotate(2deg); } 44% { transform: translateX(-3px) rotate(-3deg); } 46% { transform: translateX(3px) rotate(3deg); } 48% { transform: scale(1.06); } 50% { transform: scale(1.12); opacity: 1; } 51%, 100% { transform: scale(1.2); opacity: 0; } }
+@keyframes cx-bulle-b { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-30px) scale(1); opacity: 0; } }
+@keyframes cx-mousse { 0%, 22% { transform: scale(0); } 46% { transform: scale(1); } 50% { transform: scale(1.1); } 51%, 100% { transform: scale(0); } }
+@keyframes cx-flash { 0%, 50% { transform: scale(0); opacity: 1; } 56% { transform: scale(9); opacity: 1; } 70%, 100% { transform: scale(12); opacity: 0; } }
+@keyframes cx-eclat { 0%, 50% { transform: translate(0, 0) rotate(0deg); opacity: 0; } 52%, 80% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+@keyframes cx-fumee { 0%, 50% { transform: translate(0, 0) scale(0.2); opacity: 0; } 58% { opacity: 0.9; } 100% { transform: translate(var(--dx), var(--dy)) scale(var(--s)); opacity: 0; } }
+@keyframes cx-micro { 0% { transform: translateY(-220px); } 18%, 84% { transform: translateY(-34px); } 100% { transform: translateY(-220px); } }
+@keyframes cx-molette { 0%, 34% { transform: rotate(0deg); } 56%, 100% { transform: rotate(300deg); } }
+@keyframes cx-flou { 0%, 18% { filter: blur(0); } 32% { filter: blur(5px); } 46% { filter: blur(2px); } 50% { filter: blur(3px); } 58%, 100% { filter: blur(0); } }
+@keyframes cx-loupe { 0%, 58% { transform: scale(0) rotate(-20deg); } 68% { transform: scale(1.05) rotate(4deg); } 74%, 88% { transform: scale(1) rotate(0deg); } 100% { transform: scale(0); } }
+@keyframes cx-goutte-f { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 10% { opacity: 1; transform: scale(1); } 100% { transform: translateY(70px); opacity: 1; } }
+@keyframes cx-melange { 0%, 12% { height: 0; background: #7ec8ff; } 30% { height: 28%; background: #7ec8ff; } 42% { height: 46%; background: #9fd6b0; } 56% { height: 58%; background: #c9e07a; } 66%, 100% { height: 62%; background: #8dff9a; box-shadow: 0 0 20px #8dff9a; } }
+@keyframes cx-bulle-f { 0% { transform: translateY(0) scale(0.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-40px) scale(1); opacity: 0; } }
+@keyframes cx-halo { 0%, 60% { opacity: 0; } 72% { opacity: 1; } 100% { opacity: 0.6; } }
+@keyframes cx-electrode { 0% { opacity: 0; transform: translateY(-30px); } 12%, 100% { opacity: 1; transform: none; } }
+@keyframes cx-eclair-a { 0%, 15% { opacity: 0; } 16%, 19% { opacity: 1; } 20%, 23% { opacity: 0; } 24%, 28% { opacity: 1; } 29%, 32% { opacity: 0; } 33%, 38% { opacity: 1; } 39%, 100% { opacity: 0; } }
+@keyframes cx-eclair-b { 0%, 18% { opacity: 0; } 19%, 22% { opacity: 1; } 23%, 27% { opacity: 0; } 28%, 31% { opacity: 1; } 32%, 36% { opacity: 0; } 37%, 42% { opacity: 1; } 43%, 100% { opacity: 0; } }
+@keyframes cx-medaille { 0%, 42% { opacity: 0; transform: translateY(-260px) rotate(-12deg); } 43% { opacity: 1; } 58% { transform: translateY(0) rotate(0deg); } 63% { transform: translateY(-16px) rotate(3deg); } 68% { transform: translateY(0) rotate(0deg); } 72%, 100% { opacity: 1; transform: none; } }
+@keyframes cx-medreflet { 0%, 70% { transform: translateX(-160%) rotate(10deg); } 90%, 100% { transform: translateX(420%) rotate(10deg); } }
+@keyframes cx-etincelle { 0% { transform: translate(0, 0) scale(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='cabinet'] .cx-tesla, [data-style='cabinet'] .cx-ballon, [data-style='cabinet'] .cx-micro, [data-style='cabinet'] .cx-loupe, [data-style='cabinet'] .cx-fiole, [data-style='cabinet'] .cx-eclair, [data-style='cabinet'] .cx-electrode, [data-style='cabinet'] .cx-medaille, [data-style='cabinet'] .cx-etincelle, [data-style='cabinet'] .cx-arc-tubes { display: none !important; }
+  [data-style='cabinet'] .btn.ly-go, [data-style='cabinet'] .studystage:is(.n-again, .n-hard, .n-good, .n-easy), [data-style='cabinet'] .studystage :is(.word, .answer), [data-style='cabinet'] .ly-segments i > :is(u, b, s, em), [data-style='cabinet'] .ly-segments i > b::before, [data-style='cabinet'] .ly-segments i > b::after { animation: none !important; }
+}
