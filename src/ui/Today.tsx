@@ -683,7 +683,7 @@ export function Today({
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -796,6 +796,14 @@ export function Today({
               <span className="cloche"><i /><i /></span>
             </span>
           )}
+          {/* CHANTIER 260 — Jungle : deux touffes de fougères poussent, la machette les tranche d'un trait de lumière, elles tombent, un papillon s'envole. Le froissement de feuilles existant reste. */}
+          {style === 'jungle' && plouf > 0 && (
+            <span key={plouf} className="ju-tranche" aria-hidden="true">
+              <span className="coupe"><span className="touffe g"><i /><i /><i /><i /><i /><i /><i /><i /></span><span className="touffe d"><i /><i /><i /><i /><i /><i /><i /><i /></span><i className="entaille" /></span>
+              <span className="machette"><i /><i /><i /></span>
+              <span className="papillon"><i /><i /><i /></span>
+            </span>
+          )}
           {/* CHANTIER 247 — TV : l'écran du bouton (noir, trait blanc), la télécommande, ses ondes, « En direct ». */}
           {style === 'tv' && plouf > 0 && (
             <span className="tl-entree" aria-hidden="true">
@@ -846,6 +854,9 @@ export function Today({
                   {/* CHANTIER 252 — Bibliothèque : un signet par jour tenu, jusqu'à sept ; les 6e et 7e sont dorés, avec un pompon (<u>). */}
                   {/* CHANTIER 253 — Salon de thé : jusqu'à sept bougies ; les 6e et 7e, dorées, sortent du gâteau. */}
                   {Array.from({ length: style === 'biblio' || style === 'patisserie' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'cabinet' && <><u /><b /><s /><s /><s /><s /><s /><em /><em /><em /></>}{style === 'japon' && <><u /><b /><em /><s /></>}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {/* CHANTIER 260 — Jungle : l'itinéraire en pointillés (6 jours et plus) ; la croix rouge et le petit coffre qui s'ouvre (7 jours). */}
+                  {style === 'jungle' && faits >= 6 && <span className={`ju-piste${faits >= 7 ? ' long' : ''}`} />}
+                  {style === 'jungle' && faits >= 7 && <span className="ju-tresor"><b className="croix" /><span className="coffre"><b className="caisse" /><b className="couvercle" /><b className="serrure" /><b className="lueur" /></span></span>}
                   {/* CHANTIER 256 — Cotton Club : la clé de sol et trois croches (6 jours et plus). */}
                   {style === 'jazz' && faits >= 6 && <><b className="cc-cle">𝄞</b><s className="cc-croche">♪</s><s className="cc-croche">♪</s><s className="cc-croche">♪</s></>}
                   {/* CHANTIER 255 — Japon zen : wasabi et feuille (6 jours et plus), le bateau à sushis (7 jours). */}

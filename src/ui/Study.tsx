@@ -243,6 +243,12 @@ const PX_CONFETTIS = Array.from({ length: 6 }, (_, k) => ({ right: `${74 + (k % 
 const PX_FUMEES = Array.from({ length: 6 }, (_, k) => ({ top: `${8 + (k % 3) * 18}px`, animationDelay: `${(k * 0.06).toFixed(2)}s` }) as CSSProperties);
 const PX_ECLATS = Array.from({ length: 12 }, (_, k) => { const a = (k / 12) * Math.PI * 2; return { '--dx': `${Math.round(Math.cos(a) * 90)}px`, '--dy': `${Math.round(Math.sin(a) * 90)}px` } as unknown as CSSProperties; });
 
+/* CHANTIER 260 — Jungle : bulles (Raté), rigoles (Dur), pièces et papillons (Facile). */
+const JU_BULLES = [[20, 0.5], [46, 0.75], [70, 0.62], [32, 1.0], [60, 1.15]].map(([x, d]) => ({ left: `${x}%`, animationDelay: `${(d - 0.6).toFixed(2)}s` }) as CSSProperties);
+const JU_RIGOLES = [12, 34, 58, 80].map((x, j) => ({ left: `${x}%`, animationDelay: `${(j * 0.08).toFixed(2)}s` }) as CSSProperties);
+const JU_PIECES = Array.from({ length: 12 }, (_, j) => ({ '--dx': `${((j % 6) - 2.5) * 40}px`, '--hy': `${-(150 + (j % 4) * 40)}px`, animationDelay: `${((j % 5) * 0.05).toFixed(2)}s` }) as unknown as CSSProperties);
+const JU_PAPILLONS = [['#e8743b', -90, 0.1], ['#2e78d0', 20, 0.25], ['#f2c14e', 110, 0.4], ['#c0392b', -30, 0.55]].map(([c, dx, d]) => ({ '--c': c, '--dx': `${dx}px`, animationDelay: `${d}s` }) as unknown as CSSProperties);
+
 /* CHANTIER 251 — Cinéma muet, Facile : le public qui applaudit et les « Clap ! » (positions sur un écran de 360 × 760). */
 const CI_TETES = Array.from({ length: 9 }, (_, k) => ({
   left: `${(((-14 + k * 42) / 360) * 100).toFixed(1)}%`,
@@ -540,7 +546,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -614,6 +620,29 @@ export function Study({
             <span className="px-chapeau" aria-hidden="true"><i /><i /></span>
             <span className="px-etoile" aria-hidden="true"><i /><i /><b>SHÉRIF</b></span>
             {PX_ECLATS.map((st, k) => <i key={k} className="px-eclat" aria-hidden="true" style={st} />)}
+          </>
+        )}
+        {/* CHANTIER 260 — Jungle : les sables mouvants (Raté), l'averse (Dur), le perroquet (Bien), le trésor (Facile). */}
+        {style === 'jungle' && frappe === 'again' && (
+          <span className="ju-sable" aria-hidden="true"><i className="surface" />{JU_BULLES.map((st, k) => <i key={k} className="bulle" style={st} />)}</span>
+        )}
+        {style === 'jungle' && frappe === 'hard' && (
+          <>
+            <span className="ju-pluie" aria-hidden="true"><i /></span>
+            {JU_RIGOLES.map((st, k) => <i key={k} className="ju-rigole" aria-hidden="true" style={st} />)}
+          </>
+        )}
+        {style === 'jungle' && frappe === 'good' && (
+          <>
+            <span className="ju-perroquet" aria-hidden="true"><i className="corps" /><i className="tete" /><i className="bec" /><i className="oeil" /><span className="aile"><i /></span><i className="queue" /><i className="pattes" /></span>
+            <b className="ju-bravo" aria-hidden="true">Bravo !</b>
+          </>
+        )}
+        {style === 'jungle' && frappe === 'easy' && (
+          <>
+            <span className="ju-coffre" aria-hidden="true"><i className="rayons" /><i className="caisse" /><i className="couvercle" /><i className="serrure" /></span>
+            {JU_PIECES.map((st, k) => <i key={k} className="ju-piece" aria-hidden="true" style={st} />)}
+            {JU_PAPILLONS.map((st, k) => <span key={k} className="ju-papillon" aria-hidden="true" style={st}><i /><i /><i /></span>)}
           </>
         )}
         {/* CHANTIER 258 — Plage : la vague qui fait chavirer (Raté), le maître-nageur (Dur), le surfeur et le dauphin (Bien), le tube (Facile). */}
@@ -991,6 +1020,13 @@ export function Study({
         </div>
       )}
 
+      {/* CHANTIER 260 — Jungle, Dur : la jungle s'assombrit, deux éclairs. */}
+      {style === 'jungle' && frappe === 'hard' && cadre && (
+        <div className="ju-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <i className="nuit" /><i className="eclair g" /><i className="eclair d" />
+        </div>
+      )}
+
       {/* CHANTIER 259 — Pacific Express, Facile : le soleil couchant, le train en ombre sur l'horizon. */}
       {style === 'western' && frappe === 'easy' && cadre && (
         <div className="px-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
@@ -1190,7 +1226,7 @@ export function Study({
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
-                  : style === 'jungle' ? (g.key === 'again' ? 1100 : 900) : style === 'western' ? (g.key === 'easy' ? 2600 : 1900)
+                  : style === 'jungle' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 260 — Jungle : sables mouvants, orage, perroquet, trésor. */ : style === 'western' ? (g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
                   : style === 'basket' ? 1250
                   /* CHANTIER 239 — Pelouse : le ballon touché part (roule, à côté, poteau, lucarne). */
@@ -1214,7 +1250,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
