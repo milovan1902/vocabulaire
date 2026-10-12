@@ -546,7 +546,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -1028,6 +1028,33 @@ export function Study({
           <b className="ju-bravo">Bravo !</b>
         </div>
       )}
+      {/* CHANTIER 263 — Décollage et Orbite. Trois calques à la place de la carte (cadre) :
+          .ec-scene.dessous (derrière la carte), .ec-scene.libre (ce qui en fait le tour, devant puis derrière),
+          .ec-scene (devant). Les étoiles filantes et les météorites : calque plein écran, coupé aux bords. */}
+      {(style === 'decollage' || style === 'orbite') && frappe && cadre && (
+        <>
+          {style === 'orbite' && (frappe === 'hard' || frappe === 'easy') && (
+            <div className="ec-scene dessous" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+              {frappe === 'hard' ? <i className="trou" /> : <><i className="rayons" /><i className="nova" /><i className="onde" /></>}
+            </div>
+          )}
+          {((style === 'decollage' && frappe === 'easy') || (style === 'orbite' && frappe === 'good')) && (
+            <div className="ec-scene libre" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+              {style === 'decollage' ? <span className="ec-fusee tour"><i /><i /><i /><i /><i /></span> : <span className="ec-satellite"><i /><i /><i /><i /><i /></span>}
+            </div>
+          )}
+          <div className="ec-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+            {style === 'decollage' && frappe === 'again' && <><span className="ec-fusee cale"><i /><i /><i /><i /><i /></span><i className="bouffee" /></>}
+            {style === 'decollage' && frappe === 'hard' && <><i className="glitch" /><i className="glitch" /><i className="glitch" /><i className="glitch" /></>}
+            {style === 'decollage' && frappe === 'good' && <><span className="ec-fusee monte"><i /><i /><i /><i /><i /></span><span className="ec-etage"><i /><i /><i /></span><i className="bouffee" /></>}
+            {style === 'orbite' && frappe === 'again' && <><i className="impact" /><i className="fissure" /></>}
+            {style === 'orbite' && frappe === 'easy' && Array.from({ length: 12 }, (_, k) => <i key={k} className="eclat" />)}
+          </div>
+          {((style === 'decollage' && frappe === 'easy') || (style === 'orbite' && frappe === 'again')) && (
+            <div className="ec-ciel" aria-hidden="true">{Array.from({ length: style === 'orbite' ? 6 : 5 }, (_, k) => <i key={k} className={style === 'orbite' ? 'meteore' : 'filante'} />)}</div>
+          )}
+        </>
+      )}
       {/* CHANTIER 262 — Grand bleu : l'ancre et les bulles (Raté), le banc de poissons (Bien) — posés sur la carte ;
           le courant (Dur), la baleine et son jet (Facile) — calque plein écran, rien ne dépasse. */}
       {style === 'ocean' && (frappe === 'again' || frappe === 'good') && cadre && (
@@ -1245,6 +1272,7 @@ export function Study({
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
+                  : style === 'decollage' || style === 'orbite' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 263 — Décollage : moteur, turbulences, étage, orbite ; Orbite : météorites, trou noir, satellite, supernova. */
                   : style === 'ocean' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 262 — Grand bleu : l'ancre, le courant, le banc de poissons, la baleine. */
                   : style === 'jardin' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 261 — Jardin : la fleur fane, le coup de vent, l'abeille, l'éclosion. */
                   : style === 'jungle' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 260 — Jungle : sables mouvants, orage, perroquet, trésor. */ : style === 'western' ? (g.key === 'easy' ? 2600 : 1900)
@@ -1271,7 +1299,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'ocean') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'ocean' || style === 'decollage' || style === 'orbite') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }

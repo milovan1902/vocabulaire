@@ -676,14 +676,14 @@ export function Today({
             /* CHANTIER 255 — Japon zen : les shōji se ferment puis s'ouvrent sur le bouton, qui s'éclaire en lanterne. */
             /* CHANTIER 256 — Cotton Club : le rideau tombe sur le bouton puis se lève, le projecteur le balaie, il brille. */
             /* CHANTIER 257 — Château : le pont-levis s'abaisse sur ses chaînes, la herse remonte, deux torches s'allument. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : style === 'decollage' || style === 'orbite' ? 1800 /* CHANTIER 263 — Décollage : la fusée part ; Orbite : la navette s'amarre. */ : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -804,6 +804,21 @@ export function Today({
               <span className="papillon"><i /><i /><i /></span>
             </span>
           )}
+          {/* CHANTIER 263 — Décollage : compte à rebours 3, 2, 1 dans le bouton, puis la fusée décolle dans la fumée. */}
+          {style === 'decollage' && plouf > 0 && (
+            <span key={plouf} className="ec-decollage" aria-hidden="true">
+              <span className="decompte"><b>3</b><b>2</b><b>1</b></span>
+              <s /><s /><s /><s /><s /><s />
+              <span className="ec-fusee"><i /><i /><i /><i /><i /></span>
+            </span>
+          )}
+          {/* CHANTIER 263 — Orbite : la navette arrive en arc et s'amarre au bout du bouton, qui s'illumine. */}
+          {style === 'orbite' && plouf > 0 && (
+            <span key={plouf} className="ec-amarrage" aria-hidden="true">
+              <i className="pince" />
+              <span className="point"><span className="ec-navette"><i /><i /><i /><i /></span></span>
+            </span>
+          )}
           {/* CHANTIER 262 — Grand bleu : le plongeur pique dans le bouton, une onde s'ouvre, une gerbe de bulles remonte, un reflet passe. */}
           {style === 'ocean' && plouf > 0 && (
             <span key={plouf} className="gb-plonger" aria-hidden="true">
@@ -848,9 +863,13 @@ export function Today({
               <>
                 <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE}`}</b>
                 <i
-                  className={`ly-lune p${Math.min(faits, OBJECTIF_SEMAINE)}${faits > OBJECTIF_SEMAINE ? ` b${Math.min(faits, 7)}` : ''}`}
+                  className={`ly-lune p${Math.min(faits, OBJECTIF_SEMAINE)}${faits > OBJECTIF_SEMAINE ? ` b${Math.min(faits, 7)}` : ''}${faitAujourdhui && faits >= 1 && faits <= OBJECTIF_SEMAINE ? ' auj' : ''}`}
                   aria-hidden="true"
                 />
+                {/* CHANTIER 263 — la lune du jour se remplit (un anneau de lumière en fait le tour) ; 6 jours : une étoile scintille ; 7 jours : une éclipse dorée passe. */}
+                {faitAujourdhui && faits >= 1 && faits <= OBJECTIF_SEMAINE && <i className="ec-anneau" aria-hidden="true" />}
+                {faits > OBJECTIF_SEMAINE && <i className="ec-etoile" aria-hidden="true" />}
+                {faits >= 7 && <><i className="ec-eclipse" aria-hidden="true" /><i className="ec-diamant" aria-hidden="true" /></>}
               </>
             ) : (
               <>
