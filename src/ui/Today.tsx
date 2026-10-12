@@ -676,14 +676,14 @@ export function Today({
             /* CHANTIER 255 — Japon zen : les shōji se ferment puis s'ouvrent sur le bouton, qui s'éclaire en lanterne. */
             /* CHANTIER 256 — Cotton Club : le rideau tombe sur le bouton puis se lève, le projecteur le balaie, il brille. */
             /* CHANTIER 257 — Château : le pont-levis s'abaisse sur ses chaînes, la herse remonte, deux torches s'allument. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -804,6 +804,14 @@ export function Today({
               <span className="papillon"><i /><i /><i /></span>
             </span>
           )}
+          {/* CHANTIER 262 — Grand bleu : le plongeur pique dans le bouton, une onde s'ouvre, une gerbe de bulles remonte, un reflet passe. */}
+          {style === 'ocean' && plouf > 0 && (
+            <span key={plouf} className="gb-plonger" aria-hidden="true">
+              <span className="reflet"><i /></span>
+              <span className="plongeur"><i /><i /><i /><i /><i /><i /></span>
+              <i className="onde" /><s /><s /><s /><s /><s /><s /><s />
+            </span>
+          )}
           {/* CHANTIER 261 — Jardin : l'arrosoir entre, verse cinq gouttes sur le bouton (deux ronds dans la terre), puis repart. */}
           {style === 'jardin' && plouf > 0 && (
             <span key={plouf} className="jd-arroser" aria-hidden="true">
@@ -881,6 +889,8 @@ export function Today({
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
                   )}
                 </span>
+                {/* CHANTIER 262 — Grand bleu, 7 jours : à côté de « 7 jours », un coquillage s'ouvre sur une perle qui brille. */}
+                {style === 'ocean' && faits >= 7 && <span className="gb-coquille" aria-hidden="true"><i className="perle" /><i className="bas" /><i className="haut" /><i className="eclat" /></span>}
                 {/* CHANTIER 261 — Jardin, 7 jours : le soleil se lève dans le coin de la tuile, ses rayons descendent sur les cinq pots, qui scintillent. */}
                 {style === 'jardin' && faits >= 7 && <span className="jd-soleil" aria-hidden="true"><i className="halo" /><i className="faisceaux" /><i className="couronne" /><i className="disque" /></span>}
                 {style === 'jardin' && faits >= 7 && <span className="jd-eclats" aria-hidden="true"><s /><s /><s /><s /><s /></span>}

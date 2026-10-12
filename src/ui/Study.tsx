@@ -546,7 +546,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -1028,6 +1028,20 @@ export function Study({
           <b className="ju-bravo">Bravo !</b>
         </div>
       )}
+      {/* CHANTIER 262 — Grand bleu : l'ancre et les bulles (Raté), le banc de poissons (Bien) — posés sur la carte ;
+          le courant (Dur), la baleine et son jet (Facile) — calque plein écran, rien ne dépasse. */}
+      {style === 'ocean' && (frappe === 'again' || frappe === 'good') && cadre && (
+        <div className="gb-scene" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          {frappe === 'again' ? <><i className="nuit" /><span className="ancre"><i /><i /><i /><i /><i /></span><s /><s /><s /><s /><s /></> : [0, 1, 2, 3, 4, 5, 6].map((k) => <span key={k} className="poisson"><i /><i /><i /></span>)}
+        </div>
+      )}
+      {style === 'ocean' && frappe === 'hard' && <div className="gb-mer" aria-hidden="true"><i className="courant" /><i className="courant" /><i className="courant" /><i className="courant" /><i className="courant" /><i className="courant" /></div>}
+      {style === 'ocean' && frappe === 'easy' && (
+        <div className="gb-mer" aria-hidden="true">
+          <span className="baleine"><i /><i /><i /><i /><i /><b /><b /><b /><b /><b /><b /><b /></span>
+          <s /><s /><s /><s /><s /><s /><s />
+        </div>
+      )}
       {/* CHANTIER 261 — Jardin : le coup de vent (Dur), le soleil qui pulse derrière la carte (Facile). */}
       {style === 'jardin' && frappe === 'hard' && <div className="jd-vent" aria-hidden="true"><i /><i /><i /><i /><i /></div>}
       {style === 'jardin' && frappe === 'easy' && <div className="jd-ciel" aria-hidden="true"><i className="soleil" /><i className="rayons" /></div>}
@@ -1231,6 +1245,7 @@ export function Study({
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
+                  : style === 'ocean' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 262 — Grand bleu : l'ancre, le courant, le banc de poissons, la baleine. */
                   : style === 'jardin' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 261 — Jardin : la fleur fane, le coup de vent, l'abeille, l'éclosion. */
                   : style === 'jungle' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 260 — Jungle : sables mouvants, orage, perroquet, trésor. */ : style === 'western' ? (g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
@@ -1256,7 +1271,7 @@ export function Study({
                   /* CHANTIER 250 — Fashion week : faux pas, retouche, tour de piste, en couverture. */
                   : style === 'fashion' ? (g.key === 'again' ? 1700 : g.key === 'hard' ? 1900 : g.key === 'good' ? 1900 : 2400) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle') {
+                  if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'ocean') {
                     const el = refStage.current;
                     if (el) setCadre({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight });
                   }
@@ -1275,6 +1290,8 @@ export function Study({
                 /* CHANTIER 248 — Station 1936 : le calque est le panneau (poteau en bois, tas de neige). */
                 <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' || style === 'circuit' || style === 'station' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
               )}
+              {/* CHANTIER 262 — Grand bleu, Facile : le coquillage s'ouvre sur une perle. */}
+              {style === 'ocean' && frappe === 'easy' && g.key === 'easy' && <i className="gb-perle" aria-hidden="true" />}
               {/* CHANTIER 261 — Jardin : pétales qui tombent (Raté) ou s'envolent (Dur), l'abeille et son pollen (Bien), les graines de pissenlit (Facile). */}
               {style === 'jardin' && frappe === g.key && (
                 <span className="jd-fx" aria-hidden="true">
