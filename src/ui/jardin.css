@@ -304,3 +304,172 @@
 @media (prefers-reduced-motion: reduce) {
   [data-style='jardin'] .grades .grade { transition: none; }
 }
+
+
+/* ==================================================================
+   CHANTIER 261 — Jardin animé (maquette 77a). Préfixe jd-.
+   Le fond animé (FondAnime : soleil, nuages, averse, fleurs de la bande
+   de terre), les sachets, les pots et l'étiquette ne changent pas.
+   ================================================================== */
+/* En route : l'arrosoir verse cinq gouttes sur le bouton, la révision s'ouvre à 1,8 s. */
+[data-style='jardin'] .btn.ly-go:has(.jd-arroser) { position: relative; z-index: 16; overflow: visible; animation: jd-presse 1.8s ease-out; }
+[data-style='jardin'] .jd-arroser { position: absolute; inset: 0; z-index: 2; display: block; pointer-events: none; }
+[data-style='jardin'] .jd-arroser i, [data-style='jardin'] .jd-arroser .arrosoir { position: absolute; display: block; }
+[data-style='jardin'] .jd-arroser .arrosoir { right: 24px; top: -96px; width: 76px; height: 52px; transform-origin: 76px 26px; opacity: 0; animation: jd-arrosoir 1.8s ease-in-out both; }
+[data-style='jardin'] .jd-arroser .arrosoir i:nth-child(1) { left: -11px; top: 13px; width: 36px; height: 6px; border-radius: 3px; background: #3f7a2e; transform: rotate(34deg); transform-origin: 100% 50%; }
+[data-style='jardin'] .jd-arroser .arrosoir i:nth-child(2) { left: -19px; top: -7px; width: 12px; height: 10px; border-radius: 50% 50% 30% 30%; background: #3f7a2e; transform: rotate(34deg); }
+[data-style='jardin'] .jd-arroser .arrosoir i:nth-child(3) { left: 50px; top: 2px; width: 24px; height: 32px; box-sizing: border-box; border-radius: 50%; border: 5px solid #3f7a2e; clip-path: inset(0 0 0 45%); }
+[data-style='jardin'] .jd-arroser .arrosoir i:nth-child(4) { left: 12px; top: 12px; width: 48px; height: 36px; border-radius: 8px 8px 12px 12px; background: linear-gradient(180deg, #6fae4f, #4f8a3c); box-shadow: inset 0 -4px 0 rgba(47, 58, 34, 0.2); }
+[data-style='jardin'] .jd-arroser .arrosoir i:nth-child(5) { left: 18px; top: 8px; width: 30px; height: 6px; border-radius: 3px; background: #3f7a2e; }
+[data-style='jardin'] .jd-arroser > .goutte { top: -46px; width: 5px; height: 8px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #8ecae6; box-shadow: inset -1px -1px 0 rgba(47, 90, 120, 0.35); opacity: 0; animation: jd-goutte 0.42s ease-in both; }
+[data-style='jardin'] .jd-arroser > .goutte:nth-of-type(1) { right: 113px; --dx: -4px; animation-delay: 0.55s; }
+[data-style='jardin'] .jd-arroser > .goutte:nth-of-type(2) { right: 107px; --dx: 2px; animation-delay: 0.7s; }
+[data-style='jardin'] .jd-arroser > .goutte:nth-of-type(3) { right: 117px; --dx: -7px; animation-delay: 0.85s; }
+[data-style='jardin'] .jd-arroser > .goutte:nth-of-type(4) { right: 110px; --dx: 0px; animation-delay: 1s; }
+[data-style='jardin'] .jd-arroser > .goutte:nth-of-type(5) { right: 104px; --dx: 5px; animation-delay: 1.15s; }
+[data-style='jardin'] .jd-arroser > .rond { top: -4px; width: 20px; height: 8px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid #8ecae6; opacity: 0; animation: jd-rond 0.5s ease-out both; }
+[data-style='jardin'] .jd-arroser > .rond:nth-of-type(6) { right: 104px; animation-delay: 0.95s; }
+[data-style='jardin'] .jd-arroser > .rond:nth-of-type(7) { right: 92px; animation-delay: 1.25s; }
+@keyframes jd-arrosoir { 0% { opacity: 0; transform: translate(26px, -14px) rotate(8deg); } 16% { opacity: 1; transform: none; } 30%, 68% { opacity: 1; transform: rotate(-32deg); } 82% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(26px, -14px) rotate(8deg); } }
+@keyframes jd-goutte { 0% { opacity: 0; transform: none; } 12%, 88% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), 46px); } }
+@keyframes jd-rond { 0% { opacity: 0; transform: scale(0.2); } 20% { opacity: 0.9; } 100% { opacity: 0; transform: scale(1.8); } }
+@keyframes jd-presse { 0%, 66% { transform: none; box-shadow: 0 4px 0 #7d3a1d; } 74% { transform: translateY(2px); box-shadow: 0 2px 0 #7d3a1d; } 86%, 100% { transform: none; box-shadow: 0 4px 0 #7d3a1d; } }
+
+/* Cette semaine : la fleur du jour sort de son pot. */
+[data-style='jardin'] .ly-segments i.auj::before { transform-origin: 50% 100%; animation: jd-pousse 1.2s cubic-bezier(0.3, 1.4, 0.5, 1) 0.3s both; }
+/* 6 et 7 jours : les fleurs se balancent, la tuile se cerne de vert. */
+[data-style='jardin'] .ly-segments:is(.b6, .b7) i.on::before { transform-origin: 50% 100%; animation: jd-doux 2.4s ease-in-out infinite alternate; }
+[data-style='jardin'] .ly-segments:is(.b6, .b7) i.on:nth-child(2)::before { animation-delay: -0.4s; }
+[data-style='jardin'] .ly-segments:is(.b6, .b7) i.on:nth-child(3)::before { animation-delay: -0.8s; }
+[data-style='jardin'] .ly-segments:is(.b6, .b7) i.on:nth-child(4)::before { animation-delay: -1.2s; }
+[data-style='jardin'] .ly-segments:is(.b6, .b7) i.on:nth-child(5)::before { animation-delay: -1.6s; }
+[data-style='jardin'] .ly-tuile:has(.ly-segments:is(.b6, .b7)) { box-shadow: 0 0 0 1.5px var(--vert); }
+/* 7 jours : le soleil se lève dans le coin de la tuile ; ses rayons partent de lui et descendent
+   sur les pots (ils balaient lentement), les fleurs luisent, cinq éclats scintillent. Le tout
+   reste DANS la tuile (overflow hidden), derrière le texte. */
+[data-style='jardin'] .ly-tuile:has(.jd-soleil) { position: relative; isolation: isolate; }
+[data-style='jardin'] .jd-soleil { position: absolute; inset: 0; z-index: -1; display: block; overflow: hidden; border-radius: inherit; pointer-events: none; }
+[data-style='jardin'] .jd-soleil i { position: absolute; display: block; }
+[data-style='jardin'] .jd-soleil .halo { inset: 0; background: radial-gradient(circle at calc(100% - 22px) 20px, rgba(255, 214, 110, 0.6), rgba(255, 214, 110, 0.18) 45%, rgba(255, 214, 110, 0) 75%); opacity: 0; animation: jd-leve 1.2s ease-out 0.3s both; }
+[data-style='jardin'] .jd-soleil .faisceaux { inset: -60px; transform-origin: calc(100% - 82px) 80px; opacity: 0;
+  background: repeating-conic-gradient(from 0deg at calc(100% - 82px) 80px, rgba(255, 222, 130, 0) 0deg 4deg, rgba(255, 222, 130, 0.55) 6deg 8deg, rgba(255, 222, 130, 0) 10deg 15deg);
+  -webkit-mask: radial-gradient(circle at calc(100% - 82px) 80px, #000 0 25%, transparent 70%); mask: radial-gradient(circle at calc(100% - 82px) 80px, #000 0 25%, transparent 70%);
+  animation: jd-faisceaux 1.4s ease-out 0.5s both, jd-balaie 9s ease-in-out 1.9s infinite alternate; }
+[data-style='jardin'] .jd-soleil .couronne { right: 0; top: -2px; width: 44px; height: 44px; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 190, 60, 0.9) 0 8deg, transparent 8deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 46%, #000 50% 66%, transparent 72%); mask: radial-gradient(circle, transparent 0 46%, #000 50% 66%, transparent 72%);
+  animation: jd-leve-soleil 1s cubic-bezier(0.3, 1.5, 0.5, 1) 0.3s both, jd-tourne 16s linear 1.3s infinite; }
+[data-style='jardin'] .jd-soleil .disque { right: 12px; top: 10px; width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fffbe6, #ffd25a 60%, #f2b33d); box-shadow: 0 0 10px 3px rgba(255, 205, 90, 0.7); animation: jd-leve-soleil 1s cubic-bezier(0.3, 1.5, 0.5, 1) 0.3s both, jd-pulse 3s ease-in-out 1.3s infinite alternate; }
+[data-style='jardin'] .ly-segments.b7 i.on::before { filter: drop-shadow(0 0 3px rgba(255, 200, 80, 0.85)); }
+[data-style='jardin'] .jd-eclats { position: absolute; left: 14px; right: 14px; bottom: 40px; z-index: 1; height: 0; display: block; pointer-events: none; }
+[data-style='jardin'] .jd-eclats s { position: absolute; top: 0; width: 9px; height: 9px; margin: -4.5px; display: block; opacity: 0;
+  background: linear-gradient(#fff, #fff) center / 1.5px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 1.5px no-repeat;
+  filter: drop-shadow(0 0 2px #ffcf4a); animation: jd-scintille 2.4s ease-in-out infinite; }
+[data-style='jardin'] .jd-eclats s:nth-child(1) { left: 12px; animation-delay: 1.2s; }
+[data-style='jardin'] .jd-eclats s:nth-child(2) { left: calc(25% + 6px); animation-delay: 1.55s; }
+[data-style='jardin'] .jd-eclats s:nth-child(3) { left: 50%; animation-delay: 1.9s; }
+[data-style='jardin'] .jd-eclats s:nth-child(4) { left: calc(75% - 6px); animation-delay: 2.25s; }
+[data-style='jardin'] .jd-eclats s:nth-child(5) { left: calc(100% - 12px); animation-delay: 2.6s; }
+/* 7 jours : une coccinelle traverse la bande de terre, de temps en temps (calque libre de la barre d'onglets). */
+[data-style='jardin'] body:has(.ly-segments.b7) .tabbar::before {
+  content: ''; display: block; position: absolute; left: 8px; right: auto; top: auto; bottom: calc(100% + 3px); width: 18px; height: 11px; pointer-events: none;
+  background: radial-gradient(circle 3px at 15px 5.5px, #1a1a1a 96%, transparent), radial-gradient(circle 1.5px at 4.5px 3.5px, #1a1a1a 96%, transparent), radial-gradient(circle 1.5px at 9.5px 3.5px, #1a1a1a 96%, transparent), radial-gradient(circle 1.3px at 7px 8px, #1a1a1a 96%, transparent), linear-gradient(90deg, transparent 6.4px, #1a1a1a 6.4px 7.6px, transparent 7.6px) 0 0 / 14px 11px no-repeat, radial-gradient(ellipse 7px 5.5px at 7px 5.5px, #d9342b 96%, transparent);
+  background-repeat: no-repeat; opacity: 0; animation: jd-cocci 12s ease-in-out 1s infinite; }
+@keyframes jd-pousse { 0% { transform: scale(0.3, 0); } 55% { transform: scale(1.12, 1.06); } 100% { transform: none; } }
+@keyframes jd-doux { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+@keyframes jd-leve { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jd-faisceaux { from { opacity: 0; transform: rotate(-20deg); } to { opacity: 1; transform: none; } }
+@keyframes jd-balaie { from { transform: none; } to { transform: rotate(8deg); } }
+@keyframes jd-leve-soleil { 0% { transform: translate(-6px, 14px) scale(0); } 100% { transform: none; } }
+@keyframes jd-tourne { to { transform: rotate(360deg); } }
+@keyframes jd-pulse { from { box-shadow: 0 0 8px 2px rgba(255, 205, 90, 0.6); } to { box-shadow: 0 0 16px 6px rgba(255, 205, 90, 0.85); } }
+@keyframes jd-scintille { 0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+@keyframes jd-cocci { 0% { opacity: 0; transform: none; } 3% { opacity: 1; } 55% { opacity: 1; transform: translateX(calc(100vw - 40px)); } 58%, 100% { opacity: 0; transform: translateX(calc(100vw - 40px)); } }
+
+/* Révision : la carte penche (Raté), tremble (Dur), monte d'un cran (Facile). */
+[data-style='jardin'] .studystage.n-again { transform-origin: 50% 120%; animation: jd-penche 1.9s ease-in-out both; }
+[data-style='jardin'] .studystage.n-hard { animation: jd-tremble 1.9s linear both; }
+[data-style='jardin'] .studystage.n-easy { animation: jd-carte 2.6s ease-in-out both; }
+[data-style='jardin'] .grades .grade.frappe { z-index: 3; }
+/* Raté : la plante ploie, la fleur pâlit et rétrécit, deux pétales tombent. */
+[data-style='jardin'] .grades .g-again.frappe::before { transform-origin: 50% 94px; animation: jd-fane 1.9s ease-in-out both; }
+[data-style='jardin'] .grades .g-again.frappe::after { transform-origin: 50% 100%; animation: jd-ploie 1.9s ease-in-out both; }
+/* Dur : le coup de vent couche la plante, des pétales s'envolent. */
+[data-style='jardin'] .grades .g-hard.frappe::before { transform-origin: 50% 94px; animation: jd-balance 1.9s ease-in-out both; }
+[data-style='jardin'] .grades .g-hard.frappe::after { transform-origin: 50% 100%; animation: jd-balance 1.9s ease-in-out both; }
+/* Bien : la fleur palpite sous l'abeille. Facile : elle s'épanouit. */
+[data-style='jardin'] .grades .g-good.frappe::before { animation: jd-butine 1.9s ease-in-out both; }
+[data-style='jardin'] .grades .g-easy.frappe::before { animation: jd-eclot 2.6s cubic-bezier(0.3, 1.3, 0.5, 1) both; }
+[data-style='jardin'] .jd-fx { position: absolute; left: 50%; top: 36px; z-index: 4; width: 0; height: 0; display: block; pointer-events: none; }
+[data-style='jardin'] .jd-fx i, [data-style='jardin'] .jd-fx .abeille { position: absolute; display: block; }
+[data-style='jardin'] .jd-fx .petale { left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50% 50% 50% 0; background: var(--c); opacity: 0; }
+[data-style='jardin'] .g-again .jd-fx .petale { animation: jd-tombe 1.3s ease-in both; }
+[data-style='jardin'] .g-again .jd-fx .petale:nth-of-type(1) { left: -20px; top: 2px; --dx: -12px; animation-delay: 0.4s; }
+[data-style='jardin'] .g-again .jd-fx .petale:nth-of-type(2) { left: 8px; top: 6px; --dx: 10px; animation-delay: 0.6s; }
+[data-style='jardin'] .g-hard .jd-fx .petale { width: 11px; height: 11px; animation: jd-envol 1.2s ease-in both; }
+[data-style='jardin'] .g-hard .jd-fx .petale:nth-of-type(1) { --dx: 110px; --dy: -60px; animation-delay: 0.25s; }
+[data-style='jardin'] .g-hard .jd-fx .petale:nth-of-type(2) { --dx: 160px; --dy: -140px; animation-delay: 0.35s; }
+[data-style='jardin'] .g-hard .jd-fx .petale:nth-of-type(3) { --dx: 190px; --dy: -30px; animation-delay: 0.45s; }
+[data-style='jardin'] .g-hard .jd-fx .petale:nth-of-type(4) { --dx: 140px; --dy: -220px; animation-delay: 0.55s; }
+[data-style='jardin'] .g-hard .jd-fx .petale:nth-of-type(5) { --dx: 90px; --dy: -120px; animation-delay: 0.65s; }
+[data-style='jardin'] .jd-fx .abeille { left: -13px; top: -10px; width: 26px; height: 20px; opacity: 0; animation: jd-abeille 1.9s ease-in-out both; }
+[data-style='jardin'] .jd-fx .abeille i:nth-child(1) { left: 7px; top: -4px; width: 10px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 1px rgba(88, 98, 74, 0.35); transform-origin: 50% 100%; animation: jd-bat 0.08s linear infinite alternate; }
+[data-style='jardin'] .jd-fx .abeille i:nth-child(2) { left: 2px; top: 6px; width: 22px; height: 14px; border-radius: 50%; background: repeating-linear-gradient(90deg, #f2c14e 0 4px, #2a2418 4px 7px); box-shadow: inset 0 0 0 1px #2a2418; }
+[data-style='jardin'] .jd-fx .abeille i:nth-child(3) { left: 20px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #2a2418; }
+[data-style='jardin'] .jd-fx .abeille i:nth-child(4) { left: 12px; top: -5px; width: 11px; height: 13px; border-radius: 50%; background: rgba(255, 255, 255, 0.75); box-shadow: 0 0 0 1px rgba(88, 98, 74, 0.35); transform-origin: 50% 100%; animation: jd-bat 0.08s linear -0.04s infinite alternate; }
+[data-style='jardin'] .jd-fx .pollen { left: -2.5px; top: -6px; width: 5px; height: 5px; border-radius: 50%; background: #ffd966; box-shadow: 0 0 0 1px rgba(196, 100, 60, 0.4); opacity: 0; animation: jd-pollen 0.8s ease-out both; }
+[data-style='jardin'] .jd-fx .pollen:nth-of-type(1) { --dx: -14px; animation-delay: 0.95s; }
+[data-style='jardin'] .jd-fx .pollen:nth-of-type(2) { --dx: -4px; animation-delay: 1.01s; }
+[data-style='jardin'] .jd-fx .pollen:nth-of-type(3) { --dx: 6px; animation-delay: 1.07s; }
+[data-style='jardin'] .jd-fx .pollen:nth-of-type(4) { --dx: 14px; animation-delay: 1.13s; }
+[data-style='jardin'] .jd-fx .graine { left: -6px; top: -10px; width: 12px; height: 20px; opacity: 0; filter: drop-shadow(0 0 1px rgba(88, 98, 74, 0.6));
+  background: radial-gradient(circle 6px at 6px 6px, #fff 30%, rgba(255, 255, 255, 0.7) 60%, transparent 72%), linear-gradient(#8a9a70, #8a9a70) 5.5px 11px / 1px 9px no-repeat;
+  animation: jd-graine 2s ease-out both; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(1) { --dx: -60px; --dy: -260px; animation-delay: 0.5s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(2) { --dx: -120px; --dy: -320px; animation-delay: 0.58s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(3) { --dx: -180px; --dy: -220px; animation-delay: 0.66s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(4) { --dx: -40px; --dy: -380px; animation-delay: 0.74s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(5) { --dx: -210px; --dy: -340px; animation-delay: 0.82s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(6) { --dx: -100px; --dy: -180px; animation-delay: 0.9s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(7) { --dx: -150px; --dy: -420px; animation-delay: 0.98s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(8) { --dx: -20px; --dy: -200px; animation-delay: 1.06s; }
+[data-style='jardin'] .jd-fx .graine:nth-of-type(9) { --dx: -240px; --dy: -260px; animation-delay: 1.14s; }
+/* Dur : les traits du vent traversent l'écran (calque fixe, rien ne dépasse). */
+[data-style='jardin'] .jd-vent { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; }
+[data-style='jardin'] .jd-vent i { position: absolute; left: 0; width: 110px; height: 16px; box-sizing: border-box; display: block; border-top: 2px solid rgba(88, 98, 74, 0.45); border-radius: 50%; opacity: 0; animation: jd-vent 1.2s ease-in both; }
+[data-style='jardin'] .jd-vent i:nth-child(1) { top: 24%; }
+[data-style='jardin'] .jd-vent i:nth-child(2) { top: 40%; animation-delay: 0.15s; }
+[data-style='jardin'] .jd-vent i:nth-child(3) { top: 74%; border-top-color: rgba(255, 250, 240, 0.8); animation-delay: 0.3s; }
+[data-style='jardin'] .jd-vent i:nth-child(4) { top: 84%; border-top-color: rgba(255, 250, 240, 0.75); animation-delay: 0.05s; }
+[data-style='jardin'] .jd-vent i:nth-child(5) { top: 56%; border-top-color: rgba(88, 98, 74, 0.35); animation-delay: 0.45s; }
+/* Facile : le soleil pulse dans le coin, ses rayons tournent (derrière tout). */
+[data-style='jardin'] .jd-ciel { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+[data-style='jardin'] .jd-ciel i { position: absolute; display: block; border-radius: 50%; }
+[data-style='jardin'] .jd-ciel .soleil { right: -60px; top: -60px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255, 205, 90, 0.7), transparent 70%); animation: jd-soleil 2.6s ease-in-out both; }
+[data-style='jardin'] .jd-ciel .rayons { right: -130px; top: -130px; width: 340px; height: 340px; opacity: 0;
+  background: repeating-conic-gradient(rgba(255, 205, 90, 0.55) 0 7deg, transparent 7deg 22deg);
+  -webkit-mask: radial-gradient(circle, #000 20%, transparent 68%); mask: radial-gradient(circle, #000 20%, transparent 68%);
+  animation: jd-rayons 2.6s ease-out both; }
+@keyframes jd-penche { 0%, 100% { transform: none; } 25%, 68% { transform: rotate(-2.2deg); } }
+@keyframes jd-tremble { 0%, 82%, 100% { transform: none; } 12% { transform: rotate(1.6deg); } 26% { transform: rotate(-1.2deg); } 40% { transform: rotate(1.2deg); } 54% { transform: rotate(-0.8deg); } 68% { transform: rotate(0.6deg); } }
+@keyframes jd-carte { 0%, 100% { transform: none; box-shadow: 0 14px 28px rgba(47, 58, 34, 0.18); } 30% { transform: translateY(-8px); box-shadow: 0 0 0 4px #e1efd5, 0 20px 32px rgba(47, 58, 34, 0.22); } 60% { transform: translateY(-4px); } }
+@keyframes jd-fane { 0%, 100% { transform: none; filter: none; } 25%, 68% { transform: rotate(-18deg) scale(0.86); filter: saturate(0.3) brightness(0.92); } }
+@keyframes jd-ploie { 0%, 100% { transform: none; } 25%, 68% { transform: rotate(-18deg); } }
+@keyframes jd-tombe { 0% { opacity: 0; transform: none; } 10% { opacity: 1; } 80% { opacity: 1; transform: translate(var(--dx), 70px) rotate(170deg); } 100% { opacity: 0; transform: translate(var(--dx), 70px) rotate(170deg); } }
+@keyframes jd-balance { 0%, 100% { transform: none; } 14% { transform: rotate(20deg); } 30% { transform: rotate(-9deg); } 46% { transform: rotate(15deg); } 62% { transform: rotate(-5deg); } 78% { transform: rotate(6deg); } }
+@keyframes jd-envol { 0% { opacity: 0; transform: none; } 10%, 75% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(540deg); } }
+@keyframes jd-vent { 0% { opacity: 0; transform: translateX(-140px); } 20%, 80% { opacity: 0.9; } 100% { opacity: 0; transform: translateX(calc(100vw + 40px)); } }
+@keyframes jd-abeille { 0% { opacity: 0; transform: translate(-200px, -170px) rotate(10deg); } 10% { opacity: 1; } 28% { transform: translate(-100px, -120px) rotate(-8deg); } 40% { transform: translate(30px, -70px) rotate(14deg); } 50%, 66% { transform: translate(-4px, -22px) rotate(0deg); } 74% { transform: translate(-2px, -25px) rotate(-4deg); } 88% { opacity: 1; transform: translate(50px, -130px) rotate(-14deg); } 100% { opacity: 0; transform: translate(85px, -185px) rotate(-18deg); } }
+@keyframes jd-bat { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
+@keyframes jd-butine { 0%, 48%, 82%, 100% { transform: none; } 54% { transform: scale(1.1); } 62% { transform: scale(0.97); } 70% { transform: scale(1.05); } }
+@keyframes jd-pollen { 0% { opacity: 0; transform: none; } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), -34px); } }
+@keyframes jd-eclot { 0%, 100% { transform: none; } 20% { transform: scale(1.45) rotate(24deg); } 45% { transform: scale(1.32) rotate(18deg); } 70% { transform: scale(1.08) rotate(4deg); } }
+@keyframes jd-graine { 0% { opacity: 0; transform: scale(0.5); } 12% { opacity: 1; transform: translate(calc(var(--dx) * 0.1), calc(var(--dy) * 0.1)); } 50% { transform: translate(calc(var(--dx) * 0.45 + 14px), calc(var(--dy) * 0.5)) rotate(12deg); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(-10deg); } }
+@keyframes jd-soleil { 0%, 100% { transform: none; } 30% { transform: scale(1.55); } 60% { transform: scale(1.2); } }
+@keyframes jd-rayons { 0% { opacity: 0; transform: rotate(0deg); } 30% { opacity: 0.9; } 100% { opacity: 0; transform: rotate(50deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='jardin'] :is(.jd-arroser, .jd-fx, .jd-vent, .jd-ciel) { display: none; }
+  [data-style='jardin'] .ly-segments i::before, [data-style='jardin'] :is(.jd-soleil, .jd-eclats) *, [data-style='jardin'] .tabbar::before { animation: none !important; }
+  [data-style='jardin'] .jd-soleil * { opacity: 1; }
+}

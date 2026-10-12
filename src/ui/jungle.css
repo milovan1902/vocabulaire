@@ -408,3 +408,10 @@ body:not(:has(.today.ly)) .jg-salle { display: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-style='jungle'] .ju-tranche, [data-style='jungle'] .ju-sable, [data-style='jungle'] .ju-pluie, [data-style='jungle'] .ju-rigole, [data-style='jungle'] .ju-scene, [data-style='jungle'] .ju-perroquet, [data-style='jungle'] .ju-bravo, [data-style='jungle'] .ju-coffre, [data-style='jungle'] .ju-piece, [data-style='jungle'] .ju-papillon { display: none !important; }
 }
+
+
+/* CHANTIER 261 — Bien : le perroquet et « Bravo ! » passent au PREMIER PLAN. Ils sont dessinés
+   dans .ju-scene.haut (même place que la carte, Study.tsx), au-dessus des notes et de la barre du
+   haut. Mêmes positions et mêmes animations qu'en 260. Rien ne crée de défilement horizontal. */
+[data-style='jungle'] .ju-scene.haut { z-index: 30; }
+[data-style='jungle'] body { overflow-x: clip; }

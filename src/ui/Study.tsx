@@ -546,7 +546,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         <span className="tag">{current.card.theme}</span>
@@ -632,12 +632,7 @@ export function Study({
             {JU_RIGOLES.map((st, k) => <i key={k} className="ju-rigole" aria-hidden="true" style={st} />)}
           </>
         )}
-        {style === 'jungle' && frappe === 'good' && (
-          <>
-            <span className="ju-perroquet" aria-hidden="true"><i className="corps" /><i className="tete" /><i className="bec" /><i className="oeil" /><span className="aile"><i /></span><i className="queue" /><i className="pattes" /></span>
-            <b className="ju-bravo" aria-hidden="true">Bravo !</b>
-          </>
-        )}
+        {/* CHANTIER 261 — le perroquet (Bien) passe au premier plan : il est dessiné plus bas, dans .ju-scene.haut. */}
         {style === 'jungle' && frappe === 'easy' && (
           <>
             <span className="ju-coffre" aria-hidden="true"><i className="rayons" /><i className="caisse" /><i className="couvercle" /><i className="serrure" /></span>
@@ -1026,6 +1021,16 @@ export function Study({
           <i className="nuit" /><i className="eclair g" /><i className="eclair d" />
         </div>
       )}
+      {/* CHANTIER 261 — Jungle, Bien : le perroquet et « Bravo ! », au premier plan (au-dessus des notes et de la barre du haut). */}
+      {style === 'jungle' && frappe === 'good' && cadre && (
+        <div className="ju-scene haut" aria-hidden="true" style={{ top: cadre.top, left: cadre.left, width: cadre.width, height: cadre.height }}>
+          <span className="ju-perroquet"><i className="corps" /><i className="tete" /><i className="bec" /><i className="oeil" /><span className="aile"><i /></span><i className="queue" /><i className="pattes" /></span>
+          <b className="ju-bravo">Bravo !</b>
+        </div>
+      )}
+      {/* CHANTIER 261 — Jardin : le coup de vent (Dur), le soleil qui pulse derrière la carte (Facile). */}
+      {style === 'jardin' && frappe === 'hard' && <div className="jd-vent" aria-hidden="true"><i /><i /><i /><i /><i /></div>}
+      {style === 'jardin' && frappe === 'easy' && <div className="jd-ciel" aria-hidden="true"><i className="soleil" /><i className="rayons" /></div>}
 
       {/* CHANTIER 259 — Pacific Express, Facile : le soleil couchant, le train en ombre sur l'horizon. */}
       {style === 'western' && frappe === 'easy' && cadre && (
@@ -1226,6 +1231,7 @@ export function Study({
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)
                   /* CHANTIER 237 — Jungle : le panneau penche (Raté) ou pivote ; Pacific Express : le signal s'allume. */
+                  : style === 'jardin' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 261 — Jardin : la fleur fane, le coup de vent, l'abeille, l'éclosion. */
                   : style === 'jungle' ? (g.key === 'easy' ? 2600 : 1900) /* CHANTIER 260 — Jungle : sables mouvants, orage, perroquet, trésor. */ : style === 'western' ? (g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 238 — Parquet : le tir (planche, cercle, ou panier). */
                   : style === 'basket' ? 1250
@@ -1268,6 +1274,13 @@ export function Study({
                 /* CHANTIER 245 — Grille de départ : le calque est la bouffée d'air du pneu crèvé. */
                 /* CHANTIER 248 — Station 1936 : le calque est le panneau (poteau en bois, tas de neige). */
                 <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' || style === 'circuit' || style === 'station' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
+              )}
+              {/* CHANTIER 261 — Jardin : pétales qui tombent (Raté) ou s'envolent (Dur), l'abeille et son pollen (Bien), les graines de pissenlit (Facile). */}
+              {style === 'jardin' && frappe === g.key && (
+                <span className="jd-fx" aria-hidden="true">
+                  {g.key === 'good' && <span className="abeille"><i /><i /><i /><i /></span>}
+                  {Array.from({ length: g.key === 'again' ? 2 : g.key === 'hard' ? 5 : g.key === 'good' ? 4 : 9 }, (_, k) => <i key={k} className={g.key === 'easy' ? 'graine' : g.key === 'good' ? 'pollen' : 'petale'} />)}
+                </span>
               )}
             </button>
           ))}
