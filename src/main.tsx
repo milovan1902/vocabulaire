@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import Lancement from './ui/Lancement';
@@ -71,12 +71,20 @@ import './ui/chateau.css';
 import './ui/jungle.css';
 import './ui/western.css';
 
+/* CHANTIER 266 — /admin : le tableau de bord de l'exploitant, chargé à part.
+   Il ne monte ni l'application ni les fonds animés, et sa visite ne compte
+   pas comme une ouverture dans les mesures d'usage. */
+const Admin = lazy(() => import('./ui/Admin'));
+const estAdmin = /^\/admin\/?$/.test(window.location.pathname);
+
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
 
 /* CHANTIER 147 — première ouverture (une fois), puis une ouverture par jour. */
-mesure('installation');
-mesure('ouverture');
+if (!estAdmin) {
+  mesure('installation');
+  mesure('ouverture');
+}
 
 /* CHANTIER 154 — la progression ne doit pas être effacée par le navigateur. */
 void demandeStockagePersistant();
@@ -88,7 +96,15 @@ installeMiseAJour();
 createRoot(document.getElementById('root')!, {
   onUncaughtError: (e) => signaleErreur(e, 'react'),
   onCaughtError: (e) => signaleErreur(e, 'react-rattrapee'),
-}).render(
+}).render(estAdmin ? (
+  <StrictMode>
+    <FiletErreur>
+      <Suspense fallback={null}>
+        <Admin />
+      </Suspense>
+    </FiletErreur>
+  </StrictMode>
+) : (
   <StrictMode>
     {/* CHANTIER 146 — le filet enveloppe tout : une erreur de rendu affiche
         « Recharger » au lieu d'un écran blanc. */}
@@ -106,5 +122,5 @@ createRoot(document.getElementById('root')!, {
       <App />
       <MiseAJour />
     </FiletErreur>
-  </StrictMode>,
-);
+  </StrictMode>
+));

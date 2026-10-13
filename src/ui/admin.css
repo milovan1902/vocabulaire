@@ -1,0 +1,71 @@
+/* CHANTIER 266 — le tableau de bord /admin. Toutes les règles sont sous .adm : rien ne fuit vers l'application. */
+.adm { min-height: 100dvh; background: #0F253C; color: #f3efe6; font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 16px; line-height: 1.5; }
+.adm a { color: #f2b705; }
+.adm a:hover { color: #ffd24a; }
+.adm-page { max-width: 1120px; margin: 0 auto; padding: 24px 20px 56px; display: flex; flex-direction: column; gap: 28px; }
+.adm-tete { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid #2c4561; }
+.adm-tete > div { display: flex; flex-direction: column; gap: 4px; }
+.adm-retour { font-size: 14px; text-decoration: none; }
+.adm h1 { margin: 0; font-weight: normal; font-size: 30px; line-height: 1.15; }
+.adm h2 { margin: 0; font-weight: normal; font-size: 21px; color: #f2b705; }
+.adm-sous { margin: 0; color: #b9c3cf; font-size: 14px; }
+.adm-lien { background: none; border: 0; padding: 0; color: #f2b705; font: inherit; text-decoration: underline; cursor: pointer; }
+
+.adm-choix { display: flex; border: 1px solid #2c4561; border-radius: 999px; padding: 3px; gap: 2px; }
+.adm-choix button { border: 0; border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; background: transparent; color: #f3efe6; }
+.adm-choix button.on { background: #f2b705; color: #0F253C; }
+.adm-choix button:focus-visible, .adm-lien:focus-visible, .adm-bouton:focus-visible { outline: 2px solid #f2b705; outline-offset: 2px; }
+
+.adm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.adm-kpi { border: 1px solid #2c4561; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.adm-kpi > span { font-size: 13px; color: #b9c3cf; }
+.adm-kpi b { font-weight: normal; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.adm-kpi small { font-size: 13px; color: #b9c3cf; }
+.adm-kpi small.plus { color: #7fd3a0; }
+.adm-kpi.eteint b, .adm-kpi.eteint small { color: #6f8399; }
+
+.adm-bloc { display: flex; flex-direction: column; gap: 14px; }
+.adm-bloc-tete { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.adm-deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
+.adm-deux > * { min-width: 0; }
+
+.adm-barres { height: 160px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 1px solid #2c4561; padding-top: 8px; }
+.adm-barres i { flex: 1; min-width: 2px; border-radius: 3px 3px 0 0; background: #4a6a8c; }
+.adm-barres i:last-child { background: #f2b705; }
+.adm-axe { display: flex; justify-content: space-between; font-size: 12px; color: #b9c3cf; }
+.adm-axe small { font-size: 12px; }
+
+.adm-etapes { display: flex; flex-direction: column; gap: 10px; }
+.adm-etape > div:first-child { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.adm-etape > div:first-child span:last-child { font-variant-numeric: tabular-nums; color: #b9c3cf; }
+.adm-jauge { height: 8px; border-radius: 4px; background: #1a3552; margin-top: 4px; }
+.adm-jauge i { display: block; height: 8px; border-radius: 4px; background: #f2b705; }
+.adm-jauge i.alerte { background: #e8a07a; }
+
+.adm-courbe { display: flex; flex-direction: column; gap: 6px; }
+.adm-courbe-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; }
+.adm-courbe-tete b { font-weight: normal; font-size: 22px; font-variant-numeric: tabular-nums; }
+.adm-courbe-tete b.alerte { color: #e8a07a; }
+.adm-courbe-tete b.bon { color: #7fd3a0; }
+.adm-trace { height: 150px; border-bottom: 1px solid #2c4561; }
+.adm-trace svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.adm-trace .trait { fill: none; stroke: #f2b705; stroke-width: 2.5; stroke-linejoin: round; }
+.adm-trace .aire { fill: rgba(242, 183, 5, 0.12); stroke: none; }
+.adm-trace .seuil { fill: none; stroke: #e8a07a; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.adm-note { margin: 0; font-size: 12px; color: #b9c3cf; text-wrap: pretty; }
+
+.adm-table { display: flex; flex-direction: column; }
+.adm-ligne { display: grid; grid-template-columns: minmax(0, 1fr) 62px 60px 70px; gap: 10px; padding: 9px 0; border-bottom: 1px solid #2c4561; font-variant-numeric: tabular-nums; align-items: baseline; }
+.adm-ligne > span:not(:first-child) { text-align: right; }
+.adm-ligne.titres { padding: 6px 0; font-size: 13px; color: #b9c3cf; }
+.adm-ligne small { display: block; font-size: 12px; color: #b9c3cf; }
+.adm-tranche { display: grid; grid-template-columns: 110px minmax(0, 1fr) 36px; gap: 10px; align-items: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+.adm-tranche .adm-jauge { margin-top: 0; }
+.adm-tranche span:last-child { text-align: right; }
+.adm-label { font-size: 13px; color: #b9c3cf; }
+
+.adm-vide { border: 1px dashed #2c4561; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+.adm-vide span:last-child { font-size: 14px; color: #b9c3cf; text-wrap: pretty; }
+.adm-centre { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
+.adm-bouton { border: 1px solid #f2b705; border-radius: 999px; background: transparent; color: #f2b705; font: inherit; padding: 10px 22px; cursor: pointer; }
+.adm-bouton:hover { background: rgba(242, 183, 5, 0.12); }
