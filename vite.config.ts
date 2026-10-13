@@ -81,7 +81,11 @@ export default defineConfig({
          * vrai fichier : le service worker ne doit pas la remplacer par
          * l'application quand on l'ouvre depuis la fiche Google Play.
          */
-        navigateFallbackDenylist: [/^\/api\//, /^\/suppression-compte/, /^\/confidentialite/],
+        /*
+         * CHANTIER 264 — mentions légales et /.well-known/ (fichier assetlinks.json
+         * de la future version Google Play) sont de vrais fichiers, pas l'application.
+         */
+        navigateFallbackDenylist: [/^\/api\//, /^\/suppression-compte/, /^\/confidentialite/, /^\/mentions-legales/, /^\/\.well-known\//],
       },
     }),
   ],
