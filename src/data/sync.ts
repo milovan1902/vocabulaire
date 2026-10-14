@@ -26,6 +26,9 @@ import {
   type DeckJournal,
 } from '../domain/deckState';
 import { REPRISE_ID, deckReprise } from './reprise';
+import {
+  ecrireApparences, fusionnerApparences, lireApparences, type ApparencesVoyage,
+} from './apparencesStock';
 
 export interface SyncReport {
   decksPulled: number;
@@ -512,6 +515,8 @@ export async function syncSettings(userId: string): Promise<void> {
     paliers?: Releve[];
     reprise?: RepriseVoyage;
     themes?: ChoixThemes;
+    /* CHANTIER 268 — les apparences offertes et achetées. */
+    apparences?: ApparencesVoyage;
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -615,6 +620,14 @@ export async function syncSettings(userId: string): Promise<void> {
     }
   }
 
+  /*
+   * CHANTIER 268 — les apparences possédées : union des deux appareils.
+   * Un appareil resté sur l'ancienne version renvoie un paquet sans cette
+   * clé ; le suivant à jour la remet, rien n'est perdu.
+   */
+  const apparences = fusionnerApparences(lireApparences(), bundle?.apparences);
+  ecrireApparences(apparences);
+
   await repository.saveSettings(general);
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
@@ -638,7 +651,7 @@ export async function syncSettings(userId: string): Promise<void> {
       user_id: userId,
       settings: {
         general, decks: overrides, streak, installed, active, deckJournal, jalons, paliers,
-        reprise, themes,
+        reprise, themes, apparences,
       },
       counter: counters,
       updated_at: new Date().toISOString(),

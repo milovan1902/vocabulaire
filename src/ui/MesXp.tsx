@@ -11,21 +11,13 @@
  */
 import type { Streak } from '../engine/streak';
 import {
-  CARTES_PAR_JOUR, GELS_MAX, XP_MAX_GRATUIT, estPremium, gelsEnReserve, historiqueXp, meilleureSerie, serieValidee, xpTotal,
+  CARTES_PAR_JOUR, GELS_MAX, XP_MAX_GRATUIT, bilan, estPremium, gelsEnReserve, historiqueXp, meilleureSerie, serieValidee, xpTotal,
 } from '../engine/xp';
+import { credits } from './apparences';
 import './gel.css';
 import { niveauDe } from '../engine/niveau';
 
-/* CHANTIER 169 — la frise des apparences du tiroir « Mes XP ». Les trois
-   dernières places attendent les prochaines apparences gratuites. */
-const FRISE: Array<{ seuil: number; nom: string }> = [
-  { seuil: 100, nom: 'Cahier' },
-  { seuil: 250, nom: 'Lycée clair' },
-  { seuil: 400, nom: 'Lycée foncé' },
-  { seuil: 600, nom: 'à venir' },
-  { seuil: 800, nom: 'à venir' },
-  { seuil: 1000, nom: 'à venir' },
-];
+/* CHANTIER 268 — la frise des paliers d'apparence laisse place au solde de crédits. */
 const JOURS_COURTS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 
 export function MesXp({ streak }: { streak: Streak }) {
@@ -103,21 +95,11 @@ export function MesXp({ streak }: { streak: Streak }) {
         rapporte rien de plus. Parler ne rapporte pas d’XP.
       </p>
 
-      <p className="xpj-titre">Apparences à gagner</p>
-      <div className="xpj-frise">
-        {FRISE.map((p, i) => {
-          const avant = i === 0 ? 0 : FRISE[i - 1].seuil;
-          const plein = xp >= p.seuil;
-          const part = plein ? 100 : xp > avant ? (100 * (xp - avant)) / (p.seuil - avant) : 0;
-          return (
-            <span key={p.seuil} className={plein ? 'acquis' : part > 0 ? 'encours' : ''}>
-              <i><i style={{ width: `${part}%` }} /></i>
-              <b>{p.seuil.toLocaleString('fr-FR')}</b>
-              <small>{p.nom}</small>
-            </span>
-          );
-        })}
-      </div>
+      <p className="xpj-titre">Tes crédits</p>
+      <p className="hint">
+        Chaque XP gagné devient un crédit, à échanger contre l’apparence de ton
+        choix dans Réglages › Apparence. Tu as {credits(bilan(streak).xp).toLocaleString('fr-FR')} crédits.
+      </p>
     </>
   );
 }

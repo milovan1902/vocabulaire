@@ -1,6 +1,8 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 268 — le tiroir « Apparence » devient la boutique (Boutique.tsx).
+ *
  * CHANTIER 167 — « Aide » rejoint la liste : une septième ligne, un
  * septième tiroir (premiers pas, page d'accueil, confidentialité).
  *
@@ -80,11 +82,11 @@ import type { Auth } from './useAuth';
 import type { Streak } from '../engine/streak';
 import { HEURES, askPermission, permission } from './reminder';
 import type { Theme } from './theme';
-import { THEME_LABELS, setTheme, themeChoisi } from './theme';
-import { DEBLOCAGE, estDebloquee, retenir } from './apparences';
-import {
-  XP_MAX_GRATUIT, estPremium, xpTotal,
-} from '../engine/xp';
+import { THEME_LABELS, themeChoisi } from './theme';
+import { migrerVersBoutique } from './apparences';
+import { xpTotal } from '../engine/xp';
+/* CHANTIER 268 — l'onglet Apparence devient une boutique de crédits. */
+import { Boutique } from './Boutique';
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -172,8 +174,6 @@ export function Account({
   const [autorisation, setAutorisation] = useState(permission());
   const [tiroir, setTiroir] = useState<Tiroirs>(null);
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
-  /* CHANTIER 168 — le message sous une apparence encore verrouillée. */
-  const [verrou, setVerrou] = useState<string | null>(null);
   const xp = xpTotal(streak);
 
   /*
@@ -181,10 +181,8 @@ export function Account({
    * atteint aussi. C'est ce qui garde à qui l'utilisait déjà le Cahier ou
    * le Lycée, quel que soit son total d'XP.
    */
-  useEffect(() => {
-    retenir(themeChoisi());
-    for (const t of Object.keys(DEBLOCAGE) as Theme[]) if (xp >= (DEBLOCAGE[t] ?? Infinity)) retenir(t);
-  }, [xp]);
+  /* CHANTIER 268 — une seule fois : l'apparence en cours et les anciens paliers atteints sont offerts. */
+  useEffect(() => { migrerVersBoutique(xp); }, [xp]);
 
   /*
    * CHANTIER 114 — bornes resserrées : nouveaux mots 0 à 20, révisions
@@ -302,7 +300,7 @@ export function Account({
         <Ligne
           icone="/ico-apparence.png"
           titre="Apparence"
-          sous="Clair, sombre, ou d’après le système."
+          sous="Gagne des crédits, choisis ton style."
           valeur={valeurs.apparence}
           onClick={() => setTiroir('apparence')}
         />
@@ -423,88 +421,7 @@ export function Account({
 
       {tiroir === 'apparence' && (
         <Tiroir titre="Apparence" retour="Réglages" onFermer={() => setTiroir(null)}>
-          {/* CHANTIER 168 — les XP, et ce qu'ils débloquent. */}
-          <div className="xp-bloc">
-            <span className="xp-ligne">
-              <span>Tes XP</span>
-              <b>{xp.toLocaleString('fr-FR')}{estPremium() ? '' : ` / ${XP_MAX_GRATUIT.toLocaleString('fr-FR')}`}</b>
-            </span>
-            <span className="xp-barre"><i style={{ width: `${Math.min(100, (100 * xp) / XP_MAX_GRATUIT)}%` }} /></span>
-          </div>
-          <div className="themechoix themechoix-6">
-            {(['auto', 'clair', 'sombre', 'cahier', 'cahier-vert', 'cahier-rose', 'cahier-bleu', 'lycee-clair', 'lycee', 'decollage', 'orbite', 'tableau-vert', 'tableau-noir', 'arcade', 'neon', 'grand-bleu', 'carnet-kraft', 'manga', 'bd-pop', 'jardin', 'parquet', 'pelouse', 'melee', 'strass', 'grille', 'diner', 'tv', 'tapis-vert', 'salon-prive', 'station', 'fashion', 'cinema', 'bibliotheque', 'salon-the', 'cabinet', 'japon', 'jazz', 'plage', 'chateau', 'jungle', 'pacific'] as Theme[]).map((t) => {
-              const libre = estDebloquee(t, xp);
-              const seuil = DEBLOCAGE[t] ?? 0;
-              return (
-                <button
-                  key={t}
-                  className={`${theme === t ? 'on' : ''}${libre ? '' : ' verrou'}`}
-                  aria-pressed={theme === t}
-                  aria-disabled={!libre}
-                  onClick={() => {
-                    if (!libre) {
-                      const manque = seuil - xp;
-                      const j = Math.ceil(manque / 20);
-                      setVerrou(`« ${THEME_LABELS[t]} » se débloque à ${seuil} XP. Il t’en manque ${manque} : environ ${j} jour${j > 1 ? 's' : ''} à 20 cartes.`);
-                      return;
-                    }
-                    setVerrou(null);
-                    setTheme(t);
-                    setThemeLocal(t);
-                    retenir(t);
-                  }}
-                >
-                  {THEME_LABELS[t]}
-                  {!libre && (
-                    <small className="verrou-seuil">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
-                      {seuil} XP
-                    </small>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-          {verrou && <p className="xp-verrou" role="status">{verrou}</p>}
-          <p className="hint">
-            Tu gagnes 20 XP chaque jour où tu révises au moins 20 cartes. Tous
-            les 5 jours d’affilée, un bonus : +20, puis +40, puis +60. Un jour
-            manqué remet le bonus à zéro, jamais tes XP. D’autres apparences
-            arrivent à 600, 800 et 1 000 XP.
-          </p>
-          <p className="hint">
-            Le thème choisi reste sur cet appareil. « Automatique » suit le
-            système. Les quatre « Cahier » (jaune, vert, rose, bleu) sont le même
-            cahier d’école, sur quatre couleurs de papier.
-            « Lycée clair » et « Lycée foncé » ont la même forme — niveaux,
-            défi du jour, paquets en éventail — sur fond clair ou sombre.
-            « Décollage » et « Orbite » reprennent cette forme dans l’espace :
-            une station orbitale, ou des paquets en orbite autour d’une planète.
-            « Tableau vert » et « Tableau noir » : la salle de classe, écrite à la craie.
-            « Borne arcade » et « Néon » : la salle de jeux, ou la ville la nuit.
-            « Grand bleu » : la plongée, sous l’eau.
-            « Carnet kraft » : le carnet de voyage. « Manga » et « BD pop » : la bande dessinée.
-            « Jardin » : le potager au soleil, où chaque note est une fleur en pot.
-            « Parquet », « Pelouse » et « Mêlée » : le basket, le football et le rugby.
-            « Strass » : la soirée de gala. « Grille de départ » : le circuit automobile.
-            « Diner » et « TV » : les années 50 et 60.
-            « Tapis vert » et « Salon privé » : la table de poker, ou le salon de jeu noir et or.
-            « Station 1936 » : l’affiche de ski rétro, où les paquets sont des télécabines.
-            « Fashion week » : le défilé en noir et blanc, où les paquets sont des housses pendues à un portant.
-            « Cinéma muet » : la salle obscure, où les paquets défilent sur une pellicule.
-            « Bibliothèque » : la salle de lecture, où les paquets sont des livres rangés sur un rayon.
-            « Salon de thé » : la pâtisserie parisienne, où le paquet du jour attend sous une cloche de verre.
-            « Cabinet 1900 » : le laboratoire d’une chimiste, la nuit, où les paquets luisent dans des bocaux.
-            « Japon zen » : une maison au pied du mont Fuji, où le paquet attend sur le pas de la porte.
-            « Cotton Club » : la scène de jazz des années 20, où les paquets sont des partitions sous le projecteur.
-            « Plage et surf » : la cabane de surf en plein soleil, où les paquets sont des planches plantées dans le sable.
-            « Château » : la forteresse, où le paquet attend dans la porte, derrière le pont-levis.
-            « Jungle et safari » : l’expédition sous la canopée, où les paquets sont des caisses suspendues à une liane.
-            « Pacific Express » : le train à vapeur dans le canyon, où le paquet voyage sur le wagon.
-          </p>
+          <Boutique streak={streak} onTheme={setThemeLocal} />
         </Tiroir>
       )}
 
