@@ -18,6 +18,7 @@
  */
 
 import { useStyle } from './useStyle';
+import { IconeHorloger } from './Horloger';
 
 /*
  * CHANTIER 171 — deux autres familles d'icônes, selon l'apparence :
@@ -64,6 +65,8 @@ const TRAIT = {
 /** Le calendrier : ce qu'il y a à faire aujourd'hui. */
 export function IconAujourdhui() {
   const style = useStyle();
+  /* CHANTIER 269 — Atelier d'horloger. */
+  if (style === 'horloger') return <IconeHorloger n="aujourdhui" />;
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M22 20v-9H2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z" /><path d="M18 11V4H6v7" /><path d="M15 22v-4a3 3 0 0 0-6 0v4" /><path d="M22 11V9M2 11V9M6 4V2M18 4V2M10 4V2M14 4V2" /></svg>;
@@ -104,6 +107,8 @@ export function IconAujourdhui() {
 /** Les cartes empilées : la collection. */
 export function IconPaquets() {
   const style = useStyle();
+  /* CHANTIER 269 — Atelier d'horloger. */
+  if (style === 'horloger') return <IconeHorloger n="paquets" />;
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><ellipse cx="12" cy="12" rx="4" ry="10" transform="rotate(35 12 12)" /><path d="M8.6 17 15.4 7" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="M12 3v18M4 11h16" /></svg>;
@@ -143,6 +148,8 @@ export function IconPaquets() {
 /** La bulle : la conversation. */
 export function IconParler() {
   const style = useStyle();
+  /* CHANTIER 269 — Atelier d'horloger. */
+  if (style === 'horloger') return <IconeHorloger n="parler" />;
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><path d="M3 14a9 9 0 0 1 18 0l-3 4H6z" /><path d="M12 5v13M7.5 6.5 9 18M16.5 6.5 15 18" /><path d="M10 18v3h4v-3" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M3 10v4M3 12h11" /><path d="M14 9l7-4v14l-7-4z" /><path d="M7 12v3h3v-3" /></svg>;
@@ -180,6 +187,8 @@ export function IconParler() {
 /** Les trois curseurs : les réglages. */
 export function IconReglages() {
   const style = useStyle();
+  /* CHANTIER 269 — Atelier d'horloger. */
+  if (style === 'horloger') return <IconeHorloger n="reglages" />;
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M14.5 17.5 3 6V3h3l11.5 11.5" /><path d="m13 19 6-6M16 16l4 4M19 21l2-2" /></svg>;
@@ -217,6 +226,8 @@ export function IconReglages() {
 /** La courbe qui monte : ce qui progresse. */
 export function IconProgres() {
   const style = useStyle();
+  /* CHANTIER 269 — Atelier d'horloger. */
+  if (style === 'horloger') return <IconeHorloger n="progres" />;
   /* CHANTIER 235 — Plage et surf et Château. */
   if (style === 'plage') return <svg {...TRAIT}><path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4" /><path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3" /><path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35" /><path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14" /></svg>;
   if (style === 'chateau') return <svg {...TRAIT}><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" /><path d="M5 21h14" /></svg>;

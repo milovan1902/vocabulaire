@@ -70,6 +70,8 @@ import './ui/chateau.css';
 /* CHANTIER 237 — Jungle et safari (Lilita One) et Pacific Express (Rye), polices dans public/fonts. */
 import './ui/jungle.css';
 import './ui/western.css';
+/* CHANTIER 269 — Atelier d'horloger (Marcellus, police dans public/fonts). */
+import './ui/horloger.css';
 
 /* CHANTIER 266 — /admin : le tableau de bord de l'exploitant, chargé à part.
    Il ne monte ni l'application ni les fonds animés, et sa visite ne compte

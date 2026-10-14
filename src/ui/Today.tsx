@@ -34,6 +34,7 @@ import './gel.css';
 import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 import { Alambic, Amorce } from './Salle';
+import { AujourdhuiHorloger } from './Horloger';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -426,6 +427,41 @@ export function Today({
         : `restante${m > 1 ? 's' : ''} ${quandDit(budget)}`;
   }
   const faitsSemaine = joursCetteSemaine(streak);
+
+  /* CHANTIER 269 — Atelier d'horloger : son propre écran (Horloger.tsx). Une journée faite
+     garde l'écran ordinaire, habillé par horloger.css. */
+  if (style === 'horloger' && total > 0) {
+    const iH = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));
+    const nH = niveauDe(xpTotal(streak));
+    return (
+      <AujourdhuiHorloger
+        paquets={aFaire}
+        centre={iH}
+        onCentre={(i) => choisir(aFaire[i].deck.id)}
+        onOuvrir={(i) => onOpen(aFaire[i].deck.id)}
+        onLancer={onReview}
+        niveau={nH.niveau}
+        dansNiveau={nH.dansNiveau}
+        pourNiveau={nH.pourNiveau}
+        xp={nH.xp}
+        flamme={serieValidee(streak)}
+        gainXp={gain.xp}
+        gainValide={gain.valide}
+        total={total}
+        minutes={minutesPour(total)}
+        cartesAuj={cartesAuj}
+        cartesParJour={CARTES_PAR_JOUR}
+        faits={faitsSemaine}
+        objectif={OBJECTIF_SEMAINE}
+        parlerN={parlerN}
+        parlerSous={parlerSous}
+        parSession={settings.cardsPerSession}
+        onXp={onXp}
+        onCalendrier={onCalendrier}
+        onParler={onParler}
+      />
+    );
+  }
 
   if (estLudique(style) && total > 0) {
     const iCentre = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));

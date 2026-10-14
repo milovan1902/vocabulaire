@@ -47,7 +47,7 @@
 export type Theme = 'auto' | 'clair' | 'sombre' | 'cahier' | 'cahier-vert' | 'cahier-rose' | 'cahier-bleu'
   | 'lycee' | 'lycee-clair' | 'decollage' | 'orbite' | 'tableau-vert' | 'tableau-noir'
   | 'arcade' | 'neon' | 'grand-bleu' | 'carnet-kraft' | 'manga' | 'bd-pop' | 'jardin'
-  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau' | 'jungle' | 'pacific';
+  | 'parquet' | 'pelouse' | 'melee' | 'strass' | 'grille' | 'diner' | 'tv' | 'tapis-vert' | 'salon-prive' | 'station' | 'fashion' | 'cinema' | 'bibliotheque' | 'salon-the' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau' | 'jungle' | 'pacific' | 'horloger';
 
 const PAPIERS: Partial<Record<Theme, string>> = {
   'cahier-vert': 'vert',
@@ -111,6 +111,7 @@ export const THEME_LABELS: Record<Theme, string> = {
   chateau: 'Château',
   jungle: 'Jungle et safari',
   pacific: 'Pacific Express',
+  horloger: 'Atelier d’horloger',
 };
 
 export function themeChoisi(): Theme {
@@ -122,7 +123,7 @@ export function themeChoisi(): Theme {
     || v === 'carnet-kraft' || v === 'manga' || v === 'bd-pop' || v === 'jardin'
     || v === 'parquet' || v === 'pelouse' || v === 'melee'
     || v === 'strass' || v === 'grille' || v === 'diner' || v === 'tv'
-    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' || v === 'japon' || v === 'jazz' || v === 'plage' || v === 'chateau' || v === 'jungle' || v === 'pacific' ? v : 'auto';
+    || v === 'tapis-vert' || v === 'salon-prive' || v === 'station' || v === 'fashion' || v === 'cinema' || v === 'bibliotheque' || v === 'salon-the' || v === 'cabinet' || v === 'japon' || v === 'jazz' || v === 'plage' || v === 'chateau' || v === 'jungle' || v === 'pacific' || v === 'horloger' ? v : 'auto';
 }
 
 /** Ce que « automatique » vaut à cet instant. */
@@ -162,6 +163,8 @@ export function themeEffectif(t: Theme = themeChoisi()): 'clair' | 'sombre' {
   if (t === 'plage' || t === 'chateau') return 'clair';
   /* CHANTIER 237 — Jungle et safari, Pacific Express : clairs (la canopée, le canyon au soleil). */
   if (t === 'jungle' || t === 'pacific') return 'clair';
+  /* CHANTIER 269 — Atelier d'horloger : sombre (l'établi sous la lampe). */
+  if (t === 'horloger') return 'sombre';
   if (t === 'sombre') return 'sombre';
   if (t === 'clair') return 'clair';
   return systeme();
@@ -214,6 +217,8 @@ function appliquer(t: Theme) {
   /* CHANTIER 237 — Jungle et safari (jungle.css) et Pacific Express (western.css). */
   else if (t === 'jungle') document.documentElement.dataset.style = 'jungle';
   else if (t === 'pacific') document.documentElement.dataset.style = 'western';
+  /* CHANTIER 269 — Atelier d'horloger (horloger.css, Horloger.tsx). */
+  else if (t === 'horloger') document.documentElement.dataset.style = 'horloger';
   else delete document.documentElement.dataset.style;
   const papier = PAPIERS[t];
   if (papier) document.documentElement.dataset.papier = papier;

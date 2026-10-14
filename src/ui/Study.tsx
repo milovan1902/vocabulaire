@@ -15,6 +15,7 @@ import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
 import { speak } from './speech';
 import { estLudique, useStyle } from './useStyle';
+import { ATTENTE_HORLOGER, MontreHorloger } from './Horloger';
 
 /* CHANTIER 165 — style Lycée : des notes courtes, et les couleurs rouge,
    orange, jaune, vert (voir lycee.css, classes g-again … g-easy). */
@@ -549,6 +550,24 @@ export function Study({
         className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
+        {/* CHANTIER 269 — Atelier d'horloger : la carte est une montre de gousset (Horloger.tsx). */}
+        {style === 'horloger' ? (
+          <MontreHorloger
+            key={index}
+            theme={current.card.theme}
+            front={front}
+            back={back}
+            langFront={langFront}
+            langBack={langBack}
+            example={current.card.example || undefined}
+            ouvert={revealed}
+            frappe={frappe}
+            progression={index / Math.max(total, 1)}
+            premier={index === 0}
+            onOuvrir={reveal}
+            onEcouter={pronounce}
+          />
+        ) : <>
         <span className="tag">{current.card.theme}</span>
 
         {!revealed ? (
@@ -584,6 +603,7 @@ export function Study({
             </button>
           </>
         )}
+        </>}
         {/* CHANTIER 247 — TV : ce qui passe à l'écran pendant la note (neige, incident, zapping, « Fin »). */}
         {style === 'tv' && frappe && (
           <span className="tl-ecran" aria-hidden="true">
@@ -1254,7 +1274,7 @@ export function Study({
 
       {!revealed ? (
         <>
-          <button className="reveal" onClick={reveal}>Afficher la réponse</button>
+          <button className="reveal" onClick={reveal}>{style === 'horloger' ? 'Ouvrir la montre' : 'Afficher la réponse'}</button>
           <p className="tap-hint">Touche le mot, ou appuie sur espace au clavier.</p>
         </>
       ) : (
@@ -1267,7 +1287,7 @@ export function Study({
                 if (frappe) return;
                 /* CHANTIER 224 — Salon de thé : le macaron s'écrase (0,65 s) ; Cabinet 1900 : la case réagit (0,45 s). */
                 /* CHANTIER 251 — Cinéma muet : « Coupez ! » et Dur (le carton, la bobine), Bien (l'iris), Facile (« Fin », les rideaux). */
-                const attente = style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
+                const attente = style === 'horloger' ? ATTENTE_HORLOGER[g.key] : style === 'cinema' ? (g.key === 'easy' ? 2700 : 2000) /* CHANTIER 252 — Bibliothèque : la rature, « À relire », le tampon « Lu », l'ex-libris. */
                   : style === 'biblio' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2400 : 1900) : style === 'patisserie' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 2000 : g.key === 'good' ? 1700 : 2600) : style === 'cabinet' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900) : style === 'japon' ? (g.key === 'hard' ? 2200 : g.key === 'easy' ? 2800 : 1900) : style === 'jazz' ? (g.key === 'hard' ? 2000 : g.key === 'easy' ? 2600 : 1900)
                   /* CHANTIER 235 — Plage : la bouée (Raté : elle se perce et s'envole) ; Château : l'écu vibre. */
                   : style === 'plage' ? (g.key === 'easy' ? 2600 : 1900) : style === 'chateau' ? (g.key === 'again' ? 1900 : g.key === 'hard' ? 2200 : g.key === 'good' ? 2000 : 2600)

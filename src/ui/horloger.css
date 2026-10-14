@@ -1,0 +1,286 @@
+/* ==================================================================
+   CHANTIER 269 — « Atelier d'horloger » (maquette « Apparence Horloger v3 »).
+   L'établi d'un horloger, la nuit, sous la lampe : bois sombre, laiton,
+   ivoire, une pointe de rubis et de bleu acier.
+
+   Active quand <html> porte data-style="horloger" (theme.ts). Base SOMBRE.
+   Les écrans propres à l'apparence sont dans Horloger.tsx :
+   - Aujourd'hui : les paquets sont des rouages ; « Cette semaine » ajoute un
+     rouage par jour (6 / 5 : le balancier ; 7 / 5 : les rayons).
+   - Remonter : les encarts deviennent des rouages qui s'engrènent, puis
+     zoom au centre du rouage du paquet.
+   - Révision : une montre de gousset qui s'ouvre sur la traduction.
+   Marcellus (public/fonts) pour les titres, Newsreader pour les mots.
+   ================================================================== */
+@font-face {
+  font-family: 'Marcellus';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/marcellus-latin.woff2') format('woff2');
+}
+[data-style='horloger'] {
+  --paper: #15100c; --panel: #221810; --panel-hi: #2c2016;
+  --ink: #efe6d2; --ink-soft: #ddd2bb; --grey: #b8a98c; --ink-dim: #b8a98c;
+  --rule: rgba(201, 162, 74, 0.22); --rule-strong: rgba(201, 162, 74, 0.45);
+  --chalk: #e6c987; --chalk-ink: #e6c987; --on-chalk: #1a130c;
+  --good: #7da0e0; --bad: #ff7a8a;
+  --voile: rgba(239, 230, 210, 0.06); --voile-2: rgba(239, 230, 210, 0.12); --voile-3: rgba(239, 230, 210, 0.18);
+  --bleu: #c9a24a; --bleu-ink: #e6c987; --rouge: #ff7a8a; --orange: #e6c987;
+  --ly-voile: rgba(239, 230, 210, 0.14); --ly-voile-2: rgba(201, 162, 74, 0.4);
+  --ly-tabbar: #0a0705; --ly-ombre: rgba(0, 0, 0, 0.6); --ly-tag: #221810; --ly-bord-carte: rgba(201, 162, 74, 0.45);
+  --serif: 'Newsreader', Georgia, serif;
+  --titre: 'Marcellus', 'Newsreader', Georgia, serif;
+  --anneau: #e6c987;
+  --hz-or: #c9a24a; --hz-or-clair: #e6c987; --hz-ivoire: #efe6d2;
+  --salle: radial-gradient(90% 55% at 18% 6%, rgba(255, 196, 110, 0.22) 0%, rgba(255, 196, 110, 0) 60%), radial-gradient(140% 90% at 50% 120%, #0b0806 0%, rgba(11, 8, 6, 0) 60%), repeating-linear-gradient(97deg, rgba(255, 230, 190, 0.018) 0 2px, rgba(0, 0, 0, 0) 2px 9px), linear-gradient(180deg, #241a12 0%, #15100c 55%);
+}
+[data-style='horloger'] body { font-family: var(--sans); color: var(--ink); background-color: #15100c; background-image: var(--salle); background-repeat: no-repeat; background-attachment: fixed; }
+[data-style='horloger'] .screen-title, [data-style='horloger'] .topbar h1, [data-style='horloger'] .welcome-head h1, [data-style='horloger'] .done h2, [data-style='horloger'] .sheet h3, [data-style='horloger'] .today-count b {
+  font-family: var(--titre); font-style: normal; font-weight: 400; letter-spacing: 0.01em; color: #efe6d2;
+}
+[data-style='horloger'] .sheet { border-top: 1px solid #c9a24a; }
+[data-style='horloger'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled),
+[data-style='horloger'] .reveal { border: 0; border-radius: 999px; color: #1a130c; font-weight: 700; letter-spacing: 0.05em;
+  background: linear-gradient(180deg, #f3dea6 0%, #c9a24a 55%, #9a7832 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 0 rgba(80, 55, 20, 0.35), 0 8px 20px rgba(0, 0, 0, 0.5); }
+[data-style='horloger'] .btn:not(.ghost):not(.google):not(.danger):not(:disabled):active,
+[data-style='horloger'] .reveal:active { background: linear-gradient(180deg, #e6c987 0%, #b8913f 60%, #8a6a2a 100%); }
+[data-style='horloger'] :is(.btn, .reveal, .hz-go, .hz-tuile, .hz-fleche, .hz-roue, .hz-niv, .hz-couronne, .grade):focus-visible { outline: 2px solid #e6c987; outline-offset: 2px; }
+
+/* Le niveau et la flamme, sur l'écran ordinaire (journée faite, rien à faire). */
+[data-style='horloger'] .ly-niv { width: 46px; height: 46px; border: 0; border-radius: 50%; color: #2a1e12;
+  background: radial-gradient(circle at 35% 30%, #fbf3dc 0%, #e8dbbd 55%, #cdb88b 100%); box-shadow: 0 0 0 2px #1a130c, 0 0 0 4px #c9a24a, 0 0 0 5px #6e5222, 0 6px 14px rgba(0, 0, 0, 0.55); }
+[data-style='horloger'] .ly-niv small { color: #7a6440; }
+[data-style='horloger'] .ly-niv b { font-family: var(--titre); font-weight: 400; }
+[data-style='horloger'] .ly-xp-txt b { font-family: var(--titre); font-weight: 400; color: #efe6d2; }
+[data-style='horloger'] .ly-barre { background: rgba(201, 162, 74, 0.16); }
+[data-style='horloger'] .ly-barre i { background: linear-gradient(90deg, #8a6a2a, #e6c987); }
+[data-style='horloger'] .ly-flamme { border: 1px solid rgba(201, 162, 74, 0.6); background: rgba(201, 162, 74, 0.08); color: #e6c987; }
+[data-style='horloger'] .ly-flamme b { font-family: var(--titre); font-weight: 400; color: #efe6d2; }
+
+/* ---------- la barre d'onglets : cinq instruments d'horloger ---------- */
+[data-style='horloger'] .tabbar { background: linear-gradient(180deg, #120d0a, #080504); border-top: 1px solid rgba(201, 162, 74, 0.5); box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.4); transition: opacity 0.4s ease; }
+[data-style='horloger'] .tabbar button { position: relative; color: #8a7c66; }
+[data-style='horloger'] .tabbar button.on { color: #f1dba0; }
+[data-style='horloger'] .tabbar button.on::before { display: none; }
+[data-style='horloger'] .tabbar button .hz-ico { width: 30px; height: 30px; padding: 0; background: none; filter: saturate(0.45) brightness(0.8); opacity: 0.75; transition: filter 0.35s, opacity 0.35s, transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1); }
+[data-style='horloger'] .tabbar button.on .hz-ico { filter: drop-shadow(0 0 8px rgba(255, 205, 130, 0.45)); opacity: 1; transform: translateY(-2px); }
+html.hz-lance .tabbar { opacity: 0; pointer-events: none; }
+
+/* ==================================================================
+   Aujourd'hui (Horloger.tsx, AujourdhuiHorloger)
+   ================================================================== */
+.hz { position: relative; overflow: clip; display: block; padding-bottom: 8px; color: #efe6d2; }
+.hz button { font: inherit; color: inherit; }
+.hz-decor { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.hz-rouage-decor { position: absolute; overflow: visible; }
+.hz-lampe { position: absolute; left: -80px; top: -90px; width: 320px; height: 260px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 205, 130, 0.28), rgba(255, 205, 130, 0)); animation: hz-lampe 6s ease-in-out infinite; }
+.hz-poussiere { position: absolute; border-radius: 50%; background: #ffe2a8; box-shadow: 0 0 6px rgba(255, 214, 140, 0.9); opacity: 0; animation-name: hz-poussiere; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+.hz-contenu { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; transition: opacity 0.4s ease, transform 0.5s ease, filter 0.4s ease; }
+.hz-contenu.cache { opacity: 0; transform: scale(0.94); filter: blur(6px); }
+
+/* l'en-tête */
+.hz-haut { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.hz-niv { width: 46px; height: 46px; margin: 3px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #fbf3dc 0%, #e8dbbd 55%, #cdb88b 100%); box-shadow: 0 0 0 2px #1a130c, 0 0 0 4px #c9a24a, 0 0 0 5px #6e5222, 0 6px 14px rgba(0, 0, 0, 0.55); color: #2a1e12 !important; }
+.hz-niv small { font-size: 8px; letter-spacing: 0.16em; color: #7a6440; }
+.hz-niv b { font-family: var(--titre); font-weight: 400; font-size: 19px; line-height: 1; }
+.hz-xp { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; }
+.hz-xp-txt { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.hz-xp-txt b { font-family: var(--titre); font-weight: 400; font-size: 16px; }
+.hz-xp-txt span { font-size: 12.5px; color: #b8a98c; font-variant-numeric: tabular-nums; }
+.hz-barre { position: relative; height: 6px; border-radius: 3px; background: rgba(201, 162, 74, 0.16); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6); overflow: hidden; }
+.hz-barre i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; overflow: hidden; background: linear-gradient(90deg, #8a6a2a, #e6c987); }
+.hz-barre s, .hz-reflet { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; pointer-events: none; text-decoration: none; background: linear-gradient(90deg, rgba(255, 250, 230, 0), rgba(255, 250, 230, 0.75), rgba(255, 250, 230, 0)); animation: hz-reflet 7s ease-in-out infinite; }
+.hz-flamme { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(201, 162, 74, 0.6); background: rgba(201, 162, 74, 0.08); }
+.hz-flamme svg { width: 18px; height: 18px; fill: rgba(201, 162, 74, 0.3); stroke: #e6c987; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hz-flamme b { font-family: var(--titre); font-weight: 400; font-size: 18px; }
+
+/* le mouvement du jour : une plaque d'ivoire cerclée de laiton */
+.hz-defi { position: relative; border-radius: 18px; padding: 14px 18px; display: flex; flex-direction: column; gap: 5px; color: #241a10;
+  background-color: #efe6d2; background-image: repeating-radial-gradient(circle at 85% -20%, rgba(130, 95, 40, 0.07) 0 1px, rgba(0, 0, 0, 0) 1px 6px), linear-gradient(160deg, #f8f1e1 0%, #e6d9bc 100%);
+  box-shadow: inset 0 0 0 1px #c9a24a, inset 0 0 0 5px #efe6d2, inset 0 0 0 6px rgba(150, 115, 50, 0.45), 0 14px 30px rgba(0, 0, 0, 0.5); }
+.hz-defi-haut { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.hz-defi-haut > span:first-child { font-size: 11.5px; letter-spacing: 0.18em; color: #6e5a3e; }
+.hz-gain { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #1a130c; background: linear-gradient(180deg, #ecd394, #b8913f); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+.hz-defi-n { font-family: var(--titre); font-weight: 400; font-size: 38px; line-height: 1.05; }
+.hz-defi-sous { font-size: 13.5px; color: #5e4c33; }
+.hz-jour { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; font-size: 13px; color: #5e4c33; }
+.hz-jour-barre { position: relative; height: 6px; border-radius: 3px; background: #d6c7a2; box-shadow: inset 0 1px 2px rgba(80, 55, 20, 0.35); }
+.hz-jour-barre i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #1f3a6e, #3a62a8); }
+.hz-jour-barre em { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; transform: rotate(45deg); border-radius: 2px; background: radial-gradient(circle at 35% 30%, #ff7a8a, #b3263a 60%, #6d1220); box-shadow: 0 0 6px rgba(179, 38, 58, 0.6); }
+
+/* les paquets : des rouages de laiton */
+.hz-roues { position: relative; height: 236px; margin: 0 -18px; overflow: hidden; }
+.hz-roue { position: absolute; left: calc(50% - 100px); top: 0; width: 200px; height: 200px; padding: 0; border: 0; background: transparent; cursor: pointer; transform-origin: 100px 100px; transition: transform 0.95s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease; }
+.hz-roue > svg { position: absolute; inset: 0; width: 200px; height: 200px; overflow: visible; filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.65)); }
+.hz-moyeu { position: absolute; left: 41px; top: 41px; width: 118px; height: 118px; border-radius: 50%; overflow: hidden; background: #2a1f16; box-shadow: 0 0 0 2px #3e2c10, inset 0 0 0 1px rgba(255, 230, 170, 0.3); }
+.hz-dos { position: absolute; left: 0; top: -24px; width: 118px; height: 166px; display: block; }
+.hz-dos > svg, .hz-dos > img:not(.dos-illus-img) { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hz-dos .dos-illus-img { position: absolute; left: 16.1%; top: 26%; width: 67.7%; height: auto; }
+.hz-moyeu > i { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 32% 26%, rgba(255, 246, 220, 0.38) 0%, rgba(255, 246, 220, 0) 42%), radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0) 62%, rgba(0, 0, 0, 0.45) 100%); }
+.hz-dues { position: absolute; top: 22px; right: 22px; min-width: 30px; height: 30px; padding: 0 5px; box-sizing: border-box; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff;
+  background: radial-gradient(circle at 35% 30%, #ff6b7d, #b3263a 55%, #6d1220); box-shadow: 0 0 0 2px #e6c987, 0 3px 8px rgba(0, 0, 0, 0.5); }
+.hz-fleche { position: absolute; top: 178px; z-index: 20; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid rgba(230, 201, 135, 0.7); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #e6c987 !important;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 230, 170, 0.25), rgba(21, 16, 12, 0.9) 70%); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); transition: opacity 0.3s; }
+.hz-fleche:disabled { cursor: default; }
+.hz-fleche.prec { left: 14px; }
+.hz-fleche.suiv { right: 14px; }
+.hz-fleche svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.hz-sous-roues { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: -8px; }
+.hz-points { display: flex; gap: 9px; }
+.hz-points i { width: 7px; height: 7px; transform: rotate(45deg); border-radius: 1px; background: rgba(201, 162, 74, 0.35); transition: all 0.4s ease; }
+.hz-points i.on { background: radial-gradient(circle at 35% 30%, #ff7a8a, #b3263a 60%); box-shadow: 0 0 8px rgba(179, 38, 58, 0.7); }
+.hz-plaque { display: inline-flex; align-items: baseline; gap: 6px; max-width: calc(100% - 40px); padding: 6px 16px; border-radius: 4px; color: #1a130c; background: linear-gradient(180deg, #f1dba0 0%, #c9a24a 60%, #a9853a 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 4px 10px rgba(0, 0, 0, 0.45); }
+.hz-plaque b { font-family: var(--titre); font-weight: 400; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hz-plaque small { flex: none; font-size: 12.5px; color: #4a3a22; }
+.hz-go { position: relative; overflow: hidden; border: 0; border-radius: 999px; padding: 15px; font-size: 16px !important; font-weight: 700; letter-spacing: 0.05em; color: #1a130c !important; cursor: pointer;
+  background: linear-gradient(180deg, #f3dea6 0%, #c9a24a 55%, #9a7832 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 0 rgba(80, 55, 20, 0.35), 0 8px 20px rgba(0, 0, 0, 0.5); }
+.hz-go:active { background: linear-gradient(180deg, #e6c987 0%, #b8913f 60%, #8a6a2a 100%); }
+.hz-go .hz-reflet { width: 30%; animation-duration: 5s; }
+.hz-go > span:last-child { position: relative; }
+
+/* les tuiles */
+.hz-bas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.hz-tuile { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 16px; text-align: left; cursor: pointer;
+  border: 1px solid rgba(201, 162, 74, 0.38); background: linear-gradient(160deg, rgba(239, 230, 210, 0.07), rgba(239, 230, 210, 0.02)); box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.06); transition: all 0.8s ease; }
+.hz-tuile.rayonne { z-index: 3; border-color: rgba(255, 222, 160, 0.9); background: linear-gradient(160deg, rgba(42, 30, 18, 0.92), rgba(28, 20, 13, 0.92)); box-shadow: 0 0 30px rgba(255, 214, 140, 0.55), inset 0 1px 0 rgba(255, 240, 200, 0.3); }
+.hz-tuile-haut { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; letter-spacing: 0.14em; color: #b8a98c; }
+.hz-tuile-haut svg { width: 16px; height: 16px; fill: none; stroke: #c9a24a; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hz-tuile > b { font-family: var(--titre); font-weight: 400; font-size: 22px; line-height: 1.1; }
+.hz-tuile > small { font-size: 12px; color: #b8a98c; min-height: 16px; }
+.hz-tuile > small.filet { padding-top: 6px; border-top: 1px solid rgba(201, 162, 74, 0.25); }
+.hz-meca { display: block; height: 60px; padding-top: 4px; border-top: 1px solid rgba(201, 162, 74, 0.25); }
+.hz-mecanisme { display: block; width: 100%; height: 56px; overflow: visible; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); transition: filter 0.8s; }
+.hz-mecanisme.rayonne { filter: drop-shadow(0 0 6px rgba(255, 214, 140, 0.9)); }
+
+/* 7 / 5 : les rayons */
+.hz-lumiere { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.hz-halo { position: absolute; inset: 0; animation: hz-eclat 1.4s ease-out both, hz-pulse 4.5s ease-in-out 1.4s infinite; }
+.hz-nappe { position: absolute; border-radius: 50%; mix-blend-mode: screen; animation: hz-eclat 1.6s ease-out both; }
+.hz-nappe > div { position: absolute; inset: 0; border-radius: 50%; }
+.hz-coeur { position: absolute; width: 140px; height: 140px; border-radius: 50%; mix-blend-mode: screen; background: radial-gradient(closest-side, rgba(255, 250, 232, 0.55), rgba(255, 220, 150, 0.18) 50%, rgba(255, 220, 150, 0)); animation: hz-respire 2.6s ease-in-out infinite; }
+.hz-derive { position: absolute; border-radius: 50%; background: #fff1cc; box-shadow: 0 0 8px rgba(255, 220, 150, 1); opacity: 0; animation-name: hz-derive; animation-timing-function: ease-out; animation-iteration-count: infinite; }
+
+/* ---------- le lancement (portail dans <body>) ---------- */
+.hz-lancement { position: fixed; inset: 0; z-index: 1000; overflow: hidden; pointer-events: none; }
+.hz-l-camera { position: absolute; inset: 0; transition: transform 1.1s cubic-bezier(0.7, 0, 0.25, 1), opacity 0.5s ease; }
+.hz-l-halo { position: absolute; width: 460px; height: 460px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 205, 130, 0.35), rgba(255, 205, 130, 0)); transition: opacity 0.8s ease; }
+.hz-l-roue { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.hz-l-fantome { position: absolute; overflow: hidden; }
+.hz-l-fantome .peau { position: absolute; inset: 0; border-radius: inherit; }
+.hz-l-fantome .peau.ivoire { background: linear-gradient(160deg, #f8f1e1 0%, #e6d9bc 100%); box-shadow: inset 0 0 0 1px #c9a24a, 0 14px 30px rgba(0, 0, 0, 0.5); }
+.hz-l-fantome .peau.sombre { background: linear-gradient(160deg, rgba(60, 45, 30, 0.95), rgba(30, 22, 15, 0.95)); box-shadow: inset 0 0 0 1px rgba(201, 162, 74, 0.55); }
+.hz-l-fantome .peau.or { background: linear-gradient(180deg, #f3dea6 0%, #c9a24a 55%, #9a7832 100%); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); }
+.hz-l-fantome .peau.laiton { background: radial-gradient(circle at 35% 30%, #f8e6b0, #c9a24a 50%, #5e4418); }
+.hz-l-fantome .peau.disque { box-shadow: inset 0 0 0 1px #3e2c10, inset 0 2px 4px rgba(255, 240, 200, 0.5); }
+.hz-l-svg { position: absolute; overflow: visible; filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.6)); }
+
+/* ==================================================================
+   Révision (Horloger.tsx, MontreHorloger)
+   ================================================================== */
+[data-style='horloger'] .studybg { background-color: #15100c; background-image: radial-gradient(90% 50% at 80% 4%, rgba(255, 196, 110, 0.18) 0%, rgba(255, 196, 110, 0) 60%), radial-gradient(70% 40% at 50% 46%, rgba(255, 214, 150, 0.10) 0%, rgba(0, 0, 0, 0) 70%), repeating-linear-gradient(97deg, rgba(255, 230, 190, 0.018) 0 2px, rgba(0, 0, 0, 0) 2px 9px), linear-gradient(180deg, #221810 0%, #120d0a 70%) !important; background-size: 100% 100%; }
+[data-style='horloger'] .studybg::after { display: none; }
+[data-style='horloger'] .studytop .pos { font-family: var(--titre); font-size: 17px; color: #efe6d2; font-variant-numeric: tabular-nums; }
+[data-style='horloger'] .studytop .stop { background: transparent; color: #e6c987; border: 1px solid rgba(201, 162, 74, 0.55); border-radius: 50%; }
+[data-style='horloger'] .progressbar { height: 4px; border-radius: 2px; background: rgba(201, 162, 74, 0.16); }
+[data-style='horloger'] .progressbar i { border-radius: 2px; background: linear-gradient(90deg, #8a6a2a, #e6c987); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+[data-style='horloger'] .studystage { margin: 8px 0 10px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: #efe6d2; overflow: visible; }
+html[data-style='horloger']:has(.hz-montre-bloc) { overflow-x: hidden; }
+[data-style='horloger'] .tap-hint { display: none; }
+
+.hz-montre-bloc { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.hz-montre-bloc.arrive { animation: hz-arrive 1.1s cubic-bezier(0.2, 1.3, 0.4, 1) both; }
+.hz-montre-bloc.entre { animation: hz-entre 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hz-montre-bloc.part-haut { animation: hz-part-haut 0.45s cubic-bezier(0.5, 0, 0.75, 0) both; }
+.hz-montre-bloc.part-bas { animation: hz-part-bas 0.45s cubic-bezier(0.5, 0, 0.75, 0) both; }
+.hz-montre { display: flex; flex-direction: column; align-items: center; }
+.hz-anneau { display: block; width: 70px; height: 62px; box-sizing: border-box; border-radius: 50% 50% 44% 44%; border: 9px solid #d9a877; border-color: #f3cfa2 #c98f5c #9a6a3c #c98f5c;
+  box-shadow: inset 0 2px 3px rgba(255, 240, 220, 0.6), inset 0 -2px 4px rgba(90, 50, 20, 0.5), 0 3px 6px rgba(0, 0, 0, 0.45); }
+.hz-couronne { display: block; margin-top: -4px; width: 40px; height: 28px; padding: 0; border: 0; border-radius: 8px; cursor: pointer; transition: transform 0.15s ease;
+  background: repeating-linear-gradient(90deg, #4a2e14 0 1.5px, #f0c894 1.5px 4px, #b07a48 4px 6px); box-shadow: inset 0 -4px 5px rgba(0, 0, 0, 0.45), inset 0 3px 3px rgba(255, 240, 215, 0.45), 0 2px 5px rgba(0, 0, 0, 0.5); }
+.hz-couronne.presse { transform: translateY(5px); }
+.hz-col { display: block; width: 26px; height: 16px; margin-top: -2px; border-radius: 3px; background: linear-gradient(90deg, #8a5a30, #f6d5ab 45%, #c98f5c 70%, #7a4e28); }
+.hz-boitier { position: relative; width: 300px; height: 300px; margin-top: -3px; border-radius: 50%; perspective: 1100px; }
+.hz-carrure { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 210deg, #f8dcb6, #c98f5c, #f3cfa2, #a8703f, #f8dcb6, #c98f5c, #f8dcb6); box-shadow: 0 26px 50px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(90, 50, 20, 0.6), inset 0 3px 6px rgba(255, 240, 220, 0.5); }
+.hz-guilloche { position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(rgba(90, 50, 20, 0.22) 0 0.8deg, rgba(0, 0, 0, 0) 0.8deg 3deg), repeating-radial-gradient(circle, rgba(255, 240, 215, 0.18) 0 1px, rgba(0, 0, 0, 0) 1px 4px);
+  -webkit-mask: radial-gradient(circle, transparent 0 129px, #000 130px 146px, transparent 147px); mask: radial-gradient(circle, transparent 0 129px, #000 130px 146px, transparent 147px); }
+.hz-cadran { position: absolute; left: 22px; top: 22px; width: 256px; height: 256px; border-radius: 50%; background: radial-gradient(circle at 40% 32%, #ffffff 0%, #f6f2ea 55%, #e4ddcf 100%); box-shadow: inset 0 0 0 2px rgba(150, 100, 50, 0.5), inset 0 5px 12px rgba(0, 0, 0, 0.22); }
+.hz-graduations { position: absolute; inset: 0; width: 256px; height: 256px; transition: opacity 0.6s ease 0.3s; }
+.hz-chiffres { position: absolute; inset: 0; transition: opacity 0.6s ease 0.3s; }
+.hz-chiffres span { position: absolute; left: 50%; top: 50%; line-height: 1; font-family: var(--titre); }
+.hz-chiffres .romain { font-size: 16px; color: #141210; letter-spacing: -0.5px; }
+.hz-chiffres .minute { font-size: 9px; color: #1d1a17; }
+.hz-plaque-mots { position: absolute; left: 50%; top: 50%; z-index: 3; width: 220px; padding: 18px 10px; box-sizing: border-box; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  background: radial-gradient(closest-side, rgba(250, 247, 240, 0.98) 62%, rgba(250, 247, 240, 0)); transition: opacity 0.5s ease 0.45s; }
+.hz-plaque-mots i { font-family: var(--serif); font-size: 18px; line-height: 1.1; color: #6e4524; overflow-wrap: anywhere; }
+.hz-plaque-mots span { width: 28px; height: 1px; background: #c9a24a; }
+.hz-plaque-mots b { font-family: var(--titre); font-weight: 400; line-height: 1.05; color: #1f3a6e; text-wrap: balance; overflow-wrap: anywhere; }
+.hz-aiguille { position: absolute; left: 50%; top: 50%; transform-origin: 50% 100%; background: #1f2f5a; }
+.hz-aiguille.heures { width: 6px; height: 64px; margin-left: -3px; margin-top: -64px; transform: rotate(300deg); clip-path: polygon(50% 0, 100% 22%, 70% 34%, 62% 100%, 38% 100%, 30% 34%, 0 22%); }
+.hz-aiguille.minutes { width: 5px; height: 100px; margin-left: -2.5px; margin-top: -100px; transition: transform 0.9s cubic-bezier(0.3, 1.6, 0.45, 1); clip-path: polygon(50% 0, 75% 12%, 60% 20%, 60% 100%, 40% 100%, 40% 20%, 25% 12%); }
+.hz-axe { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f8dcb6, #a8703f); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.hz-trotteuse { position: absolute; left: 50%; top: calc(50% + 58px); width: 1.4px; height: 22px; margin-left: -0.7px; margin-top: -22px; transform-origin: 50% 100%; background: #1d1a17; animation: hz-tourne 60s steps(60) infinite; }
+.hz-couvercle { position: absolute; inset: 0; border-radius: 50%; transform-style: preserve-3d; transform-origin: 0% 50%; transition: transform 1.1s cubic-bezier(0.45, 1.35, 0.5, 1); pointer-events: none; }
+.hz-couvercle .face, .hz-couvercle .dos { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.hz-couvercle .face { display: flex; align-items: center; justify-content: center; background: conic-gradient(from 30deg, #f8dcb6, #c98f5c, #f3cfa2, #a8703f, #f8dcb6, #c98f5c, #f8dcb6);
+  box-shadow: 0 26px 50px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(90, 50, 20, 0.6), inset 0 4px 8px rgba(255, 240, 220, 0.55), inset 0 -6px 10px rgba(90, 50, 20, 0.35); }
+.hz-couvercle .face::before { content: ''; position: absolute; inset: 14px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(90, 50, 20, 0.16) 0 0.6deg, rgba(0, 0, 0, 0) 0.6deg 2.4deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 86px, #000 87px); mask: radial-gradient(circle, transparent 0 86px, #000 87px); box-shadow: inset 0 0 0 1px rgba(90, 50, 20, 0.45), 0 0 0 1px rgba(255, 240, 220, 0.35); }
+.hz-couvercle .dos { transform: rotateY(180deg); background: radial-gradient(circle at 60% 40%, #fff1dc 0%, #e8b88a 40%, #a8703f 100%); box-shadow: inset 0 0 0 1px rgba(90, 50, 20, 0.6), inset 0 0 30px rgba(90, 50, 20, 0.4); }
+.hz-couvercle .cartouche { position: relative; width: 224px; height: 128px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 18px; box-sizing: border-box; text-align: center;
+  background: radial-gradient(ellipse at 40% 30%, #fbe4c4, #d9a877 70%, #b98250); box-shadow: inset 0 0 0 1.5px rgba(90, 50, 20, 0.55), inset 0 0 0 6px rgba(251, 228, 196, 0.5), inset 0 0 0 7px rgba(90, 50, 20, 0.35), inset 0 3px 8px rgba(90, 50, 20, 0.35); }
+.hz-couvercle .cartouche small { font-size: 9.5px; letter-spacing: 0.22em; color: #6e4524; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hz-couvercle .cartouche b { font-family: var(--serif); font-weight: 400; line-height: 1.05; color: #4a2a12; text-shadow: 0 1px 0 rgba(255, 240, 220, 0.7), 0 -1px 0 rgba(70, 35, 10, 0.35); overflow-wrap: anywhere; }
+/* Bien : un éclat bleu acier fait le tour de la lunette. */
+.hz-eclat-lunette { position: absolute; inset: -2px; z-index: 5; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; filter: drop-shadow(0 0 6px rgba(150, 190, 240, 0.9));
+  background: conic-gradient(from 0deg, rgba(120, 160, 220, 0) 0deg, rgba(150, 190, 240, 0.95) 18deg, rgba(235, 245, 255, 1) 24deg, rgba(150, 190, 240, 0.9) 30deg, rgba(120, 160, 220, 0) 60deg, rgba(120, 160, 220, 0) 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 127px, #000 129px 150px, transparent 152px); mask: radial-gradient(circle, transparent 0 127px, #000 129px 150px, transparent 152px); animation: hz-eclat-lunette 0.8s cubic-bezier(0.3, 0, 0.3, 1) both; }
+/* Facile : le mouvement, sur inox brossé, derrière un iris. */
+.hz-mouvement { position: absolute; inset: 0; z-index: 4; border-radius: 50%; overflow: hidden; clip-path: circle(0% at 50% 50%); transition: clip-path 0.45s cubic-bezier(0.6, 0, 0.8, 0.4);
+  background: repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.10) 0 0.6px, rgba(0, 0, 0, 0.07) 0.6px 1.3px, rgba(255, 255, 255, 0) 1.3px 2px), conic-gradient(from 25deg at 50% 50%, #eef1f4, #a3a9b1 45deg, #f7f9fb 95deg, #8e959e 150deg, #dfe3e8 200deg, #9aa1aa 255deg, #f2f4f7 305deg, #eef1f4 360deg);
+  box-shadow: inset 0 0 0 3px #c9a24a, inset 0 0 0 5px rgba(60, 66, 74, 0.55), inset 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 -4px 12px rgba(255, 255, 255, 0.4); }
+.hz-mouvement.ouvert { clip-path: circle(50% at 50% 50%); transition: clip-path 0.55s cubic-bezier(0.3, 1.2, 0.5, 1); }
+.hz-mouvement svg { position: absolute; inset: 0; width: 256px; height: 256px; overflow: visible; filter: drop-shadow(0 4px 4px rgba(30, 34, 40, 0.55)); }
+.hz-gravure { position: absolute; left: 89px; top: 16px; width: 78px; height: 56px; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; background: rgba(255, 255, 255, 0.75); }
+.hz-gravure.creux { top: 15px; background: linear-gradient(180deg, rgba(38, 42, 48, 0.78), rgba(70, 76, 84, 0.6)); }
+.hz-sous-montre { min-height: 66px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+.hz-exemple { font-family: var(--serif); font-size: 17px; color: #efe6d2; text-wrap: pretty; }
+.hz-ecouter { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(201, 162, 74, 0.55); background: transparent; font: inherit; font-size: 13px; color: #e6c987; cursor: pointer; }
+.hz-ecouter svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hz-consigne { font-size: 14px; color: #b8a98c; }
+
+/* les quatre notes : une pierre par note */
+[data-style='horloger'] .grades { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+[data-style='horloger'] .grades .grade { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 4px 10px; border-radius: 14px; border: 1px solid var(--trait); color: #efe6d2; font-size: 14px; font-weight: 400;
+  background: linear-gradient(180deg, rgba(239, 230, 210, 0.08), rgba(239, 230, 210, 0.02)); box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.08); }
+[data-style='horloger'] .grades .grade::before { content: ''; width: 11px; height: 11px; transform: rotate(45deg); border-radius: 2px; background: var(--pierre); }
+[data-style='horloger'] .grades .grade small { font-size: 11px; color: #b8a98c; }
+[data-style='horloger'] .grades .grade:active { background: linear-gradient(180deg, rgba(239, 230, 210, 0.16), rgba(239, 230, 210, 0.05)); }
+[data-style='horloger'] .grades .g-again { --trait: #b3263a; --pierre: radial-gradient(circle at 35% 30%, #ff7a8a, #b3263a 60%); }
+[data-style='horloger'] .grades .g-hard { --trait: #a9853a; --pierre: linear-gradient(135deg, #e6c987, #8a6a2a); }
+[data-style='horloger'] .grades .g-good { --trait: #3a62a8; --pierre: linear-gradient(135deg, #7da0e0, #1f3a6e); }
+[data-style='horloger'] .grades .g-easy { --trait: #e6c987; --pierre: linear-gradient(135deg, #fff3d0, #e6c987); }
+[data-style='horloger'] .grades .grade.frappe { box-shadow: 0 0 16px color-mix(in srgb, var(--trait) 60%, transparent), inset 0 1px 0 rgba(255, 240, 200, 0.08); }
+
+@keyframes hz-tourne { to { transform: rotate(360deg); } }
+@keyframes hz-inverse { to { transform: rotate(-360deg); } }
+@keyframes hz-balancier { 0%, 100% { transform: rotate(-70deg); } 50% { transform: rotate(70deg); } }
+@keyframes hz-reflet { 0%, 62% { transform: translateX(-140%) skewX(-18deg); } 88%, 100% { transform: translateX(340%) skewX(-18deg); } }
+@keyframes hz-poussiere { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 0.7; } 100% { transform: translate(18px, -120px); opacity: 0; } }
+@keyframes hz-lampe { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
+@keyframes hz-eclat { 0% { opacity: 0; transform: scale(0.6); } 35% { opacity: 1; } 100% { opacity: 1; transform: scale(1); } }
+@keyframes hz-pulse { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+@keyframes hz-respire { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes hz-derive { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(70px, -160px); opacity: 0; } }
+@keyframes hz-eclat-lunette { 0% { transform: rotate(-40deg); opacity: 0; } 18% { opacity: 1; } 100% { transform: rotate(320deg); opacity: 0; } }
+@keyframes hz-arrive { from { transform: scale(0.12) rotate(-120deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes hz-entre { from { transform: translateY(70px) scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes hz-part-haut { to { transform: translateY(-90px) scale(0.84); opacity: 0; } }
+@keyframes hz-part-bas { to { transform: translateY(150px) scale(0.78); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hz-lampe, .hz-poussiere, .hz-barre s, .hz-reflet, .hz-rouage-decor g, .hz-mecanisme g, .hz-nappe, .hz-nappe > div, .hz-halo, .hz-coeur, .hz-derive,
+  .hz-montre-bloc, .hz-trotteuse, .hz-mouvement g, .hz-eclat-lunette { animation: none !important; }
+  .hz-roue, .hz-roue g, .hz-couvercle, .hz-aiguille.minutes { transition: none !important; }
+}

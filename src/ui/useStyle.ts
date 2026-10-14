@@ -10,7 +10,7 @@
 import { useEffect, useState } from 'react';
 
 export type Style = 'cahier' | 'lycee' | 'decollage' | 'orbite' | 'tableau' | 'arcade' | 'neon' | 'ocean' | 'voyage' | 'manga' | 'bd' | 'jardin' | 'basket' | 'foot' | 'rugby'
-  | 'strass' | 'circuit' | 'diner' | 'tv' | 'tapis' | 'salon' | 'station' | 'fashion' | 'cinema' | 'biblio' | 'patisserie' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau' | 'jungle' | 'western' | null;
+  | 'strass' | 'circuit' | 'diner' | 'tv' | 'tapis' | 'salon' | 'station' | 'fashion' | 'cinema' | 'biblio' | 'patisserie' | 'cabinet' | 'japon' | 'jazz' | 'plage' | 'chateau' | 'jungle' | 'western' | 'horloger' | null;
 
 function lire(): Style {
   const s = document.documentElement.dataset.style;
@@ -20,7 +20,7 @@ function lire(): Style {
     || s === 'basket' || s === 'foot' || s === 'rugby'
     || s === 'strass' || s === 'circuit' || s === 'diner' || s === 'tv'
     || s === 'tapis' || s === 'salon' || s === 'station' || s === 'fashion'
-    || s === 'cinema' || s === 'biblio' || s === 'patisserie' || s === 'cabinet' || s === 'japon' || s === 'jazz' || s === 'plage' || s === 'chateau' || s === 'jungle' || s === 'western' ? s : null;
+    || s === 'cinema' || s === 'biblio' || s === 'patisserie' || s === 'cabinet' || s === 'japon' || s === 'jazz' || s === 'plage' || s === 'chateau' || s === 'jungle' || s === 'western' || s === 'horloger' ? s : null;
 }
 
 /**

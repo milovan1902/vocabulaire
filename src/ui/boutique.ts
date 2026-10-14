@@ -109,6 +109,8 @@ export const FAMILLES: Famille[] = [
       { id: 'salon-the', palier: 'scene', court: 'Le paquet sous une cloche.', long: 'La pâtisserie parisienne, où le paquet du jour attend sous une cloche de verre.', fond: '#fbf1ec', accent: '#e79fb2', encre: '#5a3340', police: "'Parisienne'" },
       { id: 'cabinet', palier: 'scene', court: 'Le labo d’une chimiste, la nuit.', long: 'Le laboratoire d’une chimiste, la nuit : les paquets luisent dans des bocaux.', fond: '#0e1714', accent: '#8dff9a', encre: '#e8e0c8', police: "'Cinzel'" },
       { id: 'chateau', palier: 'scene', court: 'Derrière le pont-levis.', long: 'La forteresse, où le paquet attend dans la porte, derrière le pont-levis.', fond: '#f3e6c4', accent: '#7a1f1f', encre: '#3b2b1a', police: "'Cinzel'" },
+      /* CHANTIER 269 — Atelier d'horloger. */
+      { id: 'horloger', palier: 'scene', court: 'Paquets en rouages de laiton.', long: 'L’atelier d’un horloger : les paquets sont des rouages qui s’engrènent, chaque carte une montre de gousset qui s’ouvre.', fond: '#15100c', accent: '#c9a24a', encre: '#efe6d2', police: "'Marcellus'" },
     ],
   },
 ];
