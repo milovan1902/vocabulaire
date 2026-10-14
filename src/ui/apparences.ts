@@ -10,19 +10,22 @@
  *
  * Passage à la boutique, une seule fois par appareil : l'apparence en cours
  * et celles des anciens paliers déjà atteints sont offertes.
+ *
+ * CHANTIER 270 — le compte du créateur possède tout (data/createur.ts).
  */
 import type { Theme } from './theme';
 import { themeChoisi } from './theme';
 import { estPremium } from '../engine/xp';
 import { prixDe } from './boutique';
 import { ajouterAchat, ajouterOfferte, lireAchats, lireOffertes } from '../data/apparencesStock';
+import { estCreateur } from '../data/createur';
 
 const CLE_MIGRATION = 'vocab-boutique-migree';
 /** Les paliers du chantier 168, pour la seule migration. */
 const ANCIENS_PALIERS: Partial<Record<Theme, number>> = { cahier: 100, 'lycee-clair': 250, lycee: 400 };
 
 export function possede(t: Theme): boolean {
-  return prixDe(t) === 0 || estPremium() || lireOffertes().includes(t) || lireAchats().some((a) => a.t === t);
+  return prixDe(t) === 0 || estPremium() || estCreateur() || lireOffertes().includes(t) || lireAchats().some((a) => a.t === t);
 }
 
 export function depense(): number {
