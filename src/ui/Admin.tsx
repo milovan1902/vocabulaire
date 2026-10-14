@@ -9,8 +9,12 @@
  * (`app_mesure`). Temps de parole et coût IA : comptes connectés
  * (`parler_usage`). Les filtres Jour / Semaine / Mois reprennent ceux de
  * « Mon évolution » (MesMots.tsx).
+ *
+ * CHANTIER 267 — Coût IA : une fois le grain choisi, on choisit LA période
+ * (flèches ‹ › ou pastilles). Courbes marquées, montants, écart avec la
+ * période d'avant et tableau « Par formule » suivent la période choisie.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { signInWithGoogle, signOut, supabase, type Session } from '../data/supabase';
 import './admin.css';
 
@@ -54,6 +58,8 @@ const PERIODE_EN_COURS: Record<Grain, string> = { day: 'aujourd’hui', week: 'c
 const PART_MOIS: Record<Grain, number> = { day: 1 / 30, week: 7 / 30, month: 1 };
 /** Au-delà, l'IA mange trop de l'abonnement : le chiffre passe en orange. */
 const SEUIL_PART = 40;
+const MOIS_LONG = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
 const nb = (n: number, d = 0) => n.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -83,6 +89,71 @@ function libelle(debut: string, g: Grain): string {
   return g === 'month' ? MOIS[m - 1] : `${j} ${MOIS[m - 1]}`;
 }
 
+/** Numéro de semaine ISO (lundi → dimanche) d'un lundi au format AAAA-MM-JJ. */
+function numSemaine(debut: string): number {
+  const d = new Date(`${debut}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 3);
+  const an = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+  return 1 + Math.round((d.getTime() - an.getTime()) / 864e5 / 7 - ((an.getUTCDay() + 6) % 7) / 7 + 3 / 7);
+}
+
+/** Libellés d'une période choisie : pastille courte, titre long, fin de phrase. */
+function nomPeriode(debut: string, g: Grain): { court: string; long: string; bas: string } {
+  const [a, m, j] = debut.split('-').map(Number);
+  if (g === 'month') return { court: MOIS[m - 1], long: `${MOIS_LONG[m - 1]} ${a}`, bas: `en ${MOIS_LONG[m - 1]}` };
+  if (g === 'week') {
+    const n = numSemaine(debut);
+    const fin = new Date(`${debut}T00:00:00Z`);
+    fin.setUTCDate(fin.getUTCDate() + 6);
+    return { court: `S${n}`, long: `Semaine ${n} · ${j} ${MOIS[m - 1]} – ${fin.getUTCDate()} ${MOIS[fin.getUTCMonth()]}`, bas: `semaine ${n}` };
+  }
+  const jour = JOURS[new Date(`${debut}T00:00:00Z`).getUTCDay()];
+  return { court: `${j} ${MOIS[m - 1]}`, long: `${jour} ${j} ${MOIS[m - 1]} ${a}`, bas: `le ${j} ${MOIS[m - 1]}` };
+}
+
+/** « +12 % vs sept. » (ou en points) ; vide s'il n'y a pas de période d'avant comparable. */
+function ecart(v: number[], i: number, avant: string, points = false): string {
+  if (i < 1) return '';
+  const a = v[i - 1], b = v[i];
+  if (!points && a <= 0) return '';
+  const r = Math.round(points ? b - a : (100 * (b - a)) / a);
+  return `${r > 0 ? '+' : r < 0 ? '−' : '±'}${nb(Math.abs(r))} ${points ? 'pt' : '%'} vs ${avant}`;
+}
+
+/** Le choix de LA période : ‹ libellé › + pastilles défilantes. */
+function ChoixPeriode({ debutsP, g, sel, onChange }: {
+  debutsP: string[]; g: Grain; sel: number; onChange: (i: number) => void;
+}) {
+  const bande = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = bande.current;
+    const a = el?.querySelector<HTMLElement>('button.on');
+    if (el && a) el.scrollLeft = a.offsetLeft - el.offsetLeft - el.clientWidth / 2 + a.offsetWidth / 2;
+  }, [g, sel]);
+  const der = debutsP.length - 1;
+  return (
+    <div className="adm-periode">
+      <div className="adm-periode-ligne">
+        <div className="adm-pas">
+          <button aria-label="Période précédente" disabled={sel <= 0} onClick={() => onChange(sel - 1)}>‹</button>
+          <span aria-live="polite">{nomPeriode(debutsP[sel], g).long}</span>
+          <button aria-label="Période suivante" disabled={sel >= der} onClick={() => onChange(sel + 1)}>›</button>
+        </div>
+        {sel === der
+          ? <span className="adm-encours">en cours</span>
+          : <button className="adm-lien" onClick={() => onChange(der)}>Revenir à {PERIODE_EN_COURS[g]}</button>}
+      </div>
+      <div className="adm-puces" ref={bande}>
+        {debutsP.map((dp, i) => (
+          <button key={dp} className={i === sel ? 'on' : ''} aria-pressed={i === sel} onClick={() => onChange(i)}>
+            {nomPeriode(dp, g).court}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** La série complète : une période sans conversation vaut zéro, elle ne disparaît pas. */
 function serie(points: Point[] | undefined, g: Grain): Point[] {
   const par = new Map((points ?? []).map((p) => [p.debut, p]));
@@ -110,8 +181,9 @@ function Choix<T extends string | number>({ options, valeur, onChange }: {
   );
 }
 
-function Courbe({ titre, valeurs, libelles, fin, note, seuil, ton }: {
+function Courbe({ titre, valeurs, libelles, fin, note, seuil, ton, sel, ecartTxt }: {
   titre: string; valeurs: number[]; libelles: string[]; fin: string; note?: string; seuil?: number; ton?: 'alerte' | 'bon';
+  sel?: number; ecartTxt?: string;
 }) {
   const max = Math.max(1e-9, ...valeurs, seuil ?? 0) * 1.1;
   const x = (i: number) => (valeurs.length > 1 ? (320 * i) / (valeurs.length - 1) : 160);
@@ -123,14 +195,21 @@ function Courbe({ titre, valeurs, libelles, fin, note, seuil, ton }: {
   return (
     <div className="adm-courbe">
       <div className="adm-courbe-tete"><span>{titre}</span><b className={ton ?? ''}>{fin}</b></div>
+      {ecartTxt !== undefined && <small className="adm-ecart">{ecartTxt}</small>}
       <div className="adm-trace">
         <svg viewBox="0 0 320 100" preserveAspectRatio="none" aria-hidden="true">
           {seuil !== undefined && (
             <path className="seuil" d={`M0 ${y(seuil).toFixed(1)} L320 ${y(seuil).toFixed(1)}`} vectorEffect="non-scaling-stroke" />
           )}
           <path className="aire" d={`${d} L320 100 L0 100 Z`} />
+          {sel !== undefined && (
+            <path className="repere" d={`M${x(sel).toFixed(1)} 0 L${x(sel).toFixed(1)} 100`} vectorEffect="non-scaling-stroke" />
+          )}
           <path className="trait" d={d} vectorEffect="non-scaling-stroke" />
         </svg>
+        {sel !== undefined && (
+          <i className="adm-point" style={{ left: `${(100 * x(sel)) / 320}%`, top: `${y(valeurs[sel])}%` }} />
+        )}
       </div>
       <div className="adm-axe">{indices.map((i) => <small key={i}>{libelles[i]}</small>)}</div>
       {note && <p className="adm-note">{note}</p>}
@@ -142,6 +221,8 @@ function Tableau({ d }: { d: Donnees }) {
   const [periode, setPeriode] = useState<Periode>(30);
   const [grainParole, setGrainParole] = useState<Grain>('week');
   const [grainIA, setGrainIA] = useState<Grain>('month');
+  /** Période choisie par grain (indice dans la série ; le dernier = en cours). Gardée quand on change de grain. */
+  const [selIA, setSelIA] = useState<Record<Grain, number>>({ day: N.day - 1, week: N.week - 1, month: N.month - 1 });
 
   const k = d.kpi[String(periode)];
   const mois = serie(d.parler.month, 'month');
@@ -170,8 +251,13 @@ function Tableau({ d }: { d: Donnees }) {
   const charges = sI.map((p) => p.centimes / 100);
   const prixPeriode = d.prixAbonnement * PART_MOIS[grainIA];
   const part = sI.map((p) => div(100 * div(p.centimes_ab / 100, d.nAbonnes), prixPeriode));
-  const dernierePart = part[part.length - 1];
-  const der = sI[sI.length - 1];
+  const sel = Math.min(sI.length - 1, Math.max(0, selIA[grainIA]));
+  const choisir = (i: number) => setSelIA((s) => ({ ...s, [grainIA]: Math.min(sI.length - 1, Math.max(0, i)) }));
+  const debutsI = sI.map((p) => p.debut);
+  const nomSel = nomPeriode(debutsI[sel], grainIA);
+  const avant = sel > 0 ? nomPeriode(debutsI[sel - 1], grainIA).court : '';
+  const partSel = part[sel];
+  const der = sI[sel];
   const gratuits = der.comptes - der.comptes_ab;
 
   const t = d.tranches;
@@ -241,16 +327,18 @@ function Tableau({ d }: { d: Donnees }) {
 
       <section className="adm-bloc">
         <div className="adm-bloc-tete"><h2>Coût IA</h2><Choix options={GRAINS} valeur={grainIA} onChange={setGrainIA} /></div>
+        <ChoixPeriode debutsP={debutsI} g={grainIA} sel={sel} onChange={choisir} />
         <div className="adm-deux">
           <Courbe titre={`Charges IA totales, ${PAR[grainIA]}`} valeurs={charges} libelles={libI}
-            fin={eur(charges[charges.length - 1])} note="Abonnés et gratuits. Facture de l’IA, hors Cloudflare et Supabase." />
+            fin={eur(charges[sel])} sel={sel} ecartTxt={ecart(charges, sel, avant)} note="Abonnés et gratuits. Facture de l’IA, hors Cloudflare et Supabase." />
           <Courbe titre="Coût par abonné, en % de l’abonnement" valeurs={part} libelles={libI} seuil={SEUIL_PART}
-            fin={d.nAbonnes ? `${Math.round(dernierePart)} %` : '—'} ton={dernierePart > SEUIL_PART ? 'alerte' : 'bon'}
+            fin={d.nAbonnes ? `${Math.round(partSel)} %` : '—'} ton={partSel > SEUIL_PART ? 'alerte' : 'bon'}
+            sel={sel} ecartTxt={d.nAbonnes ? ecart(part, sel, avant, true) : ''}
             note={`Abonnement à ${eur(d.prixAbonnement)} / mois, ramené à la période. Pointillés : seuil d’alerte de ${SEUIL_PART} %.`} />
         </div>
         <div className="adm-deux">
           <div className="adm-table">
-            <span className="adm-label">Par formule · {PERIODE_EN_COURS[grainIA]}</span>
+            <span className="adm-label">Par formule · {sel === sI.length - 1 ? PERIODE_EN_COURS[grainIA] : nomSel.bas}</span>
             <div className="adm-ligne titres"><span>Formule</span><span>Comptes</span><span>Min moy.</span><span>Coût moy.</span></div>
             <div className="adm-ligne">
               <span>Abonnés · 10 min/jour<small>total {eur(der.centimes_ab / 100)}</small></span>

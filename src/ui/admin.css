@@ -69,3 +69,22 @@
 .adm-centre { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
 .adm-bouton { border: 1px solid #f2b705; border-radius: 999px; background: transparent; color: #f2b705; font: inherit; padding: 10px 22px; cursor: pointer; }
 .adm-bouton:hover { background: rgba(242, 183, 5, 0.12); }
+
+/* CHANTIER 267 — Coût IA : choix de la période (‹ › + pastilles), repère sur les courbes. */
+.adm-periode { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-top: 1px solid #2c4561; border-bottom: 1px solid #2c4561; }
+.adm-periode-ligne { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.adm-pas { display: flex; align-items: center; gap: 2px; border: 1px solid #2c4561; border-radius: 999px; padding: 2px; }
+.adm-pas span { min-width: 220px; text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; }
+.adm-pas button { border: 0; border-radius: 999px; width: 34px; height: 34px; font: inherit; font-size: 20px; line-height: 1; background: transparent; color: #f3efe6; cursor: pointer; }
+.adm-pas button:hover:not(:disabled) { background: rgba(242, 183, 5, 0.12); }
+.adm-pas button:disabled { opacity: 0.3; cursor: default; }
+.adm-encours { font-size: 12px; color: #7fd3a0; border: 1px solid #2f6b4a; border-radius: 999px; padding: 2px 10px; }
+.adm-puces { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; scrollbar-color: #2c4561 transparent; }
+.adm-puces button { flex: none; border: 1px solid #2c4561; border-radius: 8px; padding: 5px 10px; font: inherit; font-size: 13px; background: transparent; color: #f3efe6; cursor: pointer; font-variant-numeric: tabular-nums; }
+.adm-puces button:hover { border-color: #4a6a8c; }
+.adm-puces button.on { border-color: #f2b705; color: #f2b705; background: rgba(242, 183, 5, 0.12); }
+.adm-pas button:focus-visible, .adm-puces button:focus-visible { outline: 2px solid #f2b705; outline-offset: 2px; }
+.adm-ecart { align-self: flex-end; margin-top: -6px; min-height: 18px; font-size: 12px; color: #b9c3cf; font-variant-numeric: tabular-nums; }
+.adm-trace { position: relative; }
+.adm-trace .repere { fill: none; stroke: #f3efe6; stroke-opacity: 0.45; stroke-width: 1; stroke-dasharray: 3 3; }
+.adm-point { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #f2b705; box-shadow: 0 0 0 3px #0F253C; pointer-events: none; }
