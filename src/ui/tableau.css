@@ -250,3 +250,185 @@
   [data-style='tableau'] .grades .grade,
   [data-style='tableau'] .serie-count { transform: none; }
 }
+
+
+/* ==================================================================
+   CHANTIER 271 — LE TABLEAU S'ANIME (maquette « Apparences Cahier et
+   Tableau », 1b). Vert et noir. Le dessin est dans Ecole.tsx.
+   ================================================================== */
+@keyframes tb-dessin { to { stroke-dashoffset: 0; } }
+@keyframes tb-pop {
+  0% { transform: scale(0) rotate(-40deg); opacity: 0; }
+  60% { transform: scale(1.18) rotate(var(--r, 8deg)); opacity: 1; }
+  100% { transform: scale(1) rotate(var(--r, 8deg)); opacity: 1; }
+}
+@keyframes tb-ecrire { from { clip-path: inset(-30px 100% -30px -30px); } to { clip-path: inset(-30px -30px -30px -30px); } }
+@keyframes tb-nettoie { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes tb-brosse {
+  0% { transform: translate(-30vw, 6vh) rotate(-10deg); }
+  20% { transform: translate(8vw, 18vh) rotate(8deg); }
+  40% { transform: translate(30vw, 1vh) rotate(-8deg); }
+  60% { transform: translate(52vw, 20vh) rotate(8deg); }
+  80% { transform: translate(75vw, 4vh) rotate(-6deg); }
+  100% { transform: translate(115vw, 15vh) rotate(0); }
+}
+@keyframes tb-eclat {
+  0% { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+@keyframes tb-efface-txt { to { color: transparent; text-shadow: none; } }
+@keyframes tb-passe { from { left: -70px; transform: rotate(-6deg); } to { left: calc(100% + 10px); transform: rotate(4deg); } }
+@keyframes tb-crisse { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(1px, -1px); } 50% { transform: translate(-1px, 1px); } 75% { transform: translate(1px, 1px); } }
+@keyframes tb-chute { from { transform: translate(0, 0) rotate(0); opacity: 1; } to { transform: translate(var(--dx), 70px) rotate(var(--r)); opacity: 0; } }
+@keyframes tb-scintille { 0%, 100% { opacity: 0; transform: scale(0.4); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes tb-pousse { from { transform: rotate(8deg) scaleY(0); } to { transform: rotate(8deg) scaleY(1); } }
+@keyframes tb-barre { from { transform: rotate(-28deg) scaleX(0); } to { transform: rotate(-28deg) scaleX(1); } }
+@keyframes tb-souligne { from { background-size: 0 2px, 0 2px; } to { background-size: 100% 2px, calc(100% - 4px) 2px; } }
+@keyframes tb-glisse { from { transform: translate(40px, -8px) rotate(14deg); opacity: 0; } to { transform: rotate(-6deg); opacity: 1; } }
+/* Deux noms identiques qui alternent (Eventail.tsx, c0 / c1) : la punaise retombe à chaque changement. */
+@keyframes tb-punaise-0 { 0%, 45% { transform: translateY(-34px) scale(1.5); opacity: 0; } 70% { transform: translateY(2px) scale(0.9); opacity: 1; } 85% { transform: translateY(-3px); } 100% { transform: none; opacity: 1; } }
+@keyframes tb-punaise-1 { 0%, 45% { transform: translateY(-34px) scale(1.5); opacity: 0; } 70% { transform: translateY(2px) scale(0.9); opacity: 1; } 85% { transform: translateY(-3px); } 100% { transform: none; opacity: 1; } }
+@keyframes tb-poudre-0 { 0%, 40% { opacity: 0; transform: scale(0.4); } 60% { opacity: 0.9; } 100% { opacity: 0; transform: scale(1.7) translateY(-8px); } }
+@keyframes tb-poudre-1 { 0%, 40% { opacity: 0; transform: scale(0.4); } 60% { opacity: 0.9; } 100% { opacity: 0; transform: scale(1.7) translateY(-8px); } }
+
+/* ---------- vers la Révision : la brosse efface l'écran, « Au tableau ! » ---------- */
+.tb-efface { position: fixed; inset: 0; z-index: 1000; overflow: hidden; pointer-events: none; }
+.tb-efface .ardoise {
+  position: absolute; inset: 0; background-color: var(--ardoise);
+  background-image: radial-gradient(260px 110px at 28% 20%, rgba(255,255,255,0.08), transparent), radial-gradient(300px 140px at 70% 60%, rgba(255,255,255,0.06), transparent);
+  animation: tb-nettoie 1.1s linear both;
+}
+.tb-efface .brosse {
+  position: absolute; left: 0; top: 20vh; width: 96px; height: 40px; border-radius: 7px;
+  background: linear-gradient(180deg, #6b4a2e 0 55%, #d9d4c6 55%); box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+  animation: tb-brosse 1.1s ease-in-out both;
+}
+.tb-efface .poudre s, .tb-poudre s {
+  position: absolute; width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(242, 242, 234, 0.7); filter: blur(1px); animation: tb-eclat 1s ease-out both;
+}
+.tb-efface .titre {
+  position: absolute; left: 0; right: 0; top: 44%; text-align: center;
+  font-family: var(--craie); font-weight: 700; font-size: 54px; line-height: 1; color: var(--ink);
+  animation: tb-ecrire 0.6s ease-out 1.15s both;
+}
+.tb-efface .trait { position: absolute; left: 50%; top: calc(44% + 62px); width: 180px; height: 14px; margin-left: -90px; overflow: visible; }
+.tb-efface .trait path {
+  fill: none; stroke: var(--chalk); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1; animation: tb-dessin 0.3s ease-out 1.6s both;
+}
+
+/* ---------- changer de paquet : la punaise retombe dans un nuage de craie ---------- */
+[data-style='tableau'] .eventail.c0 .eventail-carte.centre::before { animation: tb-punaise-0 0.8s ease-out both; }
+[data-style='tableau'] .eventail.c1 .eventail-carte.centre::before { animation: tb-punaise-1 0.8s ease-out both; }
+[data-style='tableau'] .eventail.c0 .eventail-carte.centre::after,
+[data-style='tableau'] .eventail.c1 .eventail-carte.centre::after {
+  content: ''; position: absolute; left: 50%; top: -6px; z-index: 4; width: 4px; height: 4px; margin-left: -2px;
+  border-radius: 50%; pointer-events: none; opacity: 0;
+  box-shadow: -12px -4px 0 1px rgba(242,242,234,0.7), 10px -6px 0 2px rgba(242,242,234,0.6), -6px -12px 0 0 rgba(242,242,234,0.7),
+    14px 2px 0 1px rgba(242,242,234,0.5), -16px 4px 0 0 rgba(242,242,234,0.6), 4px -16px 0 1px rgba(242,242,234,0.6);
+}
+[data-style='tableau'] .eventail.c0 .eventail-carte.centre::after { animation: tb-poudre-0 0.8s ease-out both; }
+[data-style='tableau'] .eventail.c1 .eventail-carte.centre::after { animation: tb-poudre-1 0.8s ease-out both; }
+
+/* ---------- Cette semaine : des bâtons à la craie, le 5e barre les quatre autres ---------- */
+[data-style='tableau'] .ly-tuile { position: relative; }
+[data-style='tableau'] .ly-segments { position: relative; }
+[data-style='tableau'] .ly-segments i { transform-origin: 50% 0; }
+[data-style='tableau'] .ly-segments i:nth-child(5) {
+  position: absolute; left: -2px; top: 9px; width: 46px; height: 4px;
+  transform: rotate(-28deg); transform-origin: 0 50%;
+}
+[data-style='tableau'] .ly-segments i:nth-child(5).on { background: var(--chalk); }
+[data-style='tableau'] .ly-segments i:nth-child(6) { margin-left: 12px; }
+[data-style='tableau'] .ly-segments i.on.auj { animation: tb-pousse 0.3s ease-out 0.2s both; }
+[data-style='tableau'] .ly-segments i:nth-child(5).on.auj { animation: tb-barre 0.35s ease-out 0.2s both; }
+/* La semaine faite : « 5 / 5 jours » souligné deux fois. */
+[data-style='tableau'] .ly-tuile:has(> .ly-segments.plein) > b {
+  padding-bottom: 6px;
+  background-image: linear-gradient(var(--chalk), var(--chalk)), linear-gradient(var(--chalk), var(--chalk));
+  background-size: 100% 2px, calc(100% - 4px) 2px; background-position: 0 calc(100% - 3px), 4px 100%; background-repeat: no-repeat;
+}
+[data-style='tableau'] .ly-tuile:has(> .ly-segments.plein:not(.b6):not(.b7)) > b { animation: tb-souligne 0.5s ease-out 0.5s both; }
+.tb-bonpoint {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; border-radius: 4px;
+  background: #f4efe2; color: #c0392b; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35); transform: rotate(-6deg);
+  font-family: var(--craie); font-weight: 700; font-size: 17px; line-height: 1; white-space: nowrap;
+  animation: tb-glisse 0.55s cubic-bezier(0.3, 1.4, 0.5, 1) 0.4s both;
+}
+.tb-bonpoint svg { width: 14px; height: 14px; }
+.tb-bonpoint path { fill: #c0392b; }
+.tb-honneur {
+  font-family: var(--craie); font-weight: 700; font-size: 20px; line-height: 1; color: var(--chalk); white-space: nowrap;
+  animation: tb-ecrire 0.7s ease-out 0.4s both;
+}
+.tb-etoiles { position: absolute; inset: 0; pointer-events: none; }
+.tb-etoiles svg { position: absolute; width: 12px; height: 12px; opacity: 0; animation: tb-scintille 1.4s ease-in-out 3 both; }
+.tb-etoiles path { fill: var(--chalk); }
+
+/* ---------- la Révision : ce qui s'écrit au tableau pendant la note ---------- */
+[data-style='tableau'] .studystage.n-again .answer,
+[data-style='tableau'] .studystage.n-hard .answer { position: relative; width: fit-content; margin-left: auto; margin-right: auto; }
+/* À revoir : la brosse passe, la réponse s'efface, « à revoir » se réécrit à sa place. */
+[data-style='tableau'] .studystage.n-again .answer { animation: tb-efface-txt 0.6s linear 0.15s forwards; }
+[data-style='tableau'] .studystage.n-again .answer::after {
+  content: ''; position: absolute; top: 10%; width: 58px; height: 26px; border-radius: 5px; pointer-events: none;
+  background: linear-gradient(180deg, #6b4a2e 0 55%, #d9d4c6 55%); box-shadow: 0 3px 5px rgba(0, 0, 0, 0.4);
+  animation: tb-passe 0.8s ease-in-out both;
+}
+[data-style='tableau'] .studystage.n-again .answer::before {
+  content: 'à revoir'; position: absolute; left: 50%; top: 18%; transform: translateX(-50%); white-space: nowrap;
+  font-size: 30px; color: rgba(245, 169, 192, 0.9); animation: tb-ecrire 0.4s ease-out 0.95s both;
+}
+/* Difficile : la craie crisse, le trait dérape, un morceau se casse. */
+[data-style='tableau'] .studystage.n-hard .answer { animation: tb-crisse 0.08s linear 6; }
+[data-style='tableau'] .studystage.n-hard .answer::after {
+  content: ''; position: absolute; left: -4px; right: -4px; bottom: -12px; height: 14px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30' preserveAspectRatio='none'%3E%3Cpath d='M2 12 Q12 4 22 14 T42 12 T62 16 L70 26' fill='none' stroke='%23f7e08a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  animation: tb-ecrire 0.45s linear both;
+}
+[data-style='tableau'] .studystage.n-hard .answer::before {
+  content: ''; position: absolute; right: -2px; bottom: -10px; width: 10px; height: 5px; border-radius: 1px;
+  background: #f2f2ea; --dx: 18px; --r: 160deg; animation: tb-chute 0.7s ease-in 0.45s both;
+}
+[data-style='tableau'] .studystage.n-easy .example,
+[data-style='tableau'] .studystage.n-easy .speak { opacity: 0; transition: opacity 0.25s; }
+.tb-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.tb-poudre { position: absolute; inset: 0; }
+.tb-question {
+  --r: 12deg; position: absolute; right: 18px; top: 16px;
+  font-family: var(--craie); font-weight: 700; font-size: 44px; line-height: 1; color: var(--chalk);
+  animation: tb-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) 0.6s both;
+}
+.tb-coche, .tb-rond, .tb-etoile { position: absolute; overflow: visible; }
+.tb-coche { right: 18px; top: 70px; width: 56px; height: 56px; }
+.tb-rond { right: 10px; top: 14px; width: 72px; height: 46px; }
+.tb-etoile { right: 12px; top: 14px; width: 70px; height: 70px; }
+.tb-coche path, .tb-rond path, .tb-etoile path {
+  fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+}
+.tb-coche path { stroke: var(--good); stroke-width: 2.8; animation: tb-dessin 0.4s ease-out both; }
+.tb-rond path { stroke: var(--good); stroke-width: 2.2; animation: tb-dessin 0.45s ease-out 0.65s both; }
+.tb-etoile path { stroke: var(--rouge); stroke-width: 1.6; animation: tb-dessin 0.6s ease-out both; }
+.tb-bien {
+  position: absolute; right: 14px; top: 18px; width: 64px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--craie); font-weight: 700; font-size: 26px; color: var(--good);
+  animation: tb-ecrire 0.35s ease-out 0.4s both;
+}
+.tb-tresbien {
+  position: absolute; left: 0; right: 0; bottom: 14px; text-align: center;
+  font-family: var(--craie); font-weight: 700; font-size: 36px; line-height: 1; color: var(--rouge);
+  animation: tb-ecrire 0.6s ease-out 0.45s both;
+}
+.tb-scintille svg { position: absolute; opacity: 0; animation: tb-scintille 1s ease-in-out 2 both; }
+.tb-scintille path { fill: var(--ink); }
+.tb-scintille svg.or path { fill: var(--chalk); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-efface { display: none; }
+  [data-style='tableau'] .eventail-carte.centre::before, [data-style='tableau'] .eventail-carte.centre::after,
+  [data-style='tableau'] .ly-segments i, [data-style='tableau'] .ly-tuile > b,
+  .tb-bonpoint, .tb-honneur, .tb-etoiles svg, .tb-fx * { animation: none !important; }
+}

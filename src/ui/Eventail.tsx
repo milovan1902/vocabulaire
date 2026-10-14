@@ -130,7 +130,7 @@ export function Eventail({
 
   return (
     <div
-      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pan ? ' panier' : ''}${but ? ' but' : ''}${pot ? ' poteaux' : ''}${pla || cha || cai || tra || pan || but || pot ? v : ''}${glisse ? ' glisse' : ''}`}
+      className={`eventail${forme === 'orbite' ? ' orbite' : ''}${por ? ' portant' : ''}${pel ? ' pellicule' : ''}${ray ? ' rayon' : ''}${clo ? ' cloche' : ''}${boc ? ' bocaux' : ''}${mai ? ' maison' : ''}${pup ? ' pupitres' : ''}${pla ? ' planches' : ''}${cha ? ' chateau' : ''}${cai ? ' caisses' : ''}${tra ? ' train' : ''}${pan ? ' panier' : ''}${but ? ' but' : ''}${pot ? ' poteaux' : ''}${pla || cha || cai || tra || pan || but || pot ? v : ''}${coups ? ` c${coups % 2}` : ''}${glisse ? ' glisse' : ''}`}
       style={pel ? ({ '--decal': `${-centre * PAS + dx * 0.6}px` } as CSSProperties) : cha || tra ? ({ '--cycle': cycle } as CSSProperties) : undefined}
       role="listbox"
       aria-label="Paquets à réviser : flèches gauche et droite pour changer"

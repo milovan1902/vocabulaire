@@ -35,6 +35,8 @@ import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 import { Alambic, Amorce } from './Salle';
 import { AujourdhuiHorloger } from './Horloger';
+import { createPortal } from 'react-dom';
+import { BrosseTableau, CercleStylo, SemaineCahier, SemaineTableau } from './Ecole';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -205,6 +207,11 @@ export function Today({
   /* CHANTIER 235 — Plage et surf : l'éclaboussure de « À l'eau », avant d'entrer en révision. */
   const [plouf, setPlouf] = useState(0);
   const ploufEnCours = useRef(false);
+  /* CHANTIER 271 — Cahier : la page qui se tourne vers la Révision, la fiche qui part et celle qui arrive. */
+  const [tourne, setTourne] = useState(0);
+  const [sortie, setSortie] = useState(false);
+  const [arrivee, setArrivee] = useState<string | null>(null);
+  const bouge = () => !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
     /* CHANTIER 229 — toutes les apparences montrent la tuile « Parler ». */
@@ -229,6 +236,7 @@ export function Today({
   }, [decks, active, settings]);
 
   function choisir(id: string | null) {
+    if (id && style === 'cahier') setArrivee(id);
     setChoisi(id);
     ecrireChoix(id);
   }
@@ -317,7 +325,7 @@ export function Today({
     const C = 2 * Math.PI * 15;
 
     return (
-      <div className="avant">
+      <div className={`avant${style === 'cahier' && arrivee === r.deck.id ? ' cx-arrive' : ''}${sortie ? ' cx-sort' : ''}`}>
         <button className="avant-haut" onClick={() => onOpen(r.deck.id)}>
           {/*
             * La pastille est SŒUR du cadre, pas fille : le cadre masque ce
@@ -395,10 +403,32 @@ export function Today({
           </>
         )}
 
-        <button className="btn" onClick={() => onReview(r.deck.id)}>
+        <button
+          className="btn"
+          onClick={() => {
+            /* CHANTIER 271 — Cahier : le stylo entoure le bouton (0,55 s), la page se tourne (0,85 s). */
+            if (style === 'cahier' && bouge()) {
+              if (tourne) return;
+              setTourne(1);
+              const id = r.deck.id;
+              window.setTimeout(() => { setTourne(0); onReview(id); }, 1450);
+            } else onReview(r.deck.id);
+          }}
+        >
           Réviser {Math.min(r.due, settings.cardsPerSession)} cartes
+          {style === 'cahier' && tourne > 0 && <CercleStylo />}
         </button>
-        <button className="btn ghost" onClick={() => choisir(null)}>
+        <button
+          className="btn ghost"
+          onClick={() => {
+            /* CHANTIER 271 — Cahier : la fiche se décolle avant de laisser la place à la liste. */
+            if (style === 'cahier' && bouge()) {
+              if (sortie) return;
+              setSortie(true);
+              window.setTimeout(() => { setSortie(false); choisir(null); }, 420);
+            } else choisir(null);
+          }}
+        >
           Choisir un autre paquet
         </button>
       </div>
@@ -712,18 +742,20 @@ export function Today({
             /* CHANTIER 255 — Japon zen : les shōji se ferment puis s'ouvrent sur le bouton, qui s'éclaire en lanterne. */
             /* CHANTIER 256 — Cotton Club : le rideau tombe sur le bouton puis se lève, le projecteur le balaie, il brille. */
             /* CHANTIER 257 — Château : le pont-levis s'abaisse sur ses chaînes, la herse remonte, deux torches s'allument. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'tableau') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : style === 'decollage' || style === 'orbite' ? 1800 /* CHANTIER 263 — Décollage : la fusée part ; Orbite : la navette s'amarre. */ : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : style === 'tableau' ? 1900 /* CHANTIER 271 — Tableau : la brosse, puis « Au tableau ! ». */ : style === 'decollage' || style === 'orbite' ? 1800 /* CHANTIER 263 — Décollage : la fusée part ; Orbite : la navette s'amarre. */ : 450);
             } else onReview(pc.deck.id);
           }}
         >
           {mots.go} · {Math.min(pc.due, settings.cardsPerSession)} cartes
+          {/* CHANTIER 271 — Tableau : la brosse efface tout l'écran, posée sur le document (au-dessus de la barre d'onglets). */}
+          {style === 'tableau' && plouf > 0 && createPortal(<BrosseTableau key={plouf} />, document.body)}
           {(style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby') && plouf > 0 && <span className={`${style === 'jungle' ? 'jg-feuilles' : style === 'western' ? 'pe-vapeur' : style === 'basket' ? 'bk-rebond' : style === 'foot' ? 'fb-sifflet' : style === 'rugby' ? 'rg-chandelle' : 'su-gouttes'} v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
           {style === 'salon' && plouf > 0 && <span className="sl-mise" aria-hidden="true"><i className="eclat"><i /></i><i className="as" /></span>}
           {style === 'strass' && plouf > 0 && <span className="sv-entree" aria-hidden="true"><i className="halo" /><i className="balaye"><i /></i><i className="diam" /><i className="etoile" /></span>}
@@ -923,7 +955,7 @@ export function Today({
                   {style === 'fashion' && faits >= 7 && <span className="fs-tapis"><b /><u /><s /></span>}
                   {/* CHANTIER 252 — Bibliothèque : un signet par jour tenu, jusqu'à sept ; les 6e et 7e sont dorés, avec un pompon (<u>). */}
                   {/* CHANTIER 253 — Salon de thé : jusqu'à sept bougies ; les 6e et 7e, dorées, sortent du gâteau. */}
-                  {Array.from({ length: style === 'biblio' || style === 'patisserie' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'cabinet' && <><u /><b /><s /><s /><s /><s /><s /><em /><em /><em /></>}{style === 'japon' && <><u /><b /><em /><s /></>}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
+                  {Array.from({ length: style === 'biblio' || style === 'patisserie' || style === 'tableau' ? Math.max(OBJECTIF_SEMAINE, Math.min(faits, 7)) : OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faits ? (faitAujourdhui && i === faits - 1 ? 'on auj' : 'on') : ''}>{style === 'biblio' && i >= OBJECTIF_SEMAINE && <u />}{style === 'cabinet' && <><u /><b /><s /><s /><s /><s /><s /><em /><em /><em /></>}{style === 'japon' && <><u /><b /><em /><s /></>}{style === 'salon' && <b />}{style === 'strass' && <><b><s /><s /><s /><s /><s /><s /></b><u /><em /><em /><em /></>}{style === 'circuit' && <b />}{style === 'diner' && <><b><s /><s /><s /></b><em className="paille" /><u /><em className="cerise" /><small /><small /></>}{style === 'tv' && <><b className="eclair" /><span className="ant"><i /><i /></span><em /><em /></>}{style === 'station' && <><b className="skieur" /><s /><s /><s /><em /><em /></>}{style === 'fashion' && <><u /><b><em /></b><s /></>}</i>)}
                   {/* CHANTIER 260 — Jungle : l'itinéraire en pointillés (6 jours et plus) ; la croix rouge et le petit coffre qui s'ouvre (7 jours). */}
                   {style === 'jungle' && faits >= 6 && <span className={`ju-piste${faits >= 7 ? ' long' : ''}`} />}
                   {style === 'jungle' && faits >= 7 && <span className="ju-tresor"><b className="croix" /><span className="coffre"><b className="caisse" /><b className="couvercle" /><b className="serrure" /><b className="lueur" /></span></span>}
@@ -944,6 +976,8 @@ export function Today({
                     <span className="sv-fete"><b className="pop" /><b className="bouchon" />{SV_CONFETTIS.map((st, k) => <s key={k} style={st} />)}</span>
                   )}
                 </span>
+                {/* CHANTIER 271 — Tableau : le bon point (6 jours), le Tableau d'honneur (7 jours). */}
+                {style === 'tableau' && <SemaineTableau faits={faits} />}
                 {/* CHANTIER 262 — Grand bleu, 7 jours : à côté de « 7 jours », un coquillage s'ouvre sur une perle qui brille. */}
                 {style === 'ocean' && faits >= 7 && <span className="gb-coquille" aria-hidden="true"><i className="perle" /><i className="bas" /><i className="haut" /><i className="eclat" /></span>}
                 {/* CHANTIER 261 — Jardin, 7 jours : le soleil se lève dans le coin de la tuile, ses rayons descendent sur les cinq pots, qui scintillent. */}
@@ -1013,7 +1047,7 @@ export function Today({
   const frNv = (v: number) => v.toLocaleString('fr-FR');
 
   return (
-    <div className="today">
+    <div className={`today${style === 'cahier' && tourne ? ' cx-tourne' : ''}`}>
       <div className="today-head">
         <p className="today-date">{date}</p>
       </div>
@@ -1123,9 +1157,12 @@ export function Today({
             <span>Cette semaine</span>
           </span>
           <b>{faitsSemaine > OBJECTIF_SEMAINE ? `${faitsSemaine} jours` : `${faitsSemaine} / ${OBJECTIF_SEMAINE} jours`}</b>
-          <span className={`ly-segments${faitsSemaine >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
-            {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faitsSemaine ? 'on' : ''} />)}
-          </span>
+          {/* CHANTIER 271 — Cahier : sept cases cochées au stylo, 18/20 puis 20/20 les jours de bonus. */}
+          {style === 'cahier' ? <SemaineCahier faits={faitsSemaine} auj={faitAujourdhui} /> : (
+            <span className={`ly-segments${faitsSemaine >= OBJECTIF_SEMAINE ? ' plein' : ''}`} aria-hidden="true">
+              {Array.from({ length: OBJECTIF_SEMAINE }, (_, i) => <i key={i} className={i < faitsSemaine ? 'on' : ''} />)}
+            </span>
+          )}
         </button>
         <button className="ly-tuile" onClick={onParler}>
           <span className="ly-tuile-haut">

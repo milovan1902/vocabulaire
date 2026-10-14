@@ -251,3 +251,174 @@
 }
 [data-style='cahier'][data-papier='bleu'] .tabbar { background: rgba(246, 250, 255, 0.96); }
 [data-style='cahier'][data-papier='bleu'] .avant::before { background: rgba(220, 233, 252, 0.92); }
+
+
+/* ==================================================================
+   CHANTIER 271 — LE CAHIER S'ANIME (maquette « Apparences Cahier et
+   Tableau », 1a). Les quatre papiers. Le dessin est dans Ecole.tsx.
+   ================================================================== */
+@keyframes cx-dessin { to { stroke-dashoffset: 0; } }
+@keyframes cx-pop {
+  0% { transform: scale(0) rotate(-40deg); opacity: 0; }
+  60% { transform: scale(1.18) rotate(var(--r, 8deg)); opacity: 1; }
+  100% { transform: scale(1) rotate(var(--r, 8deg)); opacity: 1; }
+}
+@keyframes cx-ecrire { from { clip-path: inset(-30px 100% -30px -30px); } to { clip-path: inset(-30px -30px -30px -30px); } }
+@keyframes cx-surligne { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes cx-tremble {
+  0%, 100% { transform: translateX(0) rotate(-1deg); }
+  20% { transform: translateX(-7px) rotate(-2.2deg); }
+  40% { transform: translateX(6px) rotate(0.2deg); }
+  60% { transform: translateX(-4px) rotate(-1.6deg); }
+  80% { transform: translateX(3px) rotate(-0.6deg); }
+}
+@keyframes cx-tourne {
+  from { transform: perspective(1300px) rotateY(0); filter: brightness(1); }
+  to { transform: perspective(1300px) rotateY(-102deg); filter: brightness(0.82); }
+}
+@keyframes cx-eclat {
+  0% { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+@keyframes cx-fiche {
+  0% { transform: translateX(120%) rotate(8deg); opacity: 0; }
+  60% { transform: translateX(-3%) rotate(-1deg); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes cx-sort { to { transform: translateX(-130%) rotate(-14deg); opacity: 0; } }
+@keyframes cx-scotch {
+  0%, 55% { transform: rotate(-3deg) scale(1.6) translateY(-14px); opacity: 0; }
+  80% { transform: rotate(-3deg) scale(0.95); opacity: 1; }
+  100% { transform: rotate(-3deg); opacity: 1; }
+}
+
+/* ---------- vers la Révision : le stylo entoure le bouton, la page se tourne ---------- */
+[data-style='cahier'] .avant > .btn { position: relative; overflow: visible; }
+.cx-cercle { position: absolute; left: -12px; top: -16px; width: calc(100% + 24px); height: calc(100% + 32px); overflow: visible; pointer-events: none; }
+.cx-cercle path {
+  fill: none; stroke: var(--stylo); stroke-width: 2.4; stroke-linecap: round; vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1; stroke-dashoffset: 1; animation: cx-dessin 0.55s ease-in-out both;
+}
+[data-style='cahier'] .today.cx-tourne { transform-origin: 0 50%; animation: cx-tourne 0.85s cubic-bezier(0.55, 0, 0.65, 1) 0.6s forwards; pointer-events: none; }
+
+/* ---------- changer de paquet : la fiche part, la nouvelle arrive, le scotch se pose ---------- */
+[data-style='cahier'] .avant.cx-arrive { animation: cx-fiche 0.6s cubic-bezier(0.3, 1.2, 0.5, 1) 0.1s both; }
+[data-style='cahier'] .avant.cx-arrive::before { animation: cx-scotch 0.9s ease-out both; }
+[data-style='cahier'] .avant.cx-sort { animation: cx-sort 0.42s ease-in forwards; pointer-events: none; }
+
+/* ---------- Cette semaine : sept cases cochées au stylo ---------- */
+.cx-semaine { position: relative; margin-top: auto; align-self: stretch; display: flex; flex-direction: column; gap: 6px; }
+.cx-jours { position: relative; display: flex; gap: 2px; align-items: flex-end; }
+.cx-j { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.cx-j.s { margin-left: 3px; }
+.cx-j small { font-size: 9px; font-weight: 600; line-height: 1; color: var(--grey); }
+.cx-j > i {
+  width: 15px; height: 15px; box-sizing: border-box; border-radius: 5px;
+  background: #fff; border: 1.5px solid rgba(39, 71, 168, 0.45);
+  display: flex; align-items: center; justify-content: center;
+}
+.cx-j.bonus > i { border-style: dashed; border-color: rgba(39, 71, 168, 0.35); }
+.cx-semaine:not(.plein) .cx-j.bonus { opacity: 0.45; }
+.cx-j svg { width: 13px; height: 13px; overflow: visible; }
+.cx-j .coche { fill: none; stroke: var(--stylo); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.cx-j.neuf .coche { stroke-dasharray: 1; stroke-dashoffset: 1; animation: cx-dessin 0.4s ease-out 0.3s both; }
+.cx-j.bonus svg { width: 15px; height: 15px; transform: rotate(var(--r)); }
+.cx-j.s { --r: -12deg; }
+.cx-j.d { --r: 10deg; }
+.cx-j .etoile { fill: #f2b705; stroke: #fff; stroke-width: 1.6; }
+.cx-j.s .etoile { fill: #ef7aa1; }
+.cx-j.bonus.neuf svg { animation: cx-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.3s both; }
+/* Le surligneur, par-dessus les cinq jours de semaine (multiply : les cases restent lisibles). */
+.cx-sur {
+  position: absolute; left: -2px; bottom: 3px; width: calc(5 * 15px + 4 * 2px + 4px); height: 9px;
+  border-radius: 2px; background: var(--surligneur); mix-blend-mode: multiply;
+  transform-origin: 0 50%; pointer-events: none;
+}
+.cx-semaine.juste .cx-sur { animation: cx-surligne 0.6s ease-out 0.35s both; }
+.cx-bas { position: relative; display: flex; align-items: center; gap: 8px; min-height: 26px; }
+.cx-faite {
+  --r: -8deg; padding: 2px 8px; border-radius: 999px; transform: rotate(-8deg);
+  background: var(--chalk); color: var(--on-chalk); border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(29, 42, 74, 0.2); font-size: 11px; font-weight: 600; white-space: nowrap;
+  animation: cx-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.7s both;
+}
+/* 18/20, puis 20/20 entouré : l'encre rouge du professeur. */
+.cx-note {
+  position: relative; padding: 0 4px; transform: rotate(-6deg); white-space: nowrap;
+  font-family: var(--main); font-weight: 700; font-size: 28px; line-height: 1; color: #c0392b;
+  animation: cx-ecrire 0.6s ease-out 0.3s both;
+}
+.cx-note svg { position: absolute; left: -8px; top: -6px; width: calc(100% + 16px); height: calc(100% + 14px); overflow: visible; }
+.cx-note path {
+  fill: none; stroke: #c0392b; stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1; stroke-dashoffset: 1; animation: cx-dessin 0.5s ease-in-out 0.9s both;
+}
+.cx-eclats { position: absolute; left: 34px; top: 50%; width: 0; height: 0; pointer-events: none; }
+.cx-eclats i {
+  position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%;
+  background: #f2b705; animation: cx-eclat 0.9s ease-out both;
+}
+
+/* ---------- la Révision : ce qui se pose sur la fiche pendant la note ---------- */
+[data-style='cahier'] .studystage.n-again { animation: cx-tremble 0.5s ease-in-out 0.35s; }
+[data-style='cahier'] .studystage.n-again .answer,
+[data-style='cahier'] .studystage.n-hard .wordsmall { position: relative; width: fit-content; margin-left: auto; margin-right: auto; }
+/* À revoir : la rature rouge sur la réponse. */
+[data-style='cahier'] .studystage.n-again .answer::after {
+  content: ''; position: absolute; left: -6px; right: -6px; top: 20%; height: 60%; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30' preserveAspectRatio='none'%3E%3Cpath d='M2 18 L18 8 L32 22 L48 7 L62 21 L78 8 L98 17' fill='none' stroke='%23c0392b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  animation: cx-ecrire 0.5s ease-out both;
+}
+/* Difficile : le surligneur orange sur le mot. */
+[data-style='cahier'] .studystage.n-hard .wordsmall::before {
+  content: ''; position: absolute; left: -6px; right: -6px; top: 48%; height: 46%; border-radius: 2px;
+  background: rgba(245, 150, 40, 0.5); mix-blend-mode: multiply; transform-origin: 0 50%; pointer-events: none;
+  animation: cx-surligne 0.45s ease-out both;
+}
+[data-style='cahier'] .studystage.n-easy .example,
+[data-style='cahier'] .studystage.n-easy .speak { opacity: 0; transition: opacity 0.25s; }
+.cx-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.cx-marge {
+  position: absolute; left: 10px; top: 96px; transform: rotate(-10deg);
+  font-family: var(--main); font-weight: 700; font-size: 24px; color: #c0392b;
+  animation: cx-ecrire 0.45s ease-out 0.45s both;
+}
+.cx-question {
+  --r: -10deg; position: absolute; left: 16px; top: 78px;
+  font-family: var(--main); font-weight: 700; font-size: 46px; line-height: 1; color: #e07a12;
+  animation: cx-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) 0.35s both;
+}
+.cx-gommette {
+  position: absolute; right: 14px; top: 12px; width: 46px; height: 46px; box-sizing: border-box; border-radius: 50%;
+  border: 3px solid #fff; box-shadow: 0 3px 8px rgba(29, 42, 74, 0.25); color: #fff;
+  display: flex; align-items: center; justify-content: center; font: 600 13px var(--sans);
+  animation: cx-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.5s both;
+}
+.cx-gommette.dur { --r: 10deg; background: #f59a2a; }
+.cx-gommette.bien { --r: -8deg; background: #4f74d9; animation-delay: 0.45s; }
+.cx-coche { position: absolute; right: 16px; top: 112px; width: 64px; height: 64px; overflow: visible; }
+.cx-coche path {
+  fill: none; stroke: var(--stylo); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1; animation: cx-dessin 0.45s ease-out 0.1s both;
+}
+.cx-etoile {
+  --r: 12deg; position: absolute; right: 6px; top: 2px; width: 70px; height: 70px;
+  filter: drop-shadow(0 3px 5px rgba(29, 42, 74, 0.25));
+  animation: cx-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.cx-etoile path { fill: #f2b705; stroke: #fff; stroke-width: 1.4; }
+.cx-eclats.grand { left: auto; right: 41px; top: 37px; }
+.cx-eclats.grand i { width: 7px; height: 7px; }
+.cx-tresbien {
+  position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; transform: rotate(-4deg);
+  font-family: var(--main); font-weight: 700; font-size: 32px; color: #c0392b;
+  animation: cx-ecrire 0.6s ease-out 0.4s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style='cahier'] .today.cx-tourne, [data-style='cahier'] .avant.cx-arrive,
+  [data-style='cahier'] .avant.cx-arrive::before, [data-style='cahier'] .avant.cx-sort,
+  .cx-semaine *, .cx-fx *, [data-style='cahier'] .studystage.n-again { animation: none !important; }
+  .cx-semaine path, .cx-fx path { stroke-dashoffset: 0 !important; }
+}
