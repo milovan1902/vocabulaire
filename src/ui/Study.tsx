@@ -18,6 +18,7 @@ import { estLudique, useStyle } from './useStyle';
 import { ATTENTE_HORLOGER, MontreHorloger } from './Horloger';
 import { EffetsEcole } from './Ecole';
 import { EffetsLAN } from './LyceeArcadeNeon';
+import { EffetsCMB } from './CarnetMangaBD';
 
 /* CHANTIER 165 — style Lycée : des notes courtes, et les couleurs rouge,
    orange, jaune, vert (voir lycee.css, classes g-again … g-easy). */
@@ -549,7 +550,7 @@ export function Study({
        */}
       <div
         ref={refStage}
-        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'cahier' || style === 'tableau' || style === 'lycee' || style === 'arcade' || style === 'neon') && frappe ? ` n-${frappe}` : ''}`}
+        className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'cahier' || style === 'tableau' || style === 'lycee' || style === 'arcade' || style === 'neon' || style === 'voyage' || style === 'manga' || style === 'bd') && frappe ? ` n-${frappe}` : ''}`}
         onClick={() => { if (!revealed) reveal(); }}
       >
         {/* CHANTIER 269 — Atelier d'horloger : la carte est une montre de gousset (Horloger.tsx). */}
@@ -610,6 +611,8 @@ export function Study({
         {(style === 'cahier' || style === 'tableau') && frappe && <EffetsEcole key={frappe} style={style} frappe={frappe} />}
         {/* CHANTIER 272 — Lycée : rature, « peut mieux faire », coche verte, « TB » ; Borne arcade : GAME OVER, MISS, GOOD!, PERFECT! ; Néon : le trait de Facile. */}
         {(style === 'lycee' || style === 'arcade' || style === 'neon') && frappe && <EffetsLAN key={frappe} style={style} frappe={frappe} />}
+        {/* CHANTIER 273 — Carnet kraft : les tampons ; Manga : ガーン, ギクッ, よし, すごい ; BD pop : CRAC, AÏE, POW, WAOUH. */}
+        {(style === 'voyage' || style === 'manga' || style === 'bd') && frappe && <EffetsCMB key={frappe} style={style} frappe={frappe} />}
         {/* CHANTIER 247 — TV : ce qui passe à l'écran pendant la note (neige, incident, zapping, « Fin »). */}
         {style === 'tv' && frappe && (
           <span className="tl-ecran" aria-hidden="true">
@@ -1327,7 +1330,9 @@ export function Study({
                   /* CHANTIER 271 — Cahier : rature, surligneur, coche, étoile ; Tableau : brosse, craie cassée, coche, étoile. */
                   : style === 'cahier' || style === 'tableau' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1500 : 2200)
                   /* CHANTIER 272 — Lycée, Borne arcade et Néon. */
-                  : style === 'lycee' || style === 'arcade' || style === 'neon' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1600 : 2200) : 0;
+                  : style === 'lycee' || style === 'arcade' || style === 'neon' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1600 : 2200)
+                  /* CHANTIER 273 — Carnet kraft, Manga et BD pop. */
+                  : style === 'voyage' || style === 'manga' || style === 'bd' ? (g.key === 'again' ? 1800 : g.key === 'hard' ? 1700 : g.key === 'good' ? 1600 : 2200) : 0;
                 if (attente && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                   if (style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'ocean' || style === 'decollage' || style === 'orbite') {
                     const el = refStage.current;

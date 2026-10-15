@@ -181,3 +181,31 @@
 @media (prefers-reduced-motion: reduce) {
   [data-style='voyage'] .grades .grade { transition: none; }
 }
+
+
+/* ==================================================================
+   CHANTIER 273 — le Carnet kraft s'anime (maquette 3a). Éléments :
+   CarnetMangaBD.tsx ; keyframes cmb-* dans bulles.css.
+   ================================================================== */
+/* La carte postale arrive (en gardant sa pente) ; Raté : elle tremble. */
+[data-style='voyage'] .studystage { animation: cmb-zoom-v 0.35s ease-out both; }
+[data-style='voyage'] .studystage.n-again { animation: cmb-zoom-v 0.35s ease-out both, cmb-tremble 0.45s ease-in-out 0.4s; }
+/* Changer de paquet : l'ancienne carte s'envole, la nouvelle est tendue de côté puis poinçonnée. */
+[data-style='voyage'] .eventail.c0 .eventail-carte.centre .eventail-dos { animation: cmb-arrive-a 0.45s cubic-bezier(0.3, 1.2, 0.5, 1) 0.15s both; }
+[data-style='voyage'] .eventail.c1 .eventail-carte.centre .eventail-dos { animation: cmb-arrive-b 0.45s cubic-bezier(0.3, 1.2, 0.5, 1) 0.15s both; }
+[data-style='voyage'] .eventail.c0 .eventail-carte.ancien .eventail-dos { animation: cmb-envol-a 0.5s ease-in both; }
+[data-style='voyage'] .eventail.c1 .eventail-carte.ancien .eventail-dos { animation: cmb-envol-b 0.5s ease-in both; }
+[data-style='voyage'] .eventail.c0 .eventail-carte.centre::after,
+[data-style='voyage'] .eventail.c1 .eventail-carte.centre::after {
+  content: ''; position: absolute; left: 50%; bottom: 17px; z-index: 3; width: 12px; height: 12px; margin-left: -6px;
+  border-radius: 50%; background: #e9dcc0; box-shadow: inset 1px 1px 2px rgba(58, 42, 26, 0.45); pointer-events: none;
+}
+[data-style='voyage'] .eventail.c0 .eventail-carte.centre::after { animation: cmb-trou-a 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) 0.62s both; }
+[data-style='voyage'] .eventail.c1 .eventail-carte.centre::after { animation: cmb-trou-b 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) 0.62s both; }
+[data-style='voyage'] .eventail.c0::after,
+[data-style='voyage'] .eventail.c1::after {
+  content: 'clic !'; position: absolute; left: calc(50% + 58px); top: 150px; z-index: 20; pointer-events: none; opacity: 0;
+  font-family: var(--feutre); font-weight: 700; font-size: 20px; line-height: 1; color: var(--rouge);
+}
+[data-style='voyage'] .eventail.c0::after { animation: cmb-clic-a 1.3s ease-out 0.62s both; }
+[data-style='voyage'] .eventail.c1::after { animation: cmb-clic-b 1.3s ease-out 0.62s both; }

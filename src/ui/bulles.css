@@ -310,3 +310,123 @@
   [data-style='manga'] .grades .grade::after,
   [data-style='bd'] .grades .grade { transition: none; }
 }
+
+
+/* ==================================================================
+   CHANTIER 273 — le Carnet kraft, le Manga et la BD pop s'animent
+   (maquette « Apparences Carnet Manga BD », 3a, 3b, 3c). Éléments :
+   CarnetMangaBD.tsx. Les keyframes cmb-* servent aussi au Carnet kraft
+   (voyage.css).
+   ================================================================== */
+
+@keyframes cmb-dessin { to { stroke-dashoffset: 0; } }
+@keyframes cmb-ecrire { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes cmb-fondu { to { opacity: 0; } }
+@keyframes cmb-voile { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cmb-zoom { from { transform: scale(1.08); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cmb-zoom-v { from { transform: scale(1.08) rotate(-1.5deg); opacity: 0; } to { transform: rotate(-1.5deg); opacity: 1; } }
+@keyframes cmb-tremble { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px) rotate(-1.2deg); } 40% { transform: translateX(6px) rotate(0.8deg); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes cmb-penche { 0%, 100% { transform: none; } 35% { transform: rotate(-3deg) translateX(-4px); } 70% { transform: rotate(1.5deg); } }
+@keyframes cmb-pop { 0% { transform: scale(0) rotate(var(--r, 0deg)); opacity: 0; } 60% { transform: scale(1.18) rotate(var(--r, 0deg)); opacity: 1; } 100% { transform: scale(1) rotate(var(--r, 0deg)); opacity: 1; } }
+@keyframes cmb-tampon { 0% { transform: scale(2.4) rotate(var(--r, -12deg)); opacity: 0; } 55% { transform: scale(0.92) rotate(var(--r, -12deg)); opacity: 1; } 100% { transform: scale(1) rotate(var(--r, -12deg)); opacity: 1; } }
+@keyframes cmb-gonfle { 0% { scale: 0; } 60% { scale: 1.3; } 100% { scale: 1; } }
+@keyframes cmb-eclat { 0% { transform: translate(0, 0) scale(0.3); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; } }
+@keyframes cmb-rayon { 0% { transform: rotate(var(--a)) translateX(64px) scaleX(0); opacity: 1; } 60% { opacity: 1; } 100% { transform: rotate(var(--a)) translateX(118px) scaleX(1); opacity: 0; } }
+@keyframes cmb-vole { 0% { transform: translateX(-30px) rotate(var(--r, 45deg)); opacity: 0; } 10%, 88% { opacity: 1; } 100% { transform: translateX(var(--x, 300px)) rotate(var(--r, 45deg)); opacity: 0; } }
+@keyframes cmb-dechire { to { transform: translateY(46px) rotate(9deg); opacity: 0; } }
+@keyframes cmb-vitesse { 0% { transform: scale(0.55); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes cmb-halo { 0% { transform: scale(0.4); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes cmb-goutte { 0% { transform: translateY(-10px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(30px); opacity: 0; } }
+@keyframes cmb-orbite { from { transform: rotate(0) translateX(26px) rotate(0); } to { transform: rotate(360deg) translateX(26px) rotate(-360deg); } }
+@keyframes cmb-scintille { 0%, 100% { transform: scale(0) rotate(0); opacity: 0; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } }
+@keyframes cmb-baisse { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes cmb-trait { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes cmb-coupe { from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); } to { clip-path: polygon(0 0, 130% 0, 100% 100%, 0 100%); } }
+@keyframes cmb-bande-g { from { transform: translateX(-105%); } to { transform: none; } }
+@keyframes cmb-bande-d { from { transform: translateX(105%); } to { transform: none; } }
+/* Changer de paquet : deux noms par animation (classes c0 / c1 d'Eventail.tsx) pour la relancer à chaque fois. */
+@keyframes cmb-envol-a { 0% { transform: none; opacity: 1; } 55% { transform: translateY(-30px) rotate(-14deg); opacity: 0; } 80% { transform: none; opacity: 0; } 100% { opacity: 1; } }
+@keyframes cmb-envol-b { 0% { transform: none; opacity: 1; } 55% { transform: translateY(-30px) rotate(-14deg); opacity: 0; } 80% { transform: none; opacity: 0; } 100% { opacity: 1; } }
+@keyframes cmb-arrive-a { from { transform: translateX(90px) rotate(12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cmb-arrive-b { from { transform: translateX(90px) rotate(12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes cmb-glisse-a { 0% { transform: translateX(110px) skewX(-16deg); opacity: 0; } 70% { transform: translateX(-6px) skewX(4deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes cmb-glisse-b { 0% { transform: translateX(110px) skewX(-16deg); opacity: 0; } 70% { transform: translateX(-6px) skewX(4deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes cmb-saute-a { 0% { transform: scale(0) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.12) rotate(3deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes cmb-saute-b { 0% { transform: scale(0) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.12) rotate(3deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes cmb-trou-a { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@keyframes cmb-trou-b { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@keyframes cmb-clic-a { 0% { transform: scale(0) rotate(-8deg); opacity: 1; } 12% { transform: scale(1.15) rotate(-8deg); } 20%, 75% { transform: scale(1) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 0; } }
+@keyframes cmb-clic-b { 0% { transform: scale(0) rotate(-8deg); opacity: 1; } 12% { transform: scale(1.15) rotate(-8deg); } 20%, 75% { transform: scale(1) rotate(-8deg); opacity: 1; } 100% { transform: scale(1) rotate(-8deg); opacity: 0; } }
+@keyframes cmb-traits-a { from { transform: scaleX(1.3); opacity: 1; } to { transform: scaleX(0.5); opacity: 0; } }
+@keyframes cmb-traits-b { from { transform: scaleX(1.3); opacity: 1; } to { transform: scaleX(0.5); opacity: 0; } }
+@keyframes cmb-zip-a { 0% { transform: scale(0) rotate(-12deg); opacity: 1; } 20% { transform: scale(1.15) rotate(-12deg); } 30%, 80% { transform: scale(1) rotate(-12deg); opacity: 1; } 100% { transform: scale(1) rotate(-12deg); opacity: 0; } }
+@keyframes cmb-zip-b { 0% { transform: scale(0) rotate(-12deg); opacity: 1; } 20% { transform: scale(1.15) rotate(-12deg); } 30%, 80% { transform: scale(1) rotate(-12deg); opacity: 1; } 100% { transform: scale(1) rotate(-12deg); opacity: 0; } }
+
+/* Cette semaine : le contenu de la tuile (display: contents garde la colonne de .ly-tuile). */
+.cmb-sem { display: contents; }
+.cmb-sem > b { font-size: 22px; font-weight: 900; line-height: 1.1; letter-spacing: -0.01em; }
+.cmb-sem.voyage > b { font-weight: 800; letter-spacing: 0; }
+.cmb-sem.manga > b { font-style: italic; }
+.cmb-sem > small { font-size: 13px; color: var(--grey); line-height: 1.3; }
+:is([data-style='voyage'], [data-style='manga'], [data-style='bd']) .ly-tuile { position: relative; }
+/* Ce qui se pose sur la carte pendant la note. */
+.cmb-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+
+/* ---------- Manga : la Révision ---------- */
+[data-style='manga'] .studystage { position: relative; animation: cmb-zoom 0.3s ease-out both; }
+[data-style='manga'] .studystage.n-again { animation: cmb-zoom 0.3s ease-out both, cmb-tremble 0.45s ease-in-out 0.35s; }
+/* Changer de paquet : la case glisse avec ses traits de vitesse, « シュッ ! ». */
+[data-style='manga'] .eventail.c0 .eventail-carte.centre .eventail-dos { animation: cmb-glisse-a 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) 0.08s both; }
+[data-style='manga'] .eventail.c1 .eventail-carte.centre .eventail-dos { animation: cmb-glisse-b 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) 0.08s both; }
+[data-style='manga'] .eventail.c0 .eventail-carte.ancien .eventail-dos { animation: cmb-envol-a 0.45s ease-in both; }
+[data-style='manga'] .eventail.c1 .eventail-carte.ancien .eventail-dos { animation: cmb-envol-b 0.45s ease-in both; }
+[data-style='manga'] .eventail.c0::before,
+[data-style='manga'] .eventail.c1::before {
+  content: ''; position: absolute; left: calc(50% - 130px); width: 260px; top: 40px; height: 80px; pointer-events: none; opacity: 0;
+  background:
+    linear-gradient(#111, #111) 0 0 / 60px 3px no-repeat, linear-gradient(#111, #111) 0 36px / 50px 3px no-repeat,
+    linear-gradient(#111, #111) 0 72px / 60px 3px no-repeat, linear-gradient(#111, #111) 100% 18px / 60px 3px no-repeat,
+    linear-gradient(#111, #111) 100% 54px / 50px 3px no-repeat;
+}
+[data-style='manga'] .eventail.c0::before { animation: cmb-traits-a 0.45s ease-out 0.05s both; }
+[data-style='manga'] .eventail.c1::before { animation: cmb-traits-b 0.45s ease-out 0.05s both; }
+[data-style='manga'] .eventail.c0::after,
+[data-style='manga'] .eventail.c1::after {
+  content: 'シュッ!'; position: absolute; left: calc(50% + 40px); top: -8px; z-index: 20; pointer-events: none; opacity: 0;
+  font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', var(--sans); font-weight: 900; font-size: 20px; color: #111;
+  text-shadow: 2px 0 0 #fff, -2px 0 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff;
+}
+[data-style='manga'] .eventail.c0::after { animation: cmb-clic-a 1s ease-out 0.1s both; }
+[data-style='manga'] .eventail.c1::after { animation: cmb-clic-b 1s ease-out 0.1s both; }
+
+/* ---------- BD pop : la Révision ---------- */
+[data-style='bd'] .studystage { animation: cmb-zoom 0.3s ease-out both; }
+[data-style='bd'] .studystage.n-again { animation: cmb-zoom 0.3s ease-out both, cmb-tremble 0.45s ease-in-out 0.3s; }
+[data-style='bd'] .studystage.n-hard { animation: cmb-zoom 0.3s ease-out both, cmb-penche 0.6s ease-in-out 0.1s; }
+/* Changer de paquet : la case saute au centre avec un « ZIP ! ». */
+[data-style='bd'] .eventail.c0 .eventail-carte.centre .eventail-dos { animation: cmb-saute-a 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.15s both; }
+[data-style='bd'] .eventail.c1 .eventail-carte.centre .eventail-dos { animation: cmb-saute-b 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.15s both; }
+[data-style='bd'] .eventail.c0 .eventail-carte.ancien .eventail-dos { animation: cmb-envol-a 0.5s ease-in both; }
+[data-style='bd'] .eventail.c1 .eventail-carte.ancien .eventail-dos { animation: cmb-envol-b 0.5s ease-in both; }
+[data-style='bd'] .eventail.c0::before, [data-style='bd'] .eventail.c1::before,
+[data-style='bd'] .eventail.c0::after, [data-style='bd'] .eventail.c1::after {
+  position: absolute; z-index: 20; pointer-events: none; opacity: 0;
+  clip-path: polygon(50% 0%, 61% 18%, 82% 8%, 79% 30%, 100% 36%, 84% 52%, 98% 70%, 76% 72%, 74% 95%, 56% 82%, 40% 100%, 34% 78%, 12% 86%, 18% 64%, 0% 54%, 16% 40%, 4% 20%, 26% 22%, 30% 2%);
+}
+[data-style='bd'] .eventail.c0::before, [data-style='bd'] .eventail.c1::before { content: ''; left: calc(50% - 104px); top: -10px; width: 74px; height: 54px; background: #1a1a1a; }
+[data-style='bd'] .eventail.c0::after, [data-style='bd'] .eventail.c1::after {
+  content: 'ZIP !'; left: calc(50% - 100px); top: -6px; width: 66px; height: 46px; background: #ffd23f;
+  display: grid; place-items: center; font-family: var(--sans); font-weight: 900; font-size: 15px; color: #1a1a1a;
+}
+[data-style='bd'] .eventail.c0::before, [data-style='bd'] .eventail.c0::after { animation: cmb-zip-a 1.1s ease-out 0.25s both; }
+[data-style='bd'] .eventail.c1::before, [data-style='bd'] .eventail.c1::after { animation: cmb-zip-b 1.1s ease-out 0.25s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cmb-plein { display: none; }
+  .cmb-sem *, .cmb-fx *,
+  :is([data-style='voyage'], [data-style='manga'], [data-style='bd']) .studystage,
+  :is([data-style='voyage'], [data-style='manga'], [data-style='bd']) .eventail-dos { animation: none !important; }
+  :is([data-style='voyage'], [data-style='manga'], [data-style='bd']) .eventail::before,
+  :is([data-style='voyage'], [data-style='manga'], [data-style='bd']) .eventail::after,
+  [data-style='voyage'] .eventail-carte.centre::after { display: none; }
+}

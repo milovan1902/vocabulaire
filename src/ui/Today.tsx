@@ -38,6 +38,7 @@ import { AujourdhuiHorloger } from './Horloger';
 import { createPortal } from 'react-dom';
 import { BrosseTableau, CercleStylo, SemaineCahier, SemaineTableau } from './Ecole';
 import { SemaineLAN, TransitionArcade, TransitionLycee } from './LyceeArcadeNeon';
+import { SemaineCMB, TransitionBD, TransitionManga, TransitionVoyage } from './CarnetMangaBD';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -745,7 +746,7 @@ export function Today({
             /* CHANTIER 255 — Japon zen : les shōji se ferment puis s'ouvrent sur le bouton, qui s'éclaire en lanterne. */
             /* CHANTIER 256 — Cotton Club : le rideau tombe sur le bouton puis se lève, le projecteur le balaie, il brille. */
             /* CHANTIER 257 — Château : le pont-levis s'abaisse sur ses chaînes, la herse remonte, deux torches s'allument. */
-            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'tableau' || style === 'lycee' || style === 'arcade' || style === 'neon') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            if ((style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'tableau' || style === 'lycee' || style === 'arcade' || style === 'neon' || style === 'voyage' || style === 'manga' || style === 'bd') && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
               if (ploufEnCours.current) return;
               ploufEnCours.current = true;
               setPlouf((p) => p + 1);
@@ -754,7 +755,7 @@ export function Today({
               const id = pc.deck.id;
               /* CHANTIER 238 — Parquet : on attend que le ballon ait rebondi deux fois.
                  CHANTIER 240 — Mêlée : que la chandelle soit retombée sur le bouton. */
-              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); setEteint(false); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : style === 'tableau' ? 1900 /* CHANTIER 271 — Tableau : la brosse, puis « Au tableau ! ». */ : style === 'decollage' || style === 'orbite' ? 1800 /* CHANTIER 263 — Décollage : la fusée part ; Orbite : la navette s'amarre. */ : style === 'lycee' ? 1800 : style === 'arcade' ? 2050 : style === 'neon' ? 650 /* CHANTIER 272 */ : 450);
+              window.setTimeout(() => { ploufEnCours.current = false; onReview(id); setEteint(false); }, style === 'plage' ? 1800 : style === 'western' ? 1800 : style === 'basket' ? 950 : style === 'foot' ? 800 : style === 'rugby' ? 1100 : style === 'salon' ? 900 : style === 'strass' ? 1250 : style === 'circuit' ? 1500 : style === 'diner' ? 1500 : style === 'tv' ? 1500 : style === 'station' ? 1500 : style === 'fashion' ? 1500 : style === 'cinema' ? 1800 : style === 'biblio' ? 1800 : style === 'patisserie' ? 1800 : style === 'cabinet' ? 1800 : style === 'japon' ? 1800 : style === 'jazz' ? 1800 : style === 'chateau' ? 1800 : style === 'jungle' ? 1800 : style === 'jardin' ? 1800 /* CHANTIER 261 — Jardin : après les gouttes. */ : style === 'ocean' ? 1800 /* CHANTIER 262 — Grand bleu : après la gerbe de bulles. */ : style === 'tableau' ? 1900 /* CHANTIER 271 — Tableau : la brosse, puis « Au tableau ! ». */ : style === 'decollage' || style === 'orbite' ? 1800 /* CHANTIER 263 — Décollage : la fusée part ; Orbite : la navette s'amarre. */ : style === 'lycee' ? 1800 : style === 'arcade' ? 2050 : style === 'neon' ? 650 /* CHANTIER 272 */ : style === 'voyage' ? 1900 : style === 'manga' ? 1600 : style === 'bd' ? 1700 /* CHANTIER 273 */ : 450);
             } else onReview(pc.deck.id);
           }}
         >
@@ -764,6 +765,10 @@ export function Today({
           {/* CHANTIER 272 — Lycée : la copie double ; Borne arcade : INSERT COIN, la pièce, READY?, GO! */}
           {style === 'lycee' && plouf > 0 && createPortal(<TransitionLycee key={plouf} paquet={pc.deck.name} />, document.body)}
           {style === 'arcade' && plouf > 0 && createPortal(<TransitionArcade key={plouf} />, document.body)}
+          {/* CHANTIER 273 — Carnet kraft : la carte d'embarquement ; Manga : « ドン ! » ; BD pop : « BOOM ! » et les bandes. */}
+          {style === 'voyage' && plouf > 0 && createPortal(<TransitionVoyage key={plouf} paquet={pc.deck.name} />, document.body)}
+          {style === 'manga' && plouf > 0 && createPortal(<TransitionManga key={plouf} />, document.body)}
+          {style === 'bd' && plouf > 0 && createPortal(<TransitionBD key={plouf} />, document.body)}
           {(style === 'plage' || style === 'jungle' || style === 'western' || style === 'basket' || style === 'foot' || style === 'rugby') && plouf > 0 && <span className={`${style === 'jungle' ? 'jg-feuilles' : style === 'western' ? 'pe-vapeur' : style === 'basket' ? 'bk-rebond' : style === 'foot' ? 'fb-sifflet' : style === 'rugby' ? 'rg-chandelle' : 'su-gouttes'} v${plouf % 2}`} aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>}
           {style === 'salon' && plouf > 0 && <span className="sl-mise" aria-hidden="true"><i className="eclat"><i /></i><i className="as" /></span>}
           {style === 'strass' && plouf > 0 && <span className="sv-entree" aria-hidden="true"><i className="halo" /><i className="balaye"><i /></i><i className="diam" /><i className="etoile" /></span>}
@@ -938,6 +943,9 @@ export function Today({
             {/* CHANTIER 272 — Lycée : la note sur 20 ; Borne arcade : la barre de vie ; Néon : un point par jour. */}
             {style === 'lycee' || style === 'arcade' || style === 'neon' ? (
               <SemaineLAN style={style} faits={faits} auj={faitAujourdhui} />
+            ) : style === 'voyage' || style === 'manga' || style === 'bd' ? (
+              /* CHANTIER 273 — Carnet kraft : les tampons de douane ; Manga : les cases encrées ; BD pop : les onomatopées. */
+              <SemaineCMB style={style} faits={faits} auj={faitAujourdhui} />
             ) : style === 'decollage' || style === 'orbite' ? (
               <>
                 <b>{faits > OBJECTIF_SEMAINE ? `${faits} jours` : `${faits} / ${OBJECTIF_SEMAINE}`}</b>
