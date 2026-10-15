@@ -19,6 +19,7 @@ import { ATTENTE_HORLOGER, MontreHorloger } from './Horloger';
 import { EffetsEcole } from './Ecole';
 import { EffetsLAN } from './LyceeArcadeNeon';
 import { EffetsCMB } from './CarnetMangaBD';
+import { EffetsTapis } from './TapisVert';
 
 /* CHANTIER 165 — style Lycée : des notes courtes, et les couleurs rouge,
    orange, jaune, vert (voir lycee.css, classes g-again … g-easy). */
@@ -613,6 +614,8 @@ export function Study({
         {(style === 'lycee' || style === 'arcade' || style === 'neon') && frappe && <EffetsLAN key={frappe} style={style} frappe={frappe} />}
         {/* CHANTIER 273 — Carnet kraft : les tampons ; Manga : ガーン, ギクッ, よし, すごい ; BD pop : CRAC, AÏE, POW, WAOUH. */}
         {(style === 'voyage' || style === 'manga' || style === 'bd') && frappe && <EffetsCMB key={frappe} style={style} frappe={frappe} />}
+        {/* CHANTIER 274 — Tapis vert : on retourne une carte (2♣, 7♦, roi de cœur, les quatre as). */}
+        {style === 'tapis' && frappe && <EffetsTapis key={frappe} frappe={frappe} />}
         {/* CHANTIER 247 — TV : ce qui passe à l'écran pendant la note (neige, incident, zapping, « Fin »). */}
         {style === 'tv' && frappe && (
           <span className="tl-ecran" aria-hidden="true">
@@ -1311,8 +1314,8 @@ export function Study({
                   : style === 'foot' ? 1250
                   /* CHANTIER 240 — Mêlée : le ballon touché part (en avant, à côté, poteau, entre les poteaux). */
                   : style === 'rugby' ? 1350
-                  /* CHANTIER 241 — Tapis vert : le jeton touché part au pot (se coucher, suivre, relancer, tapis). */
-                  : style === 'tapis' ? 1350
+                  /* CHANTIER 274 — Tapis vert : la carte retournée (remplace les jetons misés au pot du chantier 241). */
+                  : style === 'tapis' ? (g.key === 'again' ? 1800 : g.key === 'easy' ? 2200 : 1700)
                   /* CHANTIER 242 — Salon privé : la carte touchée est abattue (Facile : toute la main, en éventail). */
                   : style === 'salon' ? (g.key === 'easy' ? 1600 : 1400)
                   /* CHANTIER 244 — Strass : l'invitation (déchirée, chassée, mise sous enveloppe, tapis rouge). */
@@ -1345,13 +1348,13 @@ export function Study({
             >
               {style === 'cinema' ? CLAPS[g.key] : estLudique(style) ? COURTS[g.key] : g.label}
               <small>{intervals?.[g.key]}</small>
-              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'tapis' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'station') && (
+              {(style === 'plage' || style === 'chateau' || style === 'basket' || style === 'foot' || style === 'rugby' || style === 'salon' || style === 'strass' || style === 'circuit' || style === 'station') && (
                 /* CHANTIER 241 — Tapis vert : dix morceaux (cartes jetées, jetons de la mise, jetons qui rebondissent). */
                 /* CHANTIER 242 — Salon privé : deux calques sur la carte (les plis, le dos). */
                 /* CHANTIER 244 — Strass : aucun morceau, le calque est l'étoile qui scintille sur la pierre. */
                 /* CHANTIER 245 — Grille de départ : le calque est la bouffée d'air du pneu crèvé. */
                 /* CHANTIER 248 — Station 1936 : le calque est le panneau (poteau en bois, tas de neige). */
-                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'tapis' ? 10 : style === 'salon' ? 2 : style === 'strass' || style === 'circuit' || style === 'station' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
+                <i className="g-fx" aria-hidden="true">{Array.from({ length: style === 'salon' ? 2 : style === 'strass' || style === 'circuit' || style === 'station' ? 0 : 5 }, (_, k) => <i key={k} />)}</i>
               )}
               {/* CHANTIER 262 — Grand bleu, Facile : le coquillage s'ouvre sur une perle. */}
               {style === 'ocean' && frappe === 'easy' && g.key === 'easy' && <i className="gb-perle" aria-hidden="true" />}
