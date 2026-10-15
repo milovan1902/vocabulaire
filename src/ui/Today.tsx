@@ -182,7 +182,7 @@ function Fusee() {
 }
 
 export function Today({
-  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler, onXp,
+  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler, onXp, apercu,
 }: {
   decks: Deck[];
   /** Paquets en jeu. */
@@ -199,6 +199,8 @@ export function Today({
   onParler: () => void;
   /** CHANTIER 185 — le niveau ouvre « Mes XP », dans Mes progrès. */
   onXp: () => void;
+  /** CHANTIER 276 — la vitrine de la boutique : des paquets et un temps de parole inventés, rien n'est lu. */
+  apercu?: { rows: DeckSummary[]; budget: Budget };
 }) {
   const [rows, setRows] = useState<DeckSummary[] | null>(null);
   const [choisi, setChoisi] = useState<string | null>(() => lireChoix());
@@ -220,17 +222,19 @@ export function Today({
 
   useEffect(() => {
     /* CHANTIER 229 — toutes les apparences montrent la tuile « Parler ». */
+    if (apercu) { setBudget(apercu.budget); return; }
     let alive = true;
     budgetParler()
       .then((b) => { if (alive) setBudget(b); })
       .catch(() => { if (alive) setBudget('erreur'); });
     return () => { alive = false; };
-  }, [style]);
+  }, [style, apercu]);
 
 
 
   useEffect(() => {
     let alive = true;
+    if (apercu) { setRows(apercu.rows); return; }
     (async () => {
       const enJeu = decks.filter((d) => active.includes(d.id));
       const charge = await loadSummaries(enJeu, settings);
@@ -238,7 +242,7 @@ export function Today({
       setRows(charge.summaries);
     })();
     return () => { alive = false; };
-  }, [decks, active, settings]);
+  }, [decks, active, settings, apercu]);
 
   function choisir(id: string | null) {
     if (id && style === 'cahier') setArrivee(id);

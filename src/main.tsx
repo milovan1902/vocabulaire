@@ -11,6 +11,8 @@ import { MiseAJour } from './ui/MiseAJour';
 import { FondAnime } from './ui/FondAnime';
 import { Defile } from './ui/Defile';
 import { Salle } from './ui/Salle';
+import { Vitrine } from './ui/Vitrine';
+import { appliquerApercu, estTheme } from './ui/theme';
 /* CHANTIER 161 — Atkinson Hyperlegible, livrée avec l'application : elle
    marche hors ligne. Installée par `npm install @fontsource/atkinson-hyperlegible`. */
 import '@fontsource/atkinson-hyperlegible/400.css';
@@ -78,27 +80,42 @@ import './ui/horloger.css';
    pas comme une ouverture dans les mesures d'usage. */
 const Admin = lazy(() => import('./ui/Admin'));
 const estAdmin = /^\/admin\/?$/.test(window.location.pathname);
+/* CHANTIER 276 — /vitrine : l'aperçu d'une apparence pour la boutique (Vitrine.tsx), affiché en
+   réduction dans la fiche. Rien n'y est écrit : ni apparence, ni progression, ni mesures. */
+const estVitrine = /^\/vitrine\/?$/.test(window.location.pathname);
+if (estVitrine) {
+  const t = new URLSearchParams(window.location.search).get('apparence');
+  if (t && estTheme(t)) appliquerApercu(t);
+}
 
 /* CHANTIER 145 — les erreurs non rattrapées partent au suivi. */
 installeSuiviErreurs();
 
 /* CHANTIER 147 — première ouverture (une fois), puis une ouverture par jour. */
-if (!estAdmin) {
+if (!estAdmin && !estVitrine) {
   mesure('installation');
   mesure('ouverture');
 }
 
 /* CHANTIER 154 — la progression ne doit pas être effacée par le navigateur. */
-void demandeStockagePersistant();
-noteJourUsage();
+if (!estVitrine) {
+  void demandeStockagePersistant();
+  noteJourUsage();
+}
 
 /* CHANTIER 156 — une nouvelle version s'annonce et s'applique en un geste. */
-installeMiseAJour();
+if (!estVitrine) installeMiseAJour();
 
 createRoot(document.getElementById('root')!, {
   onUncaughtError: (e) => signaleErreur(e, 'react'),
   onCaughtError: (e) => signaleErreur(e, 'react-rattrapee'),
-}).render(estAdmin ? (
+}).render(estVitrine ? (
+  <StrictMode>
+    <FiletErreur>
+      <Vitrine />
+    </FiletErreur>
+  </StrictMode>
+) : estAdmin ? (
   <StrictMode>
     <FiletErreur>
       <Suspense fallback={null}>

@@ -230,6 +230,22 @@ function appliquer(t: Theme) {
   document.documentElement.style.colorScheme = e === 'clair' ? 'light' : 'dark';
 }
 
+/** CHANTIER 276 — vrai si `v` est une apparence connue (lien de la vitrine). */
+export function estTheme(v: string): v is Theme {
+  return Object.prototype.hasOwnProperty.call(THEME_LABELS, v);
+}
+
+/*
+ * CHANTIER 276 — la vitrine de la boutique (/vitrine) : pose une apparence
+ * SANS l'enregistrer (rien n'est écrit dans le stockage), et la garde même
+ * si le téléphone passe du clair au sombre pendant l'aperçu.
+ */
+let figee: Theme | null = null;
+export function appliquerApercu(t: Theme) {
+  figee = t;
+  appliquer(t);
+}
+
 export function setTheme(t: Theme) {
   if (t === 'auto') localStorage.removeItem(CLE);
   else localStorage.setItem(CLE, t);
@@ -243,5 +259,6 @@ export function setTheme(t: Theme) {
 appliquer(themeChoisi());
 
 window.matchMedia?.('(prefers-color-scheme: light)').addEventListener('change', () => {
-  if (themeChoisi() === 'auto') appliquer('auto');
+  if (figee) appliquer(figee);
+  else if (themeChoisi() === 'auto') appliquer('auto');
 });

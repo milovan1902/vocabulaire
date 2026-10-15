@@ -12,6 +12,9 @@
  *   — dans la fiche, un aperçu en trois écrans (Aujourd'hui, Révision, Semaine), dessiné avec les
  *     couleurs et la police de l'apparence.
  *
+ * CHANTIER 276 — l'aperçu montre le vrai décor : « Aujourd'hui » et « Révision » de l'apparence,
+ * figés, avec des données inventées (Vitrine.tsx, page /vitrine).
+ *
  * Pas d'achat en euros pour l'instant (Google Play n'est pas branché).
  */
 import { useEffect, useState } from 'react';
@@ -26,12 +29,12 @@ import { acheter, credits, possede } from './apparences';
 import './boutique.css';
 
 type Filtre = 'toutes' | 'moi' | 'gagner';
-type Vue = 'auj' | 'rev' | 'sem';
+type Vue = 'auj' | 'rev';
 const FILTRES: { cle: Filtre; libelle: string }[] = [
   { cle: 'toutes', libelle: 'Toutes' }, { cle: 'moi', libelle: 'À moi' }, { cle: 'gagner', libelle: 'À gagner' },
 ];
 const VUES: { cle: Vue; libelle: string }[] = [
-  { cle: 'auj', libelle: 'Aujourd’hui' }, { cle: 'rev', libelle: 'Révision' }, { cle: 'sem', libelle: 'Semaine' },
+  { cle: 'auj', libelle: 'Aujourd’hui' }, { cle: 'rev', libelle: 'Révision' },
 ];
 const TOUTES = '';
 
@@ -67,9 +70,16 @@ function Vignette({ a }: { a: Article }) {
   );
 }
 
-/** L'aperçu de la fiche : trois écrans en réduction, dans les couleurs de l'apparence. */
+/**
+ * CHANTIER 276 — l'aperçu de la fiche : la vraie page « Aujourd'hui » ou « Révision » de
+ * l'apparence (/vitrine, Vitrine.tsx), figée, avec des données inventées, affichée en réduction
+ * dans un cadre. Un cadre par écran, chargé à la demande ; les couleurs de l'apparence en attendant.
+ */
 function Apercu({ a }: { a: Article }) {
   const [vue, setVue] = useState<Vue>('auj');
+  const [pret, setPret] = useState<Record<string, boolean>>({});
+  const cle = `${a.id}-${vue}`;
+  const src = `/vitrine?apparence=${encodeURIComponent(a.id)}&ecran=${vue === 'rev' ? 'revision' : 'aujourdhui'}`;
   return (
     <div className="btq-apercu">
       <div className="btq-vues" role="tablist" aria-label="Aperçu">
@@ -77,31 +87,18 @@ function Apercu({ a }: { a: Article }) {
           <button key={v.cle} role="tab" aria-selected={vue === v.cle} className={vue === v.cle ? 'on' : ''} onClick={() => setVue(v.cle)}>{v.libelle}</button>
         ))}
       </div>
-      <div className="btq-ecran" style={couleurs(a)} aria-hidden="true">
-        {vue === 'auj' && (
-          <div className="vue auj">
-            <span className="haut"><i className="niv" /><i className="barre" /><i className="flamme" /></span>
-            <span className="defi"><small>Défi du jour</small><b>34 cartes</b><i /></span>
-            <span className="eventail"><i /><i /><i className="centre" /></span>
-            <b className="go">Réviser · 12</b>
-            <span className="tuiles"><i /><i /></span>
-          </div>
-        )}
-        {vue === 'rev' && (
-          <div className="vue rev">
-            <span className="haut"><i className="barre" /><small>04/12</small></span>
-            <span className="carte"><small>En anglais ?</small><b>apporter</b><i /><b className="rep">to bring</b></span>
-            <span className="notes"><b className="n1">Raté</b><b className="n2">Dur</b><b className="n3">Bien</b><b className="n4">Facile</b></span>
-          </div>
-        )}
-        {vue === 'sem' && (
-          <div className="vue sem">
-            <b className="titre">Cette semaine</b>
-            <span className="tuile"><b>3 / 5</b><span className="jours"><i className="on" /><i className="on" /><i className="on auj" /><i /><i /></span><small>encore 2 jours</small></span>
-            <span className="tuile"><small>Parler</small><b>12 min</b></span>
-            <span className="mois">{Array.from({ length: 7 }, (_, i) => <i key={i} className={i < 3 ? 'on' : i > 4 ? 'we' : ''} />)}</span>
-          </div>
-        )}
+      <div className="btq-ecran" style={couleurs(a)}>
+        <iframe
+          key={cle}
+          src={src}
+          title={`Aperçu de ${THEME_LABELS[a.id]}`}
+          tabIndex={-1}
+          aria-hidden="true"
+          loading="eager"
+          className={pret[cle] ? 'pret' : ''}
+          onLoad={() => window.setTimeout(() => setPret((p) => ({ ...p, [cle]: true })), 450)}
+        />
+        {!pret[cle] && <span className="btq-attente" aria-hidden="true">Aperçu…</span>}
       </div>
     </div>
   );

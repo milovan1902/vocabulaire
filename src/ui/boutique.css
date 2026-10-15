@@ -84,54 +84,16 @@
 .btq-filtres button { white-space: nowrap; }
 .btq-compte { font-size: 12.5px; color: var(--grey); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-/* L'aperçu de la fiche : trois écrans en réduction. */
+/* CHANTIER 276 — l'aperçu de la fiche : la vraie page de l'apparence (/vitrine), en réduction.
+   Le cadre fait 195 × 380 ; la page est dessinée en 390 × 760, puis réduite de moitié. */
 .btq-apercu { display: flex; flex-direction: column; gap: 10px; }
 .btq-vues { display: flex; gap: 6px; }
 .btq-vues button { flex: 1; height: 34px; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .btq-vues button.on { border-color: var(--chalk); background: var(--chalk); color: var(--on-chalk); }
-.btq-ecran { position: relative; align-self: center; width: 196px; height: 330px; box-sizing: border-box; overflow: hidden; border: 6px solid #050c14; border-radius: 24px; background: var(--btq-fond); color: var(--btq-encre); font-family: var(--btq-police); box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4); }
-.btq-ecran .vue { position: absolute; inset: 0; box-sizing: border-box; padding: 14px 12px; display: flex; flex-direction: column; gap: 9px; animation: btq-vue 0.25s ease-out both; }
-.btq-ecran i, .btq-ecran b, .btq-ecran small, .btq-ecran span { display: block; font-style: normal; }
-.btq-ecran small { font-size: 9.5px; opacity: 0.8; }
-.btq-ecran .haut { display: flex; align-items: center; gap: 7px; }
-.btq-ecran .niv { flex: none; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--btq-accent); }
-.btq-ecran .barre { flex: 1; height: 5px; border-radius: 3px; background: var(--btq-encre); opacity: 0.25; }
-.btq-ecran .flamme { flex: none; width: 26px; height: 16px; border-radius: 999px; background: var(--btq-accent); opacity: 0.85; }
-.btq-ecran .defi { display: flex; flex-direction: column; gap: 3px; padding: 9px 10px; border: 1.5px solid var(--btq-accent); border-radius: 10px; }
-.btq-ecran .defi b { font-size: 22px; line-height: 1; }
-.btq-ecran .defi i { height: 4px; border-radius: 2px; background: var(--btq-encre); opacity: 0.2; }
-.btq-ecran .eventail { position: relative; height: 96px; }
-.btq-ecran .eventail i { position: absolute; left: 50%; top: 10px; width: 52px; height: 74px; margin-left: -26px; border-radius: 7px; background: var(--btq-encre); opacity: 0.16; transform: translateX(-40px) rotate(-10deg); }
-.btq-ecran .eventail i:nth-child(2) { transform: translateX(40px) rotate(10deg); }
-.btq-ecran .eventail i.centre { top: 6px; width: 56px; height: 80px; margin-left: -28px; box-sizing: border-box; border: 2px solid var(--btq-accent); background: var(--btq-panneau); opacity: 1; transform: none; }
-.btq-ecran .go { padding: 9px 0; border-radius: 999px; background: var(--btq-accent); color: var(--btq-sur-accent); text-align: center; font-size: 13px; }
-.btq-ecran .tuiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.btq-ecran .tuiles i { height: 44px; border-radius: 8px; background: var(--btq-encre); opacity: 0.1; }
-.btq-ecran .rev .haut small { flex: none; }
-.btq-ecran .carte { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1.5px solid var(--btq-accent); border-radius: 12px; background: var(--btq-panneau); text-align: center; }
-.btq-ecran .carte small { color: var(--btq-accent); opacity: 1; }
-.btq-ecran .carte b { font-size: 20px; line-height: 1.1; }
-.btq-ecran .carte i { width: 50%; height: 1px; background: var(--btq-encre); opacity: 0.3; }
-.btq-ecran .carte b.rep { font-size: 24px; color: var(--btq-accent); }
-.btq-ecran .notes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-.btq-ecran .notes b { padding: 9px 0; border-radius: 8px; color: #fff; text-align: center; font-family: var(--sans); font-size: 9px; }
-.btq-ecran .notes .n1 { background: #e5484d; }
-.btq-ecran .notes .n2 { background: #e8902e; }
-.btq-ecran .notes .n3 { background: var(--btq-accent); color: var(--btq-sur-accent); }
-.btq-ecran .notes .n4 { background: #2f9e55; }
-.btq-ecran .titre { font-size: 18px; }
-.btq-ecran .tuile { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 10px; background: var(--btq-panneau); }
-.btq-ecran .tuile b { font-size: 20px; line-height: 1; }
-.btq-ecran .jours { display: flex; gap: 5px; }
-.btq-ecran .jours i { width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--btq-encre); opacity: 0.3; }
-.btq-ecran .jours i.on { border: 0; background: var(--btq-accent); opacity: 1; }
-.btq-ecran .jours i.auj { animation: btq-bat 1.2s ease-in-out infinite; }
-.btq-ecran .mois { margin-top: auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.btq-ecran .mois i { aspect-ratio: 1; border-radius: 4px; background: var(--btq-encre); opacity: 0.15; }
-.btq-ecran .mois i.on { background: var(--btq-accent); opacity: 0.9; }
-.btq-ecran .mois i.we { opacity: 0.08; }
-@keyframes btq-vue { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@keyframes btq-bat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+.btq-ecran { position: relative; align-self: center; width: 195px; height: 380px; overflow: hidden; border-radius: 22px; background: var(--btq-fond); box-shadow: 0 0 0 6px #050c14, 0 12px 26px rgba(0, 0, 0, 0.4); }
+.btq-ecran iframe { position: absolute; left: 0; top: 0; width: 390px; height: 760px; border: 0; transform: scale(0.5); transform-origin: 0 0; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; }
+.btq-ecran iframe.pret { opacity: 1; }
+.btq-attente { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--btq-police); font-size: 15px; color: var(--btq-encre); opacity: 0.75; }
 @media (prefers-reduced-motion: reduce) {
-  .btq-ecran .vue, .btq-ecran .jours i.auj { animation: none; }
+  .btq-ecran iframe { transition: none; }
 }
