@@ -1,10 +1,16 @@
 /**
  * CHANTIER 268 — LA BOUTIQUE DES APPARENCES (Réglages › Apparence).
  *
- * Le solde de crédits, trois filtres, les apparences rangées par famille
+ * Le solde de crédits, les filtres, les apparences rangées par famille
  * avec une vignette et une ligne de description. Un appui ouvre la fiche :
- * description, et « Utiliser » ou « Échanger N crédits ». Remplace la
- * grille de boutons et le long paragraphe du chantier 168.
+ * description, et « Utiliser » ou « Échanger N crédits ».
+ *
+ * CHANTIER 275 — chercher et voir avant d'acheter (maquette « Boutique des apparences », 5a) :
+ *   — un champ de recherche (sans tenir compte des accents ni des majuscules) ;
+ *   — les familles en pastilles qui défilent, avec leur nombre, combinées à « Toutes / À moi / À gagner » ;
+ *   — des vignettes plus parlantes (l'éventail, le bouton, le palier) ;
+ *   — dans la fiche, un aperçu en trois écrans (Aujourd'hui, Révision, Semaine), dessiné avec les
+ *     couleurs et la police de l'apparence.
  *
  * Pas d'achat en euros pour l'instant (Google Play n'est pas branché).
  */
@@ -20,11 +26,17 @@ import { acheter, credits, possede } from './apparences';
 import './boutique.css';
 
 type Filtre = 'toutes' | 'moi' | 'gagner';
+type Vue = 'auj' | 'rev' | 'sem';
 const FILTRES: { cle: Filtre; libelle: string }[] = [
   { cle: 'toutes', libelle: 'Toutes' }, { cle: 'moi', libelle: 'À moi' }, { cle: 'gagner', libelle: 'À gagner' },
 ];
+const VUES: { cle: Vue; libelle: string }[] = [
+  { cle: 'auj', libelle: 'Aujourd’hui' }, { cle: 'rev', libelle: 'Révision' }, { cle: 'sem', libelle: 'Semaine' },
+];
+const TOUTES = '';
 
 const nb = (n: number) => n.toLocaleString('fr-FR');
+const simple = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 /** 160 à 220 crédits par semaine : on compte 190, soit environ 27 par jour. */
 function delai(manque: number): string {
@@ -33,18 +45,65 @@ function delai(manque: number): string {
   return `environ ${String(s).replace('.', ',')} semaines`;
 }
 
-function Vignette({ a, grande = false }: { a: Article; grande?: boolean }) {
-  const style = {
+/** Les couleurs de l'apparence, en variables pour la vignette et l'aperçu. */
+function couleurs(a: Article): CSSProperties {
+  return {
     '--btq-fond': a.fond, '--btq-accent': a.accent, '--btq-encre': a.encre,
     '--btq-sur-accent': texteSur(a.accent), '--btq-police': a.police ? `${a.police}, var(--sans)` : 'var(--sans)',
+    /* Le fond des panneaux de l'aperçu : un voile clair sur une encre claire (fond sombre), sombre sinon. */
+    '--btq-panneau': texteSur(a.encre) === '#111111' ? 'rgba(0, 0, 0, 0.28)' : 'rgba(255, 255, 255, 0.7)',
   } as CSSProperties;
+}
+
+function Vignette({ a }: { a: Article }) {
   return (
-    <span className={`btq-vign${grande ? ' grande' : ''}`} style={style} aria-hidden="true">
+    <span className="btq-vign" style={couleurs(a)} aria-hidden="true">
       <b>Aujourd’hui</b>
-      <i />
-      {grande && <i className="court" />}
+      <i className="ligne" />
+      <span className="eventail"><i /><i className="centre" /><i /></span>
       <em>Réviser</em>
+      <small className="palier">{NOM_PALIER[a.palier]}</small>
     </span>
+  );
+}
+
+/** L'aperçu de la fiche : trois écrans en réduction, dans les couleurs de l'apparence. */
+function Apercu({ a }: { a: Article }) {
+  const [vue, setVue] = useState<Vue>('auj');
+  return (
+    <div className="btq-apercu">
+      <div className="btq-vues" role="tablist" aria-label="Aperçu">
+        {VUES.map((v) => (
+          <button key={v.cle} role="tab" aria-selected={vue === v.cle} className={vue === v.cle ? 'on' : ''} onClick={() => setVue(v.cle)}>{v.libelle}</button>
+        ))}
+      </div>
+      <div className="btq-ecran" style={couleurs(a)} aria-hidden="true">
+        {vue === 'auj' && (
+          <div className="vue auj">
+            <span className="haut"><i className="niv" /><i className="barre" /><i className="flamme" /></span>
+            <span className="defi"><small>Défi du jour</small><b>34 cartes</b><i /></span>
+            <span className="eventail"><i /><i /><i className="centre" /></span>
+            <b className="go">Réviser · 12</b>
+            <span className="tuiles"><i /><i /></span>
+          </div>
+        )}
+        {vue === 'rev' && (
+          <div className="vue rev">
+            <span className="haut"><i className="barre" /><small>04/12</small></span>
+            <span className="carte"><small>En anglais ?</small><b>apporter</b><i /><b className="rep">to bring</b></span>
+            <span className="notes"><b className="n1">Raté</b><b className="n2">Dur</b><b className="n3">Bien</b><b className="n4">Facile</b></span>
+          </div>
+        )}
+        {vue === 'sem' && (
+          <div className="vue sem">
+            <b className="titre">Cette semaine</b>
+            <span className="tuile"><b>3 / 5</b><span className="jours"><i className="on" /><i className="on" /><i className="on auj" /><i /><i /></span><small>encore 2 jours</small></span>
+            <span className="tuile"><small>Parler</small><b>12 min</b></span>
+            <span className="mois">{Array.from({ length: 7 }, (_, i) => <i key={i} className={i < 3 ? 'on' : i > 4 ? 'we' : ''} />)}</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -52,6 +111,8 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
   const xpBrut = bilan(streak).xp;
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
   const [filtre, setFiltre] = useState<Filtre>('toutes');
+  const [famille, setFamille] = useState<string>(TOUTES);
+  const [recherche, setRecherche] = useState('');
   const [ouverte, setOuverte] = useState<Article | null>(null);
   const [aide, setAide] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -79,10 +140,15 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
     setMessage(`« ${THEME_LABELS[a.id]} » est à toi, pour ${nb(PRIX[a.palier])} crédits.`);
   }
 
-  const familles = FAMILLES.map((f) => ({
-    ...f,
-    articles: f.articles.filter((a) => filtre === 'toutes' || (filtre === 'moi' ? possede(a.id) : !possede(a.id))),
-  })).filter((f) => f.articles.length);
+  /* La recherche et « À moi / À gagner » d'abord : les pastilles comptent ce qui reste. */
+  const q = simple(recherche.trim());
+  const garde = (a: Article) =>
+    (filtre === 'toutes' || (filtre === 'moi' ? possede(a.id) : !possede(a.id)))
+    && (!q || simple(`${THEME_LABELS[a.id]} ${a.court}`).includes(q));
+  const parFamille = FAMILLES.map((f) => ({ ...f, articles: f.articles.filter(garde) }));
+  const totalTout = parFamille.reduce((n, f) => n + f.articles.length, 0);
+  const visibles = parFamille.filter((f) => f.articles.length && (famille === TOUTES || f.nom === famille));
+  const nbVisibles = visibles.reduce((n, f) => n + f.articles.length, 0);
 
   const fiche = ouverte && (() => {
     const a = ouverte;
@@ -94,11 +160,11 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
         <div className="btq-voile" onClick={() => setOuverte(null)} />
         <div className="btq-fiche" role="dialog" aria-modal="true" aria-label={THEME_LABELS[a.id]}>
           <span className="btq-poignee" aria-hidden="true" />
-          <Vignette a={a} grande />
           <div className="btq-fiche-tete">
             <h3>{THEME_LABELS[a.id]}</h3>
             <small>{NOM_PALIER[a.palier]}{prix ? ` · ${nb(prix)} crédits` : ''}</small>
           </div>
+          <Apercu key={a.id} a={a} />
           <p className="btq-fiche-txt">{a.long}</p>
           {enCours && <span className="btq-etat">Apparence en cours</span>}
           {!enCours && aMoi && (
@@ -141,15 +207,33 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
 
       {message && <p className="btq-message" role="status">{message}</p>}
 
-      <div className="btq-filtres" role="group" aria-label="Filtrer les apparences">
-        {FILTRES.map((f) => (
-          <button key={f.cle} className={filtre === f.cle ? 'on' : ''} aria-pressed={filtre === f.cle} onClick={() => setFiltre(f.cle)}>{f.libelle}</button>
+      <label className="btq-cherche">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input type="search" value={recherche} onChange={(e) => setRecherche(e.target.value)} placeholder="Chercher une apparence" aria-label="Chercher une apparence" />
+        {recherche && <button className="btq-efface" aria-label="Effacer la recherche" onClick={() => setRecherche('')}>×</button>}
+      </label>
+
+      <div className="btq-familles" role="group" aria-label="Familles d’apparences">
+        <button className={famille === TOUTES ? 'on' : ''} aria-pressed={famille === TOUTES} onClick={() => setFamille(TOUTES)}>Toutes <small>{totalTout}</small></button>
+        {parFamille.map((f) => (
+          <button key={f.nom} className={famille === f.nom ? 'on' : ''} aria-pressed={famille === f.nom} onClick={() => setFamille(f.nom)}>{f.nom} <small>{f.articles.length}</small></button>
         ))}
       </div>
 
-      {familles.length === 0 && <p className="hint">{filtre === 'gagner' ? 'Tu as déjà toutes les apparences.' : 'Rien ici pour l’instant.'}</p>}
+      <div className="btq-ligne-filtres">
+        <div className="btq-filtres" role="group" aria-label="Filtrer les apparences">
+          {FILTRES.map((f) => (
+            <button key={f.cle} className={filtre === f.cle ? 'on' : ''} aria-pressed={filtre === f.cle} onClick={() => setFiltre(f.cle)}>{f.libelle}</button>
+          ))}
+        </div>
+        <small className="btq-compte">{nbVisibles} apparence{nbVisibles > 1 ? 's' : ''}</small>
+      </div>
 
-      {familles.map((f) => (
+      {nbVisibles === 0 && (
+        <p className="hint">{q ? 'Aucune apparence ne correspond.' : filtre === 'gagner' ? 'Tu as déjà toutes les apparences.' : 'Rien ici pour l’instant.'}</p>
+      )}
+
+      {visibles.map((f) => (
         <section key={f.nom} className="btq-famille">
           <h3>{f.nom}{f.articles[0].palier === 'libre' && <small>gratuites</small>}</h3>
           <div className="btq-grille">
