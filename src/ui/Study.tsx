@@ -385,7 +385,7 @@ function useAjuste(texte: string, visible = true) {
 }
 
 export function Study({
-  queue, image, settings, onGrade, onQuit, onDone,
+  queue, image, settings, onGrade, onQuit, onDone, revele = false,
 }: {
   queue: SessionItem[];
   image: string | null;
@@ -393,10 +393,12 @@ export function Study({
   onGrade: (item: SessionItem, grade: Grade) => Promise<void>;
   onQuit: () => void;
   onDone: (reviewed: number) => void;
+  /** CHANTIER 278 — la vitrine de la boutique montre la carte déjà retournée (réponse + les 4 notes). */
+  revele?: boolean;
 }) {
   const [items, setItems] = useState<SessionItem[]>(queue);
   const [index, setIndex] = useState(0);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(revele);
   const [reviewed, setReviewed] = useState(0);
   const style = useStyle();
   /* Bonnes réponses d'affilée dans la séance. « Raté » remet à zéro. */

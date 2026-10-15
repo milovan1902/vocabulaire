@@ -91,7 +91,7 @@ export function Vitrine() {
       {ecran === 'revision' ? (
         <div className="app">
           <div className="screen">
-            <Study queue={FILE} image={null} settings={{ ...DEFAULT_SETTINGS, autoSpeak: false }} onGrade={async () => {}} onQuit={rien} onDone={rien} />
+            <Study queue={FILE} image={null} settings={{ ...DEFAULT_SETTINGS, autoSpeak: false }} onGrade={async () => {}} onQuit={rien} onDone={rien} revele />
           </div>
         </div>
       ) : (
