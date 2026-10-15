@@ -301,3 +301,210 @@
 @media (prefers-reduced-motion: reduce) {
   [data-style='arcade'] .grades .grade::before { transition: none; }
 }
+
+
+/* ==================================================================
+   CHANTIER 272 — la Borne arcade et le Néon s'animent (maquette
+   « Apparences Lycée Arcade Néon », 2b et 2c). Éléments : LyceeArcadeNeon.tsx.
+   ================================================================== */
+@keyframes arx-voile { from { opacity: 0; } to { opacity: 1; } }
+@keyframes arx-clignote { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes arx-cache { to { opacity: 0; } }
+@keyframes arx-bref { 0%, 100% { opacity: 0; } 8%, 88% { opacity: 1; } }
+@keyframes arx-pop { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes arx-piece { 0% { transform: translateY(-240px); } 75% { transform: translateY(0); } 87% { transform: translateY(-10px); } 100% { transform: translateY(14px) scaleY(0.3); opacity: 0; } }
+@keyframes arx-monte { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(-64px); opacity: 0; } }
+@keyframes arx-glitch {
+  0%, 100% { transform: none; filter: none; }
+  25% { transform: translate(-7px, 2px); filter: hue-rotate(90deg); }
+  50% { transform: translate(6px, -2px); }
+  75% { transform: translate(-3px, 1px); filter: hue-rotate(-60deg); }
+}
+@keyframes arx-pixel { 0% { transform: translate(0, 0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+@keyframes arx-zoom { from { transform: scale(1.08); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes arx-balaye-a { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes arx-balaye-b { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes arx-clig-a { 0%, 40%, 80% { opacity: 1; } 20%, 60% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes arx-clig-b { 0%, 40%, 80% { opacity: 1; } 20%, 60% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes arx-sel-a { 0%, 20%, 40%, 60%, 85% { opacity: 1; } 10%, 30%, 50% { opacity: 0; } 86%, 100% { opacity: 0; } }
+@keyframes arx-sel-b { 0%, 20%, 40%, 60%, 85% { opacity: 1; } 10%, 30%, 50% { opacity: 0; } 86%, 100% { opacity: 0; } }
+@keyframes arx-cur-a { 0% { transform: translateY(10px); opacity: 1; } 30% { transform: none; } 90% { opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes arx-cur-b { 0% { transform: translateY(10px); opacity: 1; } 30% { transform: none; } 90% { opacity: 1; } 100% { transform: none; opacity: 0; } }
+@keyframes arx-bloc { 0% { transform: scale(0); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+@keyframes arx-roule { from { transform: translateY(0); } to { transform: translateY(var(--y)); } }
+
+/* ---------- Borne arcade : INSERT COIN, la pièce, READY?, GO! (posé sur document.body) ---------- */
+.arx-coin {
+  position: fixed; inset: 0; z-index: 1000; pointer-events: none; font-family: var(--sans);
+  background-color: #07060d;
+  background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.04) 3px 4px);
+  animation: arx-voile 0.15s steps(2) both, arx-cache 0.2s steps(2) 1.85s forwards;
+}
+.arx-coin b {
+  position: absolute; left: 0; right: 0; top: 38%; text-align: center; font-weight: 900; letter-spacing: 0.14em;
+  color: var(--c); text-shadow: 0 0 10px var(--c), 0 0 22px var(--c);
+}
+.arx-coin .insert { --c: #ff3ea5; font-size: 26px; animation: arx-clignote 0.3s steps(1) 3, arx-cache 0.01s 0.9s forwards; }
+.arx-coin .ready { --c: #ffe14d; font-size: 34px; animation: arx-bref 0.5s steps(1) 0.95s both; }
+.arx-coin .go { --c: #3dff8b; font-size: 72px; top: calc(38% - 20px); animation: arx-pop 0.3s steps(3) 1.45s both; }
+.arx-coin .piece {
+  position: absolute; left: 50%; top: 54%; width: 34px; height: 34px; margin-left: -17px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fff6b0 0 12%, #ffe14d 30%, #c9a400 100%);
+  box-shadow: 0 0 12px #ffe14d, inset 0 0 0 3px rgba(0, 0, 0, 0.18);
+  animation: arx-piece 0.55s steps(8) 0.25s both;
+}
+.arx-coin .fente {
+  position: absolute; left: 50%; top: calc(54% + 28px); width: 64px; height: 14px; margin-left: -32px;
+  box-sizing: border-box; border-radius: 3px; background: #000; border: 2px solid #29f0ff; box-shadow: 0 0 10px #29f0ff;
+  animation: arx-cache 0.01s 0.95s forwards;
+}
+
+/* ---------- Borne arcade : la Révision et les notes ---------- */
+[data-style='arcade'] .studystage { position: relative; animation: arx-zoom 0.3s steps(3) both; }
+[data-style='arcade'] .studystage.n-again,
+[data-style='arcade'] .studystage.n-hard { animation: arx-zoom 0.3s steps(3) both, arx-glitch 0.36s steps(1) 0.05s 2; }
+.arx-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; font-family: var(--sans); }
+.arx-fx b { position: absolute; left: 0; right: 0; text-align: center; font-weight: 900; white-space: nowrap; color: var(--c); }
+.arx-fx .txt { top: 36%; letter-spacing: 0.08em; text-shadow: 0 0 10px var(--c), 0 0 22px var(--c); }
+.arx-fx .pts { top: 56%; font-size: 22px; text-shadow: 0 0 8px var(--c); animation: arx-monte 1s steps(8) 0.25s both; }
+.arx-fx.again { --c: #ff2a3a; }
+.arx-fx.hard { --c: #ff3ea5; }
+.arx-fx.good { --c: #ffe14d; }
+.arx-fx.easy { --c: #3dff8b; }
+.arx-fx.again .txt { font-size: 34px; animation: arx-pop 0.3s steps(3) both, arx-clignote 0.3s steps(1) 0.35s 3; }
+.arx-fx.hard .txt { font-size: 48px; animation: arx-pop 0.3s steps(3) both, arx-clignote 0.3s steps(1) 0.35s 3; }
+.arx-fx.good .txt { font-size: 44px; animation: arx-pop 0.3s steps(3) both; }
+.arx-fx.easy .txt { font-size: 40px; animation: arx-pop 0.3s steps(3) both, arx-clignote 0.25s steps(1) 0.5s 2; }
+.arx-fx .px {
+  position: absolute; left: 50%; top: 42%; width: 8px; height: 8px;
+  background: var(--c); box-shadow: 0 0 6px var(--c); animation: arx-pixel 0.8s steps(6) both;
+}
+
+/* ---------- Borne arcade : changer de paquet — STAGE SELECT ---------- */
+[data-style='arcade'] .eventail.c0 .eventail-carte.centre .eventail-dos { animation: arx-balaye-a 0.45s steps(6) 0.3s both; }
+[data-style='arcade'] .eventail.c1 .eventail-carte.centre .eventail-dos { animation: arx-balaye-b 0.45s steps(6) 0.3s both; }
+[data-style='arcade'] .eventail.c0 .eventail-carte.ancien .eventail-dos { animation: arx-clig-a 0.5s steps(1) both; }
+[data-style='arcade'] .eventail.c1 .eventail-carte.ancien .eventail-dos { animation: arx-clig-b 0.5s steps(1) both; }
+[data-style='arcade'] .eventail.c0::before,
+[data-style='arcade'] .eventail.c1::before {
+  content: 'STAGE SELECT'; position: absolute; left: 0; right: 0; top: -16px; z-index: 20; pointer-events: none;
+  text-align: center; font-size: 12px; font-weight: 900; letter-spacing: 0.18em;
+  color: var(--jaune); text-shadow: 0 0 8px var(--jaune); opacity: 0;
+}
+[data-style='arcade'] .eventail.c0::before { animation: arx-sel-a 1s steps(1) both; }
+[data-style='arcade'] .eventail.c1::before { animation: arx-sel-b 1s steps(1) both; }
+[data-style='arcade'] .eventail.c0::after,
+[data-style='arcade'] .eventail.c1::after {
+  content: ''; position: absolute; left: 50%; top: 192px; width: 16px; height: 10px; margin-left: -8px; z-index: 20;
+  pointer-events: none; background: var(--jaune); clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: 0;
+}
+[data-style='arcade'] .eventail.c0::after { animation: arx-cur-a 1.1s steps(11) both; }
+[data-style='arcade'] .eventail.c1::after { animation: arx-cur-b 1.1s steps(11) both; }
+
+/* ---------- Borne arcade : Cette semaine — la barre de vie ---------- */
+.arx-ligne { align-self: stretch; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.arx-ligne > b { font-size: 22px; font-weight: 900; line-height: 1.1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.arx-lv { font-size: 12px; font-weight: 900; letter-spacing: 0.08em; color: var(--bleu); text-shadow: 0 0 6px var(--bleu); }
+.arx-lv.neuf { animation: arx-clignote 0.2s steps(1) 3; }
+.arx-vie { align-self: stretch; display: flex; gap: 3px; height: 10px; }
+.arx-vie i { flex: 1; background: var(--ly-voile); }
+.arx-vie i.on { background: var(--good); box-shadow: 0 0 6px var(--good); }
+.arx-vie i.bonus { flex: none; width: 10px; background: rgba(255, 225, 77, 0.18); }
+.arx-vie i.bonus.on { background: var(--jaune); box-shadow: 0 0 6px var(--jaune); }
+.arx-vie i.neuf { animation: arx-bloc 0.3s steps(3) both; }
+.arx-msg { font-size: 12px; font-weight: 900; letter-spacing: 0.1em; white-space: nowrap; color: var(--c); text-shadow: 0 0 6px var(--c); }
+.arx-msg.clear { --c: var(--good); }
+.arx-msg.bonus { --c: var(--jaune); }
+.arx-msg.clear.neuf { animation: arx-clignote 0.3s steps(1) 0.2s 4; }
+.arx-msg.bonus.neuf { animation: arx-clignote 0.3s steps(1) 0.2s 5; }
+.arx-msg.hs { --c: var(--rouge); display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.arx-msg.hs.neuf > span:first-child { animation: arx-clignote 0.3s steps(1) 4; }
+.arx-init { display: inline-flex; gap: 2px; height: 1em; overflow: hidden; line-height: 1; color: var(--jaune); text-shadow: 0 0 6px var(--jaune); }
+.arx-init > span { display: flex; flex-direction: column; }
+.arx-init > span > span { height: 1em; }
+
+/* ---------- Néon : l'écran s'éteint, la Révision s'allume tube par tube ---------- */
+@keyframes nex-allume { 0% { opacity: 0; } 8% { opacity: 0.9; } 14% { opacity: 0.1; } 26% { opacity: 1; } 34% { opacity: 0.25; } 46%, 100% { opacity: 1; } }
+@keyframes nex-allume-a { 0% { opacity: 0; } 8% { opacity: 0.9; } 14% { opacity: 0.1; } 26% { opacity: 1; } 34% { opacity: 0.25; } 46%, 100% { opacity: 1; } }
+@keyframes nex-allume-b { 0% { opacity: 0; } 8% { opacity: 0.9; } 14% { opacity: 0.1; } 26% { opacity: 1; } 34% { opacity: 0.25; } 46%, 100% { opacity: 1; } }
+@keyframes nex-eteint { 0% { opacity: 1; } 15% { opacity: 0.3; } 25% { opacity: 1; } 40% { opacity: 0.15; } 55% { opacity: 0.7; } 100% { opacity: 0; } }
+@keyframes nex-quitte-a { 0% { opacity: 1; } 15% { opacity: 0.3; } 25% { opacity: 1; } 40% { opacity: 0.15; } 55% { opacity: 0.7; } 75% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes nex-quitte-b { 0% { opacity: 1; } 15% { opacity: 0.3; } 25% { opacity: 1; } 40% { opacity: 0.15; } 55% { opacity: 0.7; } 75% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes nex-fondu { to { opacity: 0; } }
+@keyframes nex-rot { to { transform: rotate(360deg); } }
+@keyframes nex-clignote { 0% { opacity: 1; } 50% { opacity: 0.12; } }
+/* Tout l'encadré (le tube intérieur ET l'anneau extérieur) clignote dans la couleur de la note. */
+@keyframes nex-cadre-r {
+  0%, 100% { border-color: #ff3355; box-shadow: 0 0 10px #ff3355, inset 0 0 12px rgba(255, 51, 85, 0.55), 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px #ff3355, 0 0 22px 10px rgba(255, 51, 85, 0.55); }
+  50% { border-color: rgba(255, 51, 85, 0.18); box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent, 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px rgba(255, 51, 85, 0.18), 0 0 0 10px transparent; }
+}
+@keyframes nex-cadre-o {
+  0%, 100% { border-color: #ff9a3c; box-shadow: 0 0 10px #ff9a3c, inset 0 0 12px rgba(255, 154, 60, 0.55), 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px #ff9a3c, 0 0 22px 10px rgba(255, 154, 60, 0.55); }
+  50% { border-color: rgba(255, 154, 60, 0.18); box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent, 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px rgba(255, 154, 60, 0.18), 0 0 0 10px transparent; }
+}
+@keyframes nex-cadre-v {
+  0%, 100% { border-color: #39ff88; box-shadow: 0 0 10px #39ff88, inset 0 0 12px rgba(57, 255, 136, 0.55), 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px #39ff88, 0 0 22px 10px rgba(57, 255, 136, 0.55); }
+  50% { border-color: rgba(57, 255, 136, 0.18); box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent, 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px rgba(57, 255, 136, 0.18), 0 0 0 10px transparent; }
+}
+@keyframes nex-cadre-h {
+  0%, 100% { border-color: #39ff88; box-shadow: 0 0 12px #39ff88, inset 0 0 16px rgba(57, 255, 136, 0.6), 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px #39ff88, 0 0 44px 20px rgba(57, 255, 136, 0.75); }
+  50% { border-color: rgba(57, 255, 136, 0.18); box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent, 0 0 0 8px rgba(23, 10, 42, 0.6), 0 0 0 10px rgba(57, 255, 136, 0.18), 0 0 0 10px transparent; }
+}
+.today.ly.nex-off { animation: nex-eteint 0.6s linear forwards; }
+/* L'allumage reste dans chaque liste : le navigateur ne le rejoue pas quand la note se termine. */
+[data-style='neon'] .studytop { animation: nex-allume 0.7s linear both; }
+[data-style='neon'] .studystage { position: relative; animation: nex-allume 0.8s linear 0.25s both; }
+[data-style='neon'] .studystage.n-again { animation: nex-allume 0.8s linear 0.25s both, nex-cadre-r 0.4s steps(1) 4; }
+[data-style='neon'] .studystage.n-hard { animation: nex-allume 0.8s linear 0.25s both, nex-cadre-o 0.4s steps(1) 4; }
+[data-style='neon'] .studystage.n-good { animation: nex-allume 0.8s linear 0.25s both, nex-cadre-v 0.4s steps(1) 4; }
+[data-style='neon'] .studystage.n-easy { animation: nex-allume 0.8s linear 0.25s both, nex-cadre-h 0.4s steps(1) 1s 3; }
+/* Facile : un trait vert fait le tour de l'encadré (un dégradé conique qui tourne, découpé en anneau). */
+.nex-tour {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  filter: drop-shadow(0 0 6px #39ff88) drop-shadow(0 0 12px #39ff88);
+  animation: nex-fondu 0.15s linear 1s forwards;
+}
+.nex-tour > span {
+  position: absolute; inset: -2px; border-radius: 22px; padding: 4px; overflow: hidden;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.nex-tour i {
+  position: absolute; left: 50%; top: 50%; width: 900px; height: 900px; margin: -450px 0 0 -450px;
+  background: conic-gradient(from 0deg, transparent 0 74%, rgba(57, 255, 136, 0.55) 88%, #e2ffee 97%, transparent 100%);
+  animation: nex-rot 1s linear both;
+}
+
+/* ---------- Néon : changer de paquet — l'enseigne s'éteint, la nouvelle s'allume ---------- */
+[data-style='neon'] .eventail.c0 .eventail-carte.centre .eventail-dos { animation: nex-allume-a 0.9s linear 0.35s both; }
+[data-style='neon'] .eventail.c1 .eventail-carte.centre .eventail-dos { animation: nex-allume-b 0.9s linear 0.35s both; }
+[data-style='neon'] .eventail.c0 .eventail-carte.ancien .eventail-dos { animation: nex-quitte-a 0.7s linear both; }
+[data-style='neon'] .eventail.c1 .eventail-carte.ancien .eventail-dos { animation: nex-quitte-b 0.7s linear both; }
+
+/* ---------- Néon : Cette semaine — un point par jour, « 6 JOURS », l'enseigne dorée ---------- */
+.nex-points { display: flex; gap: 6px; align-items: center; }
+.nex-points i { width: 14px; height: 14px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(77, 232, 255, 0.3); }
+.nex-points i.on { border-color: var(--cyan); background: #bff6ff; box-shadow: 0 0 8px var(--cyan), 0 0 14px rgba(77, 232, 255, 0.5); }
+.nex-points i.bonus { width: 8px; height: 8px; border: none; background: rgba(255, 179, 107, 0.25); }
+.nex-points i.bonus.on { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+.nex-points i.neuf { animation: nex-allume 0.9s linear both; }
+.ly-tuile > b.nex-plein { text-shadow: 0 0 10px var(--rouge); }
+.nex-enseigne {
+  display: flex; white-space: nowrap; font-family: var(--enseigne); font-weight: 700; font-size: 32px; line-height: 1;
+  color: #ffd6f6; text-shadow: 0 0 8px var(--rouge), 0 0 16px rgba(255, 79, 216, 0.45);
+}
+.nex-enseigne span { display: inline-block; }
+.nex-enseigne.neuf:not(.or) span { animation: nex-allume 0.7s linear both; }
+.nex-enseigne.or { color: #ffe6a8; text-shadow: 0 0 8px #ffb000, 0 0 18px rgba(255, 176, 0, 0.55); }
+.nex-enseigne.or.neuf { animation: nex-clignote 0.35s steps(1) 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .arx-coin { display: none; }
+  [data-style='arcade'] .studystage, [data-style='neon'] .studystage, [data-style='neon'] .studytop,
+  [data-style='arcade'] .eventail-dos, [data-style='neon'] .eventail-dos,
+  .arx-fx *, .arx-ligne *, .arx-vie i, .arx-msg, .arx-msg *, .arx-init *, .nex-tour, .nex-tour *,
+  .nex-points i, .nex-enseigne, .nex-enseigne span, .today.ly.nex-off { animation: none !important; }
+  [data-style='arcade'] .eventail::before, [data-style='arcade'] .eventail::after { display: none; }
+}

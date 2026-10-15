@@ -343,7 +343,7 @@ export function Eventail({
             role="option"
             aria-selected={a === 0}
             aria-label={`${r.deck.name}, ${r.due} carte${r.due > 1 ? 's' : ''} à revoir`}
-            className={`eventail-carte${a === 0 ? ' centre' : ''}`}
+            className={`eventail-carte${a === 0 ? ' centre' : ''}${coups > 0 && ancien && ancien.i === i ? ' ancien' : ''}`}
             style={{
               transform,
               opacity: tra || pan || but || pot ? (a === 0 || (ancien && ancien.i === i && coups && !calme) ? 1 : 0) : cai ? (a === 0 ? 1 : a === 1 ? 0.92 : 0) : (mai || cha) && a > 0 ? 0 : pla ? (a === 0 ? 1 : a === 1 ? 0.85 : 0) : pel ? (a === 0 ? 1 : a <= 2 ? 0.9 : 0) : ray ? (a <= 5 ? 1 : 0) : a === 0 ? 1 : a === 1 ? (por ? 0.85 : 0.72) : 0,
