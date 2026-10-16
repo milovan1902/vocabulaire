@@ -303,7 +303,7 @@ function PanneauFiltres({
 export function Library({
   decks, installed, active, categories, settings, auth,
   onOpen, onReview, onAdd, onRemove, onSetActive, onSearch, onSettings,
-  rayon, onRayon,
+  rayon, onRayon, onCreer,
 }: {
   decks: Deck[];
   /** Paquets possédés. */
@@ -341,6 +341,8 @@ export function Library({
   onRayon?: (t: Tab) => void;
   /** La classe déclarée est un réglage : elle s'écrit là où ils s'écrivent. */
   onSettings: (s: Settings) => void;
+  /** CHANTIER 282 — « Créer mon paquet », en tête de Ma collection. */
+  onCreer?: () => void;
 }) {
   const [charge, setCharge] = useState<Charge | null>(null);
   /*
@@ -709,6 +711,12 @@ export function Library({
           <button className="btn ghost" onClick={() => setTab('catalogue')}>
             Parcourir le catalogue
           </button>
+          {onCreer && (
+          <button className="rowlink" onClick={onCreer}>
+            <span>+ Créer mon paquet</span>
+            <span className="chev">›</span>
+          </button>
+        )}
         </div>
       );
     }
@@ -732,6 +740,13 @@ export function Library({
           Mets en jeu ceux sur lesquels tu travailles. Les autres attendent
           sans rien perdre.
         </p>
+
+        {onCreer && (
+          <button className="rowlink" onClick={onCreer}>
+            <span>+ Créer mon paquet</span>
+            <span className="chev">›</span>
+          </button>
+        )}
 
         {mine.length > 4 && (
           <button className="searchcue" onClick={onSearch}>

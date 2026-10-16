@@ -569,6 +569,7 @@ export default function App() {
             settings={store.common}
             auth={auth}
             onSearch={() => setView({ name: 'search' })}
+            onCreer={() => { setLoaded(null); setView({ name: 'editor', mode: 'create' }); }}
             rayon={rayon}
             onRayon={setRayon}
             /*
@@ -738,7 +739,20 @@ export default function App() {
             deck={loaded?.deck}
             existingCards={loaded?.cards}
             onCancel={() => setView(loaded ? { name: 'deck' } : { name: 'library' })}
-            onSaved={(id) => { void store.refreshAll(); void openDeck(id); }}
+            onSaved={async (id) => {
+              /*
+               * CHANTIER 282 — un paquet créé appartient à la personne et
+               * part en jeu tout de suite. Sans cela, il n'apparaissait
+               * nulle part dans Ma collection.
+               */
+              if (view.mode === 'create') {
+                await store.addDeck(id);
+                await store.setActive(id, true);
+              }
+              await store.refreshAll();
+              void openDeck(id);
+              if (auth.session) void auth.runSync();
+            }}
           />
         )}
       </div>
