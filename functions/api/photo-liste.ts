@@ -49,12 +49,14 @@ function dimancheUtc(): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** 283 — la cause d'une lecture ratée, en clair, pour l'écran. */
+/** 283/284 — la cause d'une lecture ratée, en clair, pour l'écran. */
 function causeDe(e: unknown): string {
   const t = String(e);
   if (/PGRST205|42P01|does not exist|Could not find the table|\(404\)/i.test(t)) return 'table photo_usage absente : passer le SQL de la livraison 281';
-  if (/\(401\)|\(403\)|JWT|apikey/i.test(t)) return 'clé de service Supabase refusée';
-  return 'quota illisible';
+  if (/42501|permission denied/i.test(t)) return 'droits manquants sur photo_usage : passer le SQL de la livraison 284';
+  if (/\(401\)|JWT|Invalid API key/i.test(t)) return 'clé de service Supabase refusée';
+  const code = t.match(/\((\d{3})\)/)?.[1];
+  return code ? `quota illisible (${code})` : 'quota illisible';
 }
 
 export interface EtatPhoto { restantes: number; max: number; jusquau: string }
