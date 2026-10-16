@@ -2,8 +2,9 @@
  * Création d'un paquet, ou ajout de mots à un paquet existant.
  *
  * CHANTIER 283 — l'écran de la maquette « Créer mon paquet » :
- *   1. le nom (création seulement) ;
- *   2. les mots, « À la main » un par un (Entrée = Suivant, écoute de la
+ *   1. le contrôle à préparer, et sa date (création seulement — 285) ;
+ *   2. le nom (création seulement) ;
+ *   3. les mots, « À la main » un par un (Entrée = Suivant, écoute de la
  *      prononciation) ou « En photo » (recadrage, lecture par l'IA).
  * Les mots lus sur une photo arrivent dans « Déjà dans le paquet », où
  * chacun se corrige d'un appui ou se retire.
@@ -14,6 +15,11 @@ import { repository } from '../data/repository';
 import { ErreurPhoto, etatPhoto, type EtatPhoto } from '../data/photoListe';
 import { PhotoListe } from './PhotoListe';
 import { speak } from './speech';
+import { isoLocal, joursAvant, jourPlus, joursDePassage, type DeckControle } from '../engine/controle';
+
+const RACCOURCIS = [3, 5, 7, 10, 14];
+const jourCourt = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+const jourLong = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
 export interface ParsedLine { en: string; fr: string; }
 
@@ -49,7 +55,10 @@ export function Editor({
   onCancel: () => void;
   onSaved: (deckId: string) => void;
 }) {
-  const [etape, setEtape] = useState<'nom' | 'mots'>(mode === 'create' ? 'nom' : 'mots');
+  const [etape, setEtape] = useState<'controle' | 'nom' | 'mots'>(mode === 'create' ? 'controle' : 'mots');
+  /* 285 — null = pas encore répondu ; la date au format AAAA-MM-JJ. */
+  const [aControle, setAControle] = useState<boolean | null>(null);
+  const [dateControle, setDateControle] = useState(isoLocal(jourPlus(7)));
   const [name, setName] = useState('');
   const [saisie, setSaisie] = useState<'main' | 'photo'>('main');
   const [en, setEn] = useState('');
@@ -116,10 +125,12 @@ export function Editor({
           en: r.en, fr: r.fr, theme: THEME,
         }));
         const decks = await repository.listDecks();
-        decks.push({
+        const fiche: DeckControle = {
           id, name: name.trim(), builtin: false, hasImage: false,
           createdAt: Date.now(), updatedAt: Date.now(),
-        });
+          controle: aControle ? dateControle : null,
+        };
+        decks.push(fiche);
         await repository.saveDecks(decks);
         await repository.saveCards(id, cards);
         onSaved(id);
@@ -143,11 +154,88 @@ export function Editor({
 
   const petit: CSSProperties = { fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.75 };
 
-  /* ---------------- Étape 1 : le nom ---------------- */
+  /* ---------------- Étape 1 : le contrôle (285) ---------------- */
+  const reste = joursAvant(dateControle);
+  const dateOk = reste >= 1 && reste <= 90;
+  if (etape === 'controle') {
+    const passages = dateOk ? joursDePassage(reste) : [];
+    return (
+      <>
+        <p className="hint" style={petit}>Étape 1 sur 3</p>
+        <h2 className="screen-title" style={{ margin: '0 0 6px', fontSize: 28 }}>Un contrôle à préparer ?</h2>
+        <p className="hint">L’appli resserre les révisions de ce paquet pour que les mots soient sus le jour J.</p>
+
+        <div className="tabs" role="tablist">
+          <button role="tab" aria-selected={aControle === false} className={aControle === false ? 'on' : ''} onClick={() => setAControle(false)}>Non, à mon rythme</button>
+          <button role="tab" aria-selected={aControle === true} className={aControle === true ? 'on' : ''} onClick={() => setAControle(true)}>Oui, un contrôle</button>
+        </div>
+
+        {aControle && (
+          <>
+            <p className="hint" style={{ ...petit, margin: '0 0 8px' }}>Le contrôle a lieu</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '0 0 12px' }}>
+              {RACCOURCIS.map((j) => {
+                const iso = isoLocal(jourPlus(j));
+                const on = iso === dateControle;
+                return (
+                  <button
+                    key={j}
+                    onClick={() => setDateControle(iso)}
+                    aria-pressed={on}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, minHeight: 48, padding: '6px 12px', borderRadius: 12, border: on ? '2px solid currentColor' : '1px solid var(--rule)', background: 'none', color: 'inherit', font: 'inherit', cursor: 'pointer' }}
+                  >
+                    <span style={{ fontSize: 14 }}>{jourCourt(jourPlus(j))}</span>
+                    <span style={{ fontSize: 11, opacity: 0.7 }}>dans {j} j</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="field">
+              <label htmlFor="date-controle">Une autre date</label>
+              <input
+                id="date-controle" type="date" value={dateControle}
+                min={isoLocal(jourPlus(1))} max={isoLocal(jourPlus(90))}
+                onChange={(e) => { if (e.target.value) setDateControle(e.target.value); }}
+              />
+            </div>
+
+            {dateOk ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '0 0 16px' }}>
+                <p className="hint" style={{ ...petit, margin: '0 0 2px' }}>Le planning · {jourLong(jourPlus(reste))}</p>
+                {passages.map((j, i) => (
+                  <div key={j} style={{ display: 'grid', gridTemplateColumns: '90px minmax(0,1fr)', alignItems: 'center', gap: 10, minHeight: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--rule)' }}>
+                    <span style={{ fontSize: 12, opacity: 0.75 }}>{j === 0 ? 'Aujourd’hui' : jourCourt(jourPlus(j))}</span>
+                    <span style={{ fontSize: 14 }}>
+                      {i === 0 ? 'Découverte de tous les mots' : j === reste - 1 ? 'Tout le paquet, la veille' : 'Les mots encore fragiles'}
+                    </span>
+                  </div>
+                ))}
+                <div style={{ display: 'grid', gridTemplateColumns: '90px minmax(0,1fr)', alignItems: 'center', gap: 10, minHeight: 40, padding: '0 12px', borderRadius: 10, border: '2px solid currentColor' }}>
+                  <span style={{ fontSize: 12 }}>{jourCourt(jourPlus(reste))}</span>
+                  <b style={{ fontSize: 14 }}>Contrôle</b>
+                </div>
+                <p className="hint" style={{ margin: '4px 0 0' }}>Un mot bien su revient moins souvent, un mot raté plus vite. Après le contrôle, le paquet reprend le rythme normal.</p>
+              </div>
+            ) : (
+              <p className="error">Choisis une date entre demain et dans 3 mois.</p>
+            )}
+          </>
+        )}
+
+        <button className="btn" disabled={aControle === null || (aControle && !dateOk)} onClick={() => setEtape('nom')}>Continuer ›</button>
+        <button className="btn ghost" onClick={onCancel}>Annuler</button>
+      </>
+    );
+  }
+
+  /* ---------------- Étape 2 : le nom ---------------- */
   if (etape === 'nom') {
     return (
       <>
-        <p className="hint" style={petit}>Étape 1 sur 2</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <button className="rowlink" style={{ flex: 1, minWidth: 0 }} onClick={() => setEtape('controle')}><span>‹ {aControle ? `Contrôle ${jourCourt(jourPlus(reste))}` : 'Le contrôle'}</span></button>
+          <span className="hint" style={{ ...petit, margin: 0, flex: 'none' }}>Étape 2 sur 3</span>
+        </div>
         <div className="field">
           <label htmlFor="deckname">Nom du paquet</label>
           <p className="hint">Celui du contrôle, de la leçon ou du chapitre.</p>
@@ -163,7 +251,7 @@ export function Editor({
     );
   }
 
-  /* ---------------- Étape 2 : les mots ---------------- */
+  /* ---------------- Étape 3 : les mots ---------------- */
   const libellePhoto = etat ? `En photo · reste ${etat.restantes}` : 'En photo';
 
   return (
@@ -172,7 +260,7 @@ export function Editor({
         {mode === 'create'
           ? <button className="rowlink" style={{ flex: 1, minWidth: 0 }} onClick={() => setEtape('nom')}><span>‹ {name.trim()}</span></button>
           : <span />}
-        {mode === 'create' && <span className="hint" style={{ ...petit, margin: 0, flex: 'none' }}>Étape 2 sur 2</span>}
+        {mode === 'create' && <span className="hint" style={{ ...petit, margin: 0, flex: 'none' }}>Étape 3 sur 3</span>}
       </div>
 
       <div className="tabs" role="tablist">

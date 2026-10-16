@@ -35,6 +35,7 @@ import { repository } from '../data/repository';
 import { SEED_DECKS, materialize } from '../data/seed';
 import { emptyProgress, review } from '../engine/scheduler';
 import { freshCounter, rollDay } from '../engine/session';
+import { avecControle, controleActif, plafonner } from '../engine/controle';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK, compterCarte, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
@@ -247,9 +248,13 @@ export function useStore(): Store {
     [],
   );
 
+  /* CHANTIER 285 — un paquet en mode contrôle n'est pas borné par les quotas du jour. */
   const settingsFor = useCallback(
-    (deckId: DeckId) => effectiveSettings(common, overrides[deckId]),
-    [common, overrides],
+    (deckId: DeckId) => avecControle(
+      effectiveSettings(common, overrides[deckId]),
+      decks.find((d) => d.id === deckId),
+    ),
+    [common, overrides, decks],
   );
 
   const counterFor = useCallback(
@@ -333,7 +338,12 @@ export function useStore(): Store {
 
   const gradeCard = useCallback(
     async (deckId: DeckId, progress: Progress, grade: Grade, wasNew: boolean) => {
-      const next = review(progress, grade);
+      /*
+       * CHANTIER 285 — en mode contrôle, l'échéance FSRS est ramenée à la
+       * moitié des jours restants, et jamais après la veille.
+       */
+      const fiche = (await repository.listDecks()).find((d) => d.id === deckId);
+      const next = plafonner(review(progress, grade), controleActif(fiche));
 
       const stored = await repository.getProgress(deckId);
       stored[next.cardId] = next;
