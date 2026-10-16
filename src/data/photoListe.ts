@@ -41,7 +41,9 @@ async function appelle<T>(corps?: unknown): Promise<T> {
   if (r.status === 403) throw new ErreurPhoto('réservé aux abonnés', 'ferme');
   if (r.status === 429) throw new ErreurPhoto('quota épuisé', 'quota', d.etat);
   if (r.status === 422) throw new ErreurPhoto('aucun mot lu', 'vide', d.etat);
-  if (!r.ok) throw new ErreurPhoto(d.erreur ?? `erreur ${r.status}`, 'panne');
+  if (!r.ok) throw new ErreurPhoto(`${d.erreur ?? 'erreur'} · ${r.status}`, 'panne');
+  /* 283 — une réponse sans JSON (route absente, page de l'appli renvoyée à la place) est une panne. */
+  if (!d || typeof d !== 'object' || Object.keys(d).length === 0) throw new ErreurPhoto(`route /api/photo-liste absente · ${r.status}`, 'panne');
   return d as T;
 }
 

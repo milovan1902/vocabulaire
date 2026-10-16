@@ -49,6 +49,14 @@ function dimancheUtc(): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** 283 — la cause d'une lecture ratée, en clair, pour l'écran. */
+function causeDe(e: unknown): string {
+  const t = String(e);
+  if (/PGRST205|42P01|does not exist|Could not find the table|\(404\)/i.test(t)) return 'table photo_usage absente : passer le SQL de la livraison 281';
+  if (/\(401\)|\(403\)|JWT|apikey/i.test(t)) return 'clé de service Supabase refusée';
+  return 'quota illisible';
+}
+
 export interface EtatPhoto { restantes: number; max: number; jusquau: string }
 
 function etatDe(lues: number): EtatPhoto {
@@ -135,7 +143,7 @@ export const onRequestGet = async ({ request, env }: ContextePhoto): Promise<Res
     return json(etatDe((await semaine(qui.id, env)).lues));
   } catch (e) {
     console.error('quota photo illisible', String(e));
-    return json({ erreur: 'quota illisible' }, 503);
+    return json({ erreur: causeDe(e) }, 503);
   }
 };
 
@@ -161,7 +169,7 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
     avant = await semaine(qui.id, env);
   } catch (e) {
     console.error('quota photo non vérifié', String(e));
-    return json({ erreur: 'le quota n’a pas pu être vérifié' }, 503);
+    return json({ erreur: causeDe(e) }, 503);
   }
   if (avant.lues >= PHOTOS_SEMAINE || avant.essais >= ESSAIS_SEMAINE) {
     return json({ erreur: 'quota épuisé', etat: { ...etatDe(avant.lues), restantes: 0 } }, 429);
