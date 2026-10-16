@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { Card, Deck } from '../domain/types';
 import { repository } from '../data/repository';
+import { PhotoListe } from './PhotoListe';
 
 export interface ParsedLine { en: string; fr: string; }
 
@@ -38,6 +39,15 @@ export function Editor({
   const [text, setText] = useState('');
   const [error, setError] = useState('');
   const [warned, setWarned] = useState(false);
+  /* CHANTIER 281 — ce que la photo vient d'ajouter, à faire relire. */
+  const [lus, setLus] = useState(0);
+
+  function ajouteLus(mots: Array<{ en: string; fr: string }>) {
+    setText((t) => (t.trim() ? t.replace(/\s*$/, '\n') : '') + mots.map((m) => `${m.en} ; ${m.fr}`).join('\n'));
+    setLus(mots.length);
+    setWarned(false);
+    setError('');
+  }
 
   async function save() {
     const themeName = theme.trim() || 'Général';
@@ -111,6 +121,8 @@ export function Editor({
         />
       </div>
 
+      <PhotoListe onMots={ajouteLus} />
+
       <div className="field">
         <label htmlFor="words">Les mots</label>
         <p className="hint">
@@ -119,9 +131,15 @@ export function Editor({
         </p>
         <textarea
           id="words" value={text}
-          onChange={(e) => { setText(e.target.value); setWarned(false); setError(''); }}
+          onChange={(e) => { setText(e.target.value); setWarned(false); setError(''); setLus(0); }}
           placeholder={'homework, devoirs\nlocker, casier\nto borrow, emprunter'}
         />
+        {lus > 0 && (
+          <p className="hint">
+            {lus} mot{lus > 1 ? 's' : ''} lu{lus > 1 ? 's' : ''} sur la photo. Relis-les : l’IA peut se tromper,
+            surtout sur une écriture à la main.
+          </p>
+        )}
       </div>
 
       {error && <p className="error">{error}</p>}
