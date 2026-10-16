@@ -411,3 +411,55 @@
   .lyx-fx *, .lyx-ligne *, .lyx-appr, .lyx-segs i, .lyx-tampon { animation: none !important; }
   .lyx-note svg.neuf path { stroke-dashoffset: 0; }
 }
+
+/* ==================================================================
+   CHANTIER 279 — « Aujourd'hui » qui vit (maquette « Aujourdhui anime »,
+   1c). Foncé et clair. Le dessin est dans AujourdhuiVivant.tsx.
+   — C : le petit mot plié qui traverse l'écran et s'ouvre au milieu ;
+   — en plus : le post-it du défi du jour qui se soulève.
+   ================================================================== */
+[data-style='lycee'] .ly-defi { position: relative; }
+.lyv-postit {
+  position: absolute; right: 84px; top: -16px; z-index: 2; width: 62px; height: 34px; box-sizing: border-box; padding: 9px 4px 0;
+  white-space: nowrap; text-align: center; pointer-events: none;
+  background: #ffe066 linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0 8px, transparent 8px);
+  color: #2b2b2b; font-family: 'Caveat', cursive; font-weight: 700; font-size: 20px; line-height: 1;
+  transform: rotate(4deg); transform-origin: 50% 0; box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+  animation: lyv-postit 5s ease-in-out infinite;
+}
+@keyframes lyv-postit {
+  0%, 76%, 100% { transform: rotate(4deg); box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35); }
+  83% { transform: rotate(4deg) perspective(160px) rotateX(-32deg) translateY(-2px); box-shadow: 0 10px 12px rgba(0, 0, 0, 0.4); }
+  89% { transform: rotate(4deg) perspective(160px) rotateX(-6deg); box-shadow: 0 4px 5px rgba(0, 0, 0, 0.35); }
+  94% { transform: rotate(4deg) perspective(160px) rotateX(-14deg); }
+}
+
+.lyv-couloir {
+  position: fixed; top: 0; bottom: 0; z-index: 40; pointer-events: none; overflow: hidden;
+  left: max(0px, calc(50% - var(--shell, 100vw) / 2)); width: min(100vw, var(--shell, 100vw));
+}
+.lyv-mot { position: absolute; left: -100px; width: 132px; height: 72px; animation: lyv-g 6.5s cubic-bezier(0.45, 0.05, 0.4, 1) both; }
+.lyv-mot.d { animation-name: lyv-d; }
+.lyv-mot .plie {
+  position: absolute; left: 52px; top: 22px; width: 28px; height: 24px; border-radius: 2px; background: #f6f3ea;
+  background-image: linear-gradient(135deg, transparent 47%, rgba(0, 0, 0, 0.18) 48%, rgba(0, 0, 0, 0.18) 52%, transparent 53%), linear-gradient(45deg, transparent 60%, rgba(0, 0, 0, 0.08) 60%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45); animation: lyv-plie 6.5s ease-in-out both;
+}
+.lyv-mot b {
+  position: absolute; inset: 0; box-sizing: border-box; padding: 10px 10px 6px 16px; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  background: #fbfaf5;
+  background-image: linear-gradient(90deg, transparent 10px, rgba(214, 96, 96, 0.5) 10px, rgba(214, 96, 96, 0.5) 11px, transparent 11px), repeating-linear-gradient(180deg, transparent 0 15px, rgba(39, 71, 168, 0.16) 15px 16px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px; line-height: 1; color: #2747a8;
+  animation: lyv-ouvert 6.5s ease-in-out both;
+}
+@keyframes lyv-g { 0% { left: -100px; transform: rotate(-30deg); } 30%, 70% { left: calc(50% - 66px); transform: rotate(0); } 100% { left: calc(100% + 20px); transform: rotate(28deg); } }
+@keyframes lyv-d { 0% { left: calc(100% + 20px); transform: rotate(30deg); } 30%, 70% { left: calc(50% - 66px); transform: rotate(0); } 100% { left: -100px; transform: rotate(-28deg); } }
+@keyframes lyv-plie { 0%, 31% { opacity: 1; transform: scale(1); } 36%, 66% { opacity: 0; transform: scale(0.4); } 71%, 100% { opacity: 1; transform: scale(1); } }
+@keyframes lyv-ouvert { 0%, 31% { opacity: 0; transform: scaleX(0.12) scaleY(0.5); } 38%, 64% { opacity: 1; transform: rotate(-3deg); } 71%, 100% { opacity: 0; transform: scaleX(0.12) scaleY(0.5); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lyv-couloir { display: none; }
+  .lyv-postit { animation: none; }
+}

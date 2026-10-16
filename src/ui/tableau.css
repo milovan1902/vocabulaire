@@ -432,3 +432,52 @@
   [data-style='tableau'] .ly-segments i, [data-style='tableau'] .ly-tuile > b,
   .tb-bonpoint, .tb-honneur, .tb-etoiles svg, .tb-fx * { animation: none !important; }
 }
+
+/* ==================================================================
+   CHANTIER 279 — « Aujourd'hui » qui vit (maquette « Aujourdhui anime »,
+   1b). Vert et noir. Le dessin est dans AujourdhuiVivant.tsx.
+   — B : un mot à la craie, effacé par la brosse ;
+   — C : l'horloge de classe, accrochée en haut (la date descend d'autant) ;
+   — en plus : un reflet passe sur la punaise.
+   ================================================================== */
+[data-style='tableau'] .today { position: relative; }
+[data-style='tableau'] .today-head { margin-top: calc(58px + env(safe-area-inset-top)); }
+.tb-horloge { position: absolute; left: 50%; top: calc(6px + env(safe-area-inset-top)); width: 44px; height: 44px; margin-left: -22px; z-index: 2; pointer-events: none; }
+.tb-horloge::before { content: ''; position: absolute; left: 50%; top: -6px; width: 2px; height: 8px; margin-left: -1px; background: #6e4a2a; }
+.tb-horloge svg { display: block; width: 44px; height: 44px; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4)); transform-origin: 50% 10%; }
+.tb-horloge.sonne svg { animation: tbv-sonne 0.9s ease-in-out both; }
+.tb-horloge .onde { position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--chalk); opacity: 0; animation: tbv-onde 0.9s ease-out both; }
+.tb-horloge .onde.tard { animation-delay: 0.35s; }
+@keyframes tbv-sonne { 0%, 100% { transform: rotate(0); } 12% { transform: rotate(-14deg); } 26% { transform: rotate(13deg); } 40% { transform: rotate(-10deg); } 54% { transform: rotate(8deg); } 68% { transform: rotate(-4deg); } 82% { transform: rotate(2deg); } }
+@keyframes tbv-onde { 0% { transform: scale(0.8); opacity: 0.9; } 100% { transform: scale(1.9); opacity: 0; } }
+
+[data-style='tableau'] .ly-defi, [data-style='tableau'] .ly-scene { position: relative; }
+.tb-mot { position: absolute; z-index: 2; pointer-events: none; }
+.tb-mot.defi { right: 0; top: 48px; }
+.tb-mot.scene { right: 4px; top: -16px; }
+.tb-mot b {
+  display: block; white-space: nowrap; padding: 0 6px;
+  font-family: var(--craie); font-weight: 700; font-size: 26px; line-height: 1.1; color: var(--ink);
+  text-shadow: 0 0 2px rgba(242, 242, 234, 0.35); transform: rotate(-4deg);
+  animation: tbv-craie 6s ease-in-out both;
+}
+.tb-mot .brosse {
+  position: absolute; top: -4px; left: -10px; width: 46px; height: 22px; border-radius: 5px; opacity: 0;
+  background: linear-gradient(180deg, #6b4a2e 0 55%, #d9d4c6 55%); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  animation: tbv-brosse 6s ease-in-out both;
+}
+.tb-mot s { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: rgba(242, 242, 234, 0.7); filter: blur(1px); opacity: 0; animation: tbv-poudre 6s ease-out both; }
+@keyframes tbv-craie { 0% { clip-path: inset(0 100% 0 0); } 22%, 62% { clip-path: inset(0 0 0 0); } 84%, 100% { clip-path: inset(0 0 0 100%); } }
+@keyframes tbv-brosse { 0%, 60% { left: -10px; opacity: 0; transform: rotate(-6deg); } 63% { opacity: 1; } 84% { left: calc(100% - 36px); opacity: 1; transform: rotate(5deg); } 90%, 100% { left: calc(100% - 36px); opacity: 0; } }
+@keyframes tbv-poudre { 0%, 66% { opacity: 0; transform: translate(0, 0); } 72% { opacity: 0.8; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
+
+/* Le reflet de la punaise (il s'ajoute à sa chute, quand on change de paquet). */
+@keyframes tbv-reflet { 0%, 82%, 100% { filter: none; } 89% { filter: brightness(1.7) drop-shadow(0 0 4px #fff); } 95% { filter: brightness(1.2); } }
+[data-style='tableau'] .eventail-carte.centre::before { animation: tbv-reflet 6s ease-in-out 1s infinite; }
+[data-style='tableau'] .eventail.c0 .eventail-carte.centre::before { animation: tb-punaise-0 0.8s ease-out both, tbv-reflet 6s ease-in-out 1s infinite; }
+[data-style='tableau'] .eventail.c1 .eventail-carte.centre::before { animation: tb-punaise-1 0.8s ease-out both, tbv-reflet 6s ease-in-out 1s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-mot { display: none; }
+  .tb-horloge svg, .tb-horloge .onde, [data-style='tableau'] .eventail-carte.centre::before { animation: none !important; }
+}

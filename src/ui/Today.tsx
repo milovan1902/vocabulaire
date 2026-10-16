@@ -40,6 +40,7 @@ import { BrosseTableau, CercleStylo, SemaineCahier, SemaineTableau } from './Eco
 import { SemaineLAN, TransitionArcade, TransitionLycee } from './LyceeArcadeNeon';
 import { SemaineCMB, TransitionBD, TransitionManga, TransitionVoyage } from './CarnetMangaBD';
 import { SemaineTapis, TransitionTapis } from './TapisVert';
+import { GribouillisCahier, HorlogeTableau, MotCraie, MotQuiCircule, PostIt, Surligne, useMotCraie, useSurligneur } from './AujourdhuiVivant';
 
 const JOURS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
 
@@ -219,6 +220,9 @@ export function Today({
   /* CHANTIER 272 — Néon : l'écran « Aujourd'hui » grésille et s'éteint avant la Révision. */
   const [eteint, setEteint] = useState(false);
   const bouge = () => !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  /* CHANTIER 279 — « Aujourd'hui » qui vit : le surligneur du Cahier, les mots à la craie du Tableau (AujourdhuiVivant.tsx). */
+  const surl = useSurligneur(style === 'cahier' && !apercu, !!choisi);
+  const craie = useMotCraie(style === 'tableau' && !apercu);
 
   useEffect(() => {
     /* CHANTIER 229 — toutes les apparences montrent la tuile « Parler ». */
@@ -368,7 +372,7 @@ export function Today({
             <span className="pioche-due">{r.due}</span>
           </span>
           <span className="avant-txt">
-            <b>{r.deck.name}</b>
+            <b><span className="cx-surl-cible">{r.deck.name}{surl?.cible === 'nom' && <Surligne key={surl.k} />}</span></b>
             <small>{sousTitre(r)}</small>
             <span className="avant-avanc">
               <span className="avant-anneau" aria-hidden="true">
@@ -610,6 +614,9 @@ export function Today({
       : <Fusee />;
     return (
       <div className={`today ly${style === 'neon' && eteint ? ' nex-off' : ''}`}>
+        {/* CHANTIER 279 — Tableau : l'horloge de classe ; Lycée : le mot qui circule. */}
+        {style === 'tableau' && <HorlogeTableau sonnerie={!apercu} />}
+        {style === 'lycee' && !apercu && <MotQuiCircule />}
         {/* CHANTIER 221 — Cinéma muet : le compte à rebours, une fois par jour. */}
         {style === 'cinema' && <Amorce />}
         {/* CHANTIER 173 — Tableau : la date écrite à la craie et la série, en tête. */}
@@ -688,9 +695,13 @@ export function Today({
             <span className="ly-barre"><i style={{ width: `${Math.min(100, (100 * cartesAuj) / CARTES_PAR_JOUR)}%` }} /></span>
             <span>{gain.valide ? 'Journée validée' : mots.jour}</span>
           </span>
+          {/* CHANTIER 279 — Lycée : le post-it ; Tableau : un mot à la craie à côté du nombre de cartes. */}
+          {style === 'lycee' && <PostIt />}
+          {style === 'tableau' && craie?.spot === 'defi' && <MotCraie key={craie.k} txt={craie.txt} spot="defi" />}
         </div>
 
         <div className="ly-scene">
+          {style === 'tableau' && craie?.spot === 'scene' && <MotCraie key={craie.k} txt={craie.txt} spot="scene" />}
           <Eventail
             paquets={aFaire}
             centre={iCentre}
@@ -1077,6 +1088,10 @@ export function Today({
 
   return (
     <div className={`today${style === 'cahier' && tourne ? ' cx-tourne' : ''}`}>
+      {/* CHANTIER 279 — Cahier : le gribouillis dans la marge ; Tableau : l'horloge ; Lycée : le mot qui circule. */}
+      {style === 'cahier' && !apercu && <GribouillisCahier />}
+      {style === 'tableau' && <HorlogeTableau sonnerie={!apercu} />}
+      {style === 'lycee' && !apercu && <MotQuiCircule />}
       <div className="today-head">
         <p className="today-date">{date}</p>
       </div>
@@ -1149,7 +1164,7 @@ export function Today({
               les thèmes retenus — même bloc que les apparences récentes. */}
           <div className="ly-defi">
             <div className="ly-defi-haut">
-              <span>Défi du jour</span>
+              <span className="cx-surl-cible">Défi du jour{surl?.cible === 'defi' && <Surligne key={surl.k} />}</span>
               <span className="ly-gain">{gain.valide ? `+${gain.xp} XP ✓` : `+${gain.xp} XP`}</span>
             </div>
             <b className="ly-defi-n">{total} carte{total > 1 ? 's' : ''}</b>
