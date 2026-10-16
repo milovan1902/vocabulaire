@@ -2,7 +2,7 @@
  * `GET /api/photo-liste` — combien de photos me reste-t-il cette semaine ?
  * `POST /api/photo-liste` — lire une liste de mots prise en photo.
  *
- * CHANTIER 281 — LA LISTE EN PHOTO
+ * CHANTIER 281 — LA LISTE EN PHOTO (284 : colonne française ignorée)
  *
  * Même porte que Parler, mêmes règles :
  *   1. QUI ? le jeton Supabase est vérifié. Sans compte, rien.
@@ -111,9 +111,27 @@ mot anglais ; traduction française
 Une ligne par mot ou expression. Rien d'autre : pas de titre, pas de numéro, pas de tiret, pas de commentaire.
 Recopie ce qui est écrit, en corrigeant seulement une faute évidente de lecture.
 Garde les articles et le "to" des verbes s'ils sont écrits (the kitchen ; la cuisine, to borrow ; emprunter).
-Si un mot anglais n'a pas de traduction sur la photo, donne la traduction française la plus courante.
+La liste peut être en deux colonnes (anglais | français), ou en deux blocs (les mots anglais, puis leurs traductions plus bas) : associe chaque mot anglais à SA traduction, une seule ligne par paire.
+Un mot français n'est JAMAIS une ligne à lui seul : ne le mets jamais à gauche du point-virgule.
+Si un mot anglais n'a vraiment aucune traduction sur la photo, donne la traduction française la plus courante.
 Ignore tout ce qui n'est pas du vocabulaire : consignes, exercices, phrases d'exemple, dates, noms propres.
 Si la photo ne contient aucune liste de vocabulaire anglais, réponds exactement : AUCUN`;
+
+/** 284 — « Poisson », « poison », « POISSON » : même mot au crayon près. */
+function plat(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+}
+function presque(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1 || Math.min(a.length, b.length) < 4) return false;
+  let i = 0, j = 0, ecarts = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (++ecarts > 1) return false;
+    if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+  }
+  return ecarts + (a.length - i) + (b.length - j) <= 1;
+}
 
 /** « the kitchen ; la cuisine » → { en, fr }. Tolère les puces, numéros et tirets. */
 function lignesEnMots(texte: string): Array<{ en: string; fr: string }> {
@@ -134,7 +152,14 @@ function lignesEnMots(texte: string): Array<{ en: string; fr: string }> {
     mots.push({ en, fr });
     if (mots.length >= MAX_MOTS) break;
   }
-  return mots;
+  /* 284 — la colonne française relue comme des mots anglais : « chat ; chat ».
+     On écarte une ligne dont le mot de gauche est la traduction d'une AUTRE ligne
+     (cat ; chat). « table ; table » seul reste : c'est le même mot dans les deux langues. */
+  const francais = mots.map((m) => plat(m.fr));
+  return mots.filter((m, k) => {
+    const g = plat(m.en);
+    return !!g && !francais.some((f, x) => x !== k && presque(g, f));
+  });
 }
 
 export const onRequestGet = async ({ request, env }: ContextePhoto): Promise<Response> => {
