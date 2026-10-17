@@ -278,7 +278,7 @@ export function Editor({
   }
 
   /* ---------------- Étape 3 : les mots ---------------- */
-  const libellePhoto = etat ? `En photo · reste ${etat.restantes}` : 'En photo';
+  const libellePhoto = etat ? (etat.illimite ? 'En photo · illimité' : `En photo · reste ${etat.restantes}`) : 'En photo';
 
   return (
     <>

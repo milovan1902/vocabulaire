@@ -11,6 +11,8 @@ export interface EtatPhoto {
   max: number;
   /** Dernier jour de la semaine en cours, AAAA-MM-JJ. */
   jusquau: string;
+  /** 287 — compte administrateur : pas de plafond. */
+  illimite?: boolean;
 }
 
 export type CodePhoto = 'compte' | 'ferme' | 'quota' | 'vide' | 'panne';
@@ -62,6 +64,7 @@ export function dateDit(iso: string): string {
 }
 
 export function quotaDit(e: EtatPhoto): string {
+  if (e.illimite) return 'Photos illimitées (compte administrateur).';
   if (e.restantes <= 0) return `Les ${e.max} photos de la semaine sont faites. Elles reviennent lundi.`;
   return `Il reste ${e.restantes} photo${e.restantes > 1 ? 's' : ''} à faire jusqu’au ${dateDit(e.jusquau)}.`;
 }

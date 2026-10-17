@@ -17,13 +17,16 @@
  * Réservé aux abonnés. Tant que les abonnements Google Play ne sont pas
  * branchés, « abonné » = adresse de PARLER_ILLIMITE, comme dans l'admin.
  * PHOTO_POUR_TOUS=1 ouvre la photo à tous les comptes (période de test).
+ *
+ * 287 — les administrateurs (ADMIN_EMAILS, comme /api/admin) n'ont pas de
+ * plafond : ni les 3 photos, ni les 10 essais. Leurs appels restent notés.
  */
 import {
   coutCentimes, estIllimite, json, jourUtc, lundiUtc, utilisateurEtEmail,
   type Env, type Usage,
 } from './_parler-commun';
 
-type EnvPhoto = Env & { MODELE_PHOTO?: string; PHOTO_POUR_TOUS?: string };
+type EnvPhoto = Env & { MODELE_PHOTO?: string; PHOTO_POUR_TOUS?: string; ADMIN_EMAILS?: string };
 interface ContextePhoto { request: Request; env: EnvPhoto }
 
 export const PHOTOS_SEMAINE = 3;
@@ -38,8 +41,15 @@ function modelePhoto(env: EnvPhoto): string {
   return env.MODELE_PHOTO && MODELES.has(env.MODELE_PHOTO) ? env.MODELE_PHOTO : 'claude-sonnet-4-5';
 }
 
+/** 287 — même liste et même adresse par défaut que /api/admin. */
+function estAdmin(email: string | null, env: EnvPhoto): boolean {
+  if (!email) return false;
+  const admins = (env.ADMIN_EMAILS || 'contact@marlotin.com').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+  return admins.includes(email.toLowerCase());
+}
+
 function autorise(email: string | null, env: EnvPhoto): boolean {
-  return env.PHOTO_POUR_TOUS === '1' || estIllimite(email, env);
+  return env.PHOTO_POUR_TOUS === '1' || estIllimite(email, env) || estAdmin(email, env);
 }
 
 /** Le dimanche qui clôt la semaine en cours : la date que l'écran affiche. */
@@ -59,9 +69,10 @@ function causeDe(e: unknown): string {
   return code ? `quota illisible (${code})` : 'quota illisible';
 }
 
-export interface EtatPhoto { restantes: number; max: number; jusquau: string }
+export interface EtatPhoto { restantes: number; max: number; jusquau: string; illimite?: boolean }
 
-function etatDe(lues: number): EtatPhoto {
+function etatDe(lues: number, illimite = false): EtatPhoto {
+  if (illimite) return { restantes: 999, max: 0, jusquau: dimancheUtc(), illimite: true };
   return { restantes: Math.max(0, PHOTOS_SEMAINE - lues), max: PHOTOS_SEMAINE, jusquau: dimancheUtc() };
 }
 
@@ -166,6 +177,7 @@ export const onRequestGet = async ({ request, env }: ContextePhoto): Promise<Res
   const qui = await utilisateurEtEmail(request, env);
   if (!qui) return json({ erreur: 'compte requis' }, 401);
   if (!autorise(qui.email, env)) return json({ erreur: 'réservé aux abonnés' }, 403);
+  if (estAdmin(qui.email, env)) return json(etatDe(0, true));
   try {
     return json(etatDe((await semaine(qui.id, env)).lues));
   } catch (e) {
@@ -191,14 +203,17 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
   }
   if (corps.image.length > MAX_BASE64) return json({ erreur: 'image trop lourde' }, 413);
 
-  let avant: { lues: number; essais: number };
-  try {
-    avant = await semaine(qui.id, env);
-  } catch (e) {
-    console.error('quota photo non vérifié', String(e));
-    return json({ erreur: causeDe(e) }, 503);
+  const admin = estAdmin(qui.email, env);
+  let avant: { lues: number; essais: number } = { lues: 0, essais: 0 };
+  if (!admin) {
+    try {
+      avant = await semaine(qui.id, env);
+    } catch (e) {
+      console.error('quota photo non vérifié', String(e));
+      return json({ erreur: causeDe(e) }, 503);
+    }
   }
-  if (avant.lues >= PHOTOS_SEMAINE || avant.essais >= ESSAIS_SEMAINE) {
+  if (!admin && (avant.lues >= PHOTOS_SEMAINE || avant.essais >= ESSAIS_SEMAINE)) {
     return json({ erreur: 'quota épuisé', etat: { ...etatDe(avant.lues), restantes: 0 } }, 429);
   }
 
@@ -246,7 +261,7 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
   const mots = lignesEnMots(texte);
   await note(qui.id, modele, usage, mots.length, env);
 
-  const etat = etatDe(avant.lues + (mots.length ? 1 : 0));
+  const etat = etatDe(avant.lues + (mots.length ? 1 : 0), admin);
   if (!mots.length) return json({ erreur: 'aucun mot lu', etat }, 422);
   return json({ mots, etat });
 };
