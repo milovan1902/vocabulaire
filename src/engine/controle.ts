@@ -70,6 +70,23 @@ export function plafonner(p: Progress, controle: string | null, now = new Date()
   return { ...p, due: max, scheduledDays: Math.max(1, Math.round((max - jourPlus(0, now).getTime()) / 86_400_000)) };
 }
 
+/**
+ * 290 — quand on POSE ou AVANCE la date. Comme `plafonner`, mais aussi
+ * quand le contrôle est demain : la veille, c'est aujourd'hui, donc tout
+ * mot programmé plus tard revient aujourd'hui. (`plafonner`, lui, laisse
+ * FSRS seul la veille, pour qu'une carte notée ne revienne pas en boucle.)
+ */
+export function ramenerAuControle(p: Progress, controle: string | null, now = new Date()): Progress {
+  if (!controle) return p;
+  const reste = joursAvant(controle, now);
+  if (reste < 1) return p;
+  if (reste >= 2) return plafonner(p, controle, now);
+  if (p.reps === 0) return p;
+  const auj = jourPlus(0, now).getTime();
+  if (p.due <= auj) return p;
+  return { ...p, due: auj, scheduledDays: 0 };
+}
+
 /** Quotas levés pour un paquet en mode contrôle. */
 export function avecControle(s: Settings, deck: Deck | null | undefined): Settings {
   if (!controleActif(deck)) return s;

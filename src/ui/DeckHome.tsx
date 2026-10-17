@@ -8,7 +8,7 @@ import { repository } from '../data/repository';
 import { paletteFor, Slider, Toggle } from './components';
 import { clearRemoteProgress } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
-import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, plafonner, type DeckControle } from '../engine/controle';
+import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, ramenerAuControle, type DeckControle } from '../engine/controle';
 
 const jourLong = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -90,7 +90,7 @@ export function DeckHome({
       const list = await repository.listDecks();
       await repository.saveDecks(list.map((d) => (d.id === deck.id ? ({ ...d, controle: v, updatedAt: Date.now() } as DeckControle) : d)));
       if (v) {
-        const resserre = Object.fromEntries(Object.entries(progress).map(([id, p]) => [id, plafonner(p, v)]));
+        const resserre = Object.fromEntries(Object.entries(progress).map(([id, p]) => [id, ramenerAuControle(p, v)]));
         await repository.saveProgress(deck.id, resserre);
       }
       onReload();
