@@ -23,6 +23,7 @@ import { createPortal } from 'react-dom';
 import type { Grade } from '../domain/types';
 import type { DeckSummary } from './deckSummary';
 import { DeckFace } from './components';
+import type { DeckControle } from '../engine/controle';
 import { masteryLabel } from '../engine/mastery';
 import logoGrave from '../assets/horloger-logo-grave.png';
 
@@ -589,7 +590,7 @@ export function AujourdhuiHorloger(p: {
                   </g>
                 </svg>
                 <span className="hz-moyeu">
-                  <span className="hz-dos"><DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} /></span>
+                  <span className="hz-dos"><DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} papier={(r.deck as DeckControle).papier} /></span>
                   <i />
                 </span>
                 {a === 0 && <span className="hz-dues">{r.due}</span>}

@@ -22,6 +22,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
+import type { DeckControle } from '../engine/controle';
 import { masteryLabel, STATUTS } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
 import { doneToday } from '../engine/streak';
@@ -315,6 +316,7 @@ export function Today({
               w={54}
               h={76}
               categoryId={r.deck.categoryId}
+              papier={(r.deck as DeckControle).papier}
             />
             {(r.deck.classeFrom || r.deck.sansCategorie) && <span className="classdot">{r.deck.classeFrom ?? 'SC'}</span>}
           </span>
@@ -355,6 +357,7 @@ export function Today({
                 name={r.deck.name}
                 image={r.image}
                 categoryId={r.deck.categoryId}
+                papier={(r.deck as DeckControle).papier}
               />
             </span>
             {/*

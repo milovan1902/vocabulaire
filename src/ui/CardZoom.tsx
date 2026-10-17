@@ -13,6 +13,7 @@
  */
 import { useEffect, useRef } from 'react';
 import { DeckFace, paletteFor } from './components';
+import { papierPerso } from './papierPerso';
 
 /** Ratio A6 de la carte, identique au reste de l'application. */
 const RATIO = 620 / 874;
@@ -25,6 +26,8 @@ export type ZoomSource = {
   due: number;
   /** Visuel de dos, ou null si le paquet utilise le dos dessiné. */
   image: string | null;
+  /** 288 — la couleur du dos choisie à la création (paquets perso), sinon null. */
+  papier?: string | null;
   /** Position de la vignette cliquée, au moment du clic. */
   from: DOMRect;
 };
@@ -141,7 +144,9 @@ export function CardZoom({ source, onDone }: { source: ZoomSource; onDone: () =>
   // Taille pleine : la carte occupe l'écran sans jamais en déborder.
   const hauteur = Math.min(window.innerHeight * 0.72, (window.innerWidth * 0.86) / RATIO);
   const largeur = hauteur * RATIO;
-  const palette = paletteFor(source.deckId);
+  /* 288 — le recto reprend l'encre du dos choisi, comme la vignette d'où part la carte. */
+  const perso = papierPerso(source.papier) as { ink?: string } | null;
+  const palette = { ink: perso?.ink ?? paletteFor(source.deckId).ink };
 
   return (
     <div className="zoomlayer" aria-hidden="true">
@@ -152,7 +157,7 @@ export function CardZoom({ source, onDone }: { source: ZoomSource; onDone: () =>
       >
         <div ref={inner} className="zoomcard">
           <div className="zface zdos">
-            <DeckFace id={source.deckId} name={source.name} image={source.image} />
+            <DeckFace id={source.deckId} name={source.name} image={source.image} papier={source.papier ?? null} />
           </div>
           <div className="zface zrecto" style={{ ['--accent' as string]: palette.ink }}>
             <span className="corner">{source.total}</span>

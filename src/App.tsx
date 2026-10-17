@@ -14,6 +14,7 @@ import { IconAujourdhui, IconPaquets, IconParler, IconReglages, IconProgres } fr
 import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
+import type { DeckControle } from './engine/controle';
 import { Study } from './ui/Study';
 import { Editor } from './ui/Editor';
 import { Screen } from './ui/components';
@@ -598,6 +599,7 @@ export default function App() {
                   total: vol.total,
                   due: vol.due,
                   image: vol.image,
+                  papier: (d as unknown as DeckControle | undefined)?.papier ?? null,
                   from: vol.from,
                 });
               }

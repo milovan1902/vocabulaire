@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { DeckSummary } from './deckSummary';
 import { DeckFace } from './components';
+import type { DeckControle } from '../engine/controle';
 
 /* CHANTIER 240 — Mêlée : le nombre de morceaux de chaque joueur (pilier, deuxième-ligne, demi de mêlée, puis les mêmes en miroir). */
 const JOUEURS_RG = [20, 22, 19, 19, 22, 20];
@@ -333,7 +334,7 @@ export function Eventail({
         const visible = tra || pan || but || pot ? a === 0 : pel ? a <= 2 : ray ? a <= 5 : a <= 1;
         const dos = (
           <span className="eventail-dos">
-            <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} />
+            <DeckFace id={r.deck.id} name={r.deck.name} image={r.image} categoryId={r.deck.categoryId} papier={(r.deck as DeckControle).papier} />
           </span>
         );
         return (
