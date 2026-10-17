@@ -14,7 +14,8 @@
  */
 import type { Deck, Progress, Settings } from '../domain/types';
 
-export type DeckControle = Deck & { controle?: string | null };
+/** 286 — `papier` : la couleur du dos choisie à la création (voir ui/papierPerso.ts). */
+export type DeckControle = Deck & { controle?: string | null; papier?: string | null };
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 

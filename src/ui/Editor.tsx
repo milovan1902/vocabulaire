@@ -14,6 +14,8 @@ import type { Card, Deck } from '../domain/types';
 import { repository } from '../data/repository';
 import { ErreurPhoto, etatPhoto, type EtatPhoto } from '../data/photoListe';
 import { PhotoListe } from './PhotoListe';
+import { DeckVign } from './components';
+import { PAPIERS_PERSO, PAPIER_DEFAUT } from './papierPerso';
 import { speak } from './speech';
 import { isoLocal, joursAvant, jourPlus, joursDePassage, type DeckControle } from '../engine/controle';
 
@@ -60,6 +62,8 @@ export function Editor({
   const [aControle, setAControle] = useState<boolean | null>(null);
   const [dateControle, setDateControle] = useState(isoLocal(jourPlus(7)));
   const [name, setName] = useState('');
+  /* 286 — la couleur du dos. */
+  const [papier, setPapier] = useState<string>(PAPIER_DEFAUT);
   const [saisie, setSaisie] = useState<'main' | 'photo'>('main');
   const [en, setEn] = useState('');
   const [fr, setFr] = useState('');
@@ -129,6 +133,7 @@ export function Editor({
           id, name: name.trim(), builtin: false, hasImage: false,
           createdAt: Date.now(), updatedAt: Date.now(),
           controle: aControle ? dateControle : null,
+          papier,
         };
         decks.push(fiche);
         await repository.saveDecks(decks);
@@ -245,6 +250,27 @@ export function Editor({
             onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) setEtape('mots'); }}
           />
         </div>
+
+        <p className="hint" style={{ ...petit, margin: '0 0 10px' }}>Couleur du dos</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, margin: '0 0 22px' }}>
+          <DeckVign id="apercu-perso" name={name.trim() || '?'} image={null} w={68} h={96} papier={papier} />
+          <div role="radiogroup" aria-label="Couleur du dos" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 44px)', gap: 10 }}>
+            {PAPIERS_PERSO.map((p) => {
+              const on = p.id === papier;
+              return (
+                <button
+                  key={p.id}
+                  role="radio"
+                  aria-checked={on}
+                  aria-label={p.nom}
+                  onClick={() => setPapier(p.id)}
+                  style={{ width: 44, height: 44, padding: 0, borderRadius: 12, background: p.pale, border: `2px solid ${p.mid}`, boxShadow: on ? '0 0 0 2px var(--bg, #0f1a2f), 0 0 0 4px var(--chalk, currentColor)' : 'none', cursor: 'pointer' }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
         <button className="btn" disabled={!name.trim()} onClick={() => setEtape('mots')}>Ajouter les mots ›</button>
         <button className="btn ghost" onClick={onCancel}>Annuler</button>
       </>

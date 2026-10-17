@@ -10,6 +10,7 @@ import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
 import { RappelSauvegarde } from './RappelSauvegarde';
+import type { DeckControle } from '../engine/controle';
 
 export type Tab = 'travail' | 'collection' | 'catalogue';
 
@@ -467,6 +468,7 @@ export function Library({
         w={w}
         h={h}
         categoryId={s.deck.categoryId}
+        papier={(s.deck as DeckControle).papier}
       />
     );
   }
@@ -657,6 +659,23 @@ export function Library({
 
   /* ---------------- Ma collection ---------------- */
 
+  /** CHANTIER 286 — le bouton de la maquette : cadre pointillé, « + », mention Abonné. */
+  function boutonCreer(go: () => void) {
+    return (
+      <button
+        onClick={go}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 64, padding: 12, margin: '0 0 14px', borderRadius: 14, border: '1.5px dashed var(--chalk, currentColor)', background: 'color-mix(in srgb, var(--chalk, currentColor) 6%, transparent)', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
+      >
+        <span aria-hidden="true" style={{ flex: 'none', width: 40, height: 40, borderRadius: 12, border: '1.5px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', display: 'grid', placeItems: 'center', fontSize: 22, lineHeight: 1 }}>+</span>
+        <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <b style={{ fontSize: 14, fontWeight: 600 }}>Créer mon paquet de révision</b>
+          <small style={{ fontSize: 11.5, lineHeight: 1.4, color: 'var(--grey, currentColor)' }}>Vos mots à vous : la liste du prof, du manuel, du contrôle.</small>
+        </span>
+        <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 999, border: '1px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Abonné</span>
+      </button>
+    );
+  }
+
   function ligneInterrupteur(s: DeckSummary) {
     const on = active.includes(s.deck.id);
     return (
@@ -711,12 +730,7 @@ export function Library({
           <button className="btn ghost" onClick={() => setTab('catalogue')}>
             Parcourir le catalogue
           </button>
-          {onCreer && (
-          <button className="rowlink" onClick={onCreer}>
-            <span>+ Créer mon paquet</span>
-            <span className="chev">›</span>
-          </button>
-        )}
+          {onCreer && boutonCreer(onCreer)}
         </div>
       );
     }
@@ -741,12 +755,7 @@ export function Library({
           sans rien perdre.
         </p>
 
-        {onCreer && (
-          <button className="rowlink" onClick={onCreer}>
-            <span>+ Créer mon paquet</span>
-            <span className="chev">›</span>
-          </button>
-        )}
+        {onCreer && boutonCreer(onCreer)}
 
         {mine.length > 4 && (
           <button className="searchcue" onClick={onSearch}>

@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react';
 import { artFor } from './deckImages';
 import { papierFor, papierExplicite, IVOIRE, type Papier } from './deckPaper';
+import { papierPerso } from './papierPerso';
 
 /** Palette déterministe : un paquet garde toujours la même couleur. */
 const PALETTES = [
@@ -76,8 +77,8 @@ export function initialsOf(name: string): string {
  * liseré à 0,7 se referme en bouillie grise.
  */
 export function CardBack({
-  id, name, bare = false, categoryId = null,
-}: { id: string; name: string; bare?: boolean; categoryId?: string | null }) {
+  id, name, bare = false, categoryId = null, papier = null,
+}: { id: string; name: string; bare?: boolean; categoryId?: string | null; papier?: string | null }) {
   /*
    * CHANTIER 98 — le rayon descend jusqu'ici.
    *
@@ -90,9 +91,10 @@ export function CardBack({
    * la note de `PAR_RAYON` dans `deckPaper.ts` — elle raconte la panne
    * des cinq paquets de fin de 4e, qui est la raison de ce chantier.
    */
-  const p: Papier = bare
+  /* 286 — la couleur choisie à la création passe avant tout le reste. */
+  const p: Papier = (papierPerso(papier) as Papier | null) ?? (bare
     ? papierFor(id, name, categoryId)
-    : (papierExplicite(id, name, categoryId) ?? paletteFor(id));
+    : (papierExplicite(id, name, categoryId) ?? paletteFor(id)));
   return (
     <svg viewBox="0 0 620 874" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <rect x="10" y="10" width="600" height="854" rx="70" fill={p.pale} stroke={p.mid} strokeWidth="10" />
@@ -138,13 +140,13 @@ export function CardBack({
  * exactement tel qu'il était.
  */
 export function DeckFace({
-  id, name, image, categoryId = null,
-}: { id: string; name: string; image?: string | null; categoryId?: string | null }) {
+  id, name, image, categoryId = null, papier = null,
+}: { id: string; name: string; image?: string | null; categoryId?: string | null; papier?: string | null }) {
   if (image) return <img src={image} alt="" />;
   const art = artFor(id, name);
   return (
     <>
-      <CardBack id={id} name={name} bare={!!art} categoryId={categoryId} />
+      <CardBack id={id} name={name} bare={!!art} categoryId={categoryId} papier={papier} />
       {art && <img src={art} alt="" className="dos-illus-img" />}
     </>
   );
@@ -163,17 +165,19 @@ export function DeckFace({
  * l'animation d'ouverture, en silence.
  */
 export function DeckVign({
-  id, name, image, w, h, categoryId = null,
+  id, name, image, w, h, categoryId = null, papier = null,
 }: {
   id: string; name: string; image?: string | null; w: number; h: number;
   categoryId?: string | null;
+  /** 286 — la couleur de dos d'un paquet perso. */
+  papier?: string | null;
 }) {
   if (image) {
     return <img src={image} alt="" style={{ width: w, height: h }} className="vign" />;
   }
   return (
     <span className="vign vign-draw" style={{ width: w, height: h }}>
-      <DeckFace id={id} name={name} image={null} categoryId={categoryId} />
+      <DeckFace id={id} name={name} image={null} categoryId={categoryId} papier={papier} />
     </span>
   );
 }
