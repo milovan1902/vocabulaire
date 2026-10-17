@@ -83,7 +83,8 @@ function toFsrsCard(p: Progress): FsrsCard {
 export function review(progress: Progress, grade: Grade, now = new Date()): Progress {
   const scheduled = engine.repeat(toFsrsCard(progress), now);
   const next = scheduled[GRADE_TO_RATING[grade]].card;
-  return toProgress(progress.cardId, next, applyGrade(progress, grade));
+  /* CHANTIER 291 — on garde la note : le mode contrôle en a besoin. */
+  return { ...toProgress(progress.cardId, next, applyGrade(progress, grade)), lastGrade: grade };
 }
 
 /**

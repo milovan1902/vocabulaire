@@ -209,6 +209,12 @@ export interface Progress {
    * Colonne Supabase correspondante : `mastery`.
    */
   mastery?: number;
+  /**
+   * CHANTIER 291 — la dernière note donnée. Sert au mode contrôle (mots
+   * ratés, mots fragiles). Absent sur les cartes notées avant ce chantier.
+   * Ne voyage pas : les paquets perso restent sur l'appareil.
+   */
+  lastGrade?: Grade;
 }
 
 /**

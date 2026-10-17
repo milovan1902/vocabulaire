@@ -14,7 +14,8 @@ import { IconAujourdhui, IconPaquets, IconParler, IconReglages, IconProgres } fr
 import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
-import type { DeckControle } from './engine/controle';
+import { motsRates, type DeckControle } from './engine/controle';
+import { VeilleControle } from './ui/VeilleControle';
 import { Study } from './ui/Study';
 import { Editor } from './ui/Editor';
 import { Screen } from './ui/components';
@@ -325,6 +326,27 @@ export default function App() {
     [store, startSession, view.name],
   );
 
+  /*
+   * CHANTIER 291 — « Réviser les mots ratés », la veille du contrôle :
+   * seulement les mots notés « À revoir » à la dernière révision, qu'ils
+   * soient dus ou non. Les notes comptent comme d'habitude.
+   */
+  const reviewRates = useCallback(
+    async (id: string) => {
+      const deck = await store.loadDeck(id);
+      setLoaded(deck);
+      if (estOnglet(view.name)) setOrigine(view.name);
+      const visible = deck.cards.filter((c) => deck.selectedThemes.includes(c.theme));
+      const q: SessionItem[] = motsRates(visible, deck.progress)
+        .map((card) => ({ card, progress: progressFor(deck.progress, card.id), wasNew: false }))
+        .sort(() => Math.random() - 0.5);
+      if (!q.length) { setView({ name: 'deck' }); return; }
+      setQueue(q);
+      setView({ name: 'study' });
+    },
+    [store, view.name],
+  );
+
   const handleGrade = useCallback(
     async (item: SessionItem, grade: Grade) => {
       if (!loaded) return;
@@ -546,6 +568,14 @@ export default function App() {
         key={cleEcran}
         className={`screen${anime ? ` ecran-${sens.current}` : ''}`}
       >
+        {view.name === 'today' && (
+          <VeilleControle
+            decks={store.decks}
+            active={store.active}
+            onRates={(id) => void reviewRates(id)}
+          />
+        )}
+
         {view.name === 'today' && (
           <Today
             decks={store.decks}

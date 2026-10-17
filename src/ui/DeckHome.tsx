@@ -8,7 +8,7 @@ import { repository } from '../data/repository';
 import { paletteFor, Slider, Toggle } from './components';
 import { clearRemoteProgress } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
-import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, ramenerAuControle, type DeckControle } from '../engine/controle';
+import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, motsFragiles, ramenerAuControle, resteControle, type DeckControle } from '../engine/controle';
 
 const jourLong = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -82,6 +82,10 @@ export function DeckHome({
   const [ctrlEnCours, setCtrlEnCours] = useState(false);
   const resteCtrl = joursAvant(dateCtrl);
   const dateCtrlOk = resteCtrl >= 1 && resteCtrl <= 90;
+  /* CHANTIER 291 — le bilan : la veille et le jour J, la liste des mots fragiles. */
+  const resteJ = resteControle(deck);
+  const bilan = resteJ !== null && resteJ <= 1;
+  const fragiles = useMemo(() => (bilan ? motsFragiles(cards, progress) : []), [bilan, cards, progress]);
 
   async function enregistreControle(v: string | null) {
     if (ctrlEnCours) return;
@@ -203,6 +207,26 @@ export function DeckHome({
               ? `Prévu ${jourLong(dateLocale(ctrl))}. Les révisions de ce paquet sont resserrées jusque-là, et tout le paquet revient la veille.`
               : 'Aucun contrôle prévu. Ajoute une date : l’appli resserre les révisions pour que les mots soient sus le jour J.'}
           </p>
+          {bilan && (
+            <div className="bilan">
+              <b>{fragiles.length === 0 ? 'Aucun mot fragile' : `${fragiles.length} mot${fragiles.length > 1 ? 's' : ''} fragile${fragiles.length > 1 ? 's' : ''}`}</b>
+              <p className="hint" style={{ margin: '4px 0 8px' }}>
+                {fragiles.length === 0
+                  ? 'À ta dernière révision, tu as su tous les mots déjà vus.'
+                  : 'Notés « À revoir » ou « Difficile » à ta dernière révision. Relis-les avant le contrôle.'}
+              </p>
+              {fragiles.length > 0 && (
+                <div className="rows">
+                  {fragiles.map((c) => (
+                    <div key={c.id} className="row">
+                      <span style={{ flex: 1 }}>{c.en}</span>
+                      <span className="n">{c.fr}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <div className="field">
             <label htmlFor="dh-controle">{ctrl ? 'Nouvelle date' : 'Date du contrôle'}</label>
             <input

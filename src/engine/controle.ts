@@ -12,7 +12,7 @@
  * La date vit sur la fiche du paquet (IndexedDB), comme le paquet lui-même :
  * un paquet perso ne passe pas par le serveur.
  */
-import type { Deck, Progress, Settings } from '../domain/types';
+import type { Card, Deck, Progress, Settings } from '../domain/types';
 
 /** 286 — `papier` : la couleur du dos choisie à la création (voir ui/papierPerso.ts). */
 export type DeckControle = Deck & { controle?: string | null; papier?: string | null };
@@ -103,4 +103,36 @@ export function joursDePassage(reste: number): number[] {
     out.push(j);
   }
   return out;
+}
+
+/*
+ * CHANTIER 291 — MOTS RATÉS ET MOTS FRAGILES.
+ * Raté : « À revoir » à la dernière révision. Fragile : « À revoir » ou « Difficile ».
+ * Une carte notée avant le chantier 291 n'a pas de note gardée : on se
+ * rabat sur l'état FSRS « en réapprentissage », qui veut dire la même chose.
+ */
+export function estRate(p: Progress | undefined): boolean {
+  if (!p || p.reps === 0) return false;
+  return p.lastGrade ? p.lastGrade === 'again' : p.state === 3;
+}
+
+export function estFragile(p: Progress | undefined): boolean {
+  if (!p || p.reps === 0) return false;
+  return p.lastGrade ? p.lastGrade === 'again' || p.lastGrade === 'hard' : p.state === 3;
+}
+
+export function motsRates(cards: Card[], progress: Record<string, Progress>): Card[] {
+  return cards.filter((c) => estRate(progress[c.id]));
+}
+
+export function motsFragiles(cards: Card[], progress: Record<string, Progress>): Card[] {
+  return cards.filter((c) => estFragile(progress[c.id]));
+}
+
+/** Jours avant le contrôle (0 = aujourd'hui), ou null sans contrôle à venir. */
+export function resteControle(deck: Deck | null | undefined, now = new Date()): number | null {
+  const c = (deck as DeckControle | null | undefined)?.controle;
+  if (!c || !ISO.test(c)) return null;
+  const r = joursAvant(c, now);
+  return r < 0 ? null : r;
 }
