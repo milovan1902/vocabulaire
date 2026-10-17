@@ -1,5 +1,5 @@
 /** Écran d'un paquet : statistiques, filtres de thème, réglages, actions. */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { DeckOverride, Settings } from '../domain/types';
 import type { LoadedDeck } from './useStore';
 import { progressFor } from './useStore';
@@ -8,6 +8,9 @@ import { repository } from '../data/repository';
 import { paletteFor, Slider, Toggle } from './components';
 import { clearRemoteProgress } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
+import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, plafonner, type DeckControle } from '../engine/controle';
+
+const jourLong = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
 /*
  * CHANTIER 59 — DEUX ACTIONS RETIRÉES : L'IMAGE ET LE RENOMMAGE
@@ -66,6 +69,38 @@ export function DeckHome({
 }) {
   const { deck, cards, progress, themes, selectedThemes } = loaded;
   const particulier = overrides !== null;
+
+  /*
+   * CHANTIER 289 — LE CONTRÔLE SE VOIT ET SE CHANGE ICI.
+   * Paquets perso seulement. Avancer la date ramène aussi les mots déjà
+   * programmés plus loin (même règle que `plafonner`) : sinon ils ne
+   * reviendraient qu'après le contrôle.
+   */
+  const etiquette = etiquetteControle(deck);
+  const ctrl = etiquette ? (deck as DeckControle).controle ?? null : null;
+  const [dateCtrl, setDateCtrl] = useState(ctrl ?? isoLocal(jourPlus(7)));
+  const [ctrlEnCours, setCtrlEnCours] = useState(false);
+  const resteCtrl = joursAvant(dateCtrl);
+  const dateCtrlOk = resteCtrl >= 1 && resteCtrl <= 90;
+
+  async function enregistreControle(v: string | null) {
+    if (ctrlEnCours) return;
+    setCtrlEnCours(true);
+    try {
+      const list = await repository.listDecks();
+      await repository.saveDecks(list.map((d) => (d.id === deck.id ? ({ ...d, controle: v, updatedAt: Date.now() } as DeckControle) : d)));
+      if (v) {
+        const resserre = Object.fromEntries(Object.entries(progress).map(([id, p]) => [id, plafonner(p, v)]));
+        await repository.saveProgress(deck.id, resserre);
+      }
+      onReload();
+    } catch (e) {
+      alert('L’enregistrement a échoué. Réessaie.');
+      console.error(e);
+    } finally {
+      setCtrlEnCours(false);
+    }
+  }
 
   /**
    * Modifier un curseur agit sur les réglages du paquet s'il en a,
@@ -154,6 +189,37 @@ export function DeckHome({
             );
           })}
         </div>
+        </details>
+      )}
+
+      {!deck.builtin && (
+        <details className="panelbox" open={!!ctrl}>
+          <summary>
+            Contrôle
+            <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>{etiquette ?? 'aucun'}</span>
+          </summary>
+          <p className="hint">
+            {ctrl
+              ? `Prévu ${jourLong(dateLocale(ctrl))}. Les révisions de ce paquet sont resserrées jusque-là, et tout le paquet revient la veille.`
+              : 'Aucun contrôle prévu. Ajoute une date : l’appli resserre les révisions pour que les mots soient sus le jour J.'}
+          </p>
+          <div className="field">
+            <label htmlFor="dh-controle">{ctrl ? 'Nouvelle date' : 'Date du contrôle'}</label>
+            <input
+              id="dh-controle" type="date" value={dateCtrl}
+              min={isoLocal(jourPlus(1))} max={isoLocal(jourPlus(90))}
+              onChange={(e) => { if (e.target.value) setDateCtrl(e.target.value); }}
+            />
+          </div>
+          {!dateCtrlOk && <p className="error">Choisis une date entre demain et dans 3 mois.</p>}
+          <button className="btn" disabled={!dateCtrlOk || dateCtrl === ctrl || ctrlEnCours} onClick={() => void enregistreControle(dateCtrl)}>
+            {ctrl ? 'Changer la date' : 'Ajouter ce contrôle'}
+          </button>
+          {ctrl && (
+            <button className="btn ghost" disabled={ctrlEnCours} onClick={() => { if (confirm('Retirer le contrôle ? Le paquet reprend le rythme normal.')) void enregistreControle(null); }}>
+              Retirer le contrôle
+            </button>
+          )}
         </details>
       )}
 

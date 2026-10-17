@@ -44,6 +44,20 @@ export function controleActif(deck: Deck | null | undefined, now = new Date()): 
   return c && ISO.test(c) && joursAvant(c, now) > 0 ? c : null;
 }
 
+/**
+ * 289 — l'étiquette courte d'un contrôle à venir, jour J compris, sinon null.
+ * Affichée sous le nom du paquet (Aujourd'hui, collection) et sur sa page.
+ */
+export function etiquetteControle(deck: Deck | null | undefined, now = new Date()): string | null {
+  const c = (deck as DeckControle | null | undefined)?.controle;
+  if (!c || !ISO.test(c)) return null;
+  const r = joursAvant(c, now);
+  if (r < 0) return null;
+  if (r === 0) return 'Contrôle aujourd’hui';
+  if (r === 1) return 'Contrôle demain';
+  return `Contrôle dans ${r} j`;
+}
+
 /** Ramène l'échéance d'une carte notée dans le cadre du contrôle. */
 export function plafonner(p: Progress, controle: string | null, now = new Date()): Progress {
   if (!controle) return p;

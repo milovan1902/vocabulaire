@@ -22,7 +22,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
 import { DeckFace, DeckVign } from './components';
-import type { DeckControle } from '../engine/controle';
+import { etiquetteControle, type DeckControle } from '../engine/controle';
 import { masteryLabel, STATUTS } from '../engine/mastery';
 import type { Streak } from '../engine/streak';
 import { doneToday } from '../engine/streak';
@@ -131,6 +131,9 @@ function ecrireChoix(id: string | null) {
  * « Mes progrès » : les trois écrans comptent enfin la même chose.
  */
 function sousTitre(r: DeckSummary): string {
+  /* 289 — un contrôle à venir passe en tête : c'est ce qui compte cette semaine. */
+  const ctrl = etiquetteControle(r.deck);
+  if (ctrl) return `${ctrl} · ${r.total} mots`;
   return r.themesSelected < r.themesTotal
     ? `${r.themesSelected} thèmes sur ${r.themesTotal} · ${r.enJeu} mots en jeu`
     : `${r.themesTotal} thèmes · ${r.total} mots`;

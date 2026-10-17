@@ -10,7 +10,7 @@ import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
 import { RappelSauvegarde } from './RappelSauvegarde';
-import type { DeckControle } from '../engine/controle';
+import { etiquetteControle, type DeckControle } from '../engine/controle';
 
 export type Tab = 'travail' | 'collection' | 'catalogue';
 
@@ -623,6 +623,7 @@ export function Library({
                 <span className="workrow-txt">
                   <b>{s.deck.name}</b>
                   <small>
+                    {etiquetteControle(s.deck) && <>{etiquetteControle(s.deck)}{' · '}</>}
                     {s.themesSelected < s.themesTotal
                       ? `${s.themesSelected} thèmes sur ${s.themesTotal}`
                       : `${s.themesTotal} thèmes`}
@@ -695,6 +696,7 @@ export function Library({
           <span className="switchrow-txt">
             <b>{s.deck.name}</b>
             <small>
+              {etiquetteControle(s.deck) && <>{etiquetteControle(s.deck)}{' · '}</>}
               {s.resting > 0
                 ? `${s.resting} mots en mémoire`
                 : 'jamais commencé'}
