@@ -1,4 +1,13 @@
 /**
+ * CHANTIER 292 — DOUZE ÉTAPES, LES MÊMES EN RELECTURE (maquette « Premiers pas v3 »).
+ *   — « Tes propres listes » (après « Échéances ») : Créer mon paquet, la
+ *     date du contrôle, la veille et le jour J ;
+ *   — « XP et apparences » (après « Progrès ») : 20 cartes par jour, la
+ *     semaine à 5 / 5, les gels, les crédits ;
+ *   — Parler : 10 min par jour pour les abonnés, 5 min par semaine sinon ;
+ *   — plus de parcours court : depuis les Réglages, on refait les douze
+ *     étapes, classe et choix du paquet compris.
+ *
  * CHANTIER 90 — LE PREMIER PAS GUIDÉ.
  * CHANTIER 91 — relisible à tout moment depuis les réglages (`relecture`).
  * CHANTIER 94 — la voix.
@@ -71,9 +80,14 @@ type PaquetCharge = {
   image: string | null;
 };
 
-const ETAPES = ['methode', 'paquets', 'classe', 'paquet', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'] as const;
+const ETAPES = ['methode', 'paquets', 'classe', 'paquet', 'cartes', 'echeances', 'listes', 'progres', 'xp', 'parler', 'mots', 'bilan'] as const;
 type Etape = (typeof ETAPES)[number];
-const RELECTURE: readonly Etape[] = ['methode', 'paquets', 'cartes', 'echeances', 'progres', 'parler', 'mots', 'bilan'];
+
+/* 292 — les passages d'un paquet dont le contrôle est dans 7 jours (joursDePassage(7)). */
+const PASSAGES: Array<[number, string]> = [[0, 'auj.'], [3, 'J-4'], [5, 'J-2'], [6, 'veille']];
+const SEMAINE: Array<[string, 'fait' | 'gel' | 'bonus' | 'libre']> = [
+  ['L', 'fait'], ['M', 'fait'], ['M', 'gel'], ['J', 'fait'], ['V', 'bonus'], ['S', 'libre'], ['D', 'libre'],
+];
 
 /** Cinq : assez pour sentir la répétition, trop peu pour ressembler à du travail. */
 const CARTES_DESSAI = 5;
@@ -137,7 +151,7 @@ export function Onboarding({
   const [secours, setSecours] = useState(false);
 
   const relu = relecture && enJeu.length > 0 && !secours;
-  const parcours = relu ? RELECTURE : ETAPES;
+  const parcours = ETAPES;
   const rang = parcours.indexOf(etape) + 1;
   const suivante = useCallback(() => {
     const i = parcours.indexOf(etape);
@@ -173,33 +187,14 @@ export function Onboarding({
       await onChoisir(id);
       const c = loadDeck ? await loadDeck(id) : null;
       if (c && c.cards?.length) demarrer(c);
-      else setEtape('progres');
+      else setEtape('listes');
     } catch {
-      setEtape('progres');
+      setEtape('listes');
     } finally {
       setEnCours(false);
     }
   }, [onChoisir, loadDeck, demarrer]);
 
-  /* Relecture : le premier paquet en jeu qui a des cartes à montrer. */
-  const reprendre = useCallback(async () => {
-    setEnCours(true);
-    for (const id of enJeu) {
-      try {
-        const c = loadDeck ? await loadDeck(id) : null;
-        if (c && c.deck && c.cards?.length) {
-          setEnCours(false);
-          demarrer(c);
-          return;
-        }
-      } catch {
-        /* Paquet illisible : on passe au suivant. */
-      }
-    }
-    setEnCours(false);
-    setSecours(true);
-    setEtape('paquet');
-  }, [enJeu, loadDeck, demarrer]);
 
   /*
    * Premier lancement : les premières cartes du paquet. Relecture : les
@@ -350,7 +345,7 @@ export function Onboarding({
             <button
               className="btn"
               disabled={enCours}
-              onClick={() => { if (relu) void reprendre(); else suivante(); }}
+              onClick={suivante}
             >
               Continuer
             </button>
@@ -465,7 +460,7 @@ export function Onboarding({
             </button>
           </div>
           <div className="guide-pied">
-            <button className="btn ghost wide" onClick={() => setEtape('progres')}>Continuer</button>
+            <button className="btn ghost wide" onClick={() => setEtape('listes')}>Continuer</button>
           </div>
         </>
       )}
@@ -498,7 +493,44 @@ export function Onboarding({
             échéances au hasard pour ne pas te proposer trop de rappels le même jour.
           </p>
           <div className="guide-pied">
-            <button className="btn" onClick={() => setEtape('progres')}>Continuer</button>
+            <button className="btn" onClick={suivante}>Continuer</button>
+          </div>
+        </>
+      )}
+
+      {etape === 'listes' && (
+        <>
+          <h2 className="guide-titre">Un contrôle vendredi&nbsp;? Fais ton paquet.</h2>
+          <p className="guide-texte">
+            Dans « Paquets », « Créer mon paquet » : tape tes mots, ou prends en
+            photo la liste du prof. Donne la date du contrôle, l’application
+            s’occupe du reste.
+          </p>
+          <div className="guide-frise">
+            <p className="guide-kicker">Tes passages d’ici au contrôle</p>
+            <svg className="frise" viewBox="0 0 300 34" aria-hidden="true">
+              <line x1="6" y1="22" x2="294" y2="22" stroke="currentColor" strokeOpacity="0.25" />
+              {PASSAGES.map(([j, l]) => {
+                const x = 6 + (282 * j) / 7;
+                return (
+                  <g key={l}>
+                    <circle cx={x} cy="22" r="3.5" fill="#f2b705" />
+                    <text x={Math.max(12, x)} y="11" textAnchor="middle" fontSize="9" fill="currentColor" fillOpacity="0.7">{l}</text>
+                  </g>
+                );
+              })}
+              <rect x="282" y="16" width="12" height="12" rx="2" fill="none" stroke="currentColor" />
+              <text x="288" y="11" textAnchor="middle" fontSize="9" fill="currentColor">J</text>
+            </svg>
+            <p className="guide-note">Exemple : un contrôle dans 7 jours.</p>
+          </div>
+          <div className="guide-exemple guide-faits">
+            <p><b>Dès ce soir</b>tous les mots, sans limite du jour.</p>
+            <p><b>La veille</b>un dernier passage sur les mots ratés.</p>
+            <p><b>Le jour J</b>la liste de tes mots fragiles, en français et en anglais, à relire.</p>
+          </div>
+          <div className="guide-pied">
+            <button className="btn" onClick={suivante}>Continuer</button>
           </div>
         </>
       )}
@@ -559,6 +591,53 @@ export function Onboarding({
         </>
       )}
 
+      {etape === 'xp' && (
+        <>
+          <h2 className="guide-titre">Vingt cartes par jour, et ta semaine compte.</h2>
+          <p className="guide-texte">
+            Chaque jour où tu révises 20 cartes te rapporte des XP. Cinq jours
+            sur cinq dans la semaine, et un bonus tombe le vendredi.
+          </p>
+          <div className="guide-exemple">
+            <span className="guide-fictif">exemple fictif</span>
+            <span className="guide-kicker">Cette semaine</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 6, textAlign: 'center' }} aria-hidden="true">
+              {SEMAINE.map(([j, e], i) => (
+                <span key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                  <small style={{ opacity: 0.7 }}>{j}</small>
+                  <i
+                    style={{
+                      width: 30, height: 30, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontStyle: 'normal', fontSize: 13,
+                      border: e === 'libre' ? '1px dashed var(--rule-strong, var(--rule))' : e === 'bonus' ? '2px solid #f2b705' : e === 'gel' ? '1.5px solid #7fb4e6' : '1px solid currentColor',
+                      background: e === 'fait' ? 'currentColor' : e === 'gel' ? 'rgba(127,180,230,0.18)' : 'transparent',
+                      color: e === 'gel' ? '#2f6fae' : undefined,
+                    }}
+                  >
+                    {e === 'fait' && <span style={{ color: 'var(--paper)' }}>✓</span>}
+                    {e === 'bonus' && '✓'}
+                    {e === 'gel' && '❄'}
+                  </i>
+                </span>
+              ))}
+            </div>
+            <p className="guide-note">Mercredi manqué, comblé par un gel : la semaine compte pour 5 / 5.</p>
+          </div>
+          <div className="guide-exemple guide-faits">
+            <p><b>+20 XP</b>du lundi au vendredi, pour 20 cartes.</p>
+            <p><b>+20 à +60</b>de bonus pour une semaine à 5 / 5.</p>
+            <p><b>+30 XP</b>et un gel, pour 20 cartes le week-end.</p>
+          </div>
+          <p className="guide-regle">
+            Chaque XP devient un crédit, à échanger contre une apparence dans
+            Réglages › Apparence.
+          </p>
+          <div className="guide-pied">
+            <button className="btn" onClick={suivante}>Continuer</button>
+          </div>
+        </>
+      )}
+
       {etape === 'parler' && (
         <>
           <p className="guide-kicker">Et maintenant, à l’oral</p>
@@ -587,9 +666,9 @@ export function Onboarding({
           </div>
 
           <div className="guide-exemple guide-faits">
-            <p><b>5 min</b>de parole gratuites par semaine, remises à zéro le lundi. Dès la 4e.</p>
-            {/* CHANTIER 150 — information neutre, sans incitation (politique Familles). */}
-            <p><b>10 min</b>par jour avec la formule payante, bientôt disponible.</p>
+            {/* CHANTIER 150 / 292 — information neutre, sans incitation (politique Familles). */}
+            <p><b>10 min</b>par jour pour les abonnés.</p>
+            <p><b>5 min</b>par semaine pour les non abonnés.</p>
             <p>
               <b>{classeDite ?? 'Classe'}</b>
               {classeDite
