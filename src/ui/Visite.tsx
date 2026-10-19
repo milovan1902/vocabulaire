@@ -62,6 +62,13 @@ type Etape = {
 };
 
 const ONGLET = '.tabbar button';
+/* CHANTIER 296 — les écrans qui portent la barre d'onglets (App.tsx). */
+const ECRANS_A_ONGLETS = ['today', 'library', 'parler', 'account', 'progress'];
+
+function visesOnglet(c: Etape['cible']): boolean {
+  const l = c ? (Array.isArray(c) ? c : [c]) : [];
+  return l.some((x) => x.sel === ONGLET);
+}
 
 export const ETAPES: Etape[] = [
   { id: 'reglages', n: 1, cible: { sel: ONGLET, texte: 'Réglages' }, texte: 'Bienvenue dans Neuro Anglais ! On commence par faire connaissance : touche « Réglages ».' },
@@ -153,7 +160,7 @@ function classeDe(texte: string): Classe | null {
 }
 
 export function Visite({
-  etape, vue, relue, onEtape, onFin, onClasse,
+  etape, vue, relue, onEtape, onFin, onClasse, onAccueil,
 }: {
   etape: number;
   /** Le nom de l'écran affiché (App.tsx) : sert à suivre la révision. */
@@ -164,6 +171,8 @@ export function Visite({
   onFin: () => void;
   /** La classe touchée à l'étape 2 : App.tsx met un paquet en jeu. */
   onClasse: (c: Classe | null) => void;
+  /** CHANTIER 296 — revenir sur « Aujourd'hui », où la barre d'onglets est affichée. */
+  onAccueil: () => void;
 }) {
   const e = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const [cadre, setCadre] = useState<Boite | null>(null);
@@ -201,6 +210,19 @@ export function Visite({
     setInfo(false);
     if (!relue) mesure('onboarding', e.id);
   }, [e, relue]);
+
+  /*
+   * CHANTIER 296 — l'étape attend un onglet, mais l'écran affiché n'a pas
+   * de barre d'onglets (« Session terminée », un paquet ouvert…) : on
+   * revient sur « Aujourd'hui », et l'onglet attendu est entouré.
+   */
+  useEffect(() => {
+    if (e.pause || !visesOnglet(e.cible)) return;
+    if (!ECRANS_A_ONGLETS.includes(vue)) {
+      debut.current = Date.now();
+      onAccueil();
+    }
+  }, [e, vue, onAccueil]);
 
   /* La cible, relue toutes les 120 ms : elle bouge avec l'écran. */
   useEffect(() => {

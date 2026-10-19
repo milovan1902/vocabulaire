@@ -821,6 +821,8 @@ export default function App() {
           onEtape={poseEtape}
           onFin={finVisite}
           onClasse={(c) => { void paquetDeClasse(c); }}
+          /* CHANTIER 296 — la visite ramène sur « Aujourd'hui » pour montrer un onglet. */
+          onAccueil={() => { setLoaded(null); setView({ name: 'today' }); }}
         />
       )}
     </div>
