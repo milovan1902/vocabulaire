@@ -17,6 +17,10 @@
  * étapes sans créer de paquet). Une cible introuvable (classe avant la
  * 4e, aucun paquet dû…) laisse place à « Continuer » au bout d'1,5 s.
  *
+ * CHANTIER 295 — la visite se joue toujours en apparence « Clair », posée
+ * en aperçu (rien n'est enregistré). À la fin, l'apparence de l'élève
+ * revient ; s'il en choisit une à la dernière étape, c'est elle qui reste.
+ *
  * Obligatoire à la première connexion ; l'étape en cours est gardée par
  * App.tsx, la visite reprend donc après un rechargement. L'administrateur
  * la relance depuis Réglages › Aide › Revoir la première connexion.
@@ -27,16 +31,24 @@ import { createPortal } from 'react-dom';
 import type { Classe } from '../domain/types';
 import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { mesure } from '../data/mesures';
+import { appliquerApercu, finApercu } from './theme';
 import './visite.css';
 
 type Fiche = 'paquets' | 'methode' | 'frise' | 'progres' | 'minutes' | 'oral' | 'gratuit' | 'abonnes' | 'photos' | 'apparences';
-type Cible = { sel: string; texte?: string; debut?: boolean; max?: number; tous?: boolean };
+type Cible = {
+  sel: string; texte?: string; debut?: boolean; max?: number; tous?: boolean;
+  /** Toucher cette cible prépare l'étape sans la finir (choisir un paquet avant « Réviser »). */
+  sansAvancer?: boolean;
+  /** Ce que dit la bulle quand c'est cette cible qui est trouvée. */
+  consigne?: string;
+};
 type Etape = {
   id: string;
   /** Le numéro montré : plusieurs gestes peuvent faire une même étape. */
   n: number;
   texte: string;
-  cible?: Cible;
+  /** Une cible, ou plusieurs essayées dans l'ordre : la première affichée gagne. */
+  cible?: Cible | Cible[];
   /** Le clic sur la cible est pris par la visite et n'atteint pas l'application. */
   intercepte?: boolean;
   /** Pas de geste attendu : un bouton pour continuer. */
@@ -56,7 +68,23 @@ export const ETAPES: Etape[] = [
   { id: 'ma-classe', n: 1, cible: { sel: '.reglig', texte: 'Ma classe' }, texte: 'Touche « Ma classe ».' },
   { id: 'classe', n: 2, cible: { sel: '.classrow', tous: true }, texte: 'Choisis ta classe : un paquet de ton niveau sera mis en jeu.', info: 'paquets' },
   { id: 'aujourdhui', n: 3, cible: { sel: ONGLET, texte: 'Aujourd’hui' }, texte: 'Ton premier paquet t’attend. Va dans « Aujourd’hui ».' },
-  { id: 'reviser', n: 3, cible: { sel: '.screen button', texte: 'Réviser', debut: true, max: 30 }, texte: 'Le paquet de ta classe. Touche « Réviser » pour essayer tes premiers mots.', info: 'methode' },
+  /*
+   * 293 bis — le bouton de révision change de forme et de libellé selon
+   * l'apparence (« Réviser 12 cartes », « C’est parti · 12 cartes »,
+   * l'horloger…). On le cherche par sa classe. Sur l'écran ordinaire, tant
+   * qu'aucun paquet n'est choisi, il n'existe pas : on entoure d'abord la
+   * liste des paquets.
+   */
+  {
+    id: 'reviser', n: 3, info: 'methode',
+    texte: 'Le paquet de ta classe. Touche « Réviser » pour essayer tes premiers mots.',
+    cible: [
+      { sel: '.ly-go' },
+      { sel: '.hz-go' },
+      { sel: '.avant > button.btn:not(.ghost)' },
+      { sel: '.workrow-main', tous: true, sansAvancer: true, consigne: 'Touche un paquet pour le choisir. Le bouton pour réviser apparaîtra.' },
+    ],
+  },
   { id: 'etude', n: 3, pause: true, texte: '' },
   { id: 'echeances', n: 4, continuer: 'Continuer', texte: 'Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', info: 'frise' },
   { id: 'methode', n: 5, continuer: 'Continuer', texte: 'C’est tout : quelques minutes par jour, l’application tient le calendrier.', info: 'progres' },
@@ -143,9 +171,18 @@ export function Visite({
   const [info, setInfo] = useState(false);
   const [toast, setToast] = useState(false);
   const elements = useRef<HTMLElement[]>([]);
+  const [trouvee, setTrouvee] = useState<Cible | null>(null);
+  const trouveeRef = useRef<Cible | null>(null);
+  trouveeRef.current = trouvee;
   const debut = useRef(Date.now());
   const defile = useRef(false);
   const vuEtude = useRef(false);
+
+  /* 295 — l'apparence Clair le temps de la visite. */
+  useEffect(() => {
+    appliquerApercu('clair');
+    return () => finApercu();
+  }, []);
 
   const suivante = useCallback(() => {
     setInfo(false);
@@ -159,6 +196,7 @@ export function Visite({
     vuEtude.current = false;
     elements.current = [];
     setCadre(null);
+    setTrouvee(null);
     setPerdu(false);
     setInfo(false);
     if (!relue) mesure('onboarding', e.id);
@@ -166,21 +204,28 @@ export function Visite({
 
   /* La cible, relue toutes les 120 ms : elle bouge avec l'écran. */
   useEffect(() => {
-    const c = e.cible;
-    if (!c || e.pause) return undefined;
+    const liste = e.cible ? (Array.isArray(e.cible) ? e.cible : [e.cible]) : [];
+    if (!liste.length || e.pause) return undefined;
     let minuteur = 0;
     let vivant = true;
     const tour = () => {
       if (!vivant) return;
-      const els = trouve(c);
+      let c: Cible = liste[0];
+      let els: HTMLElement[] = [];
+      for (const x of liste) {
+        els = trouve(x);
+        if (els.length) { c = x; break; }
+      }
       if (!els.length) {
         elements.current = [];
         setCadre(null);
+        setTrouvee(null);
         if (Date.now() - debut.current > 1500) setPerdu(true);
       } else {
         if (e.dejaFait?.(els[0])) { suivante(); return; }
         const choisis = c.tous ? els : [els[0]];
         elements.current = choisis;
+        setTrouvee((p) => (p === c ? p : c));
         const b = boite(choisis);
         setPerdu(false);
         setCadre((p) => (p && pareil(p, b) ? p : b));
@@ -205,18 +250,20 @@ export function Visite({
       const el = elements.current.find((x) => x.contains(ev.target as Node));
       if (!el) return;
       if (e.id === 'classe') onClasse(classeDe(el.textContent ?? ''));
+      if (trouveeRef.current?.sansAvancer) return;
       window.setTimeout(suivante, 0);
     };
     document.addEventListener('click', surClic, true);
     return () => document.removeEventListener('click', surClic, true);
   }, [e, suivante, onClasse]);
 
-  /* La révision : on s'efface, et on reprend quand elle se termine. */
+  /* La révision : on s'efface, et on reprend quand elle se termine. 6 s d'attente :
+     certaines apparences jouent jusqu'à 4,25 s d'animation avant d'ouvrir la révision. */
   useEffect(() => {
     if (!e.pause) return undefined;
     if (vue === 'study') { vuEtude.current = true; return undefined; }
     if (vuEtude.current) { suivante(); return undefined; }
-    const t = window.setTimeout(() => { if (!vuEtude.current) suivante(); }, 3500);
+    const t = window.setTimeout(() => { if (!vuEtude.current) suivante(); }, 6000);
     return () => clearTimeout(t);
   }, [e, vue, suivante]);
 
@@ -280,7 +327,7 @@ export function Visite({
         {e.exemple === 'bilan' && <ExempleBilan />}
         {e.exemple === 'creer' && <ExempleCreer />}
 
-        <p className="visite-texte">{e.texte}</p>
+        <p className="visite-texte">{trouvee?.consigne ?? e.texte}</p>
         {perdu && !e.continuer && (
           <p className="visite-note">Ce bouton n’est pas affiché pour toi ici : continue.</p>
         )}

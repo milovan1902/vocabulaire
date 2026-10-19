@@ -247,7 +247,18 @@ export function appliquerApercu(t: Theme) {
   appliquer(t);
 }
 
+/*
+ * CHANTIER 295 — la fin d'un aperçu : l'apparence enregistrée revient.
+ * Sert à la première connexion guidée (Visite.tsx), qui se joue en Clair.
+ */
+export function finApercu() {
+  figee = null;
+  appliquer(themeChoisi());
+}
+
 export function setTheme(t: Theme) {
+  /* 295 — une apparence choisie pendant un aperçu met fin à l'aperçu. */
+  figee = null;
   if (t === 'auto') localStorage.removeItem(CLE);
   else localStorage.setItem(CLE, t);
   appliquer(t);
