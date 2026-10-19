@@ -21,7 +21,10 @@ import { Editor } from './ui/Editor';
 import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
-import { Onboarding } from './ui/Onboarding';
+/* CHANTIER 293 — la première connexion guidée remplace les douze étapes du 292. */
+import { Visite, ETAPES as ETAPES_VISITE } from './ui/Visite';
+import { classeConvient, classeRank } from './domain/types';
+import type { Classe } from './domain/types';
 import { REPRISE_ID, repareThemesReprise } from './data/reprise';
 import { loadSummaries } from './ui/deckSummary';
 import { scheduleReminder } from './ui/reminder';
@@ -42,6 +45,20 @@ const SEEN = 'vocab:accueil-vu';
  * page d'accueil depuis les réglages n'a pas à le retraverser.
  */
 const GUIDE = 'vocab:guidage-fait';
+
+/*
+ * CHANTIER 293 — l'étape de la visite guidée en cours. Tant qu'elle est
+ * posée, la visite reprend où elle en était : après un rechargement, ou au
+ * retour de Google. Elle est obligatoire à la première connexion.
+ */
+const VISITE = 'vocab:visite-etape';
+
+function visiteEnCours(): number | null {
+  const brut = localStorage.getItem(VISITE);
+  if (brut === null) return null;
+  const n = Number(brut);
+  return Number.isInteger(n) && n >= 0 && n < ETAPES_VISITE.length ? n : 0;
+}
 
 /**
  * Les cinq écrans atteints par les onglets du bas. Réunis en un seul
@@ -179,19 +196,25 @@ export default function App() {
   const premierLancement = useRef(!localStorage.getItem(SEEN));
 
   /*
-   * CHANTIER 91 — le guidage est-il traversé pour de bon, ou relu depuis
-   * les réglages ? Un état, pas une vue de plus : la pile des écrans et
-   * la touche retour n'ont pas à connaître cette nuance.
+   * CHANTIER 293 — LA VISITE GUIDÉE. L'étape en cours (null : pas de
+   * visite), et si elle est relancée par l'administrateur depuis les
+   * Réglages (dans ce cas, rien n'est mesuré).
    */
-  const [relecture, setRelecture] = useState(false);
+  const [visite, setVisite] = useState<number | null>(visiteEnCours);
+  const [visiteRelue, setVisiteRelue] = useState(false);
 
-  /** Sortie de l'accueil : le guidage, ou la journée s'il est déjà fait. */
+  const poseEtape = useCallback((n: number) => {
+    localStorage.setItem(VISITE, String(n));
+    setVisite(n);
+  }, []);
+
+  /** Sortie de l'accueil : la journée, et la visite si c'est la première connexion. */
   const apresAccueil = useCallback(() => {
     localStorage.setItem(SEEN, '1');
-    setRelecture(false);
     const aGuider = premierLancement.current && !localStorage.getItem(GUIDE);
-    setView({ name: aGuider ? 'onboarding' : 'today' });
-  }, [setView]);
+    setView({ name: 'today' });
+    if (aGuider) { setVisiteRelue(false); poseEtape(0); }
+  }, [setView, poseEtape]);
 
   /*
    * CHANTIER 79 — DEUX SOUVENIRS QUE LE RETOUR AVAIT PERDUS.
@@ -467,45 +490,30 @@ export default function App() {
   }
 
   /*
-   * CHANTIER 90 — le guidage du premier lancement. Comme l'accueil : ni
-   * barre de titre, ni onglets. Tant qu'aucun paquet n'est choisi, la
-   * barre du bas n'aurait rien à montrer.
+   * CHANTIER 293 — la classe vient d'être choisie pendant la visite : un
+   * paquet gratuit de ce niveau est obtenu ET mis en jeu, pour que
+   * « Réviser » ait quelque chose à montrer sur « Aujourd'hui ».
+   * Rien n'est fait si un paquet tourne déjà.
    */
-  if (view.name === 'onboarding') {
-    return (
-      <div className="app">
-        <Screen>
-          <Onboarding
-            relecture={relecture}
-            enJeu={store.active}
-            /* CHANTIER 94 — la voix du guidage suit la vitesse réglée. */
-            debit={store.common.speechRate}
-            decks={store.decks}
-            classe={store.common.classe}
-            onClasse={(c) => { void store.setCommon({ ...store.common, classe: c }); }}
-            /*
-             * Obtenir NE MET PAS en jeu (voir `addDeck`) : ici, si, et
-             * c'est tout l'objet de l'étape. Sans mise en jeu, la journée
-             * resterait à zéro et le guidage n'aurait rien réglé.
-             */
-            onChoisir={async (id) => {
-              await store.addDeck(id);
-              await store.setActive(id, true);
-            }}
-            loadDeck={(id) => store.loadDeck(id)}
-            onGrade={(deckId, p, g, wasNew) => store.gradeCard(deckId, p, g, wasNew)}
-            onFini={(vers) => {
-                mesure('onboarding_fini', vers);
-              localStorage.setItem(GUIDE, '1');
-              void store.refreshAll();
-              setRelecture(false);
-              setView({ name: vers });
-            }}
-          />
-        </Screen>
-      </div>
-    );
-  }
+  const paquetDeClasse = async (c: Classe | null) => {
+    if (store.active.length) return;
+    const libres = store.decks.filter((d) => !d.priceCents);
+    const pourMoi = libres.filter((d) => classeConvient(d.classeFrom, c));
+    const liste = pourMoi.length ? pourMoi : libres;
+    const d = [...liste].sort((a, b) => classeRank(b.classeFrom) - classeRank(a.classeFrom))[0];
+    if (!d) return;
+    await store.addDeck(d.id);
+    await store.setActive(d.id, true);
+    await store.refreshAll();
+  };
+
+  const finVisite = () => {
+    if (!visiteRelue) mesure('onboarding_fini', 'visite');
+    localStorage.setItem(GUIDE, '1');
+    localStorage.removeItem(VISITE);
+    setVisite(null);
+    setVisiteRelue(false);
+  };
 
   /*
    * Deux familles d'écrans : ceux des onglets, sans barre de titre, et
@@ -693,7 +701,7 @@ export default function App() {
             streak={store.streak}
             onSettings={(s) => void store.setCommon(s)}
             onHome={() => setView({ name: 'welcome' })}
-            onGuide={() => { setRelecture(true); setView({ name: 'onboarding' }); }}
+            onGuide={() => { setVisiteRelue(true); setView({ name: 'today' }); poseEtape(0); }}
           />
         )}
 
@@ -803,6 +811,17 @@ export default function App() {
             </button>
           ))}
         </nav>
+      )}
+
+      {visite !== null && (
+        <Visite
+          etape={visite}
+          vue={view.name}
+          relue={visiteRelue}
+          onEtape={poseEtape}
+          onFin={finVisite}
+          onClasse={(c) => { void paquetDeClasse(c); }}
+        />
       )}
     </div>
   );

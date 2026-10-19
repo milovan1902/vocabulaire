@@ -87,6 +87,8 @@ import { migrerVersBoutique } from './apparences';
 import { xpTotal } from '../engine/xp';
 /* CHANTIER 268 — l'onglet Apparence devient une boutique de crédits. */
 import { Boutique } from './Boutique';
+/* CHANTIER 293 — seul le compte administrateur peut relancer la première connexion. */
+import { estCreateur } from '../data/createur';
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -167,7 +169,7 @@ export function Account({
   streak: Streak;
   onSettings: (s: Settings) => void;
   onHome: () => void;
-  /** CHANTIER 91 — rejouer le guidage des premiers pas. */
+  /** CHANTIER 293 — relancer la première connexion guidée (administrateur). */
   onGuide: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -343,9 +345,12 @@ export function Account({
 
       {tiroir === 'aide' && (
         <Tiroir titre="Aide" retour="Réglages" onFermer={() => setTiroir(null)}>
-          <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
-            Revoir les premiers pas
-          </button>
+          {/* CHANTIER 293 — réservé au compte administrateur (data/createur.ts). */}
+          {estCreateur() && (
+            <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
+              Revoir la première connexion
+            </button>
+          )}
           <button className="btn ghost" onClick={() => { setTiroir(null); onHome(); }}>
             Revoir la page d’accueil
           </button>
@@ -362,10 +367,12 @@ export function Account({
           >
             Politique de confidentialité
           </a>
-          <p className="hint" style={{ marginTop: 14 }}>
-            Les premiers pas : la méthode en une page, puis cinq cartes du paquet
-            en jeu. Ces cartes comptent comme une vraie révision.
-          </p>
+          {estCreateur() && (
+            <p className="hint" style={{ marginTop: 14 }}>
+              Administrateur : la première connexion se rejoue en entier, depuis
+              « Aujourd’hui ». Rien n’est mesuré pendant la relecture.
+            </p>
+          )}
         </Tiroir>
       )}
 
