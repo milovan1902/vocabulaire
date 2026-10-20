@@ -21,6 +21,16 @@
  * en aperçu (rien n'est enregistré). À la fin, l'apparence de l'élève
  * revient ; s'il en choisit une à la dernière étape, c'est elle qui reste.
  *
+ * CHANTIER 297 —
+ *  • le prénom est redemandé en tout premier (gardé dans localStorage,
+ *    clé « vocab:prenom ») et repris dans les bulles et l'exemple de Parler ;
+ *  • « Réviser » est retenu le temps d'une bulle « Comment réviser » (la
+ *    carte, la réponse, les quatre notes), puis rejoué : la révision
+ *    s'ouvre seulement après ;
+ *  • chaque bulle a un « ‹ Retour » vers l'étape précédente. Les étapes
+ *    qui supposent un sous-écran ouvert sont sautées : on revient au
+ *    dernier geste qui se refait d'où l'on est (un onglet, en général).
+ *
  * Obligatoire à la première connexion ; l'étape en cours est gardée par
  * App.tsx, la visite reprend donc après un rechargement. L'administrateur
  * la relance depuis Réglages › Aide › Revoir la première connexion.
@@ -34,6 +44,9 @@ import { mesure } from '../data/mesures';
 import { appliquerApercu, finApercu } from './theme';
 import './visite.css';
 
+/** CHANTIER 297 — le prénom de l'élève, demandé à la première étape. */
+export const PRENOM = 'vocab:prenom';
+
 type Fiche = 'paquets' | 'methode' | 'frise' | 'progres' | 'minutes' | 'oral' | 'gratuit' | 'abonnes' | 'photos' | 'apparences';
 type Cible = {
   sel: string; texte?: string; debut?: boolean; max?: number; tous?: boolean;
@@ -46,15 +59,24 @@ type Etape = {
   id: string;
   /** Le numéro montré : plusieurs gestes peuvent faire une même étape. */
   n: number;
-  texte: string;
+  /** Le texte, ou une fonction du prénom. */
+  texte: string | ((prenom: string) => string);
   /** Une cible, ou plusieurs essayées dans l'ordre : la première affichée gagne. */
   cible?: Cible | Cible[];
   /** Le clic sur la cible est pris par la visite et n'atteint pas l'application. */
   intercepte?: boolean;
+  /** 297 — le clic est retenu, puis rejoué à la fin de l'étape suivante (« lance »). */
+  retient?: boolean;
+  /** 297 — l'étape rejoue le clic retenu à l'étape précédente. */
+  lance?: boolean;
+  /** 297 — l'étape demande le prénom. */
+  saisie?: boolean;
+  /** 297 — l'écran (App.tsx) où l'étape a du sens : sert au « Retour ». */
+  ecran?: string;
   /** Pas de geste attendu : un bouton pour continuer. */
   continuer?: string;
   info?: Fiche;
-  exemple?: 'seance' | 'bilan' | 'creer';
+  exemple?: 'seance' | 'bilan' | 'creer' | 'reviser';
   /** La visite s'efface pendant la révision et reprend à sa sortie. */
   pause?: boolean;
   /** La cible est déjà dans l'état voulu : l'étape se saute seule. */
@@ -70,8 +92,18 @@ function visesOnglet(c: Etape['cible']): boolean {
   return l.some((x) => x.sel === ONGLET);
 }
 
+const virgule = (p: string) => (p ? `, ${p}` : '');
+
+const CIBLES_REVISER: Cible[] = [
+  { sel: '.ly-go' },
+  { sel: '.hz-go' },
+  { sel: '.avant > button.btn:not(.ghost)' },
+  { sel: '.workrow-main', tous: true, sansAvancer: true, consigne: 'Touche un paquet pour le choisir. Le bouton pour réviser apparaîtra.' },
+];
+
 export const ETAPES: Etape[] = [
-  { id: 'reglages', n: 1, cible: { sel: ONGLET, texte: 'Réglages' }, texte: 'Bienvenue dans Neuro Anglais ! On commence par faire connaissance : touche « Réglages ».' },
+  { id: 'prenom', n: 1, saisie: true, continuer: 'Continuer', texte: 'Bienvenue dans Neuro Anglais ! Pour commencer, comment t’appelles-tu ?' },
+  { id: 'reglages', n: 1, cible: { sel: ONGLET, texte: 'Réglages' }, texte: (p) => `Enchanté${virgule(p)} ! On commence par faire connaissance : touche « Réglages ».` },
   { id: 'ma-classe', n: 1, cible: { sel: '.reglig', texte: 'Ma classe' }, texte: 'Touche « Ma classe ».' },
   { id: 'classe', n: 2, cible: { sel: '.classrow', tous: true }, texte: 'Choisis ta classe : un paquet de ton niveau sera mis en jeu.', info: 'paquets' },
   { id: 'aujourdhui', n: 3, cible: { sel: ONGLET, texte: 'Aujourd’hui' }, texte: 'Ton premier paquet t’attend. Va dans « Aujourd’hui ».' },
@@ -81,42 +113,53 @@ export const ETAPES: Etape[] = [
    * l'horloger…). On le cherche par sa classe. Sur l'écran ordinaire, tant
    * qu'aucun paquet n'est choisi, il n'existe pas : on entoure d'abord la
    * liste des paquets.
+   * 297 — le clic est retenu : la bulle « Comment réviser » passe avant.
    */
   {
-    id: 'reviser', n: 3, info: 'methode',
+    id: 'reviser', n: 3, info: 'methode', ecran: 'today', retient: true,
     texte: 'Le paquet de ta classe. Touche « Réviser » pour essayer tes premiers mots.',
-    cible: [
-      { sel: '.ly-go' },
-      { sel: '.hz-go' },
-      { sel: '.avant > button.btn:not(.ghost)' },
-      { sel: '.workrow-main', tous: true, sansAvancer: true, consigne: 'Touche un paquet pour le choisir. Le bouton pour réviser apparaîtra.' },
-    ],
+    cible: CIBLES_REVISER,
   },
-  { id: 'etude', n: 3, pause: true, texte: '' },
-  { id: 'echeances', n: 4, continuer: 'Continuer', texte: 'Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', info: 'frise' },
-  { id: 'methode', n: 5, continuer: 'Continuer', texte: 'C’est tout : quelques minutes par jour, l’application tient le calendrier.', info: 'progres' },
-  { id: 'parler', n: 6, cible: { sel: ONGLET, texte: 'Parler' }, texte: 'Maintenant, l’oral. Touche « Parler ».' },
   {
-    id: 'sujet', n: 6, cible: { sel: '.parler-themes button', texte: 'Me présenter' }, texte: 'Choisis un sujet : « Me présenter ».', info: 'minutes',
+    id: 'comment', n: 4, ecran: 'today', lance: true, exemple: 'reviser', continuer: 'Je commence',
+    texte: (p) => `À toi${virgule(p)} ! Réponds honnêtement : c’est ta note qui décide quand le mot reviendra.`,
+  },
+  { id: 'etude', n: 4, pause: true, texte: '' },
+  { id: 'echeances', n: 5, continuer: 'Continuer', texte: 'Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', info: 'frise' },
+  { id: 'methode', n: 6, continuer: 'Continuer', texte: 'C’est tout : quelques minutes par jour, l’application tient le calendrier.', info: 'progres' },
+  { id: 'parler', n: 7, cible: { sel: ONGLET, texte: 'Parler' }, texte: 'Maintenant, l’oral. Touche « Parler ».' },
+  {
+    id: 'sujet', n: 7, ecran: 'parler', cible: { sel: '.parler-themes button', texte: 'Me présenter' }, texte: 'Choisis un sujet : « Me présenter ».', info: 'minutes',
     dejaFait: (el) => el.getAttribute('aria-pressed') === 'true',
   },
-  { id: 'commencer', n: 6, cible: { sel: '.parler-go' }, intercepte: true, texte: 'Touche « Commencer à parler » : cette fois, regarde l’exemple. Tu peux parler à l’oral ou à l’écrit, comme tu préfères.', info: 'minutes' },
-  { id: 'seance', n: 6, exemple: 'seance', continuer: 'Voir le bilan', texte: 'L’IA glisse tes mots dans la conversation. Si tu fais une faute, une voix en français te corrige.', info: 'minutes' },
-  { id: 'bilan', n: 7, exemple: 'bilan', continuer: 'Continuer', texte: 'Le bilan : tes fautes corrigées, et les mots que tu choisis d’ajouter à tes paquets.', info: 'oral' },
-  { id: 'paquets', n: 8, cible: { sel: ONGLET, texte: 'Paquets' }, texte: 'Passons aux paquets. Touche « Paquets ».' },
-  { id: 'catalogue', n: 8, cible: { sel: '.screen button', texte: 'catalogue', max: 24 }, texte: 'Ouvre le catalogue.', info: 'gratuit' },
-  { id: 'defile', n: 8, continuer: 'Continuer', texte: 'Fais défiler pour tout voir : chaque classe a ses paquets, rangés par sujet.', info: 'gratuit' },
-  { id: 'collection', n: 9, cible: { sel: '.screen button', texte: 'collection', max: 24 }, texte: 'Retourne dans « Ma collection ».' },
-  { id: 'creer', n: 9, cible: { sel: '.screen button', texte: 'Créer mon paquet' }, intercepte: true, texte: 'Un contrôle approche ? Touche « Créer mon paquet de révision ».', info: 'abonnes' },
-  { id: 'creer-ex', n: 10, exemple: 'creer', continuer: 'Continuer', texte: 'Ton paquet se prépare en trois étapes. L’application cale ensuite tes passages jusqu’au jour J.', info: 'photos' },
-  { id: 'reglages-2', n: 11, cible: { sel: ONGLET, texte: 'Réglages' }, texte: 'Dernière chose : ne perds rien de tes progrès. Touche « Réglages ».' },
-  { id: 'connexion', n: 11, cible: { sel: '.reglig', texte: 'Connexion' }, texte: 'Touche « Connexion ».' },
-  { id: 'google', n: 11, continuer: 'Continuer', texte: 'Un compte Google suffit : tout est sauvegardé et te suit sur tes appareils. Tu pourras te connecter quand tu veux.' },
-  { id: 'retour', n: 12, cible: { sel: '.sousecran-retour' }, texte: 'Reviens aux « Réglages ».' },
-  { id: 'apparence', n: 12, cible: { sel: '.reglig', texte: 'Apparence' }, texte: 'Il ne reste qu’à choisir ton apparence : touche « Apparence ».', info: 'apparences' },
-  { id: 'fin', n: 12, continuer: 'Terminer', texte: 'Bravo, tu connais l’application ! Les crédits gagnés en révisant s’échangent ici contre une apparence.', info: 'apparences' },
+  { id: 'commencer', n: 7, ecran: 'parler', cible: { sel: '.parler-go' }, intercepte: true, texte: 'Touche « Commencer à parler » : cette fois, regarde l’exemple. Tu peux parler à l’oral ou à l’écrit, comme tu préfères.', info: 'minutes' },
+  { id: 'seance', n: 7, exemple: 'seance', continuer: 'Voir le bilan', texte: 'L’IA glisse tes mots dans la conversation. Si tu fais une faute, une voix en français te corrige.', info: 'minutes' },
+  { id: 'bilan', n: 8, exemple: 'bilan', continuer: 'Continuer', texte: 'Le bilan : tes fautes corrigées, et les mots que tu choisis d’ajouter à tes paquets.', info: 'oral' },
+  { id: 'paquets', n: 9, cible: { sel: ONGLET, texte: 'Paquets' }, texte: 'Passons aux paquets. Touche « Paquets ».' },
+  { id: 'catalogue', n: 9, ecran: 'library', cible: { sel: '.screen button', texte: 'catalogue', max: 24 }, texte: 'Ouvre le catalogue.', info: 'gratuit' },
+  { id: 'defile', n: 9, ecran: 'library', continuer: 'Continuer', texte: 'Fais défiler pour tout voir : chaque classe a ses paquets, rangés par sujet.', info: 'gratuit' },
+  { id: 'collection', n: 10, ecran: 'library', cible: { sel: '.screen button', texte: 'collection', max: 24 }, texte: 'Retourne dans « Ma collection ».' },
+  { id: 'creer', n: 10, ecran: 'library', cible: { sel: '.screen button', texte: 'Créer mon paquet' }, intercepte: true, texte: 'Un contrôle approche ? Touche « Créer mon paquet de révision ».', info: 'abonnes' },
+  { id: 'creer-ex', n: 11, exemple: 'creer', continuer: 'Continuer', texte: 'Ton paquet se prépare en trois étapes. L’application cale ensuite tes passages jusqu’au jour J.', info: 'photos' },
+  { id: 'reglages-2', n: 12, cible: { sel: ONGLET, texte: 'Réglages' }, texte: 'Dernière chose : ne perds rien de tes progrès. Touche « Réglages ».' },
+  { id: 'connexion', n: 12, ecran: 'account', cible: { sel: '.reglig', texte: 'Connexion' }, texte: 'Touche « Connexion ».' },
+  { id: 'google', n: 12, ecran: 'account', continuer: 'Continuer', texte: 'Un compte Google suffit : tout est sauvegardé et te suit sur tes appareils. Tu pourras te connecter quand tu veux.' },
+  { id: 'retour', n: 13, cible: { sel: '.sousecran-retour' }, texte: 'Reviens aux « Réglages ».' },
+  { id: 'apparence', n: 13, ecran: 'account', cible: { sel: '.reglig', texte: 'Apparence' }, texte: 'Il ne reste qu’à choisir ton apparence : touche « Apparence ».', info: 'apparences' },
+  { id: 'fin', n: 13, ecran: 'account', continuer: 'Terminer', texte: (p) => `Bravo${virgule(p)}, tu connais l’application ! Les crédits gagnés en révisant s’échangent ici contre une apparence.`, info: 'apparences' },
 ];
 const TOTAL = ETAPES[ETAPES.length - 1].n;
+
+/*
+ * 297 — une étape où « Retour » peut se poser : elle se refait depuis
+ * l'écran affiché. Sinon (sous-écran à rouvrir, révision, étape qui se
+ * saute seule), on recule encore.
+ */
+function seRefait(et: Etape, vue: string): boolean {
+  if (et.pause || et.dejaFait) return false;
+  if (et.ecran) return et.ecran === vue;
+  return !et.cible || visesOnglet(et.cible);
+}
 
 const TITRES: Record<Fiche, string> = {
   paquets: 'Ce qu’est un paquet', methode: 'La méthode spirale', frise: 'Les rendez-vous d’un mot',
@@ -179,10 +222,13 @@ export function Visite({
   const [perdu, setPerdu] = useState(false);
   const [info, setInfo] = useState(false);
   const [toast, setToast] = useState(false);
+  const [prenom, setPrenom] = useState(() => localStorage.getItem(PRENOM) ?? '');
   const elements = useRef<HTMLElement[]>([]);
   const [trouvee, setTrouvee] = useState<Cible | null>(null);
   const trouveeRef = useRef<Cible | null>(null);
   trouveeRef.current = trouvee;
+  /** 297 — le bouton « Réviser » touché, rejoué après la bulle « Comment réviser ». */
+  const retenu = useRef<HTMLElement | null>(null);
   const debut = useRef(Date.now());
   const defile = useRef(false);
   const vuEtude = useRef(false);
@@ -198,6 +244,39 @@ export function Visite({
     if (etape + 1 >= ETAPES.length) onFin();
     else onEtape(etape + 1);
   }, [etape, onEtape, onFin]);
+
+  /* 297 — « ‹ Retour ». */
+  const precedente = useCallback(() => {
+    let j = etape - 1;
+    while (j > 0 && !seRefait(ETAPES[j], vue)) j--;
+    setInfo(false);
+    onEtape(Math.max(0, j));
+  }, [etape, vue, onEtape]);
+
+  /* 297 — le prénom est gardé, puis on avance. */
+  const validePrenom = useCallback(() => {
+    const p = prenom.trim();
+    if (!p) return;
+    localStorage.setItem(PRENOM, p);
+    setPrenom(p);
+    suivante();
+  }, [prenom, suivante]);
+
+  /* 297 — on rejoue le « Réviser » retenu : la révision s'ouvre maintenant. */
+  const lancer = useCallback(() => {
+    let el = retenu.current;
+    retenu.current = null;
+    if (!el || !el.isConnected) {
+      el = null;
+      for (const c of CIBLES_REVISER) {
+        if (c.sansAvancer) continue;
+        const els = trouve(c);
+        if (els.length) { el = els[0]; break; }
+      }
+    }
+    suivante();
+    if (el) { const b = el; window.setTimeout(() => b.click(), 0); }
+  }, [suivante]);
 
   useEffect(() => {
     debut.current = Date.now();
@@ -273,6 +352,13 @@ export function Visite({
       if (!el) return;
       if (e.id === 'classe') onClasse(classeDe(el.textContent ?? ''));
       if (trouveeRef.current?.sansAvancer) return;
+      /* 297 — capté avant React : l'application ne le reçoit pas encore. */
+      if (e.retient) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+        retenu.current = el;
+      }
       window.setTimeout(suivante, 0);
     };
     document.addEventListener('click', surClic, true);
@@ -320,6 +406,9 @@ export function Visite({
   }
 
   const continuer = e.continuer ?? (perdu ? 'Continuer' : null);
+  const avance = e.saisie ? validePrenom : e.lance ? lancer : suivante;
+  const p = prenom.trim();
+  const texte = trouvee?.consigne ?? (typeof e.texte === 'function' ? e.texte(p) : e.texte);
 
   return createPortal(
     <div className="visite" role="dialog" aria-live="polite" aria-label="Première connexion guidée">
@@ -337,19 +426,39 @@ export function Visite({
 
       <div className="visite-bulle" style={placeBulle}>
         <div className="visite-tete">
+          {etape > 0 && (
+            <button className="visite-retour" onClick={precedente} aria-label="Étape précédente">‹ Retour</button>
+          )}
           <span className="visite-kicker">
             {relue ? 'Relecture · ' : ''}Étape {e.n} sur {TOTAL}
           </span>
           {e.id !== 'fin' && (
-            <button className="visite-passer" onClick={suivante}>Passer</button>
+            /* 297 — « Passer » le prénom ne l'enregistre pas ; « Passer » la consigne ouvre quand même la révision. */
+            <button className="visite-passer" onClick={e.lance ? lancer : suivante}>Passer</button>
           )}
         </div>
 
-        {e.exemple === 'seance' && <ExempleSeance />}
+        {e.exemple === 'seance' && <ExempleSeance prenom={p || 'Léa'} />}
         {e.exemple === 'bilan' && <ExempleBilan />}
         {e.exemple === 'creer' && <ExempleCreer />}
+        {e.exemple === 'reviser' && <ExempleReviser />}
 
-        <p className="visite-texte">{trouvee?.consigne ?? e.texte}</p>
+        <p className="visite-texte">{texte}</p>
+        {e.saisie && (
+          <input
+            className="visite-champ"
+            type="text"
+            autoFocus
+            autoComplete="given-name"
+            autoCapitalize="words"
+            maxLength={30}
+            placeholder="Ton prénom"
+            aria-label="Ton prénom"
+            value={prenom}
+            onChange={(ev) => setPrenom(ev.target.value)}
+            onKeyDown={(ev) => { if (ev.key === 'Enter') validePrenom(); }}
+          />
+        )}
         {perdu && !e.continuer && (
           <p className="visite-note">Ce bouton n’est pas affiché pour toi ici : continue.</p>
         )}
@@ -360,7 +469,7 @@ export function Visite({
               <button className="visite-i" aria-label="Plus d’informations" onClick={() => setInfo(true)}>i</button>
             )}
             {continuer && (
-              <button className="visite-go" onClick={suivante}>{continuer}</button>
+              <button className="visite-go" onClick={avance} disabled={e.saisie && !p}>{continuer}</button>
             )}
           </div>
         )}
@@ -387,12 +496,38 @@ export function Visite({
   );
 }
 
-function ExempleSeance() {
+/* 297 — comment travailler une carte, avant la première révision. */
+const NOTES: Array<[string, string, string]> = [
+  ['again', 'À revoir', 'je ne l’avais pas'],
+  ['hard', 'Difficile', 'trouvé, mais avec peine'],
+  ['good', 'Correct', 'trouvé après un temps'],
+  ['easy', 'Facile', 'trouvé tout de suite'],
+];
+
+function ExempleReviser() {
+  return (
+    <div className="visite-exemple">
+      <span className="visite-petit">Comment réviser</span>
+      <ol className="visite-trois visite-sans-fond">
+        <li><b>Lis la carte</b> Un mot, une phrase ou une expression en anglais.</li>
+        <li><b>Traduis dans ta tête</b> Cherche le français, sans rien écrire.</li>
+        <li><b>Affiche la réponse</b> Puis dis si tu l’avais :</li>
+      </ol>
+      <ul className="visite-notes">
+        {NOTES.map(([k, l, d]) => (
+          <li key={k}><b className={k}>{l}</b>{d}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ExempleSeance({ prenom }: { prenom: string }) {
   return (
     <div className="visite-exemple">
       <span className="visite-petit">Exemple · Me présenter</span>
       <p className="visite-b lui">Hi! What’s your name, and how old are you?</p>
-      <p className="visite-b moi">My name is Léa. I have thirteen years.</p>
+      <p className="visite-b moi">My name is {prenom}. I have thirteen years.</p>
       <p className="visite-b fr">En anglais, l’âge se dit avec « be » : I am thirteen.</p>
       <p className="visite-b moi">I am thirteen. I live near my school.</p>
       <p className="visite-b lui">Nice! Do you have a <u>neighbour</u> you like?</p>
