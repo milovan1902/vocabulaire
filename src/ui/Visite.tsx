@@ -31,6 +31,16 @@
  *    qui supposent un sous-écran ouvert sont sautées : on revient au
  *    dernier geste qui se refait d'où l'on est (un onglet, en général).
  *
+ * CHANTIER 298 —
+ *  • « Comment réviser » dit le bon sens : on lit le français, on cherche
+ *    l'anglais (le sens par défaut, FR → EN) ;
+ *  • 1000 crédits offerts après la connexion Google, pour une première
+ *    apparence. Ils passent par un « achat » à prix négatif (id
+ *    « bienvenue ») : le solde (XP − prix payés) monte de 1000, une seule
+ *    fois, et le cadeau voyage entre appareils avec les autres achats ;
+ *  • le retour aux Réglages se fait par l'onglet du bas, plus par le
+ *    chevron en haut à gauche : toucher l'onglet ferme aussi le tiroir.
+ *
  * Obligatoire à la première connexion ; l'étape en cours est gardée par
  * App.tsx, la visite reprend donc après un rechargement. L'administrateur
  * la relance depuis Réglages › Aide › Revoir la première connexion.
@@ -42,10 +52,17 @@ import type { Classe } from '../domain/types';
 import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { mesure } from '../data/mesures';
 import { appliquerApercu, finApercu } from './theme';
+import { ajouterAchat } from '../data/apparencesStock';
 import './visite.css';
 
 /** CHANTIER 297 — le prénom de l'élève, demandé à la première étape. */
 export const PRENOM = 'vocab:prenom';
+
+/** CHANTIER 298 — les crédits de bienvenue. */
+const CADEAU = 1000;
+function offrirCredits() {
+  ajouterAchat({ t: 'bienvenue', prix: -CADEAU, at: Date.now() });
+}
 
 type Fiche = 'paquets' | 'methode' | 'frise' | 'progres' | 'minutes' | 'oral' | 'gratuit' | 'abonnes' | 'photos' | 'apparences';
 type Cible = {
@@ -71,12 +88,16 @@ type Etape = {
   lance?: boolean;
   /** 297 — l'étape demande le prénom. */
   saisie?: boolean;
+  /** 298 — toucher la cible ferme aussi le tiroir ouvert (chevron « ‹ Réglages »). */
+  fermeTiroir?: boolean;
+  /** 298 — l'étape offre les crédits de bienvenue dès qu'elle s'affiche. */
+  cadeau?: boolean;
   /** 297 — l'écran (App.tsx) où l'étape a du sens : sert au « Retour ». */
   ecran?: string;
   /** Pas de geste attendu : un bouton pour continuer. */
   continuer?: string;
   info?: Fiche;
-  exemple?: 'seance' | 'bilan' | 'creer' | 'reviser';
+  exemple?: 'seance' | 'bilan' | 'creer' | 'reviser' | 'credits';
   /** La visite s'efface pendant la révision et reprend à sa sortie. */
   pause?: boolean;
   /** La cible est déjà dans l'état voulu : l'étape se saute seule. */
@@ -144,9 +165,13 @@ export const ETAPES: Etape[] = [
   { id: 'reglages-2', n: 12, cible: { sel: ONGLET, texte: 'Réglages' }, texte: 'Dernière chose : ne perds rien de tes progrès. Touche « Réglages ».' },
   { id: 'connexion', n: 12, ecran: 'account', cible: { sel: '.reglig', texte: 'Connexion' }, texte: 'Touche « Connexion ».' },
   { id: 'google', n: 12, ecran: 'account', continuer: 'Continuer', texte: 'Un compte Google suffit : tout est sauvegardé et te suit sur tes appareils. Tu pourras te connecter quand tu veux.' },
-  { id: 'retour', n: 13, cible: { sel: '.sousecran-retour' }, texte: 'Reviens aux « Réglages ».' },
-  { id: 'apparence', n: 13, ecran: 'account', cible: { sel: '.reglig', texte: 'Apparence' }, texte: 'Il ne reste qu’à choisir ton apparence : touche « Apparence ».', info: 'apparences' },
-  { id: 'fin', n: 13, ecran: 'account', continuer: 'Terminer', texte: (p) => `Bravo${virgule(p)}, tu connais l’application ! Les crédits gagnés en révisant s’échangent ici contre une apparence.`, info: 'apparences' },
+  {
+    id: 'credits', n: 13, cadeau: true, exemple: 'credits', continuer: 'Merci !',
+    texte: (p) => `Tuto terminé${virgule(p)} ! Nous t’offrons ${CADEAU} crédits pour débloquer l’apparence de ton choix.`,
+  },
+  { id: 'retour', n: 14, cible: { sel: ONGLET, texte: 'Réglages' }, fermeTiroir: true, texte: 'Pour les dépenser, touche « Réglages ».' },
+  { id: 'apparence', n: 14, ecran: 'account', cible: { sel: '.reglig', texte: 'Apparence' }, texte: `Tes ${CADEAU} crédits t’attendent : touche « Apparence ».`, info: 'apparences' },
+  { id: 'fin', n: 14, ecran: 'account', continuer: 'Terminer', texte: (p) => `Bravo${virgule(p)}, tu connais l’application ! Choisis une apparence maintenant, ou plus tard : tes crédits restent là, et ceux gagnés en révisant s’y ajoutent.`, info: 'apparences' },
 ];
 const TOTAL = ETAPES[ETAPES.length - 1].n;
 
@@ -288,6 +313,8 @@ export function Visite({
     setPerdu(false);
     setInfo(false);
     if (!relue) mesure('onboarding', e.id);
+    /* 298 — une seule fois (même id), et pas pendant une relecture. */
+    if (e.cadeau && !relue) offrirCredits();
   }, [e, relue]);
 
   /*
@@ -358,6 +385,10 @@ export function Visite({
         ev.stopPropagation();
         ev.stopImmediatePropagation();
         retenu.current = el;
+      }
+      /* 298 — l'onglet « Réglages » ne ferme pas le tiroir ouvert : on le ferme ici. */
+      if (e.fermeTiroir) {
+        window.setTimeout(() => document.querySelector<HTMLElement>('.sousecran-retour')?.click(), 0);
       }
       window.setTimeout(suivante, 0);
     };
@@ -442,6 +473,9 @@ export function Visite({
         {e.exemple === 'bilan' && <ExempleBilan />}
         {e.exemple === 'creer' && <ExempleCreer />}
         {e.exemple === 'reviser' && <ExempleReviser />}
+        {e.exemple === 'credits' && (
+          <div className="visite-cadeau" aria-hidden="true"><b>{CADEAU}</b><small>crédits</small></div>
+        )}
 
         <p className="visite-texte">{texte}</p>
         {e.saisie && (
@@ -509,8 +543,8 @@ function ExempleReviser() {
     <div className="visite-exemple">
       <span className="visite-petit">Comment réviser</span>
       <ol className="visite-trois visite-sans-fond">
-        <li><b>Lis la carte</b> Un mot, une phrase ou une expression en anglais.</li>
-        <li><b>Traduis dans ta tête</b> Cherche le français, sans rien écrire.</li>
+        <li><b>Lis la carte</b> Un mot, une phrase ou une expression en français.</li>
+        <li><b>Traduis dans ta tête</b> Cherche l’anglais, sans rien écrire.</li>
         <li><b>Affiche la réponse</b> Puis dis si tu l’avais :</li>
       </ol>
       <ul className="visite-notes">
