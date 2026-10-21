@@ -338,6 +338,115 @@ export function fusionnerReprise(local: RepriseVoyage, distant: RepriseVoyage | 
  */
 export type ChoixThemes = Record<string, { t: string[]; at: number }>;
 
+/**
+ * CHANTIER 303 — LES PAQUETS PERSONNALISÉS SUIVENT LE COMPTE.
+ *
+ * Jusqu'ici, un paquet créé sur le téléphone y restait : `syncProgress`
+ * l'ignore (ses cartes n'existent pas dans la table `cards`), et rien d'autre
+ * ne l'emportait. Il voyage maintenant, comme le paquet de reprise, dans le
+ * JSON de `user_settings` : le paquet, ses cartes et leur progression.
+ * Aucune table, aucune colonne, aucune règle d'accès nouvelle.
+ *
+ * Arbitrage, paquet par paquet :
+ *   — le CONTENU (nom, cartes) : le dernier modifié gagne. La date vient de
+ *     l'empreinte du contenu, recalculée à chaque synchronisation : elle
+ *     change dès qu'une carte est ajoutée, corrigée ou retirée, sans
+ *     dépendre de l'écran qui l'a fait ;
+ *   — la PROGRESSION : carte par carte, `pickFresher` + `garderMastery`,
+ *     comme partout ailleurs ;
+ *   — une SUPPRESSION plus récente que la dernière modification l'emporte.
+ *
+ * L'image de fond d'un paquet ne voyage pas : trop lourde pour ce JSON.
+ */
+export interface PersoVoyage {
+  paquets: Record<string, { deck: Deck; cards: Card[]; at: number }>;
+  progress: Record<string, Record<string, Progress>>;
+  supprimes: Record<string, number>;
+}
+
+function empreinte(deck: Deck, cards: Card[]): string {
+  const s = JSON.stringify([deck.name, deck.description ?? '', cards.map((c) => [c.id, c.en, c.fr, c.theme, c.example ?? ''])]);
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return `${s.length}:${h >>> 0}`;
+}
+
+export function estPerso(d: Deck): boolean {
+  return !d.builtin && d.id !== REPRISE_ID;
+}
+
+async function lirePersoLocal(): Promise<PersoVoyage> {
+  const etat = await repository.getPersoEtat();
+  const nouvelEtat: Record<string, { h: string; at: number }> = {};
+  const paquets: PersoVoyage['paquets'] = {};
+  const progress: PersoVoyage['progress'] = {};
+  for (const deck of (await repository.listDecks()).filter(estPerso)) {
+    const cards = await repository.getCards(deck.id);
+    const h = empreinte(deck, cards);
+    const avant = etat[deck.id];
+    /* Contenu inchangé : la date reste. Sinon (ou première fois), c'est maintenant —
+       sauf pour un paquet jamais vu, daté de sa dernière modification connue. */
+    const at = avant && avant.h === h ? avant.at : avant ? Date.now() : deck.updatedAt ?? deck.createdAt ?? 0;
+    nouvelEtat[deck.id] = { h, at };
+    paquets[deck.id] = { deck, cards, at };
+    progress[deck.id] = await repository.getProgress(deck.id);
+  }
+  await repository.savePersoEtat(nouvelEtat);
+  return { paquets, progress, supprimes: await repository.getPersoSupprimes() };
+}
+
+export function fusionnerPerso(local: PersoVoyage, distant: PersoVoyage | null | undefined): PersoVoyage {
+  if (!distant) return local;
+  const supprimes: Record<string, number> = { ...(distant.supprimes ?? {}) };
+  for (const [id, at] of Object.entries(local.supprimes)) supprimes[id] = Math.max(at, supprimes[id] ?? 0);
+
+  const paquets: PersoVoyage['paquets'] = {};
+  const progress: PersoVoyage['progress'] = {};
+  const ids = new Set([...Object.keys(local.paquets), ...Object.keys(distant.paquets ?? {})]);
+  for (const id of ids) {
+    const ici = local.paquets[id];
+    const la = distant.paquets?.[id];
+    const gagnant = !la ? ici : !ici ? la : ici.at >= la.at ? ici : la;
+    if ((supprimes[id] ?? 0) >= gagnant.at) continue;
+    paquets[id] = gagnant;
+
+    const pIci = local.progress[id] ?? {};
+    const pLa = distant.progress?.[id] ?? {};
+    const p: Record<string, Progress> = {};
+    for (const c of gagnant.cards) {
+      const a = pIci[c.id];
+      const b = pLa[c.id];
+      if (!a && !b) continue;
+      const brut = pickFresher(a, b);
+      p[c.id] = garderMastery(brut, brut === a ? b : a);
+    }
+    progress[id] = p;
+  }
+  return { paquets, progress, supprimes };
+}
+
+async function ecrirePerso(local: PersoVoyage, fusion: PersoVoyage): Promise<void> {
+  /* Les suppressions venues d'ailleurs. */
+  for (const id of Object.keys(local.paquets)) {
+    if (!fusion.paquets[id]) await repository.deleteDeck(id);
+  }
+  const decks = await repository.listDecks();
+  const parId = new Map(decks.map((d) => [d.id, d]));
+  const etat = await repository.getPersoEtat();
+  for (const [id, v] of Object.entries(fusion.paquets)) {
+    if (local.paquets[id] !== v) {
+      parId.set(id, { ...v.deck, hasImage: parId.get(id)?.hasImage ?? false });
+      await repository.saveCards(id, v.cards);
+      etat[id] = { h: empreinte(v.deck, v.cards), at: v.at };
+    }
+    await repository.saveProgress(id, fusion.progress[id] ?? {});
+  }
+  await repository.saveDecks([...parId.values()]);
+  await repository.savePersoEtat(etat);
+  /* Après `deleteDeck`, qui date la suppression d'aujourd'hui : on remet la vraie date. */
+  await repository.savePersoSupprimes(fusion.supprimes);
+}
+
 export function fusionnerThemes(local: ChoixThemes, distant: ChoixThemes): ChoixThemes {
   const out: ChoixThemes = { ...distant };
   for (const [id, ici] of Object.entries(local)) {
@@ -517,6 +626,8 @@ export async function syncSettings(userId: string): Promise<void> {
     themes?: ChoixThemes;
     /* CHANTIER 268 — les apparences offertes et achetées. */
     apparences?: ApparencesVoyage;
+    /* CHANTIER 303 — les paquets personnalisés. */
+    perso?: PersoVoyage;
   } | null;
   const remoteGeneral = bundle?.general ?? null;
   const remoteOverrides = bundle?.decks ?? {};
@@ -567,7 +678,7 @@ export async function syncSettings(userId: string): Promise<void> {
     journalDepuisListes(bundle?.installed ?? [], bundle?.active ?? []);
 
   const deckJournal = fusionner(localJournal, remoteJournal);
-  const { installed, active } = listes(deckJournal);
+  let { installed, active } = listes(deckJournal);
 
   const today = todayKey();
   const counters: DailyCounters = {};
@@ -628,6 +739,17 @@ export async function syncSettings(userId: string): Promise<void> {
   const apparences = fusionnerApparences(lireApparences(), bundle?.apparences);
   ecrireApparences(apparences);
 
+  /* CHANTIER 303 — les paquets personnalisés, avant le journal : un paquet
+     arrivé d'un autre appareil doit exister quand la liste « en jeu » le cite. */
+  const persoLocal = await lirePersoLocal();
+  const perso = fusionnerPerso(persoLocal, bundle?.perso);
+  await ecrirePerso(persoLocal, perso);
+  /* Un paquet supprimé ailleurs quitte aussi le journal, sinon il resterait « en jeu » sans exister. */
+  for (const id of Object.keys(perso.supprimes)) {
+    if (!perso.paquets[id]) delete (deckJournal as Record<string, unknown>)[id];
+  }
+  ({ installed, active } = listes(deckJournal));
+
   await repository.saveSettings(general);
   await repository.saveCounters(counters);
   await repository.saveOverrides(overrides);
@@ -651,7 +773,7 @@ export async function syncSettings(userId: string): Promise<void> {
       user_id: userId,
       settings: {
         general, decks: overrides, streak, installed, active, deckJournal, jalons, paliers,
-        reprise, themes, apparences,
+        reprise, themes, apparences, perso,
       },
       counter: counters,
       updated_at: new Date().toISOString(),

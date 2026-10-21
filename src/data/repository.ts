@@ -95,6 +95,15 @@ const k = {
    * changer, comme tout ce qui porte le préfixe.
    */
   paliers: (u: UserId) => `u:${u}:paliers`,
+  /*
+   * CHANTIER 303 — les paquets personnalisés suivent le compte.
+   * `persoEtat` : l'empreinte du contenu de chaque paquet et la date de son
+   * dernier changement (c'est l'arbitre entre deux appareils).
+   * `persoSupprimes` : la date de suppression de chaque paquet effacé, pour
+   * qu'un autre appareil ne le fasse pas réapparaître.
+   */
+  persoEtat: (u: UserId) => `u:${u}:perso-etat`,
+  persoSupprimes: (u: UserId) => `u:${u}:perso-supprimes`,
 };
 
 export interface Repository {
@@ -137,6 +146,11 @@ export interface Repository {
   getReleves(): Promise<Releve[] | null>;
   saveReleves(r: Releve[]): Promise<void>;
   deleteDeck(deckId: DeckId): Promise<void>;
+  /** CHANTIER 303 — voir les clés `persoEtat` et `persoSupprimes`. */
+  getPersoEtat(): Promise<Record<DeckId, { h: string; at: number }>>;
+  savePersoEtat(e: Record<DeckId, { h: string; at: number }>): Promise<void>;
+  getPersoSupprimes(): Promise<Record<DeckId, number>>;
+  savePersoSupprimes(s: Record<DeckId, number>): Promise<void>;
   exportAll(): Promise<Record<string, unknown>>;
   importAll(data: Record<string, unknown>): Promise<void>;
 }
@@ -251,7 +265,26 @@ export class IdbRepository implements Repository {
   async saveReleves(r: Releve[]) {
     await set(k.paliers(this.user), r);
   }
+  async getPersoEtat() {
+    return (await get<Record<DeckId, { h: string; at: number }>>(k.persoEtat(this.user))) ?? {};
+  }
+  async savePersoEtat(e: Record<DeckId, { h: string; at: number }>) {
+    await set(k.persoEtat(this.user), e);
+  }
+  async getPersoSupprimes() {
+    return (await get<Record<DeckId, number>>(k.persoSupprimes(this.user))) ?? {};
+  }
+  async savePersoSupprimes(s: Record<DeckId, number>) {
+    await set(k.persoSupprimes(this.user), s);
+  }
   async deleteDeck(d: DeckId) {
+    /* CHANTIER 303 — un paquet personnalisé supprimé laisse sa date de suppression. */
+    const avant = (await this.listDecks()).find((x) => x.id === d);
+    if (avant && !avant.builtin) {
+      const supprimes = await this.getPersoSupprimes();
+      supprimes[d] = Date.now();
+      await this.savePersoSupprimes(supprimes);
+    }
     await Promise.all([
       del(k.cards(this.user, d)),
       del(k.progress(this.user, d)),
