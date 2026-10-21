@@ -451,7 +451,7 @@ export function Study({
   const [saisie, setSaisie] = useState('');
   const [entendu, setEntendu] = useState('');
   const [ecoutant, setEcoutant] = useState(false);
-  const [verdict, setVerdict] = useState<{ etat: Verdict; saisi: string; oral: boolean } | null>(null);
+  const [verdict, setVerdict] = useState<{ etat: Verdict; saisi: string; oral: boolean; conteste?: boolean } | null>(null);
   const refEcoute = useRef<Ecoute | null>(null);
   const modeVoulu = modeCarte ?? modeReponse;
   const mode: ModeReponse = modeVoulu === 'oral' && !ecouteDisponible ? 'ecrit' : modeVoulu;
@@ -566,12 +566,12 @@ export function Study({
     });
   }, [langueReponse, verifier]);
 
-  /* « J'avais juste » : notée Difficile, jamais mieux — contester ne rapporte rien. */
+  /* « J'avais juste » : la carte repasse en réponse juste, l'élève choisit Difficile, Correct ou Facile. */
   const contester = useCallback(() => {
     if (!current || !verdict) return;
     noteContestation({ cardId: current.card.id, attendu: back, saisi: verdict.saisi, oral: verdict.oral });
-    void grade('hard');
-  }, [current, verdict, back, grade]);
+    setVerdict({ ...verdict, etat: 'juste', conteste: true });
+  }, [current, verdict, back]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -1402,6 +1402,7 @@ export function Study({
               {verdict.oral ? 'Tu as dit : ' : 'Tu as écrit : '}
               {verdict.etat === 'faux' ? <s>{verdict.saisi}</s> : <b>{verdict.saisi}</b>}
               {verdict.etat === 'faute' && <small>Petite faute acceptée · regarde bien l’orthographe.</small>}
+              {verdict.conteste && <small>Comptée juste · choisis ta note.</small>}
             </>}
           </p>
         )}
@@ -1490,7 +1491,7 @@ export function Study({
         {verdict?.etat === 'faux' && verdict.saisi && (
           <p className="tap-hint">
             <button type="button" className="rp-lien" onClick={contester}>J’avais juste</button>
-            {' '}· synonyme ou micro qui a mal compris : notée « Difficile ».
+            {' '}· synonyme ou micro qui a mal compris.
           </p>
         )}
         </>
