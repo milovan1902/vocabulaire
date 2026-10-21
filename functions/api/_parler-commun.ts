@@ -143,7 +143,13 @@ export const SECONDES_JOUR = 600;
  * si un tarif change ou si un modèle plus cher est branché par erreur, le
  * compte en jetons ne verrait rien passer. Celui-ci, si.
  */
-export const PLAFOND_CENTIMES_JOUR = 45;
+/*
+ * CHANTIER 301 — 45 → 10 centimes. Une séance pleine de 10 minutes coûte
+ * environ 6 centimes (0,58 c/min mesuré sur Sonnet, septembre-octobre
+ * 2026) : 10 laisse de la marge aux séances longues et borne le pire cas
+ * à 3 € par mois et par élève, sous ce que rapporte un abonnement.
+ */
+export const PLAFOND_CENTIMES_JOUR = 10;
 
 /**
  * CHANTIER 144 — DEUX FORMULES, UN PLAFOND GLOBAL
@@ -151,7 +157,7 @@ export const PLAFOND_CENTIMES_JOUR = 45;
  * Gratuit (tout le monde) : 5 minutes par SEMAINE, 20 centimes au plus,
  * remis à zéro le lundi (UTC).
  * Illimité (adresses de PARLER_ILLIMITE) : l'ancienne règle, 10 minutes
- * par jour, 45 centimes au plus.
+ * par jour, 10 centimes au plus (45 avant le chantier 301).
  *
  * Au-dessus des deux, un plafond MENSUEL pour toute l'application
  * (150 € par défaut). Atteint, Parler se met en pause pour les comptes
