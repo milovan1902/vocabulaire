@@ -69,7 +69,14 @@
  * atteint par les onglets.
  */
 import { useEffect, useRef, useState } from 'react';
-import type { Classe, Settings } from '../domain/types';
+import type { Classe, ModeReponse, Settings } from '../domain/types';
+
+/* CHANTIER 302 — les trois façons de répondre. */
+const MODES: Array<{ k: ModeReponse; l: string }> = [
+  { k: 'tete', l: 'De tête' },
+  { k: 'ecrit', l: 'À l’écrit' },
+  { k: 'oral', l: 'À l’oral' },
+];
 import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
@@ -521,6 +528,26 @@ export function Account({
               checked={settings.reversed}
               onChange={(v) => onSettings({ ...settings, reversed: v })}
             />
+          </div>
+          <div className="setting">
+            <label>Paquets du jeu</label>
+            <div className="heures">
+              {MODES.map((m) => (
+                <button key={m.k} className={(settings.reponseJeu ?? 'tete') === m.k ? 'on' : ''}
+                  onClick={() => onSettings({ ...settings, reponseJeu: m.k })}>{m.l}</button>
+              ))}
+            </div>
+            <label style={{ marginTop: 14 }}>Paquets personnalisés</label>
+            <div className="heures">
+              {MODES.map((m) => (
+                <button key={m.k} className={(settings.reponsePerso ?? 'ecrit') === m.k ? 'on' : ''}
+                  onClick={() => onSettings({ ...settings, reponsePerso: m.k })}>{m.l}</button>
+              ))}
+            </div>
+            <p className="hint" style={{ marginTop: 10 }}>
+              Les phrases se révisent toujours de tête. Majuscules, ponctuation
+              et « the », « a », « to » ne comptent pas ; une petite faute passe.
+            </p>
           </div>
         </Tiroir>
       )}

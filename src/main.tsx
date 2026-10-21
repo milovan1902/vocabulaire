@@ -20,6 +20,8 @@ import '@fontsource/atkinson-hyperlegible/700.css';
 import './styles.css';
 /* Posée APRÈS styles.css : à sélecteur égal, c'est elle qui l'emporte. */
 import './ui/apparence.css';
+/* CHANTIER 302 — répondre à l'écrit ou à l'oral (champ, micro, verdict). */
+import './ui/reponse.css';
 /* CHANTIER 164 — le style Cahier et ses deux polices, livrées avec l'app.
    Installées par `npm install @fontsource/lexend @fontsource/caveat`. */
 import '@fontsource/lexend/400.css';

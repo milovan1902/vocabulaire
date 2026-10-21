@@ -750,6 +750,10 @@ export default function App() {
             queue={queue}
             image={loaded.image}
             settings={store.settingsFor(loaded.deck.id)}
+            /* CHANTIER 302 — de tête, à l'écrit ou à l'oral, selon le type de paquet. */
+            modeReponse={loaded.deck.builtin
+              ? store.settingsFor(loaded.deck.id).reponseJeu ?? 'tete'
+              : store.settingsFor(loaded.deck.id).reponsePerso ?? 'ecrit'}
             onGrade={handleGrade}
             onQuit={() => { void endSession(); setView({ name: 'deck' }); }}
             onDone={(reviewed) => { void endSession(); setView({ name: 'done', reviewed }); }}

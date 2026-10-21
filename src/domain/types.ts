@@ -253,7 +253,16 @@ export interface Settings {
    * colonne Supabase n'a été ajoutée pour elle.
    */
   classe: Classe | null;
+  /**
+   * CHANTIER 302 — façon de répondre aux cartes-mots : de tête, à l'écrit
+   * ou à l'oral. Paquets du jeu d'un côté, paquets personnalisés de l'autre.
+   * Facultatifs : un réglage venu d'un appareil plus ancien n'en a pas.
+   */
+  reponseJeu?: ModeReponse;
+  reponsePerso?: ModeReponse;
 }
+
+export type ModeReponse = 'tete' | 'ecrit' | 'oral';
 
 export const DEFAULT_SETTINGS: Settings = {
   updatedAt: 0,
@@ -267,6 +276,8 @@ export const DEFAULT_SETTINGS: Settings = {
   panelInsetX: 13,
   reminderAt: null,
   classe: null,
+  reponseJeu: 'tete',
+  reponsePerso: 'ecrit',
 };
 
 /**

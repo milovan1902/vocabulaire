@@ -10,7 +10,9 @@
  * lors du chantier « réglages ».
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { Grade, Settings } from '../domain/types';
+import type { Grade, ModeReponse, Settings } from '../domain/types';
+import { compareEcrit, compareOral, estMot, noteContestation, type Verdict } from '../engine/reponse';
+import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
 import { speak } from './speech';
@@ -385,8 +387,10 @@ function useAjuste(texte: string, visible = true) {
 }
 
 export function Study({
-  queue, image, settings, onGrade, onQuit, onDone, revele = false,
+  queue, image, settings, onGrade, onQuit, onDone, revele = false, modeReponse = 'tete',
 }: {
+  /** CHANTIER 302 — de tête (comme avant), à l'écrit ou à l'oral. Ne vaut que pour les cartes-mots. */
+  modeReponse?: ModeReponse;
   queue: SessionItem[];
   image: string | null;
   settings: Settings;
@@ -439,6 +443,26 @@ export function Study({
   const refAnswer = useAjuste(back, revealed);
 
   /*
+   * CHANTIER 302 — RÉPONDRE À L'ÉCRIT OU À L'ORAL.
+   * Seulement sur les cartes-mots : une phrase se révise toujours de tête.
+   * « Écrire à la place » bascule une carte de l'oral vers l'écrit.
+   */
+  const [modeCarte, setModeCarte] = useState<ModeReponse | null>(null);
+  const [saisie, setSaisie] = useState('');
+  const [entendu, setEntendu] = useState('');
+  const [ecoutant, setEcoutant] = useState(false);
+  const [verdict, setVerdict] = useState<{ etat: Verdict; saisi: string; oral: boolean } | null>(null);
+  const refEcoute = useRef<Ecoute | null>(null);
+  const modeVoulu = modeCarte ?? modeReponse;
+  const mode: ModeReponse = modeVoulu === 'oral' && !ecouteDisponible ? 'ecrit' : modeVoulu;
+  const actif = !revele && mode !== 'tete' && !!current && estMot(current.card.en);
+  const langueReponse = langBack === 'en' ? 'en' : 'fr';
+  const notesVisibles = !verdict ? GRADES
+    : verdict.etat === 'faux' ? GRADES.filter((g) => g.key === 'again')
+    : GRADES.filter((g) => g.key !== 'again');
+  useEffect(() => () => refEcoute.current?.arrete(), []);
+
+  /*
    * CHANTIER 50 — LA VOIX SUIT L'ANGLAIS, PAS LA RÉPONSE.
    *
    * La synthèse dit toujours `card.en` : c'est l'anglais qu'on apprend à
@@ -489,6 +513,14 @@ export function Study({
     async (g: Grade) => {
       if (!current) return;
       await onGrade(current, g);
+      /* 302 — la carte suivante repart vierge. */
+      refEcoute.current?.arrete();
+      refEcoute.current = null;
+      setEcoutant(false);
+      setVerdict(null);
+      setSaisie('');
+      setEntendu('');
+      setModeCarte(null);
       setReviewed((n) => n + 1);
       setCombo((c) => (g === 'again' ? 0 : c + 1));
 
@@ -506,16 +538,54 @@ export function Study({
     [current, index, items, onGrade, onDone, reviewed],
   );
 
+  /* 302 — la réponse saisie ou dite est comparée, puis la carte se retourne. */
+  const verifier = useCallback((texte: string, oral: boolean) => {
+    if (!current) return;
+    const etat = oral
+      ? compareOral(texte, back, langueReponse)
+      : compareEcrit(texte, back, langueReponse);
+    setVerdict({ etat, saisi: texte.trim(), oral });
+    reveal();
+  }, [current, back, langueReponse, reveal]);
+
+  const micro = useCallback(() => {
+    if (refEcoute.current) { refEcoute.current.arrete(); return; }
+    tais();
+    setEntendu('');
+    setEcoutant(true);
+    refEcoute.current = ecoute({
+      langue: langueReponse === 'en' ? 'en-US' : 'fr-FR',
+      silence: 1800,
+      onPartiel: setEntendu,
+      onFini: (t) => {
+        refEcoute.current = null;
+        setEcoutant(false);
+        if (t.trim()) verifier(t, true);
+      },
+      onErreur: () => { refEcoute.current = null; setEcoutant(false); },
+    });
+  }, [langueReponse, verifier]);
+
+  /* « J'avais juste » : notée Difficile, jamais mieux — contester ne rapporte rien. */
+  const contester = useCallback(() => {
+    if (!current || !verdict) return;
+    noteContestation({ cardId: current.card.id, attendu: back, saisi: verdict.saisi, oral: verdict.oral });
+    void grade('hard');
+  }, [current, verdict, back, grade]);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === ' ') { e.preventDefault(); if (!revealed) reveal(); return; }
-      if (revealed && ['1', '2', '3', '4'].includes(e.key)) {
-        void grade(GRADES[Number(e.key) - 1].key);
+      /* 302 — on tape dans le champ : ni espace ni chiffre ne doivent noter. */
+      if (e.target instanceof HTMLInputElement) return;
+      if (e.key === ' ') { e.preventDefault(); if (!revealed && !actif) reveal(); return; }
+      const n = Number(e.key);
+      if (revealed && n >= 1 && n <= notesVisibles.length) {
+        void grade(notesVisibles[n - 1].key);
       }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [revealed, reveal, grade]);
+  }, [revealed, reveal, grade, actif, notesVisibles]);
 
   if (!current) return null;
 
@@ -554,7 +624,7 @@ export function Study({
       <div
         ref={refStage}
         className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'cahier' || style === 'tableau' || style === 'lycee' || style === 'arcade' || style === 'neon' || style === 'voyage' || style === 'manga' || style === 'bd') && frappe ? ` n-${frappe}` : ''}`}
-        onClick={() => { if (!revealed) reveal(); }}
+        onClick={() => { if (!revealed && !actif) reveal(); }}
       >
         {/* CHANTIER 269 — Atelier d'horloger : la carte est une montre de gousset (Horloger.tsx). */}
         {style === 'horloger' ? (
@@ -570,7 +640,7 @@ export function Study({
             frappe={frappe}
             progression={index / Math.max(total, 1)}
             premier={index === 0}
-            onOuvrir={reveal}
+            onOuvrir={actif ? () => {} : reveal}
             onEcouter={pronounce}
           />
         ) : <>
@@ -1286,14 +1356,61 @@ export function Study({
         </div>
       )}
 
-      {!revealed ? (
+      {!revealed && actif && mode === 'ecrit' ? (
+        <form
+          className="rp-ecrit"
+          onSubmit={(e) => { e.preventDefault(); if (saisie.trim()) verifier(saisie, false); }}
+        >
+          <input
+            className="rp-champ"
+            lang={langBack}
+            value={saisie}
+            onChange={(e) => setSaisie(e.target.value)}
+            placeholder={langBack === 'en' ? 'Écris en anglais' : 'Écris en français'}
+            autoFocus autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+            enterKeyHint="done"
+          />
+          <button className="reveal" type="submit" disabled={!saisie.trim()}>Vérifier</button>
+          <p className="tap-hint">
+            Entrée pour valider ·{' '}
+            <button type="button" className="rp-lien" onClick={() => verifier('', false)}>Je ne sais pas</button>
+          </p>
+        </form>
+      ) : !revealed && actif && mode === 'oral' ? (
+        <div className="rp-oral">
+          <p className="rp-entendu">
+            {ecoutant ? <>J’écoute… {entendu && <b>« {entendu} »</b>}</> : langBack === 'en' ? 'Dis-le en anglais' : 'Dis-le en français'}
+          </p>
+          <button className={`rp-micro${ecoutant ? ' on' : ''}`} onClick={micro} aria-label={ecoutant ? 'Arrêter' : 'Parler'}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" x2="12" y1="19" y2="22" /></svg>
+          </button>
+          <p className="tap-hint">
+            {ecoutant ? 'Touche pour arrêter' : 'Touche le micro'} ·{' '}
+            <button type="button" className="rp-lien" onClick={() => { refEcoute.current?.arrete(); setModeCarte('ecrit'); }}>Écrire à la place</button>
+          </p>
+        </div>
+      ) : !revealed ? (
         <>
           <button className="reveal" onClick={reveal}>{style === 'horloger' ? 'Ouvrir la montre' : 'Afficher la réponse'}</button>
           <p className="tap-hint">Touche le mot, ou appuie sur espace au clavier.</p>
         </>
       ) : (
-        <div className="grades">
-          {GRADES.map((g) => (
+        <>
+        {verdict && (
+          <p className={`rp-verdict rp-${verdict.etat}`}>
+            {!verdict.saisi ? 'Pas de réponse : on la revoit bientôt.' : <>
+              {verdict.oral ? 'Tu as dit : ' : 'Tu as écrit : '}
+              {verdict.etat === 'faux' ? <s>{verdict.saisi}</s> : <b>{verdict.saisi}</b>}
+              {verdict.etat === 'faute' && <small>Petite faute acceptée · regarde bien l’orthographe.</small>}
+            </>}
+          </p>
+        )}
+        <div
+          className="grades"
+          style={notesVisibles.length !== GRADES.length
+            ? { gridTemplateColumns: `repeat(${notesVisibles.length}, minmax(0, 1fr))` } : undefined}
+        >
+          {notesVisibles.map((g) => (
             <button
               key={g.key}
               className={`${g.className} g-${g.key}${frappe === g.key ? ' frappe' : ''}`}
@@ -1370,6 +1487,13 @@ export function Study({
             </button>
           ))}
         </div>
+        {verdict?.etat === 'faux' && verdict.saisi && (
+          <p className="tap-hint">
+            <button type="button" className="rp-lien" onClick={contester}>J’avais juste</button>
+            {' '}· synonyme ou micro qui a mal compris : notée « Difficile ».
+          </p>
+        )}
+        </>
       )}
     </>
   );
