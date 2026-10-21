@@ -303,6 +303,21 @@ export function ponderes(u: Usage): number {
   return u.jetonsIn + u.jetonsCache * PART_CACHE + u.jetonsOut;
 }
 
+/**
+ * CHANTIER 300 — LES JETONS EN « ÉQUIVALENT SONNET ».
+ *
+ * Le quota de 33 000 jetons a été calibré sur Sonnet. Haiku ne met rien en
+ * cache sous 4 096 jetons (Sonnet : 1 024) : nos séances restent dessous,
+ * chaque tour était compté plein pot, et le budget en jetons tombait avant
+ * les dix minutes réelles (20/10 : 414 s parlées, 38 054 jetons, 0 en cache).
+ * Un jeton pèse donc au prorata du prix d'entrée de son modèle : Haiku 1/3.
+ * Modèle inconnu = tarif le plus cher, donc pessimiste.
+ */
+export function facteurModele(modele: string | null | undefined): number {
+  const p = (modele && PRIX[modele]) || PRIX_MAX;
+  return p.in / PRIX['claude-sonnet-4-5'].in;
+}
+
 export function coutCentimes(modele: string, u: Usage): number {
   const p = PRIX[modele] ?? PRIX_MAX;
   const dollars =
@@ -398,7 +413,7 @@ export async function consommationDuJour(userId: string, env: Env): Promise<Cons
 /** CHANTIER 144 — la consommation depuis une date : le jour, ou le lundi. */
 export async function consommationDepuis(userId: string, depuis: string, env: Env): Promise<Consommation> {
   const url = `${env.SUPABASE_URL}/rest/v1/parler_usage`
-    + `?select=jetons_in,jetons_cache,jetons_out,cout_centimes,secondes`
+    + `?select=modele,jetons_in,jetons_cache,jetons_out,cout_centimes,secondes`
     + `&user_id=eq.${userId}&jour=gte.${depuis}`;
 
   const r = await fetch(url, {
@@ -440,6 +455,7 @@ export async function consommationDepuis(userId: string, depuis: string, env: En
   };
 
   const lignes = (await r.json()) as Array<{
+    modele: string | null;
     jetons_in: number; jetons_cache: number; jetons_out: number;
     cout_centimes: number; secondes: number;
   }>;
@@ -451,8 +467,11 @@ export async function consommationDepuis(userId: string, depuis: string, env: En
     c.jetonsOut += l.jetons_out ?? 0;
     c.coutCentimes += Number(l.cout_centimes ?? 0);
     c.secondes += l.secondes ?? 0;
+    /* 300 — pondéré ligne par ligne : un jour peut mêler deux modèles. */
+    c.ponderes += ponderes({
+      jetonsIn: l.jetons_in ?? 0, jetonsCache: l.jetons_cache ?? 0, jetonsOut: l.jetons_out ?? 0,
+    }) * facteurModele(l.modele);
   }
-  c.ponderes = ponderes(c);
   return c;
 }
 
