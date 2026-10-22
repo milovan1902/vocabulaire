@@ -48,6 +48,8 @@ export interface Fiche {
   mots: Array<{ en: string; fr: string }>;
   themes: string[];
   erreurs?: Array<{ dit: string; juste: string; fois: number }>;
+  /** CHANTIER 305 — les questions de l'IA lors des 3 dernières séances. */
+  deja?: string[];
 }
 
 export interface Tour {
@@ -276,6 +278,37 @@ export async function mesSeances(): Promise<SeanceGardee[]> {
 export async function oublieSeance(id: number): Promise<void> {
   const { error } = await supabase.from('parler_seance').delete().eq('id', id);
   if (error) throw new ErreurParler('effacement impossible', false, error.message);
+}
+
+/**
+ * CHANTIER 305 — CE QUE L'IA A DÉJÀ DEMANDÉ
+ *
+ * Les 3 dernières séances, une ligne chacune : les trois premières
+ * répliques de l'IA, mises bout à bout. C'est là que se jouent l'angle et
+ * le point de départ, donc la répétition. Lu une seule fois à l'ouverture
+ * de l'onglet. Sans compte ou en panne : liste vide, la séance démarre.
+ */
+export async function sujetsRecents(): Promise<string[]> {
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) return [];
+    const { data, error } = await supabase
+      .from('parler_seance')
+      .select('transcription')
+      .order('finie_le', { ascending: false })
+      .limit(3);
+    if (error || !data) return [];
+    return (data as Array<{ transcription: Tour[] | null }>)
+      .map((l) => (l.transcription ?? [])
+        .filter((t) => t.role === 'assistant')
+        .slice(0, 3)
+        .map((t) => t.content)
+        .join(' / ')
+        .slice(0, 300))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 /** « 7 min 20 s » — la durée d'une séance, telle qu'on la lit. */

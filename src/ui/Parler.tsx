@@ -40,17 +40,27 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
-import { quandDit, finDit, budgetParler, euros, type Budget, type Fiche } from '../data/parler';
+import { quandDit, finDit, budgetParler, euros, sujetsRecents, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
 import { detailExploitant } from '../data/messageErreur';
 
-/** Les thèmes proposés. Au plus dix retenus. */
+/**
+ * Les thèmes proposés. Au plus dix retenus.
+ *
+ * CHANTIER 305 — 14 → 30 thèmes. Les anciens sont gardés tels quels (les
+ * choix enregistrés restent valides). Les nouveaux sont concrets, neutres
+ * et adaptés aux mineurs : rien qui demande de prendre position.
+ */
 const THEMES = [
   'Me présenter', 'La famille', 'Le collège', 'Le sport', 'La musique',
   'Les voyages', 'La cuisine', 'Les animaux', 'Le cinéma', 'Les vacances',
   'La ville', 'La nature', 'Les copains', 'Le week-end',
+  'Au restaurant', 'Les courses', 'Les transports', 'La météo',
+  'Les fêtes', 'Les jeux vidéo', 'Les séries', 'Les livres et BD',
+  'Les métiers', 'Les sciences', 'L’espace', 'Les inventions',
+  'Les monuments', 'Les pays anglophones', 'Le dessin et l’art', 'La mer',
 ];
 
 const MAX_THEMES = 10;
@@ -81,9 +91,10 @@ const GRAMMAIRE: Record<Classe, string> = {
   '5e': 'présent et prétérit, phrases reliées',
   '4e': 'présent, prétérit, futur, present perfect',
   '3e': 'tous les temps du collège, conditionnel',
-  '2de': 'temps composés, opinions argumentées',
-  '1re': 'nuances, hypothèses, sujets d’actualité',
-  Tle: 'registre soutenu, abstraction, débat',
+  /* 305 — plus d'opinion, d'actualité ni de débat : la difficulté vient de la langue. */
+  '2de': 'temps composés, explications détaillées',
+  '1re': 'nuances, hypothèses, récits riches',
+  Tle: 'registre soutenu, vocabulaire précis, hypothèses',
 };
 
 function themesRetenus(): string[] {
@@ -124,6 +135,9 @@ export function Parler({
   const [mots, setMots] = useState<MotRecent[]>([]);
   const [totalMots, setTotalMots] = useState(0);
   const [chargeMots, setChargeMots] = useState(true);
+  /** 305 — ce que l'IA a déjà demandé : lu une fois, fixe pendant la séance (cache). */
+  const [deja, setDeja] = useState<string[]>([]);
+  useEffect(() => { void sujetsRecents().then(setDeja); }, []);
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
@@ -193,7 +207,8 @@ export function Parler({
     grammaire: classe ? GRAMMAIRE[classe] : GRAMMAIRE['6e'],
     mots: mots.map((m) => ({ en: m.en, fr: m.fr })),
     themes: choisis,
-  }), [classe, mots, choisis]);
+    deja,
+  }), [classe, mots, choisis, deja]);
 
   /*
    * CHANTIER 139 — LA VOIX S'OUVRE EN 4e

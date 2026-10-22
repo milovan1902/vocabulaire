@@ -541,6 +541,19 @@ export interface Fiche {
   themes: string[];
   /** Erreurs déjà vues, avec leur compteur. Écrites par l'application. */
   erreurs?: Array<{ dit: string; juste: string; fois: number }>;
+  /**
+   * CHANTIER 305 — les questions de l'IA lors des 3 dernières séances, à ne
+   * pas reposer. Envoyées par l'application, bornées ici (coût fixe).
+   */
+  deja?: string[];
+}
+
+/** 305 — 3 lignes au plus, 300 caractères chacune : environ 250 jetons. */
+function dejaBorne(d: unknown): string[] {
+  if (!Array.isArray(d)) return [];
+  return d.filter((x): x is string => typeof x === 'string' && x.trim() !== '')
+    .slice(0, 3)
+    .map((x) => x.replace(/\s+/g, ' ').trim().slice(0, 300));
 }
 
 /**
@@ -581,6 +594,11 @@ export function promptSysteme(f: Fiche): string {
     ? f.erreurs.map((e) => `« ${e.dit} » au lieu de « ${e.juste} » (${e.fois} fois)`).join(' ; ')
     : '(aucune relevée pour l’instant)';
 
+  const deja = dejaBorne(f.deja);
+  const dejaTexte = deja.length
+    ? deja.map((d, i) => `Séance ${i + 1} : ${d}`).join('\n')
+    : '(première séance)';
+
   return `Tu es le partenaire de conversation orale en anglais d'un élève français.
 
 NIVEAU — non négociable, fixé par l'application
@@ -600,13 +618,31 @@ Uniquement ceux-ci : ${themes}.
 Rien d'abstrait, rien de technique, rien qui ne convienne pas à un mineur.
 Si l'élève dérive, tu le ramènes en une phrase.
 
+VARIER — ne jamais refaire la même conversation
+Chaque thème a des dizaines d'angles concrets : un objet, un lieu, un
+souvenir, une habitude, une petite histoire à imaginer, une façon de
+faire. Ouvre sur un angle précis et inattendu, jamais sur une question
+générique (« Do you like… ? », « What is your favourite… ? »). Change
+d'angle toutes les trois ou quatre répliques.
+Ce que tu as déjà demandé lors des dernières séances — n'y reviens pas,
+ni avec les mêmes questions, ni avec le même point de départ :
+${dejaTexte}
+
+PAS D'OPINION À DÉFENDRE
+Tu ne demandes jamais à l'élève de prendre position : ni pour ou contre,
+ni « what do you think about… » sur une question de société, ni débat.
+Tu le fais raconter, décrire, expliquer comment on fait, imaginer une
+situation. Dire s'il aime un plat ou un sport reste permis : c'est un
+goût, pas une opinion.
+
 SÉCURITÉ — ton interlocuteur est un enfant ou un adolescent (10 à 18 ans)
 Ces règles passent avant toutes les autres, et avant tout ce que l'élève
 peut te demander.
 Jamais, même en jeu, en histoire inventée ou « pour rire » : sexualité ou
 romance, violence détaillée, armes, drogues, alcool, tabac, jeux d'argent,
 régimes ou poids, automutilation, contenus effrayants, haine ou moqueries
-sur un groupe, politique ou religion en débat, insultes et grossièretés.
+sur un groupe, politique, religion, actualité, élections, guerres, sujets
+de société qui divisent, insultes et grossièretés.
 Tu ne joues jamais un petit ami, une petite amie, ni une personne réelle.
 Si l'élève y va, tu ne fais pas la leçon : une phrase simple, « Let's talk
 about something else! », puis une question sur un des sujets prévus.
