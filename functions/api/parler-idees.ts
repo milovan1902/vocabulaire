@@ -13,7 +13,7 @@
  * d'euro par génération, au plus une fois par jour et par élève.
  */
 import {
-  appelleClaude, json, jourUtc, noteConsommation, quotaDe, utilisateurEtEmail,
+  appelleClaude, json, jourUtc, modeleParler, noteConsommation, quotaDe, utilisateurEtEmail,
   voixOuverte, type Contexte, type Env,
 } from './_parler-commun';
 import { sceneValide, TITRES_BANQUE, type Scene } from './_situations';
@@ -88,7 +88,7 @@ export const onRequestGet = async ({ request, env }: Contexte): Promise<Response
     return sortie(s, !s || quotaDe(qui.email, env).illimite);
   } catch (e) {
     console.error('idees get', String(e));
-    return json({ erreur: 'les idées n’ont pas pu être lues' }, 503);
+    return json({ erreur: 'les idées n’ont pas pu être lues', detail: String(e).slice(0, 300) }, 503);
   }
 };
 
@@ -114,26 +114,38 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   } catch (e) {
     /* Lecture ratée = on refuse : sinon chaque clic repartirait au modèle. */
     console.error('idees lecture', String(e));
-    return json({ erreur: 'les idées n’ont pas pu être vérifiées' }, 503);
+    return json({ erreur: 'les idées n’ont pas pu être vérifiées', detail: String(e).slice(0, 300) }, 503);
   }
   if (existantes && !illimite) return sortie(existantes, false);
 
-  let resultat;
-  try {
-    resultat = await appelleClaude(
-      env, MODELE, CONSIGNE,
-      [{ role: 'user', content: `Classe de l'élève : ${corps.classe}. Invente les 3 scènes.` }],
-      1200, false,
-    );
-  } catch (e) {
-    console.error('idees appel', String(e));
-    return json({ erreur: 'l’IA n’a pas répondu' }, 502);
+  /*
+   * CHANTIER 311 — Haiku d'abord ; s'il est refusé (modèle non ouvert sur
+   * l'espace de travail, identifiant inconnu…) ou rend un JSON inutilisable,
+   * on retente UNE fois avec le modèle de la conversation (Sonnet), qui
+   * marche déjà. Une génération Sonnet coûte ~1,2 c : toujours une fois par jour.
+   */
+  const modeles = [MODELE, modeleParler(env)].filter((m, i, t) => t.indexOf(m) === i);
+  let scenes: Scene[] = [];
+  const pannes: string[] = [];
+  for (const modele of modeles) {
+    try {
+      const resultat = await appelleClaude(
+        env, modele, CONSIGNE,
+        [{ role: 'user', content: `Classe de l'élève : ${corps.classe}. Invente les 3 scènes.` }],
+        1500, false,
+      );
+      await noteConsommation(qui.id, modele, resultat.usage, 0, env);
+      scenes = litScenes(resultat.texte);
+      if (scenes.length >= 3) break;
+      pannes.push(`${modele} : réponse incomplète (${scenes.length}/3) « ${resultat.texte.slice(0, 120)} »`);
+    } catch (e) {
+      console.error('idees appel', modele, String(e));
+      pannes.push(`${modele} : ${String(e).slice(0, 200)}`);
+    }
   }
-  await noteConsommation(qui.id, MODELE, resultat.usage, 0, env);
-
-  const scenes = litScenes(resultat.texte);
-  if (scenes.length < 3) return json({ erreur: 'les idées reçues étaient incomplètes, réessaie' }, 502);
-
+  if (scenes.length < 3) {
+    return json({ erreur: 'l’IA n’a pas répondu', detail: pannes.join(' | ').slice(0, 500) }, 502);
+  }
   const r = await fetch(`${env.SUPABASE_URL}/rest/v1/parler_idees?on_conflict=user_id,jour`, {
     method: 'POST',
     headers: {
@@ -145,8 +157,9 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     body: JSON.stringify({ user_id: qui.id, jour: jourUtc(), scenes }),
   });
   if (!r.ok) {
-    console.error('idees ecriture', r.status, await r.text());
-    return json({ erreur: 'les idées n’ont pas pu être enregistrées' }, 503);
+    const t = await r.text();
+    console.error('idees ecriture', r.status, t);
+    return json({ erreur: 'les idées n’ont pas pu être enregistrées', detail: `${r.status} ${t.slice(0, 300)}` }, 503);
   }
 
   return sortie(scenes, illimite);

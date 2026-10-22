@@ -164,18 +164,24 @@ export function Parler({
   const [idees, setIdees] = useState<Idee[] | null>(null);
   const [ideesEncore, setIdeesEncore] = useState(true);
   const [ideesEtat, setIdeesEtat] = useState<'repos' | 'charge' | 'erreur'>('repos');
+  /** 311 — la vraie cause d'un échec, affichée en petit (comme pour la conversation). */
+  const [ideesPanne, setIdeesPanne] = useState<string | null>(null);
   useEffect(() => {
     void ideesDuJour().then((r) => { if (r) { setIdees(r.scenes); setIdeesEncore(r.encore); } });
   }, []);
   const inspire = async () => {
     setIdeesEtat('charge');
+    setIdeesPanne(null);
     try {
       const r = await demandeIdees(classe);
       setIdees(r.scenes);
       setIdeesEncore(r.encore);
       setIdeesEtat('repos');
-    } catch {
+    } catch (e) {
       setIdeesEtat('erreur');
+      const m = e instanceof Error ? e.message : String(e);
+      const d = (e as { detail?: string }).detail;
+      setIdeesPanne(d ? `${m} — ${d}` : m);
     }
   };
   const idIdee = /^idee:([0-2])$/.exec(situation ?? '');
@@ -511,6 +517,11 @@ export function Parler({
                   ? 'Trois nouvelles scènes demain.'
                   : 'L’IA invente trois scènes rien que pour toi. Une fois par jour.'}
             </p>
+            {ideesEtat === 'erreur' && ideesPanne && (
+              <p className="hint" style={{ fontFamily: 'monospace', fontSize: 12, userSelect: 'text', wordBreak: 'break-word' }}>
+                {ideesPanne}
+              </p>
+            )}
             {/* 309 — étape 1 : la catégorie ; étape 2 : la scène. Plus de mélange. */}
             <p className="parler-kicker" style={{ marginTop: 16 }}>1. Catégorie</p>
             <div className="parler-themes" role="group" aria-label="Catégorie">
