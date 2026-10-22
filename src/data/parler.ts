@@ -52,6 +52,8 @@ export interface Fiche {
   deja?: string[];
   /** CHANTIER 306 — le cran de difficulté, 1 à 20. */
   cran?: number;
+  /** CHANTIER 308 — l'id d'une mise en situation (voir `situations.ts`). */
+  situation?: string;
 }
 
 /**

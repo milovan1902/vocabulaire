@@ -44,6 +44,7 @@ import { quandDit, finDit, budgetParler, euros, sujetsRecents, cranRetenu, type 
 import { ParlerSeance } from './ParlerSeance';
 import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
+import { SITUATIONS, titreSituation } from '../data/situations';
 import { detailExploitant } from '../data/messageErreur';
 
 /**
@@ -146,6 +147,16 @@ export function Parler({
   useEffect(() => { void sujetsRecents().then(setDeja); }, []);
   /** 306 — le cran de difficulté ; 307 — lu dans les réglages du compte. */
   const cran = cranRetenu(settings.parlerCran);
+  /** CHANTIER 308 — conversation libre ou mise en situation, et la scène choisie. */
+  const [mode, setModeEtat] = useState<'libre' | 'scene'>(
+    () => (localStorage.getItem('vocab:parler-mode') === 'scene' ? 'scene' : 'libre'),
+  );
+  const [situation, setSituationEtat] = useState<string | null>(
+    () => { const id = localStorage.getItem('vocab:parler-situation'); return titreSituation(id) ? id : null; },
+  );
+  const setMode = (m: 'libre' | 'scene') => { setModeEtat(m); localStorage.setItem('vocab:parler-mode', m); };
+  const setSituation = (id: string) => { setSituationEtat(id); localStorage.setItem('vocab:parler-situation', id); };
+  const titreScene = mode === 'scene' ? titreSituation(situation) : null;
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
@@ -214,10 +225,12 @@ export function Parler({
     classe,
     grammaire: classe ? GRAMMAIRE[classe] : GRAMMAIRE['6e'],
     mots: mots.map((m) => ({ en: m.en, fr: m.fr })),
-    themes: choisis,
+    /* 308 — en mise en situation, le titre part dans l'archive à la place des thèmes. */
+    themes: titreScene ? [`Mise en situation : ${titreScene}`] : choisis,
+    situation: titreScene && situation ? situation : undefined,
     deja,
     cran,
-  }), [classe, mots, choisis, deja, cran]);
+  }), [classe, mots, choisis, deja, cran, titreScene, situation]);
 
   /*
    * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
@@ -394,9 +407,21 @@ export function Parler({
       )}
 
       <div className="parler-carte">
+        {/* CHANTIER 308 — deux façons de s'exercer. */}
+        <div className="parler-themes" role="group" aria-label="Type de séance">
+          <button className={mode === 'libre' ? 'on' : ''} aria-pressed={mode === 'libre'} onClick={() => setMode('libre')}>
+            Conversation
+          </button>
+          <button className={mode === 'scene' ? 'on' : ''} aria-pressed={mode === 'scene'} onClick={() => setMode('scene')}>
+            Mise en situation
+          </button>
+        </div>
+      </div>
+
+      <div className="parler-carte">
         <div className="parler-tete">
-          <p className="parler-kicker">De quoi parle-t-on ?</p>
-          <em className="parler-compte">{choisis.length} / {MAX_THEMES}</em>
+          <p className="parler-kicker">{mode === 'scene' ? 'Quelle situation ?' : 'De quoi parle-t-on ?'}</p>
+          {mode === 'libre' && <em className="parler-compte">{choisis.length} / {MAX_THEMES}</em>}
         </div>
 
         {classe ? (
@@ -412,6 +437,32 @@ export function Parler({
           </p>
         )}
 
+        {mode === 'scene' ? (
+          <>
+            <p className="hint">
+              L’IA joue le rôle (réceptionniste, serveur, pharmacien…) et mène
+              la scène étape par étape, avec un imprévu en cours de route.
+              Les corrections arrivent dans le bilan.
+            </p>
+            {SITUATIONS.map((c) => (
+              <div key={c.cat}>
+                <p className="parler-niveau"><b>{c.cat}</b></p>
+                <div className="parler-themes">
+                  {c.liste.map((s) => (
+                    <button
+                      key={s.id}
+                      className={situation === s.id ? 'on' : ''}
+                      aria-pressed={situation === s.id}
+                      onClick={() => setSituation(s.id)}
+                    >
+                      {s.titre}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
         <div className="parler-themes">
           {THEMES.map((t) => {
             const on = choisis.includes(t);
@@ -428,6 +479,7 @@ export function Parler({
             );
           })}
         </div>
+        )}
       </div>
 
       <div className="parler-carte">
@@ -459,7 +511,7 @@ export function Parler({
 
       <button
         className="btn parler-go"
-        disabled={etat !== 'pret' || !!budget?.fini || choisis.length === 0}
+        disabled={etat !== 'pret' || !!budget?.fini || (mode === 'scene' ? !titreScene : choisis.length === 0)}
         onClick={() => { mesure('parler'); setEnSeance(true); }}
       >
         Commencer à parler
