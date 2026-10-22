@@ -119,12 +119,14 @@ const CLASSES_VOIX: readonly string[] = ['4e', '3e', '2de', '1re', 'Tle'];
 type Etat = 'charge' | 'pret' | 'anonyme' | 'panne';
 
 export function Parler({
-  decks, active, settings, onReglages, onReprise,
+  decks, active, settings, onSettings, onReglages, onReprise,
 }: {
   decks: Deck[];
   /** Paquets en jeu : le vocabulaire dont la conversation peut se servir. */
   active: string[];
   settings: Settings;
+  /** CHANTIER 307 — enregistrer le cran de difficulté dans les réglages du compte. */
+  onSettings: (s: Settings) => void;
   /** Aller régler sa classe. Le niveau ne se change pas depuis ici. */
   onReglages: () => void;
   /** CHANTIER 110 — obtenir et mettre en jeu le paquet de reprise. */
@@ -142,8 +144,8 @@ export function Parler({
   /** 305 — ce que l'IA a déjà demandé : lu une fois, fixe pendant la séance (cache). */
   const [deja, setDeja] = useState<string[]>([]);
   useEffect(() => { void sujetsRecents().then(setDeja); }, []);
-  /** 306 — le cran de difficulté, relu après chaque séance. */
-  const [cran, setCran] = useState(cranRetenu);
+  /** 306 — le cran de difficulté ; 307 — lu dans les réglages du compte. */
+  const cran = cranRetenu(settings.parlerCran);
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
@@ -272,10 +274,10 @@ export function Parler({
         onFini={() => {
           setEnSeance(false);
           void litBudget();
-          /* 306 — le cran vient peut-être de bouger, et la séance s'ajoute aux « déjà vues ». */
-          setCran(cranRetenu());
+          /* 306 — la séance s'ajoute aux « déjà vues ». */
           void sujetsRecents().then(setDeja);
         }}
+        onCran={(n) => onSettings({ ...settings, parlerCran: n })}
         enJeu={active}
         onReprise={onReprise}
       />

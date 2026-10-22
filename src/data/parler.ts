@@ -60,7 +60,11 @@ export interface Fiche {
  * 20 crans, départ au milieu (10). Après chaque bilan, l'élève dit si c'était
  * trop facile, adapté ou trop dur : un cran de plus, rien, un cran de moins.
  * Jamais deux crans d'un coup — « trop dur » ne doit pas rendre la séance
- * suivante enfantine. Gardé sur l'appareil, comme les thèmes et la vitesse.
+ * suivante enfantine.
+ *
+ * CHANTIER 307 — le cran suit le COMPTE : il voyage dans les réglages
+ * (`Settings.parlerCran`, JSON de `user_settings`), comme la classe. Le
+ * localStorage du 306 n'est plus lu que pour reprendre un cran déjà réglé.
  */
 export const CRAN_MIN = 1;
 export const CRAN_MAX = 20;
@@ -69,21 +73,25 @@ const CLE_CRAN = 'vocab:parler-cran';
 
 export type Ressenti = 'facile' | 'adapte' | 'dur';
 
-export function cranRetenu(): number {
-  const n = Math.round(Number(localStorage.getItem(CLE_CRAN)));
+function borneCran(n: number): number {
+  return Math.min(CRAN_MAX, Math.max(CRAN_MIN, Math.round(n)));
+}
+
+/** Le cran du compte ; à défaut celui gardé sur l'appareil (306) ; à défaut 10. */
+export function cranRetenu(parlerCran?: number): number {
+  if (typeof parlerCran === 'number' && Number.isFinite(parlerCran)) return borneCran(parlerCran);
+  const n = Number(localStorage.getItem(CLE_CRAN));
   if (!Number.isFinite(n) || n === 0) return CRAN_DEPART;
-  return Math.min(CRAN_MAX, Math.max(CRAN_MIN, n));
+  return borneCran(n);
 }
 
 /**
  * Le cran après le ressenti, calculé depuis le cran de la séance (`avant`) :
  * changer d'avis sur l'écran du bilan ne cumule pas les crans.
  */
-export function noteRessenti(avant: number, r: Ressenti): number {
+export function cranSuivant(avant: number, r: Ressenti): number {
   const pas = r === 'facile' ? 1 : r === 'dur' ? -1 : 0;
-  const n = Math.min(CRAN_MAX, Math.max(CRAN_MIN, avant + pas));
-  try { localStorage.setItem(CLE_CRAN, String(n)); } catch { /* mode privé */ }
-  return n;
+  return borneCran(avant + pas);
 }
 
 export interface Tour {

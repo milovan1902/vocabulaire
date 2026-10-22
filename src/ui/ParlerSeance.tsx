@@ -41,7 +41,7 @@ import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import { detailExploitant } from '../data/messageErreur';
 import {
   bilanDeSeance, euros, tourDeParole, ErreurParler, signaleReponse, quandDit, finDit,
-  noteRessenti, cranRetenu,
+  cranSuivant, cranRetenu,
   type Bilan, type Budget, type Fiche, type Motif, type Tour, type Ressenti,
 } from '../data/parler';
 
@@ -95,9 +95,11 @@ function horloge(s: number): string {
 type Mode = 'voix' | 'clavier';
 
 export function ParlerSeance({
-  fiche, debit, budget, exploitant, onFini, enJeu, onReprise,
+  fiche, debit, budget, exploitant, onFini, enJeu, onReprise, onCran,
 }: {
   fiche: Fiche;
+  /** CHANTIER 307 — le nouveau cran, à enregistrer avec le compte. */
+  onCran: (n: number) => void;
   enJeu: string[];
   onReprise: () => Promise<void>;
   debit: number;
@@ -115,7 +117,7 @@ export function ParlerSeance({
   /** 306 — le ressenti de l'élève sur la difficulté ; null = pas répondu, le cran ne bouge pas. */
   const [ressenti, setRessenti] = useState<Ressenti | null>(null);
   const cranAvant = useRef(fiche.cran ?? cranRetenu());
-  const note = (r: Ressenti) => { setRessenti(r); noteRessenti(cranAvant.current, r); };
+  const note = (r: Ressenti) => { setRessenti(r); onCran(cranSuivant(cranAvant.current, r)); };
   const [erreur, setErreur] = useState<string | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
 

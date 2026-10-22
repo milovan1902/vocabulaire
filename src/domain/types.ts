@@ -260,6 +260,11 @@ export interface Settings {
    */
   reponseJeu?: ModeReponse;
   reponsePerso?: ModeReponse;
+  /**
+   * CHANTIER 307 — le cran de difficulté de l'onglet Parler, 1 à 20, réglé
+   * après chaque bilan. Facultatif : absent = cran 10. Voyage avec le compte.
+   */
+  parlerCran?: number;
 }
 
 export type ModeReponse = 'tete' | 'ecrit' | 'oral';

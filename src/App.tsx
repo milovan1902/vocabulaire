@@ -665,6 +665,13 @@ export default function App() {
             decks={store.decks}
             active={store.active}
             settings={store.common}
+            /*
+             * CHANTIER 307 — le cran de difficulté réglé après le bilan part
+             * tout de suite vers le compte, comme le paquet de reprise.
+             */
+            onSettings={(s) => {
+              void store.setCommon(s).then(() => { if (auth.session) void auth.runSync(); });
+            }}
             onReglages={() => setView({ name: 'account' })}
             /*
              * CHANTIER 110 — le paquet de reprise vient d'être rempli : on
