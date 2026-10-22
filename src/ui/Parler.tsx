@@ -40,7 +40,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
-import { quandDit, finDit, budgetParler, euros, sujetsRecents, type Budget, type Fiche } from '../data/parler';
+import { quandDit, finDit, budgetParler, euros, sujetsRecents, cranRetenu, type Budget, type Fiche } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
@@ -52,7 +52,11 @@ import { detailExploitant } from '../data/messageErreur';
  * CHANTIER 305 — 14 → 30 thèmes. Les anciens sont gardés tels quels (les
  * choix enregistrés restent valides). Les nouveaux sont concrets, neutres
  * et adaptés aux mineurs : rien qui demande de prendre position.
+ *
+ * CHANTIER 306 — affichés par ordre alphabétique, article ignoré
+ * (« Les animaux » sous A, « L’espace » sous E).
  */
+const sansArticle = (t: string) => t.replace(/^(Au|La|Le|Les|L’)\s*/, '');
 const THEMES = [
   'Me présenter', 'La famille', 'Le collège', 'Le sport', 'La musique',
   'Les voyages', 'La cuisine', 'Les animaux', 'Le cinéma', 'Les vacances',
@@ -61,7 +65,7 @@ const THEMES = [
   'Les fêtes', 'Les jeux vidéo', 'Les séries', 'Les livres et BD',
   'Les métiers', 'Les sciences', 'L’espace', 'Les inventions',
   'Les monuments', 'Les pays anglophones', 'Le dessin et l’art', 'La mer',
-];
+].sort((a, b) => sansArticle(a).localeCompare(sansArticle(b), 'fr'));
 
 const MAX_THEMES = 10;
 
@@ -138,6 +142,8 @@ export function Parler({
   /** 305 — ce que l'IA a déjà demandé : lu une fois, fixe pendant la séance (cache). */
   const [deja, setDeja] = useState<string[]>([]);
   useEffect(() => { void sujetsRecents().then(setDeja); }, []);
+  /** 306 — le cran de difficulté, relu après chaque séance. */
+  const [cran, setCran] = useState(cranRetenu);
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
@@ -208,7 +214,8 @@ export function Parler({
     mots: mots.map((m) => ({ en: m.en, fr: m.fr })),
     themes: choisis,
     deja,
-  }), [classe, mots, choisis, deja]);
+    cran,
+  }), [classe, mots, choisis, deja, cran]);
 
   /*
    * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
@@ -262,7 +269,13 @@ export function Parler({
         debit={vitesse / 100}
         budget={budget}
         exploitant={exploitant}
-        onFini={() => { setEnSeance(false); void litBudget(); }}
+        onFini={() => {
+          setEnSeance(false);
+          void litBudget();
+          /* 306 — le cran vient peut-être de bouger, et la séance s'ajoute aux « déjà vues ». */
+          setCran(cranRetenu());
+          void sujetsRecents().then(setDeja);
+        }}
         enJeu={active}
         onReprise={onReprise}
       />

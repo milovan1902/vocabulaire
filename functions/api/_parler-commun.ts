@@ -546,6 +546,43 @@ export interface Fiche {
    * pas reposer. Envoyées par l'application, bornées ici (coût fixe).
    */
   deja?: string[];
+  /**
+   * CHANTIER 306 — le cran de difficulté, de 1 à 20, réglé par l'élève après
+   * chaque bilan (« trop facile / adapté / trop dur »). 10 = le milieu.
+   * Il joue À L'INTÉRIEUR de la classe : la grammaire reste celle de la classe.
+   */
+  cran?: number;
+}
+
+export const CRAN_MIN = 1;
+export const CRAN_MAX = 20;
+export const CRAN_DEPART = 10;
+
+function cranBorne(c: unknown): number {
+  const n = Math.round(Number(c));
+  if (!Number.isFinite(n)) return CRAN_DEPART;
+  return Math.min(CRAN_MAX, Math.max(CRAN_MIN, n));
+}
+
+/**
+ * 306 — ce que le cran change, en clair pour le modèle. Une échelle continue
+ * plutôt que cinq paliers : un cran de plus doit se sentir à peine.
+ */
+function consigneCran(n: number): { mots: number; texte: string } {
+  const t = (n - CRAN_MIN) / (CRAN_MAX - CRAN_MIN); // 0 → 1
+  const mots = Math.round(12 + t * 23); // 12 → 35 mots par tour
+  return {
+    mots,
+    texte: `Cran ${n} sur ${CRAN_MAX} (10 = milieu). Le cran ne change PAS la grammaire
+autorisée ci-dessus : il règle tout le reste, par petites touches.
+Repères : cran 1 = mots très courants, phrases très courtes, une seule idée
+par question, tu reformules volontiers si l'élève bloque. Cran 10 = langue
+naturelle de la classe, une reformulation si besoin. Cran 20 = vocabulaire
+riche et précis, quelques expressions idiomatiques, questions qui demandent
+de développer, presque jamais de reformulation.
+Place-toi exactement au cran ${n}, entre ces repères : l'élève l'a ajusté
+d'un cran seulement, le changement doit rester léger.`,
+  };
 }
 
 /** 305 — 3 lignes au plus, 300 caractères chacune : environ 250 jetons. */
@@ -599,6 +636,8 @@ export function promptSysteme(f: Fiche): string {
     ? deja.map((d, i) => `Séance ${i + 1} : ${d}`).join('\n')
     : '(première séance)';
 
+  const cran = consigneCran(cranBorne(f.cran));
+
   return `Tu es le partenaire de conversation orale en anglais d'un élève français.
 
 NIVEAU — non négociable, fixé par l'application
@@ -608,8 +647,11 @@ Ne va jamais au-delà, même si l'élève le fait. Ne propose JAMAIS de changer
 de niveau : ce n'est pas toi qui en décides, et tu ne sais rien des séances
 passées.
 
+DIFFICULTÉ — réglée par l'élève, pas par toi
+${cran.texte}
+
 LONGUEUR — la règle la plus importante
-Deux phrases par tour, 25 mots au maximum, puis tu rends la parole par une
+Deux phrases par tour, ${cran.mots} mots au maximum, puis tu rends la parole par une
 question simple. L'élève doit parler les deux tiers du temps. Tu ne fais
 jamais deux tours de suite sans qu'il ait parlé.
 

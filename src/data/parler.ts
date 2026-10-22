@@ -50,6 +50,40 @@ export interface Fiche {
   erreurs?: Array<{ dit: string; juste: string; fois: number }>;
   /** CHANTIER 305 — les questions de l'IA lors des 3 dernières séances. */
   deja?: string[];
+  /** CHANTIER 306 — le cran de difficulté, 1 à 20. */
+  cran?: number;
+}
+
+/**
+ * CHANTIER 306 — LE CRAN DE DIFFICULTÉ
+ *
+ * 20 crans, départ au milieu (10). Après chaque bilan, l'élève dit si c'était
+ * trop facile, adapté ou trop dur : un cran de plus, rien, un cran de moins.
+ * Jamais deux crans d'un coup — « trop dur » ne doit pas rendre la séance
+ * suivante enfantine. Gardé sur l'appareil, comme les thèmes et la vitesse.
+ */
+export const CRAN_MIN = 1;
+export const CRAN_MAX = 20;
+export const CRAN_DEPART = 10;
+const CLE_CRAN = 'vocab:parler-cran';
+
+export type Ressenti = 'facile' | 'adapte' | 'dur';
+
+export function cranRetenu(): number {
+  const n = Math.round(Number(localStorage.getItem(CLE_CRAN)));
+  if (!Number.isFinite(n) || n === 0) return CRAN_DEPART;
+  return Math.min(CRAN_MAX, Math.max(CRAN_MIN, n));
+}
+
+/**
+ * Le cran après le ressenti, calculé depuis le cran de la séance (`avant`) :
+ * changer d'avis sur l'écran du bilan ne cumule pas les crans.
+ */
+export function noteRessenti(avant: number, r: Ressenti): number {
+  const pas = r === 'facile' ? 1 : r === 'dur' ? -1 : 0;
+  const n = Math.min(CRAN_MAX, Math.max(CRAN_MIN, avant + pas));
+  try { localStorage.setItem(CLE_CRAN, String(n)); } catch { /* mode privé */ }
+  return n;
 }
 
 export interface Tour {

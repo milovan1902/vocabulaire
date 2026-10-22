@@ -41,7 +41,8 @@ import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import { detailExploitant } from '../data/messageErreur';
 import {
   bilanDeSeance, euros, tourDeParole, ErreurParler, signaleReponse, quandDit, finDit,
-  type Bilan, type Budget, type Fiche, type Motif, type Tour,
+  noteRessenti, cranRetenu,
+  type Bilan, type Budget, type Fiche, type Motif, type Tour, type Ressenti,
 } from '../data/parler';
 
 /*
@@ -111,6 +112,10 @@ export function ParlerSeance({
   const [secondes, setSecondes] = useState(0);
   const [bilan, setBilan] = useState<Bilan | null>(null);
   const [tropCourt, setTropCourt] = useState(false);
+  /** 306 — le ressenti de l'élève sur la difficulté ; null = pas répondu, le cran ne bouge pas. */
+  const [ressenti, setRessenti] = useState<Ressenti | null>(null);
+  const cranAvant = useRef(fiche.cran ?? cranRetenu());
+  const note = (r: Ressenti) => { setRessenti(r); noteRessenti(cranAvant.current, r); };
   const [erreur, setErreur] = useState<string | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
 
@@ -268,6 +273,29 @@ export function ParlerSeance({
         </div>
 
         <ReprendreMots mots={bilan.mots} enJeu={enJeu} onReprise={onReprise} />
+
+        {/* CHANTIER 306 — un cran de plus ou de moins pour la prochaine fois. */}
+        <div className="parler-carte">
+          <p className="parler-kicker">Cette conversation était…</p>
+          <div className="parler-themes" role="group" aria-label="Difficulté ressentie">
+            {([['facile', 'Trop facile'], ['adapte', 'Adaptée'], ['dur', 'Trop dure']] as const).map(([r, libelle]) => (
+              <button
+                key={r}
+                className={ressenti === r ? 'on' : ''}
+                aria-pressed={ressenti === r}
+                onClick={() => note(r)}
+              >
+                {libelle}
+              </button>
+            ))}
+          </div>
+          <p className="hint">
+            {ressenti === 'facile' && 'Noté : la prochaine sera un peu plus exigeante.'}
+            {ressenti === 'adapte' && 'Noté : on garde ce niveau.'}
+            {ressenti === 'dur' && 'Noté : la prochaine sera un peu plus simple.'}
+            {!ressenti && 'Un cran à la fois : le changement restera léger.'}
+          </p>
+        </div>
 
         {/*
           * La phrase la plus utile de l'écran : elle répond à la question
