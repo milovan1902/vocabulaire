@@ -240,3 +240,29 @@ export const SCENES: Record<string, Scene> = {
 export function sceneDe(id: unknown): Scene | null {
   return typeof id === 'string' && Object.prototype.hasOwnProperty.call(SCENES, id) ? SCENES[id] : null;
 }
+
+/** CHANTIER 310 — les titres de la banque, pour que l'IA n'invente pas un doublon. */
+export const TITRES_BANQUE = Object.values(SCENES).map((s) => s.titre);
+
+const ligne = (x: unknown, max: number) =>
+  typeof x === 'string' ? x.replace(/\s+/g, ' ').trim().slice(0, max) : '';
+
+/**
+ * CHANTIER 310 — une scène inventée par l'IA, remise au gabarit de la banque :
+ * longueurs bornées, une ligne par champ, 3 à 6 étapes, 1 à 3 imprévus.
+ * Ce qui ne passe pas est rejeté (null).
+ */
+export function sceneValide(x: unknown): Scene | null {
+  if (!x || typeof x !== 'object') return null;
+  const o = x as Record<string, unknown>;
+  const liste = (v: unknown, n: number) =>
+    Array.isArray(v) ? v.map((e) => ligne(e, 100)).filter(Boolean).slice(0, n) : [];
+  const s: Scene = {
+    titre: ligne(o.titre, 70),
+    role: ligne(o.role, 120),
+    eleve: ligne(o.eleve, 120),
+    etapes: liste(o.etapes, 6),
+    imprevus: liste(o.imprevus, 3),
+  };
+  return s.titre && s.role && s.eleve && s.etapes.length >= 3 && s.imprevus.length >= 1 ? s : null;
+}

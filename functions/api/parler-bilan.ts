@@ -30,7 +30,7 @@ import {
   noteConsommation, noteSeance, promptSysteme, quotaDe, utilisateurEtEmail,
   budgetDe, type Contexte, type Fiche,
 } from './_parler-commun';
-import { voixOuverte } from './_parler-commun';
+import { voixOuverte, sceneDeFiche } from './_parler-commun';
 
 interface Requete {
   fiche: Fiche;
@@ -145,7 +145,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
        * mots travaillés, sans quoi le bilan corrigerait des tournures que
        * l'élève n'a pas encore vues.
        */
-      `${promptSysteme(corps.fiche)}\n\n---\n\n${CONSIGNE}`,
+      `${promptSysteme(corps.fiche, await sceneDeFiche(userId, corps.fiche, env))}\n\n---\n\n${CONSIGNE}`,
       [{ role: 'user', content: transcription }],
       900,
       false,

@@ -28,7 +28,7 @@ import {
   noteConsommation, promptSysteme, quotaDe, utilisateurEtEmail,
   budgetDe, type Budget, type Contexte, type Fiche,
 } from './_parler-commun';
-import { voixOuverte } from './_parler-commun';
+import { voixOuverte, sceneDeFiche } from './_parler-commun';
 
 /** Corps attendu d'un tour de parole. */
 interface Requete {
@@ -129,7 +129,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     resultat = await appelleClaude(
       env,
       modele,
-      promptSysteme(corps.fiche),
+      promptSysteme(corps.fiche, await sceneDeFiche(userId, corps.fiche, env)),
       messages,
       /*
        * 160 jetons : deux phrases et vingt-cinq mots tiennent dedans. Le

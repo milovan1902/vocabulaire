@@ -40,7 +40,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
-import { quandDit, finDit, budgetParler, euros, sujetsRecents, cranRetenu, type Budget, type Fiche } from '../data/parler';
+import { quandDit, finDit, budgetParler, euros, sujetsRecents, cranRetenu, ideesDuJour, demandeIdees, type Budget, type Fiche, type Idee } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
@@ -152,11 +152,36 @@ export function Parler({
     () => (localStorage.getItem('vocab:parler-mode') === 'scene' ? 'scene' : 'libre'),
   );
   const [situation, setSituationEtat] = useState<string | null>(
-    () => { const id = localStorage.getItem('vocab:parler-situation'); return titreSituation(id) ? id : null; },
+    () => {
+      const id = localStorage.getItem('vocab:parler-situation');
+      /* 310 — une scène inventée se garde aussi ; son titre arrive avec les idées du jour. */
+      return titreSituation(id) || /^idee:[0-2]$/.test(id ?? '') ? id : null;
+    },
   );
   const setMode = (m: 'libre' | 'scene') => { setModeEtat(m); localStorage.setItem('vocab:parler-mode', m); };
   const setSituation = (id: string) => { setSituationEtat(id); localStorage.setItem('vocab:parler-situation', id); };
-  const titreScene = mode === 'scene' ? titreSituation(situation) : null;
+  /** CHANTIER 310 — les 3 scènes inventées du jour, et si on peut encore en demander. */
+  const [idees, setIdees] = useState<Idee[] | null>(null);
+  const [ideesEncore, setIdeesEncore] = useState(true);
+  const [ideesEtat, setIdeesEtat] = useState<'repos' | 'charge' | 'erreur'>('repos');
+  useEffect(() => {
+    void ideesDuJour().then((r) => { if (r) { setIdees(r.scenes); setIdeesEncore(r.encore); } });
+  }, []);
+  const inspire = async () => {
+    setIdeesEtat('charge');
+    try {
+      const r = await demandeIdees(classe);
+      setIdees(r.scenes);
+      setIdeesEncore(r.encore);
+      setIdeesEtat('repos');
+    } catch {
+      setIdeesEtat('erreur');
+    }
+  };
+  const idIdee = /^idee:([0-2])$/.exec(situation ?? '');
+  const titreScene = mode !== 'scene' ? null
+    : idIdee ? (idees?.[Number(idIdee[1])]?.titre ?? null)
+    : titreSituation(situation);
   /** CHANTIER 309 — une catégorie à la fois : celle de la scène retenue, sinon la première. */
   const [cat, setCat] = useState<string>(
     () => SITUATIONS.find((c) => c.liste.some((s) => s.id === situation))?.cat ?? SITUATIONS[0].cat,
@@ -448,6 +473,43 @@ export function Parler({
               L’IA joue le rôle (réceptionniste, serveur, pharmacien…) et mène
               la scène étape par étape, avec un imprévu en cours de route.
               Les corrections arrivent dans le bilan.
+            </p>
+
+            {/* CHANTIER 310 — trois scènes inventées par l'IA, une fois par jour. */}
+            <p className="parler-kicker" style={{ marginTop: 16 }}>Pas d’inspiration ?</p>
+            {idees && (
+              <div className="parler-themes" role="group" aria-label="Scènes inventées">
+                {idees.map((s, i) => (
+                  <button
+                    key={i}
+                    className={situation === `idee:${i}` ? 'on' : ''}
+                    aria-pressed={situation === `idee:${i}`}
+                    onClick={() => setSituation(`idee:${i}`)}
+                    title={`L’IA : ${s.role}. Toi : ${s.eleve}.`}
+                  >
+                    {s.titre}
+                  </button>
+                ))}
+              </div>
+            )}
+            {idIdee && idees?.[Number(idIdee[1])] && (
+              <p className="hint">
+                L’IA : {idees[Number(idIdee[1])].role}. Toi : {idees[Number(idIdee[1])].eleve}.
+              </p>
+            )}
+            {ideesEncore ? (
+              <div className="parler-themes">
+                <button onClick={() => void inspire()} disabled={ideesEtat === 'charge'}>
+                  {ideesEtat === 'charge' ? 'L’IA invente…' : idees ? 'Trois autres' : 'Invente-moi 3 scènes'}
+                </button>
+              </div>
+            ) : null}
+            <p className="hint">
+              {ideesEtat === 'erreur'
+                ? 'L’IA n’a pas répondu. Réessaie dans un instant.'
+                : idees && !ideesEncore
+                  ? 'Trois nouvelles scènes demain.'
+                  : 'L’IA invente trois scènes rien que pour toi. Une fois par jour.'}
             </p>
             {/* 309 — étape 1 : la catégorie ; étape 2 : la scène. Plus de mélange. */}
             <p className="parler-kicker" style={{ marginTop: 16 }}>1. Catégorie</p>

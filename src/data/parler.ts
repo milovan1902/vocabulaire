@@ -186,6 +186,28 @@ export async function budgetParler(): Promise<Budget | null> {
 }
 
 /**
+ * CHANTIER 310 — « PAS D'INSPIRATION ? »
+ *
+ * Trois scènes inventées par l'IA, une fois par jour. L'écran ne reçoit que
+ * le titre et les deux rôles ; le déroulé reste sur le serveur. On les
+ * choisit par `situation: 'idee:0' | 'idee:1' | 'idee:2'`.
+ */
+export interface Idee { titre: string; role: string; eleve: string }
+export interface Idees { scenes: Idee[] | null; encore: boolean }
+
+export async function ideesDuJour(): Promise<Idees | null> {
+  try {
+    return await appelle<Idees>('/api/parler-idees');
+  } catch {
+    return null;
+  }
+}
+
+export async function demandeIdees(classe: string | null): Promise<Idees> {
+  return appelle<Idees>('/api/parler-idees', { classe });
+}
+
+/**
  * Un tour de parole.
  *
  * L'historique complet de la SÉANCE est envoyé à chaque tour — c'est ainsi

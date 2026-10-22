@@ -536,7 +536,7 @@ export async function noteConsommation(
  * Le rôle, les étapes et les imprévus sont écrits sur le serveur
  * (`_situations.ts`) : l'application n'envoie que l'id de la scène.
  */
-import { sceneDe, type Scene } from './_situations';
+import { sceneDe, sceneValide, type Scene } from './_situations';
 
 export interface Fiche {
   /** Classe déclarée dans les Réglages. Elle FIXE le niveau. */
@@ -686,7 +686,7 @@ reprends tout de suite ton rôle.`;
  *    facture et le silence de l'élève. La règle pédagogique et la règle
  *    économique disent ici la même chose — l'élève doit parler.
  */
-export function promptSysteme(f: Fiche): string {
+export function promptSysteme(f: Fiche, sceneIdee: Scene | null = null): string {
   const mots = f.mots.length
     ? f.mots.map((m) => `${m.en} (${m.fr})`).join(', ')
     : '(aucun pour l’instant)';
@@ -703,7 +703,7 @@ export function promptSysteme(f: Fiche): string {
     : '(première séance)';
 
   const cran = consigneCran(cranBorne(f.cran));
-  const scene = sceneDe(f.situation);
+  const scene = sceneIdee ?? sceneDe(f.situation);
   const sujets = scene ? blocScene(scene) : blocLibre(themes, dejaTexte);
 
   return `Tu es le partenaire de conversation orale en anglais d'un élève français.
@@ -907,6 +907,30 @@ function avecCacheHistorique(
     : m);
 }
 
+
+/* ------------------------------------------------------------------
+   CHANTIER 310 — LES SCÈNES INVENTÉES (« Pas d'inspiration »)
+
+   L'application envoie `situation: 'idee:0' | 'idee:1' | 'idee:2'`. Le
+   texte de la scène n'arrive JAMAIS du téléphone : il est relu ici,
+   dans `parler_idees`, tel que le serveur l'a enregistré et vérifié.
+   ------------------------------------------------------------------ */
+export async function sceneDeFiche(userId: string, f: Fiche | undefined, env: Env): Promise<Scene | null> {
+  const m = /^idee:([0-2])$/.exec(f?.situation ?? '');
+  if (!m) return null;
+  try {
+    const r = await fetch(
+      `${env.SUPABASE_URL}/rest/v1/parler_idees?select=scenes&user_id=eq.${userId}&order=jour.desc&limit=1`,
+      { headers: { apikey: env.SUPABASE_SERVICE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` } },
+    );
+    if (!r.ok) return null;
+    const lignes = (await r.json()) as Array<{ scenes: unknown }>;
+    const scenes = lignes[0]?.scenes;
+    return Array.isArray(scenes) ? sceneValide(scenes[Number(m[1])]) : null;
+  } catch {
+    return null;
+  }
+}
 
 /* ------------------------------------------------------------------
    CHANTIER 106 — LA SÉANCE GARDÉE
