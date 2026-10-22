@@ -157,6 +157,11 @@ export function Parler({
   const setMode = (m: 'libre' | 'scene') => { setModeEtat(m); localStorage.setItem('vocab:parler-mode', m); };
   const setSituation = (id: string) => { setSituationEtat(id); localStorage.setItem('vocab:parler-situation', id); };
   const titreScene = mode === 'scene' ? titreSituation(situation) : null;
+  /** CHANTIER 309 — une catégorie à la fois : celle de la scène retenue, sinon la première. */
+  const [cat, setCat] = useState<string>(
+    () => SITUATIONS.find((c) => c.liste.some((s) => s.id === situation))?.cat ?? SITUATIONS[0].cat,
+  );
+  const scenesDeCat = SITUATIONS.find((c) => c.cat === cat)?.liste ?? [];
 
   const [budget, setBudget] = useState<Budget | null>(null);
   const [etat, setEtat] = useState<Etat>('charge');
@@ -444,23 +449,38 @@ export function Parler({
               la scène étape par étape, avec un imprévu en cours de route.
               Les corrections arrivent dans le bilan.
             </p>
-            {SITUATIONS.map((c) => (
-              <div key={c.cat}>
-                <p className="parler-niveau"><b>{c.cat}</b></p>
-                <div className="parler-themes">
-                  {c.liste.map((s) => (
-                    <button
-                      key={s.id}
-                      className={situation === s.id ? 'on' : ''}
-                      aria-pressed={situation === s.id}
-                      onClick={() => setSituation(s.id)}
-                    >
-                      {s.titre}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+            {/* 309 — étape 1 : la catégorie ; étape 2 : la scène. Plus de mélange. */}
+            <p className="parler-kicker" style={{ marginTop: 16 }}>1. Catégorie</p>
+            <div className="parler-themes" role="group" aria-label="Catégorie">
+              {SITUATIONS.map((c) => (
+                <button
+                  key={c.cat}
+                  className={cat === c.cat ? 'on' : ''}
+                  aria-pressed={cat === c.cat}
+                  onClick={() => setCat(c.cat)}
+                >
+                  {c.cat}
+                </button>
+              ))}
+            </div>
+            <p className="parler-kicker" style={{ marginTop: 24 }}>2. Scène</p>
+            <div className="parler-themes" role="group" aria-label="Scène">
+              {scenesDeCat.map((s) => (
+                <button
+                  key={s.id}
+                  className={situation === s.id ? 'on' : ''}
+                  aria-pressed={situation === s.id}
+                  onClick={() => setSituation(s.id)}
+                >
+                  {s.titre}
+                </button>
+              ))}
+            </div>
+            {titreScene && (
+              <p className="hint" style={{ marginTop: 12 }}>
+                Scène retenue : <b>{titreScene}</b>
+              </p>
+            )}
           </>
         ) : (
         <div className="parler-themes">
