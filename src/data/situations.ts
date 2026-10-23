@@ -10,7 +10,21 @@ export interface Situation {
   titre: string;
 }
 
-export const SITUATIONS: Array<{ cat: string; liste: Situation[] }> = [
+/** 317 — `adulte` : catégorie montrée seulement en mode adulte. */
+export const SITUATIONS: Array<{ cat: string; liste: Situation[]; adulte?: boolean }> = [
+  {
+    cat: 'Vie d’adulte',
+    adulte: true,
+    liste: [
+      { id: 'ad-entretien', titre: 'Passer un entretien d’embauche' },
+      { id: 'ad-banque', titre: 'Ouvrir un compte en banque' },
+      { id: 'ad-location', titre: 'Visiter un appartement à louer' },
+      { id: 'ad-reunion', titre: 'Une réunion de travail' },
+      { id: 'ad-service-client', titre: 'Appeler un service client' },
+      { id: 'ad-medecin-traitant', titre: 'S’inscrire chez un médecin' },
+      { id: 'ad-vol-affaires', titre: 'Changer de vol en voyage d’affaires' },
+    ],
+  },
   {
     cat: 'Voyage',
     liste: [

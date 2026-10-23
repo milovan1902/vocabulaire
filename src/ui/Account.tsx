@@ -77,7 +77,9 @@ const MODES: Array<{ k: ModeReponse; l: string }> = [
   { k: 'ecrit', l: 'À l’écrit' },
   { k: 'oral', l: 'À l’oral' },
 ];
-import { CLASSES, CLASSE_LABELS } from '../domain/types';
+import { CLASSES, CLASSE_LABELS, NIVEAU_ADULTE_CLASSE, niveauDit, type NiveauAdulte } from '../domain/types';
+/* CHANTIER 317 — le mode adulte. */
+import { ChoixAdulte } from './ChoixAdulte';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
 import { Ligne, Tiroir } from './tiroir';
@@ -215,15 +217,22 @@ export function Account({
    * Ce que le bouton affiche à droite. « Non déclarée » est un état, pas
    * un vide : il se dit, sinon la ligne a l'air de ne pas être réglée.
    */
-  const classeDite = settings.classe === null
-    ? 'Non déclarée'
-    : CLASSE_LABELS[settings.classe];
+  const classeDite = niveauDit(settings) ?? 'Non déclarée';
+  /* 317 — le parcours adulte s'ouvre dans le même tiroir. */
+  const [versAdulte, setVersAdulte] = useState(false);
 
   /* Le tiroir se ferme dès qu'on a choisi : un réglage à choix unique
      n'a rien à confirmer. Les tiroirs à plusieurs réglages, eux, restent
      ouverts — on y règle souvent deux choses de suite. */
   function choisir(c: Classe | null) {
-    onSettings({ ...settings, classe: c });
+    onSettings({ ...settings, classe: c, adulte: null });
+    setTiroir(null);
+  }
+
+  /* 317 — un adulte : la classe calée sur son niveau, et le niveau lui-même. */
+  function choisirAdulte(n: NiveauAdulte) {
+    onSettings({ ...settings, classe: NIVEAU_ADULTE_CLASSE[n], adulte: n });
+    setVersAdulte(false);
     setTiroir(null);
   }
 
@@ -407,16 +416,30 @@ export function Account({
       )}
 
       {tiroir === 'classe' && (
-        <Tiroir titre="Ma classe" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre={versAdulte ? 'Mon niveau d’adulte' : 'Ma classe'} retour="Réglages" onFermer={() => { setVersAdulte(false); setTiroir(null); }}>
+          {versAdulte ? (
+            <>
+              <ChoixAdulte actuel={settings.adulte ?? null} onChoisi={choisirAdulte} />
+              <button className="btn ghost" style={{ marginTop: 14 }} onClick={() => setVersAdulte(false)}>Revenir aux classes</button>
+            </>
+          ) : (
+          <>
           <p className="hint">
             Elle range le catalogue en « pour ma classe » et « pour plus tard ».
             Rien ne se ferme : les paquets des classes suivantes restent
             visibles, plus bas.
           </p>
+          <button
+            className={`classrow${settings.adulte ? ' on' : ''}`}
+            onClick={() => setVersAdulte(true)}
+          >
+            <i />
+            <span>{settings.adulte ? `Adulte · niveau ${settings.adulte}` : 'Adulte — je me remets à niveau'}</span>
+          </button>
           {CLASSES.map((c: Classe) => (
             <button
               key={c}
-              className={`classrow${settings.classe === c ? ' on' : ''}`}
+              className={`classrow${!settings.adulte && settings.classe === c ? ' on' : ''}`}
               onClick={() => choisir(c)}
             >
               <i />
@@ -430,6 +453,8 @@ export function Account({
             <i />
             <span>Non déclarée — voir tout le catalogue</span>
           </button>
+          </>
+          )}
         </Tiroir>
       )}
 

@@ -24,6 +24,56 @@ export interface Scene {
 }
 
 export const SCENES: Record<string, Scene> = {
+  /* CHANTIER 317 — Vie d'adulte (montrées en mode adulte seulement) */
+  'ad-entretien': {
+    titre: 'Passer un entretien d’embauche',
+    role: 'recruteuse d’une entreprise à Londres',
+    eleve: 'un candidat à un poste (métier et parcours inventés)',
+    etapes: ['accueil et présentations', 'son parcours et son expérience', 'une qualité, un point à améliorer', 'horaires, date de début possible', 'ses questions sur le poste'],
+    imprevus: ['la recruteuse demande un exemple concret de difficulté surmontée', 'le poste demande de travailler un samedi sur deux'],
+  },
+  'ad-banque': {
+    titre: 'Ouvrir un compte en banque',
+    role: 'conseiller dans une agence bancaire à Londres',
+    eleve: 'un nouveau résident qui veut ouvrir un compte courant',
+    etapes: ['le motif de la visite', 'les documents à fournir (inventés)', 'le type de compte et la carte', 'les frais mensuels', 'l’application et la date de réception de la carte'],
+    imprevus: ['il manque un justificatif de domicile', 'la carte n’arrivera que dans dix jours'],
+  },
+  'ad-location': {
+    titre: 'Visiter un appartement à louer',
+    role: 'agent immobilier à Manchester',
+    eleve: 'quelqu’un qui cherche un appartement',
+    etapes: ['présentation des pièces', 'le loyer et les charges', 'la caution et la durée du bail', 'ce qui est inclus (meubles, internet)', 'la date d’emménagement'],
+    imprevus: ['le chauffage d’une pièce ne marche pas', 'un autre candidat est déjà intéressé'],
+  },
+  'ad-reunion': {
+    titre: 'Une réunion de travail',
+    role: 'chef de projet anglais, collègue de l’utilisateur',
+    eleve: 'un membre de l’équipe qui fait le point sur sa partie du projet',
+    etapes: ['le point d’avancement', 'un retard à expliquer', 'proposer une solution', 'se répartir les tâches', 'fixer la prochaine réunion'],
+    imprevus: ['le client avance la date de livraison', 'un collègue est absent cette semaine'],
+  },
+  'ad-service-client': {
+    titre: 'Appeler un service client',
+    role: 'conseiller du service client d’un fournisseur internet',
+    eleve: 'un client dont la connexion ne marche plus',
+    etapes: ['s’identifier (numéro de client inventé)', 'décrire la panne', 'les tests demandés', 'la solution ou le rendez-vous d’un technicien'],
+    imprevus: ['la ligne coupe, il faut tout répéter', 'aucun technicien n’est libre avant mardi'],
+  },
+  'ad-medecin-traitant': {
+    titre: 'S’inscrire chez un médecin',
+    role: 'secrétaire d’un cabinet médical (GP) à Bristol',
+    eleve: 'un nouvel habitant qui veut s’inscrire comme patient',
+    etapes: ['le motif de l’appel', 'les coordonnées (inventées), à épeler', 'quelques questions simples sur sa santé', 'le premier rendez-vous'],
+    imprevus: ['il faut remplir un formulaire en ligne d’abord', 'plus aucune place cette semaine'],
+  },
+  'ad-vol-affaires': {
+    titre: 'Changer de vol en voyage d’affaires',
+    role: 'agent au comptoir d’une compagnie aérienne à Heathrow',
+    eleve: 'un voyageur d’affaires dont la réunion a été déplacée',
+    etapes: ['expliquer la situation', 'les vols possibles', 'les frais de changement', 'la place et la carte d’embarquement'],
+    imprevus: ['le vol suivant est complet en classe économique', 'les frais sont plus élevés que prévu'],
+  },
   /* Voyage */
   'hotel': {
     titre: 'Récupérer sa chambre d’hôtel',

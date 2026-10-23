@@ -48,7 +48,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
-import { CLASSE_LABELS } from '../domain/types';
+import { CLASSE_LABELS, NIVEAU_ADULTE_LABELS, readNiveauAdulte } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
 import { quandDit, finDit, budgetParler, euros, sujetsRecents, cranRetenu, ideesDuJour, demandeIdees, type Budget, type Fiche, type Idee } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
@@ -77,6 +77,13 @@ const THEMES = [
   'Les fêtes', 'Les jeux vidéo', 'Les séries', 'Les livres et BD',
   'Les métiers', 'Les sciences', 'L’espace', 'Les inventions',
   'Les monuments', 'Les pays anglophones', 'Le dessin et l’art', 'La mer',
+].sort((a, b) => sansArticle(a).localeCompare(sansArticle(b), 'fr'));
+
+/* CHANTIER 317 — les thèmes d'un adulte : la vie courante, sans le collège ni les copains. */
+const THEMES_ADULTE = [
+  ...THEMES.filter((t) => t !== 'Le collège' && t !== 'Les copains'),
+  'Mon travail', 'Le logement', 'La santé', 'Le budget du quotidien', 'Les enfants',
+  'Le bricolage et le jardin', 'Les e-mails et le téléphone', 'Les collègues',
 ].sort((a, b) => sansArticle(a).localeCompare(sansArticle(b), 'fr'));
 
 const MAX_THEMES = 10;
@@ -119,7 +126,7 @@ function themesRetenus(): string[] {
     if (!brut) return [];
     const t = JSON.parse(brut) as unknown;
     if (!Array.isArray(t)) return [];
-    return t.filter((x): x is string => typeof x === 'string' && THEMES.includes(x));
+    return t.filter((x): x is string => typeof x === 'string' && (THEMES.includes(x) || THEMES_ADULTE.includes(x)));
   } catch {
     return [];
   }
@@ -189,7 +196,7 @@ export function Parler({
     setIdeesEtat('charge');
     setIdeesPanne(null);
     try {
-      const r = await demandeIdees(classe ?? null, cran, mots.map((m) => m.en));
+      const r = await demandeIdees(classe ?? null, cran, mots.map((m) => m.en), readNiveauAdulte(settings.adulte));
       setIdees(r.scenes);
       setIdeesEncore(r.encore);
       setIdeesEtat('repos');
@@ -206,7 +213,7 @@ export function Parler({
     : titreSituation(situation);
   /** CHANTIER 309 — une catégorie à la fois : celle de la scène retenue, sinon la première. */
   const [cat, setCat] = useState<string>(
-    () => SITUATIONS.find((c) => c.liste.some((s) => s.id === situation))?.cat ?? SITUATIONS[0].cat,
+    () => SITUATIONS.find((c) => c.liste.some((s) => s.id === situation))?.cat ?? (SITUATIONS.find((c) => !c.adulte) ?? SITUATIONS[0]).cat,
   );
   const scenesDeCat = SITUATIONS.find((c) => c.cat === cat)?.liste ?? [];
 
@@ -270,7 +277,12 @@ export function Parler({
   };
 
   const classe = settings.classe;
-  const voixOuverte = !!classe && CLASSES_VOIX.includes(classe);
+  /* 317 — un adulte parle quel que soit son niveau ; sa grammaire est celle de la classe calée dessus. */
+  const adulte = readNiveauAdulte(settings.adulte);
+  const voixOuverte = !!adulte || (!!classe && CLASSES_VOIX.includes(classe));
+  const niveauNom = adulte ? `Adulte ${adulte}` : classe ? CLASSE_LABELS[classe] : null;
+  const themesVus = adulte ? THEMES_ADULTE : THEMES;
+  const categories = SITUATIONS.filter((c) => !c.adulte || !!adulte);
 
   const fiche: Fiche = useMemo(() => ({
     classe,
@@ -281,7 +293,8 @@ export function Parler({
     situation: titreScene && situation ? situation : undefined,
     deja,
     cran,
-  }), [classe, mots, choisis, deja, cran, titreScene, situation]);
+    adulte: adulte ?? undefined,
+  }), [classe, mots, choisis, deja, cran, titreScene, situation, adulte]);
 
   /*
    * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
@@ -435,7 +448,7 @@ export function Parler({
                 <em className="parler-compte">{choisis.length} / {MAX_THEMES}</em>
               </div>
               <div className="parler-themes">
-                {THEMES.map((t) => {
+                {themesVus.map((t) => {
                   const on = choisis.includes(t);
                   return (
                     <button
@@ -456,7 +469,7 @@ export function Parler({
               {/* 309 — étape 1 : la catégorie ; étape 2 : la scène. */}
               <p className="parler-kicker">1. Catégorie</p>
               <div className="parler-themes" role="group" aria-label="Catégorie">
-                {SITUATIONS.map((c) => (
+                {categories.map((c) => (
                   <button
                     key={c.cat}
                     className={cat === c.cat ? 'on' : ''}
@@ -549,7 +562,7 @@ export function Parler({
 
           {classe ? (
             <p className="parler-niveau">
-              <b>Niveau {CLASSE_LABELS[classe]}</b> — {GRAMMAIRE[classe]}.{' '}
+              <b>Niveau {niveauNom}</b> — {GRAMMAIRE[classe]}.{' '}
               <button className="parler-lien" onClick={() => setOnglet('preparer')}>Voix et mots</button>
             </p>
           ) : (
@@ -664,7 +677,7 @@ export function Parler({
             <p className="parler-kicker">Ton niveau</p>
             {classe ? (
               <p className="parler-niveau">
-                <b>{CLASSE_LABELS[classe]}</b> — {GRAMMAIRE[classe]}.
+                <b>{adulte ? `Adulte · ${adulte} (${NIVEAU_ADULTE_LABELS[adulte]})` : CLASSE_LABELS[classe]}</b> — {GRAMMAIRE[classe]}.
               </p>
             ) : (
               <p className="parler-niveau">Classe non déclarée.</p>
@@ -672,7 +685,7 @@ export function Parler({
             <p className="hint">
               Difficulté actuelle : {cran} / 20. Elle s’ajuste après chaque
               bilan, selon ce que tu as ressenti.{' '}
-              <button className="parler-lien" onClick={onReglages}>Changer de classe</button>
+              <button className="parler-lien" onClick={onReglages}>{adulte ? 'Changer de niveau' : 'Changer de classe'}</button>
             </p>
           </div>
 

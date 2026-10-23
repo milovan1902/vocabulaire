@@ -24,7 +24,7 @@
  * d'euro par génération.
  */
 import {
-  appelleClaude, json, jourUtc, modeleParler, noteConsommation, quotaDe, utilisateurEtEmail,
+  appelleClaude, json, jourUtc, modeleParler, niveauAdulte, noteConsommation, quotaDe, utilisateurEtEmail,
   voixOuverte, type Contexte, type Env,
 } from './_parler-commun';
 import { sceneValide, TITRES_BANQUE, type Scene } from './_situations';
@@ -36,6 +36,8 @@ const MAX_GEN_JOUR = 3;
 
 /** 312 — la même table que l'appli (Parler.tsx), relue ici : le serveur ne prend pas le texte du téléphone. */
 const GRAMMAIRE: Record<string, string> = {
+  /* 317 — le niveau A1 d'un adulte est calé sur la 5e. */
+  '5e': 'présent et prétérit, phrases reliées',
   '4e': 'présent, prétérit, futur, present perfect',
   '3e': 'tous les temps du collège, conditionnel',
   '2de': 'temps composés, explications détaillées',
@@ -45,6 +47,7 @@ const GRAMMAIRE: Record<string, string> = {
 
 /** 312 — ce que la scène a le droit de demander, par classe. */
 const COMPLEXITE: Record<string, string> = {
+  '5e': 'UN seul but très simple ; 4 étapes courtes ; des imprévus qui se règlent avec des mots très courants.',
   '4e': 'UN seul but très simple (demander, acheter, réserver, s’orienter) ; 4 étapes courtes ; des imprévus qui se règlent avec des mots courants. Ni explication longue, ni négociation.',
   '3e': 'un seul but simple ; 4 ou 5 étapes ; un imprévu peut demander de proposer une autre solution, toujours avec des mots courants.',
   '2de': 'un but concret avec un petit problème à expliquer ou à résoudre ; 4 ou 5 étapes.',
@@ -52,9 +55,9 @@ const COMPLEXITE: Record<string, string> = {
   Tle: 'l’élève peut expliquer un problème en détail, comparer deux options pratiques et justifier son choix, négocier poliment.',
 };
 
-interface Niveau { classe: string; cran: number; mots: string[] }
+interface Niveau { classe: string; cran: number; mots: string[]; adulte: string | null }
 
-function niveauDe(c: { classe?: unknown; cran?: unknown; mots?: unknown }): Niveau {
+function niveauDe(c: { classe?: unknown; cran?: unknown; mots?: unknown; adulte?: unknown }): Niveau {
   const classe = typeof c.classe === 'string' ? c.classe : '';
   const n = Math.round(Number(c.cran));
   const cran = Number.isFinite(n) ? Math.min(20, Math.max(1, n)) : 10;
@@ -67,7 +70,7 @@ function niveauDe(c: { classe?: unknown; cran?: unknown; mots?: unknown }): Nive
       .filter((m) => /^[A-Za-z][A-Za-z '’-]*$/.test(m))
       .slice(0, 20)
     : [];
-  return { classe, cran, mots };
+  return { classe, cran, mots, adulte: niveauAdulte(c.adulte) };
 }
 
 function cranDit(n: number): string {
@@ -80,28 +83,41 @@ function cranDit(n: number): string {
 }
 
 function consigne(niv: Niveau): string {
-  return `Tu inventes des mises en situation pour un élève français
+  /* 317 — pour un adulte : la vie d'adulte est permise, la religion, la politique et la séduction non. */
+  const pour = niv.adulte
+    ? `un adulte français qui se remet à l'anglais (niveau européen ${niv.adulte})
+et s'entraîne à PARLER avec une IA. L'IA jouera un personnage ; lui jouera le sien.`
+    : `un élève français
 (collège ou lycée) qui s'entraîne à PARLER anglais avec une IA. L'IA jouera
-un personnage ; l'élève jouera le sien.
-
-NIVEAU DE L'ÉLÈVE — c'est la règle la plus importante :
-- classe : ${niv.classe} ;
-- grammaire qu'il maîtrise : ${GRAMMAIRE[niv.classe] ?? GRAMMAIRE['4e']} ;
-- complexité permise : ${COMPLEXITE[niv.classe] ?? COMPLEXITE['4e']}
-- ${cranDit(niv.cran)}
-La scène doit pouvoir se jouer ENTIÈREMENT avec cette grammaire et du
-vocabulaire courant pour ce niveau. Pas de démarche administrative, juridique,
-bancaire ou technique.
-
-Invente EXACTEMENT 3 scènes, très différentes entre elles (lieux, situations
-et personnages variés). Chaque scène :
-- se passe dans un pays anglophone, dans la vie de tous les jours (voyage,
+un personnage ; l'élève jouera le sien.`;
+  const cadre = niv.adulte
+    ? `- se passe dans un pays anglophone, dans la vie d'un adulte (travail,
+  démarches, logement, banque, santé courante, voyages, commerces, loisirs) ;
+- a un but concret à atteindre ;
+- reste correct : rien sur la politique, la religion, l'actualité, la
+  séduction, la drogue, la violence, la police, les jeux d'argent ; aucun
+  accident grave ; aucun débat ni opinion à défendre ;`
+    : `- se passe dans un pays anglophone, dans la vie de tous les jours (voyage,
   commerce, loisirs, services, école, transports, santé bénigne…) ;
 - a un but concret à atteindre pour l'élève ;
 - convient à un mineur : rien sur la politique, la religion, l'actualité,
   l'argent en grande quantité, l'alcool, la drogue, la violence, la police,
   la séduction, la peur ; aucun accident grave ; aucun débat ni opinion
-  à défendre ;
+  à défendre ;`;
+  return `Tu inventes des mises en situation pour ${pour}
+
+NIVEAU DE L'ÉLÈVE — c'est la règle la plus importante :
+- ${niv.adulte ? `niveau ${niv.adulte}, calé sur la classe de ${niv.classe}` : `classe : ${niv.classe}`} ;
+- grammaire qu'il maîtrise : ${GRAMMAIRE[niv.classe] ?? GRAMMAIRE['4e']} ;
+- complexité permise : ${COMPLEXITE[niv.classe] ?? COMPLEXITE['4e']}
+- ${cranDit(niv.cran)}
+La scène doit pouvoir se jouer ENTIÈREMENT avec cette grammaire et du
+vocabulaire courant pour ce niveau.${niv.adulte ? '' : ` Pas de démarche administrative, juridique,
+bancaire ou technique.`}
+
+Invente EXACTEMENT 3 scènes, très différentes entre elles (lieux, situations
+et personnages variés). Chaque scène :
+${cadre}
 - ne demande jamais à l'élève ses vraies informations personnelles.
 
 Ne reprends AUCUNE de ces scènes déjà proposées par l'application :
@@ -177,13 +193,13 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   if (!qui) return json({ erreur: 'compte requis' }, 401);
   const illimite = quotaDe(qui.email, env).illimite;
 
-  let corps: { classe?: string | null; cran?: unknown; mots?: unknown };
+  let corps: { classe?: string | null; cran?: unknown; mots?: unknown; adulte?: unknown };
   try {
     corps = (await request.json()) as typeof corps;
   } catch {
     return json({ erreur: 'corps illisible' }, 400);
   }
-  if (!voixOuverte(corps.classe)) {
+  if (!voixOuverte(corps.classe, corps.adulte)) {
     return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
   }
   const niv = niveauDe(corps);

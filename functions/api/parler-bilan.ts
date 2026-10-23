@@ -104,7 +104,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   }
 
   /* CHANTIER 139 — pas de conversation avant la 4e, même par appel direct. */
-  if (!voixOuverte(corps.fiche?.classe)) {
+  if (!voixOuverte(corps.fiche?.classe, corps.fiche?.adulte)) {
     return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
   }
 

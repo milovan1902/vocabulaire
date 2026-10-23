@@ -70,6 +70,8 @@ export interface Fiche {
   cran?: number;
   /** CHANTIER 308 — l'id d'une mise en situation (voir `situations.ts`). */
   situation?: string;
+  /** CHANTIER 317 — niveau d'un adulte (A1 à B2) ; absent pour un élève. */
+  adulte?: string;
 }
 
 /**
@@ -234,8 +236,8 @@ export async function ideesDuJour(classe: string | null): Promise<Idees | null> 
  * mots de la semaine (anglais seulement). La grammaire, elle, est relue côté
  * serveur à partir de la classe.
  */
-export async function demandeIdees(classe: string | null, cran: number, mots: string[]): Promise<Idees> {
-  return appelle<Idees>('/api/parler-idees', { classe, cran, mots: mots.slice(0, 20) });
+export async function demandeIdees(classe: string | null, cran: number, mots: string[], adulte?: string | null): Promise<Idees> {
+  return appelle<Idees>('/api/parler-idees', { classe, cran, mots: mots.slice(0, 20), adulte: adulte ?? undefined });
 }
 
 /**

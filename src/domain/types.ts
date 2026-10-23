@@ -119,6 +119,37 @@ export function classeDepuisLabel(c: Classe | null | undefined): string | null {
   return `dès ${CLASSE_ARTICLE[c]} ${CLASSE_LABELS[c]}`;
 }
 
+/**
+ * CHANTIER 317 — LES ADULTES.
+ *
+ * Un adulte ne déclare pas une classe mais un niveau européen, trouvé par
+ * une auto-évaluation (ui/ChoixAdulte.tsx). Chaque niveau est calé sur une
+ * classe : c'est elle qui fixe la grammaire de Parler et range le catalogue,
+ * si bien que tout le reste de l'application marche sans changement.
+ * 'Adulte' n'entre PAS dans CLASSES : l'ordre de ce tableau sert de comparaison.
+ */
+export const NIVEAUX_ADULTE = ['A1', 'A2', 'B1', 'B2'] as const;
+export type NiveauAdulte = (typeof NIVEAUX_ADULTE)[number];
+
+export const NIVEAU_ADULTE_CLASSE: Record<NiveauAdulte, Classe> = {
+  A1: '5e', A2: '3e', B1: '1re', B2: 'Tle',
+};
+
+export const NIVEAU_ADULTE_LABELS: Record<NiveauAdulte, string> = {
+  A1: 'débutant', A2: 'élémentaire', B1: 'intermédiaire', B2: 'avancé',
+};
+
+export function readNiveauAdulte(v: unknown): NiveauAdulte | null {
+  return (NIVEAUX_ADULTE as readonly string[]).includes(v as string) ? (v as NiveauAdulte) : null;
+}
+
+/** « Adulte · A2 » ou « 3ème » ou null : la façon de dire le niveau partout. */
+export function niveauDit(s: Pick<Settings, 'classe' | 'adulte'>): string | null {
+  const a = readNiveauAdulte(s.adulte);
+  if (a) return `Adulte · ${a}`;
+  return s.classe ? CLASSE_LABELS[s.classe] : null;
+}
+
 /** Valeur lue d'une source extérieure (serveur, sauvegarde), filtrée. */
 export function readClasse(v: unknown): Classe | null {
   return (CLASSES as readonly string[]).includes(v as string) ? (v as Classe) : null;
@@ -265,6 +296,12 @@ export interface Settings {
    * après chaque bilan. Facultatif : absent = cran 10. Voyage avec le compte.
    */
   parlerCran?: number;
+  /**
+   * CHANTIER 317 — niveau européen d'un adulte, ou absent pour un élève.
+   * Quand il est posé, `classe` vaut la classe calée sur ce niveau
+   * (NIVEAU_ADULTE_CLASSE). Choisir une classe le remet à null.
+   */
+  adulte?: NiveauAdulte | null;
 }
 
 export type ModeReponse = 'tete' | 'ecrit' | 'oral';
