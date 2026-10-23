@@ -1,0 +1,409 @@
+/**
+ * Le client de l'onglet « Parler ».
+ *
+ * CHANTIER 104 — CE QUE LE TÉLÉPHONE SAIT, ET CE QU'IL NE SAIT PAS
+ *
+ * Il sait : combien de minutes il reste, et quoi dire. Il ne sait pas : la
+ * clé, les tarifs, le nombre de jetons, la façon dont le quota se calcule.
+ * Tout cela vit dans la fonction Cloudflare, et rien ici n'a le moyen de
+ * l'apprendre.
+ *
+ * Conséquence à assumer : **la conversation demande un compte**. Ce n'est
+ * pas une contrainte technique arbitraire — un plafond par personne suppose
+ * de savoir qui est la personne. Le reste de l'application continue de
+ * marcher sans compte, comme avant.
+ */
+import { supabase } from './supabase';
+
+/** Ce que l'écran affiche. Aucun jeton : ce n'est pas son sujet. */
+export interface Budget {
+  /** Minutes restantes sur la période, de 0 à `max`. */
+  minutes: number;
+  /** CHANTIER 144 — 5 (gratuit, par semaine) ou 10 (illimité, par jour). */
+  max?: number;
+  periode?: 'jour' | 'semaine';
+  /** Plafond mensuel de l'app atteint. */
+  pause?: boolean;
+  fini: boolean;
+  /** Centimes d'euro dépensés sur la période. Pour la vue exploitant. */
+  coutJour: number;
+  appels: number;
+}
+
+/** CHANTIER 144 — « aujourd'hui » ou « cette semaine », selon la formule. */
+export function quandDit(b?: Budget | null): string {
+  return b?.periode === 'semaine' ? 'cette semaine' : 'aujourd’hui';
+}
+
+/** CHANTIER 144 — la phrase affichée quand on ne peut plus parler. */
+export function finDit(b?: Budget | null): string {
+  if (b?.pause) return 'Parler fait une pause jusqu’au 1er du mois prochain. Tes cartes restent disponibles.';
+  if (b?.periode === 'semaine') return 'Tes 5 minutes de la semaine sont utilisées. Elles reviennent lundi.';
+  return 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.';
+}
+
+export interface Fiche {
+  classe: string | null;
+  grammaire: string;
+  mots: Array<{ en: string; fr: string }>;
+  themes: string[];
+  erreurs?: Array<{ dit: string; juste: string; fois: number }>;
+  /** CHANTIER 305 — les questions de l'IA lors des 3 dernières séances. */
+  deja?: string[];
+  /** CHANTIER 306 — le cran de difficulté, 1 à 20. */
+  cran?: number;
+  /** CHANTIER 308 — l'id d'une mise en situation (voir `situations.ts`). */
+  situation?: string;
+}
+
+/**
+ * CHANTIER 306 — LE CRAN DE DIFFICULTÉ
+ *
+ * 20 crans, départ au milieu (10). Après chaque bilan, l'élève dit si c'était
+ * trop facile, adapté ou trop dur : un cran de plus, rien, un cran de moins.
+ * Jamais deux crans d'un coup — « trop dur » ne doit pas rendre la séance
+ * suivante enfantine.
+ *
+ * CHANTIER 307 — le cran suit le COMPTE : il voyage dans les réglages
+ * (`Settings.parlerCran`, JSON de `user_settings`), comme la classe. Le
+ * localStorage du 306 n'est plus lu que pour reprendre un cran déjà réglé.
+ */
+export const CRAN_MIN = 1;
+export const CRAN_MAX = 20;
+export const CRAN_DEPART = 10;
+const CLE_CRAN = 'vocab:parler-cran';
+
+export type Ressenti = 'facile' | 'adapte' | 'dur';
+
+function borneCran(n: number): number {
+  return Math.min(CRAN_MAX, Math.max(CRAN_MIN, Math.round(n)));
+}
+
+/** Le cran du compte ; à défaut celui gardé sur l'appareil (306) ; à défaut 10. */
+export function cranRetenu(parlerCran?: number): number {
+  if (typeof parlerCran === 'number' && Number.isFinite(parlerCran)) return borneCran(parlerCran);
+  const n = Number(localStorage.getItem(CLE_CRAN));
+  if (!Number.isFinite(n) || n === 0) return CRAN_DEPART;
+  return borneCran(n);
+}
+
+/**
+ * Le cran après le ressenti, calculé depuis le cran de la séance (`avant`) :
+ * changer d'avis sur l'écran du bilan ne cumule pas les crans.
+ */
+export function cranSuivant(avant: number, r: Ressenti): number {
+  const pas = r === 'facile' ? 1 : r === 'dur' ? -1 : 0;
+  return borneCran(avant + pas);
+}
+
+export interface Tour {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface Bilan {
+  corrections: Array<{ dit: string; juste: string; pourquoi: string; fois?: number }>;
+  mots: Array<{ en: string; fr: string }>;
+}
+
+/**
+ * Levée quand la conversation n'est pas joignable — on la montre telle quelle.
+ *
+ * Le champ est déclaré puis affecté dans le corps, et NON en propriété de
+ * constructeur : TypeScript 5.8 refuse `constructor(readonly x)` quand
+ * `erasableSyntaxOnly` est actif, et c'est le cas des gabarits Vite
+ * récents. Deux lignes de plus, un build qui passe partout.
+ */
+export class ErreurParler extends Error {
+  quotaEpuise: boolean;
+  /** Le message brut du service, quand il y en a un. Pour le débogage. */
+  detail?: string;
+  /** CHANTIER 144 — le budget renvoyé avec un refus (429). */
+  budget?: Budget;
+
+  constructor(message: string, quotaEpuise = false, detail?: string) {
+    super(message);
+    this.name = 'ErreurParler';
+    this.quotaEpuise = quotaEpuise;
+    this.detail = detail;
+  }
+}
+
+async function jeton(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
+async function appelle<T>(chemin: string, corps?: unknown): Promise<T> {
+  const t = await jeton();
+  if (!t) throw new ErreurParler('compte requis');
+
+  const r = await fetch(chemin, {
+    method: corps ? 'POST' : 'GET',
+    headers: {
+      authorization: `Bearer ${t}`,
+      ...(corps ? { 'content-type': 'application/json' } : {}),
+    },
+    body: corps ? JSON.stringify(corps) : undefined,
+  });
+
+  if (r.status === 429) {
+    const d = (await r.json().catch(() => ({}))) as { budget?: Budget };
+    const e = new ErreurParler('quota épuisé', true);
+    e.budget = d.budget;
+    throw e;
+  }
+  if (!r.ok) {
+    const d = (await r.json().catch(() => ({}))) as { erreur?: string; detail?: string };
+    /*
+     * CHANTIER 105 — LE DÉTAIL REMONTE JUSQU'À L'ÉCRAN.
+     *
+     * « La conversation ne répond pas » est une phrase honnête pour un
+     * élève et inutilisable pour vous : clé invalide, crédit à zéro et
+     * identifiant de modèle inconnu donnent le même message, et il faut
+     * une demi-heure pour les distinguer. Le détail renvoyé par la
+     * fonction est donc conservé ici, et l'écran l'affiche en petit.
+     */
+    throw new ErreurParler(d.erreur ?? `erreur ${r.status}`, false, d.detail);
+  }
+  return (await r.json()) as T;
+}
+
+/**
+ * Le budget du jour, lu sur le serveur.
+ *
+ * Renvoie `null` sans compte, plutôt que de lever : la jauge doit pouvoir
+ * s'afficher éteinte et l'écran expliquer pourquoi, sans traiter cela
+ * comme une panne.
+ */
+export async function budgetParler(): Promise<Budget | null> {
+  try {
+    return await appelle<Budget>('/api/parler');
+  } catch (e) {
+    if (e instanceof ErreurParler && e.message === 'compte requis') return null;
+    throw e;
+  }
+}
+
+/**
+ * CHANTIER 310 — « PAS D'INSPIRATION ? »
+ *
+ * Trois scènes inventées par l'IA, une fois par jour. L'écran ne reçoit que
+ * le titre et les deux rôles ; le déroulé reste sur le serveur. On les
+ * choisit par `situation: 'idee:0' | 'idee:1' | 'idee:2'`.
+ */
+export interface Idee {
+  titre: string; role: string; eleve: string;
+  /** CHANTIER 312 — mots anglais utiles pour la scène. */
+  mots?: string[];
+  /** 312 — la classe pour laquelle elle a été inventée. */
+  classe?: string | null;
+}
+export interface Idees { scenes: Idee[] | null; encore: boolean }
+
+/** 312 — la classe part avec la lecture : le serveur dit si les scènes sont à refaire. */
+export async function ideesDuJour(classe: string | null): Promise<Idees | null> {
+  try {
+    return await appelle<Idees>(`/api/parler-idees${classe ? `?classe=${encodeURIComponent(classe)}` : ''}`);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * CHANTIER 312 — le niveau part avec la demande : la classe, le cran et les
+ * mots de la semaine (anglais seulement). La grammaire, elle, est relue côté
+ * serveur à partir de la classe.
+ */
+export async function demandeIdees(classe: string | null, cran: number, mots: string[]): Promise<Idees> {
+  return appelle<Idees>('/api/parler-idees', { classe, cran, mots: mots.slice(0, 20) });
+}
+
+/**
+ * Un tour de parole.
+ *
+ * L'historique complet de la SÉANCE est envoyé à chaque tour — c'est ainsi
+ * que le modèle se souvient de la phrase d'avant. Il ne s'accumule pas d'un
+ * jour sur l'autre : chaque séance repart de zéro.
+ *
+ * CHANTIER 106 — `secondes` est l'ÉCART depuis le tour précédent, et non
+ * le temps écoulé depuis le début de la séance. Le serveur additionne les
+ * écarts du jour pour connaître le temps réellement parlé ; additionner
+ * des totaux donnait des heures, et c'est pour cela que le compteur ne
+ * bougeait pas.
+ */
+export async function tourDeParole(
+  messages: Tour[], fiche: Fiche, secondes: number,
+): Promise<{ texte: string; budget: Budget }> {
+  return appelle('/api/parler', { messages, fiche, secondes });
+}
+
+/**
+ * Le compte rendu, une fois la séance finie. Un appel, pas un par tour.
+ *
+ * `secondes` reste l'écart depuis le dernier tour ; `totalSecondes` est la
+ * durée entière de la séance, qui part avec l'archive.
+ */
+export async function bilanDeSeance(
+  messages: Tour[], fiche: Fiche, secondes: number, totalSecondes: number,
+): Promise<{ bilan: Bilan; trop_court?: boolean }> {
+  return appelle('/api/parler-bilan', { messages, fiche, secondes, totalSecondes });
+}
+
+/**
+ * CHANTIER 142 — signaler une réponse. Motif court, contexte borné côté
+ * serveur (six répliques au plus).
+ */
+export type Motif = 'inapproprie' | 'faux' | 'blessant' | 'autre';
+
+export async function signaleReponse(
+  reponse: string, contexte: Tour[], motif: Motif, classe: string | null,
+): Promise<void> {
+  await appelle<{ ok: true }>('/api/signaler', { reponse, contexte: contexte.slice(-6), motif, classe });
+}
+
+/** « 0,19 € », « 12 centimes ». Toujours lisible, jamais scientifique. */
+export function euros(centimes: number): string {
+  if (centimes < 1) return `${centimes.toFixed(2).replace('.', ',')} centime`;
+  return `${(centimes / 100).toFixed(2).replace('.', ',')} €`;
+}
+
+
+/* ------------------------------------------------------------------
+   CHANTIER 106 — LES CONVERSATIONS GARDÉES
+
+   « Où puis-je retrouver la synthèse de mon échange ? » — nulle part,
+   jusqu'ici : le compte rendu s'affichait une fois et mourait avec
+   l'écran. Il est désormais rangé sous le compte de l'élève, avec la
+   transcription entière.
+
+   ÉCRITURE : la fonction Cloudflare, clé de service, comme la
+   consommation. LECTURE : le téléphone, directement, à travers la RLS de
+   Supabase — chacun ses lignes. Pas de route de plus à écrire pour lire
+   ce qu'une politique de sécurité sait déjà filtrer.
+   ------------------------------------------------------------------ */
+
+export interface SeanceGardee {
+  id: number;
+  /** Quand la séance s'est terminée. */
+  finieLe: string;
+  secondes: number;
+  repliques: number;
+  themes: string[];
+  classe: string | null;
+  transcription: Tour[];
+  corrections: Array<{ dit: string; juste: string; pourquoi: string }>;
+  mots: Array<{ en: string; fr: string }>;
+}
+
+interface LigneSeance {
+  id: number;
+  finie_le: string;
+  secondes: number | null;
+  repliques: number | null;
+  themes: string[] | null;
+  classe: string | null;
+  transcription: Tour[] | null;
+  corrections: SeanceGardee['corrections'] | null;
+  mots: SeanceGardee['mots'] | null;
+}
+
+/**
+ * Les conversations gardées, la plus récente d'abord.
+ *
+ * Soixante au plus : au-delà, il faudrait paginer, et personne n'a encore
+ * soixante conversations. Renvoie une liste vide sans compte, plutôt que
+ * de lever — l'écran doit pouvoir dire « connecte-toi » sans traiter cela
+ * comme une panne.
+ */
+export async function mesSeances(): Promise<SeanceGardee[]> {
+  const { data: session } = await supabase.auth.getSession();
+  if (!session.session) return [];
+
+  const { data, error } = await supabase
+    .from('parler_seance')
+    .select('id,finie_le,secondes,repliques,themes,classe,transcription,corrections,mots')
+    .order('finie_le', { ascending: false })
+    .limit(60);
+
+  /*
+   * CHANTIER 107 — le message de PostgREST est conservé tel quel dans
+   * `detail`. « relation "public.parler_seance" does not exist » veut dire
+   * que le SQL du 106 n'a pas été passé ; aucune autre phrase ne le dit.
+   */
+  if (error) throw new ErreurParler('archive illisible', false, error.message);
+
+  return ((data ?? []) as LigneSeance[]).map((l) => ({
+    id: l.id,
+    finieLe: l.finie_le,
+    secondes: l.secondes ?? 0,
+    repliques: l.repliques ?? 0,
+    themes: l.themes ?? [],
+    classe: l.classe,
+    transcription: l.transcription ?? [],
+    corrections: l.corrections ?? [],
+    mots: l.mots ?? [],
+  }));
+}
+
+/**
+ * Effacer une conversation.
+ *
+ * C'est la parole d'un enfant, enregistrée : elle doit pouvoir partir sur
+ * un geste, sans demander la permission à personne. La politique de
+ * suppression de la table n'autorise que le propriétaire de la ligne.
+ */
+export async function oublieSeance(id: number): Promise<void> {
+  const { error } = await supabase.from('parler_seance').delete().eq('id', id);
+  if (error) throw new ErreurParler('effacement impossible', false, error.message);
+}
+
+/**
+ * CHANTIER 305 — CE QUE L'IA A DÉJÀ DEMANDÉ
+ *
+ * Les 3 dernières séances, une ligne chacune : les trois premières
+ * répliques de l'IA, mises bout à bout. C'est là que se jouent l'angle et
+ * le point de départ, donc la répétition. Lu une seule fois à l'ouverture
+ * de l'onglet. Sans compte ou en panne : liste vide, la séance démarre.
+ */
+export async function sujetsRecents(): Promise<string[]> {
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) return [];
+    const { data, error } = await supabase
+      .from('parler_seance')
+      .select('transcription')
+      .order('finie_le', { ascending: false })
+      .limit(3);
+    if (error || !data) return [];
+    return (data as Array<{ transcription: Tour[] | null }>)
+      .map((l) => (l.transcription ?? [])
+        .filter((t) => t.role === 'assistant')
+        .slice(0, 3)
+        .map((t) => t.content)
+        .join(' / ')
+        .slice(0, 300))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/** « 7 min 20 s » — la durée d'une séance, telle qu'on la lit. */
+export function duree(secondes: number): string {
+  const m = Math.floor(secondes / 60);
+  const s = secondes % 60;
+  if (!m) return `${s} s`;
+  return s ? `${m} min ${String(s).padStart(2, '0')} s` : `${m} min`;
+}
+
+/** « mardi 22 septembre, 17 h 57 » — la date d'une conversation. */
+export function quand(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const jour = d.toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  });
+  const heure = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  return `${jour}, ${heure.replace(':', ' h ')}`;
+}
