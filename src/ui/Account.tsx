@@ -183,7 +183,14 @@ export function Account({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [autorisation, setAutorisation] = useState(permission());
-  const [tiroir, setTiroir] = useState<Tiroirs>(null);
+  /* 318 — un autre écran peut demander d'ouvrir un tiroir précis (Parler › Changer de niveau). */
+  const [tiroir, setTiroir] = useState<Tiroirs>(() => {
+    try {
+      const t = sessionStorage.getItem('vocab:ouvrir-tiroir');
+      sessionStorage.removeItem('vocab:ouvrir-tiroir');
+      return t === 'classe' ? 'classe' : null;
+    } catch { return null; }
+  });
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
   const xp = xpTotal(streak);
 

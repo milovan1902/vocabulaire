@@ -140,6 +140,8 @@ export async function pullCatalog(): Promise<number> {
        */
       classeFrom: readClasse((row as Record<string, unknown>).grade_from),
       sansCategorie: (row as Record<string, unknown>).grade_from === 'SC',
+      /* 318 — les paquets pour adultes. */
+      pourAdultes: (row as Record<string, unknown>).grade_from === 'AD',
       builtin: true,
       priceCents: row.price_cents ?? 0,
       hasImage: existing?.hasImage ?? false,

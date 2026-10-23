@@ -1,5 +1,9 @@
 /**
  * CHANTIER 317 — « JE SUIS ADULTE » : la confirmation, puis l'auto-évaluation.
+ * CHANTIER 318 — et une vérification : 12 mots en QCM, trois par niveau.
+ *   Le niveau du QCM = le plus haut niveau réussi (2 bonnes sur 3), tous les
+ *   niveaux en dessous réussis aussi. Le niveau proposé est la moyenne des
+ *   deux, arrondie vers le bas : en cas de doute, on commence plus simple.
  *
  * Cinq phrases, de la plus simple à la plus exigeante. Non = 0, Un peu = 1,
  * Oui = 2 : le total (0 à 10) donne le niveau. Le résultat se propose, il ne
@@ -19,6 +23,33 @@ const QUESTIONS = [
 ];
 
 const REPONSES: Array<[number, string]> = [[0, 'Non'], [1, 'Un peu'], [2, 'Oui']];
+
+/** 318 — la bonne réponse est toujours la première ; l'ordre affiché est mélangé (fixe). */
+const QCM: Array<{ niv: NiveauAdulte; fr: string; choix: [string, string, string, string] }> = [
+  { niv: 'A1', fr: 'la maison', choix: ['house', 'horse', 'mouse', 'hose'] },
+  { niv: 'A1', fr: 'acheter', choix: ['to buy', 'to bring', 'to build', 'to borrow'] },
+  { niv: 'A1', fr: 'hier', choix: ['yesterday', 'tomorrow', 'today', 'weekday'] },
+  { niv: 'A2', fr: 'emprunter', choix: ['to borrow', 'to lend', 'to owe', 'to spend'] },
+  { niv: 'A2', fr: 'le loyer', choix: ['the rent', 'the rate', 'the fee', 'the loan'] },
+  { niv: 'A2', fr: 'en retard', choix: ['late', 'later', 'lately', 'last'] },
+  { niv: 'B1', fr: 'un entretien d’embauche', choix: ['a job interview', 'a job offer', 'a work meeting', 'a career fair'] },
+  { niv: 'B1', fr: 'se plaindre', choix: ['to complain', 'to explain', 'to remain', 'to obtain'] },
+  { niv: 'B1', fr: 'malgré', choix: ['despite', 'beside', 'unless', 'whereas'] },
+  { niv: 'B2', fr: 'le préavis (avant de quitter un logement)', choix: ['the notice', 'the warning', 'the advice', 'the notion'] },
+  { niv: 'B2', fr: 's’en sortir, faire face', choix: ['to cope', 'to cover', 'to carry on', 'to catch up'] },
+  { niv: 'B2', fr: 'une échéance, une date limite', choix: ['a deadline', 'a delay', 'a timeline', 'a headline'] },
+];
+const ORDRES = [[2, 0, 3, 1], [1, 3, 0, 2], [3, 1, 2, 0], [0, 2, 1, 3]];
+
+/** Le plus haut niveau réussi (2 bonnes sur 3), sans trou en dessous. -1 = aucun. */
+export function niveauDuQcm(bonnes: boolean[]): number {
+  let n = -1;
+  for (let i = 0; i < NIVEAUX_ADULTE.length; i++) {
+    const ok = QCM.filter((q, j) => q.niv === NIVEAUX_ADULTE[i] && bonnes[j]).length;
+    if (ok >= 2) n = i; else break;
+  }
+  return n;
+}
 
 const DECRIT: Record<NiveauAdulte, string> = {
   A1: 'Les bases : se présenter, comprendre des phrases très simples.',
@@ -45,7 +76,10 @@ export function ChoixAdulte({ actuel, onChoisi }: {
   actuel?: NiveauAdulte | null;
   onChoisi: (n: NiveauAdulte) => void;
 }) {
-  const [etape, setEtape] = useState<'age' | 'questions' | 'resultat'>('age');
+  const [etape, setEtape] = useState<'age' | 'questions' | 'qcm' | 'resultat'>('age');
+  /* 318 — l'indice choisi pour chaque mot du QCM (dans l'ordre d'origine), null = pas répondu. */
+  const [qcm, setQcm] = useState<Array<number | null>>(() => QCM.map(() => null));
+  const [qi, setQi] = useState(0);
   const [majeur, setMajeur] = useState(!!actuel);
   const [rep, setRep] = useState<Array<number | null>>(() => QUESTIONS.map(() => null));
   const [retenu, setRetenu] = useState<NiveauAdulte | null>(actuel ?? null);
@@ -101,21 +135,51 @@ export function ChoixAdulte({ actuel, onChoisi }: {
         <button
           className="btn"
           disabled={!complet}
-          onClick={() => { setRetenu(niveauDuScore(total)); setEtape('resultat'); }}
+          onClick={() => setEtape('qcm')}
         >
-          Voir mon niveau
+          Continuer : 12 mots à reconnaître
         </button>
       </div>
     );
   }
 
+  if (etape === 'qcm') {
+    const q = QCM[qi];
+    const ordre = ORDRES[qi % ORDRES.length];
+    const repondre = (k: number | null) => {
+      const suite = qcm.map((x, j) => (j === qi ? k : x));
+      setQcm(suite);
+      if (qi + 1 < QCM.length) { setQi(qi + 1); return; }
+      const auto = NIVEAUX_ADULTE.indexOf(niveauDuScore(total));
+      const verif = Math.max(0, niveauDuQcm(suite.map((x) => x === 0)));
+      setRetenu(NIVEAUX_ADULTE[Math.floor((auto + verif) / 2)]);
+      setEtape('resultat');
+    };
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <p className="hint" style={{ margin: 0 }}>Mot {qi + 1} sur {QCM.length} · choisis la traduction anglaise.</p>
+        <p style={{ margin: 0, fontSize: 22 }}><b>{q.fr}</b></p>
+        <div role="group" aria-label={`Traduction de ${q.fr}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+          {ordre.map((k) => (
+            <button key={k} style={choix(false)} onClick={() => repondre(k)}>{q.choix[k]}</button>
+          ))}
+        </div>
+        <button className="btn ghost" onClick={() => repondre(null)}>Je ne sais pas</button>
+      </div>
+    );
+  }
+
   const n = retenu ?? 'A1';
+  const bonnes = qcm.filter((x) => x === 0).length;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <p style={{ margin: 0 }}>
         <b style={{ fontSize: 22 }}>{n}</b> · {NIVEAU_ADULTE_LABELS[n]}
       </p>
       <p className="hint">{DECRIT[n]}</p>
+      {qcm.some((x) => x !== null) && (
+        <p className="hint">Mots reconnus : {bonnes} sur {QCM.length}. Le niveau tient compte de tes réponses et de ces mots.</p>
+      )}
       <p className="hint" style={{ marginBottom: 0 }}>Pas tout à fait toi ? Choisis un autre niveau :</p>
       <div role="group" aria-label="Niveau" style={{ display: 'flex', gap: 8 }}>
         {NIVEAUX_ADULTE.map((x) => (

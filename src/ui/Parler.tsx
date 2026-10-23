@@ -325,7 +325,7 @@ export function Parler({
                 La conversation s’adapte à ta classe, et s’ouvre à partir de
                 la 4e. Choisis ta classe dans les Réglages.
               </p>
-              <button className="btn ghost" onClick={onReglages}>Choisir ma classe</button>
+              <button className="btn ghost" onClick={() => { sessionStorage.setItem('vocab:ouvrir-tiroir', 'classe'); onReglages(); }}>Choisir ma classe</button>
             </>
           )}
         </div>
@@ -685,7 +685,8 @@ export function Parler({
             <p className="hint">
               Difficulté actuelle : {cran} / 20. Elle s’ajuste après chaque
               bilan, selon ce que tu as ressenti.{' '}
-              <button className="parler-lien" onClick={onReglages}>{adulte ? 'Changer de niveau' : 'Changer de classe'}</button>
+              {/* 318 — ouvre directement Réglages › Ma classe (lu par Account au montage). */}
+              <button className="parler-lien" onClick={() => { sessionStorage.setItem('vocab:ouvrir-tiroir', 'classe'); onReglages(); }}>{adulte ? 'Changer de niveau' : 'Changer de classe'}</button>
             </p>
           </div>
 

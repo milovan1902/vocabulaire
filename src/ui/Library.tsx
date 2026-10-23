@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
 import {
   CLASSES, CLASSE_LABELS, LEVEL_LABELS,
-  classeConvient, priceLabel,
+  classeConvient, niveauDit, priceLabel,
 } from '../domain/types';
+import { estPremium } from '../engine/xp';
 import { DeckVign } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
@@ -108,6 +109,7 @@ function socleDe(lot: DeckSummary[], f: Filtres): DeckSummary[] {
 /** CHANTIER 108 — la pastille : la classe plancher, ou « SC ». */
 function pastille(d: Deck): string | null {
   if (d.classeFrom) return d.classeFrom;
+  if (d.pourAdultes) return 'AD';
   return d.sansCategorie ? 'SC' : null;
 }
 
@@ -881,12 +883,15 @@ export function Library({
           ) : (
             <span className="ownedtag">À moi</span>
           )
+        ) : s.deck.pourAdultes && !estPremium() ? (
+          /* 318 — inclus dans l'abonnement : visible par tous, obtenu par les abonnés. */
+          <span className="ownedtag">Abonnés</span>
         ) : (
           <button
             className={`minibtn${plusTard ? ' outline' : ''}`}
             onClick={() => onAdd(s.deck.id)}
           >
-            {gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
+            {s.deck.pourAdultes ? 'Obtenir' : gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
           </button>
         )}
       </div>
@@ -913,7 +918,11 @@ export function Library({
       parClasse.set(c, tous.filter((s) => classeConvient(s.deck.classeFrom, c)).length);
     }
 
-    const filtres = appliquer(socleDe(tous, fCatalogue), fCatalogue);
+    const filtresTous = appliquer(socleDe(tous, fCatalogue), fCatalogue);
+    /* 318 — les paquets adultes : dans les rayons pour un adulte, à part pour un élève. */
+    const adulte = !!settings.adulte;
+    const pourAdultes = adulte ? [] : filtresTous.filter((s) => s.deck.pourAdultes);
+    const filtres = adulte ? filtresTous : filtresTous.filter((s) => !s.deck.pourAdultes);
 
     const pourMoi = enConsultation
       ? filtres
@@ -940,7 +949,7 @@ export function Library({
           aria-expanded={choixClasse}
         >
           <span className="label">Ma classe</span>
-          <b>{maClasse ? CLASSE_LABELS[maClasse] : 'non déclarée'}</b>
+          <b>{niveauDit(settings) ?? 'non déclarée'}</b>
           <span className="chg">{choixClasse ? 'Fermer' : 'Changer'}</span>
         </button>
 
@@ -1057,6 +1066,21 @@ export function Library({
               n’empêche de les prendre maintenant.
             </p>
             <div className="catlist">{plusTard.map((s) => ligneCatalogue(s, true))}</div>
+          </section>
+        )}
+
+        {pourAdultes.length > 0 && (
+          <section className="rayon later-sec">
+            <div className="later-head">
+              <h2 className="later-h">Pour les adultes</h2>
+              <span className="later-n">
+                {pourAdultes.length} paquet{pourAdultes.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            <p className="hint">
+              Vie professionnelle et quotidienne. Inclus dans l’abonnement.
+            </p>
+            <div className="catlist">{pourAdultes.map((s) => ligneCatalogue(s, true))}</div>
           </section>
         )}
 

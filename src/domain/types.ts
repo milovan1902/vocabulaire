@@ -177,6 +177,11 @@ export interface Deck {
    * peut déclarer, et l'ordre de ce tableau sert de comparaison.
    */
   sansCategorie?: boolean;
+  /**
+   * CHANTIER 318 — paquet pour adultes (grade_from = 'AD'). Pas de plancher ;
+   * pastille « AD » ; réservé aux abonnés (inclus dans l'abonnement).
+   */
+  pourAdultes?: boolean;
   /** Un paquet fourni avec l'application ne peut pas être supprimé. */
   builtin: boolean;
   /**
