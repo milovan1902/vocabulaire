@@ -216,7 +216,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
         [{ role: 'user', content: demande }],
         1700, false,
       );
-      await noteConsommation(qui.id, modele, resultat.usage, 0, env);
+      /* 313 — hors quota : la génération ne retire pas de minutes à l'élève. */
+      await noteConsommation(qui.id, modele, resultat.usage, 0, env, true);
       scenes = litScenes(resultat.texte);
       if (scenes.length >= 3) break;
       pannes.push(`${modele} : réponse incomplète (${scenes.length}/3) « ${resultat.texte.slice(0, 120)} »`);

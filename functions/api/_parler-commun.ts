@@ -472,6 +472,9 @@ export async function consommationDepuis(userId: string, depuis: string, env: En
 
   const c = { ...vide, appels: lignes.length };
   for (const l of lignes) {
+    /* 313 — les scènes inventées ne mordent pas sur le temps de parole (elles
+       restent comptées dans la dépense du mois, qui lit toutes les lignes). */
+    if (l.modele?.startsWith(PREFIXE_IDEES)) { c.appels -= 1; continue; }
     c.jetonsIn += l.jetons_in ?? 0;
     c.jetonsCache += l.jetons_cache ?? 0;
     c.jetonsOut += l.jetons_out ?? 0;
@@ -505,8 +508,21 @@ export async function consommationDepuis(userId: string, depuis: string, env: En
  * ci-dessous (cinq minutes pour un seul tour) écarte le cas de l'écran
  * resté ouvert pendant le dîner.
  */
+/**
+ * CHANTIER 313 — LES SCÈNES INVENTÉES NE COÛTENT PAS DE MINUTES.
+ *
+ * « Pas d'inspiration ? » faisait passer le compteur de 10 à 9 : la
+ * génération (~1 500 jetons) entrait dans le quota, et dès qu'un jeton est
+ * consommé l'affichage ne peut plus montrer le maximum. Ces lignes sont
+ * désormais notées avec le modèle préfixé (« idees:claude-haiku-4-5 ») :
+ * le quota de l'élève les ignore, la dépense du mois les garde.
+ * Le prix est calculé sur le vrai modèle, avant le préfixe.
+ */
+export const PREFIXE_IDEES = 'idees:';
+
 export async function noteConsommation(
   userId: string, modele: string, u: Usage, secondes: number, env: Env,
+  horsQuota = false,
 ): Promise<void> {
   const ecart = Math.min(300, Math.max(0, Math.round(secondes)));
   await fetch(`${env.SUPABASE_URL}/rest/v1/parler_usage`, {
@@ -520,7 +536,7 @@ export async function noteConsommation(
     body: JSON.stringify({
       user_id: userId,
       jour: jourUtc(),
-      modele,
+      modele: horsQuota ? `${PREFIXE_IDEES}${modele}` : modele,
       jetons_in: u.jetonsIn,
       jetons_cache: u.jetonsCache,
       jetons_out: u.jetonsOut,
