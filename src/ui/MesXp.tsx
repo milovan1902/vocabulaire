@@ -11,7 +11,7 @@
  */
 import type { Streak } from '../engine/streak';
 import {
-  CARTES_PAR_JOUR, GELS_MAX, XP_MAX_GRATUIT, bilan, estPremium, gelsEnReserve, historiqueXp, meilleureSerie, serieValidee, xpTotal,
+  CARTES_PAR_JOUR, GELS_MAX, XP_MAX_GRATUIT, bilan, estPremium, gelsEnReserve, gelsPrevus, historiqueXp, meilleureSerie, serieValidee, xpTotal,
 } from '../engine/xp';
 import { credits } from './apparences';
 import './gel.css';
@@ -27,6 +27,8 @@ export function MesXp({ streak }: { streak: Streak }) {
   const recordXp = Math.max(meilleureSerie(streak), serieXp);
   const jours14 = historiqueXp(streak, 14);
   const gels = gelsEnReserve(streak);
+  /* 315 — jours manqués que la réserve comblera à la clôture de la semaine. */
+  const prevus = gelsPrevus(streak);
   return (
     <>
       <div className="xpj-chiffres quatre">
@@ -53,7 +55,7 @@ export function MesXp({ streak }: { streak: Streak }) {
         {jours14.map((j) => {
           const nom = JOURS_COURTS[new Date(j.key + 'T12:00:00').getDay()];
           return (
-            <span key={j.key} className={`xpj-jour ${j.etat}`} title={`${j.key.slice(8)}/${j.key.slice(5, 7)} : ${j.base + j.bonus} XP`}>
+            <span key={j.key} className={`xpj-jour ${prevus.includes(j.key) ? 'gel-prevu' : j.etat}`} title={prevus.includes(j.key) ? `${j.key.slice(8)}/${j.key.slice(5, 7)} : comblé par un gel à la fin de la semaine` : `${j.key.slice(8)}/${j.key.slice(5, 7)} : ${j.base + j.bonus} XP`}>
               <span className="xpj-col">
                 {j.etat === 'valide' && (
                   <>
@@ -64,7 +66,7 @@ export function MesXp({ streak }: { streak: Streak }) {
                 {j.etat === 'encours' && (
                   <i className="xpj-auj" style={{ height: `${Math.max(4, (25 * Math.min(j.cartes, CARTES_PAR_JOUR)) / CARTES_PAR_JOUR)}%` }} />
                 )}
-                {j.etat === 'manque' && <i className="xpj-manque" />}
+                {j.etat === 'manque' && (prevus.includes(j.key) ? <i className="xpj-gel-prevu" /> : <i className="xpj-manque" />)}
                 {j.etat === 'gel' && <i className="xpj-gel" />}
               </span>
               <small>{nom}</small>
@@ -76,6 +78,7 @@ export function MesXp({ streak }: { streak: Streak }) {
         <span><i className="xpj-base" />XP du jour</span>
         <span><i className="xpj-bonus" />bonus de semaine</span>
         <span><i className="xpj-gel" />jour comblé par un gel</span>
+        {prevus.length > 0 && <span><i className="xpj-gel-prevu" />gel prévu, posé en fin de semaine</span>}
         <span><i className="xpj-manque" />jour manqué</span>
         <span><i className="xpj-auj" />aujourd’hui ({Math.min(jours14[13].cartes, CARTES_PAR_JOUR)}/{CARTES_PAR_JOUR})</span>
       </div>
@@ -90,7 +93,7 @@ export function MesXp({ streak }: { streak: Streak }) {
       <p className="hint">
         La semaine repart à zéro chaque lundi. Un gel comble un jour manqué
         du lundi au vendredi : ce jour ne rapporte rien, mais la semaine
-        compte pour 5 / 5. {GELS_MAX} gels au plus en réserve. Une semaine
+        compte pour 5 / 5. Le gel est posé quand la semaine se ferme : vendredi validé, ou samedi. {GELS_MAX} gels au plus en réserve. Une semaine
         incomplète fait repartir le bonus à +20, jamais tes XP. « Facile » ne
         rapporte rien de plus. Parler ne rapporte pas d’XP.
       </p>

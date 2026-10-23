@@ -14,6 +14,22 @@
  * marcher sans compte, comme avant.
  */
 import { supabase } from './supabase';
+import { CLE_ABONNE } from '../engine/xp';
+
+/**
+ * CHANTIER 315 — le budget dit si le compte est abonné (10 min par jour,
+ * PARLER_ILLIMITE). On le garde sur l'appareil pour les XP (plus de plafond
+ * à 1 000) ; un changement redessine les écrans, comme pour le créateur.
+ */
+function noteAbonne(b: Budget | null | undefined) {
+  if (b === undefined) return;
+  const v = b?.periode === 'jour' || (b?.max ?? 0) >= 10 ? '1' : '0';
+  try {
+    if (localStorage.getItem(CLE_ABONNE) === v) return;
+    localStorage.setItem(CLE_ABONNE, v);
+    window.dispatchEvent(new Event('apparence'));
+  } catch { /* stockage indisponible : on relira au prochain budget */ }
+}
 
 /** Ce que l'écran affiche. Aucun jeton : ce n'est pas son sujet. */
 export interface Budget {
@@ -178,9 +194,12 @@ async function appelle<T>(chemin: string, corps?: unknown): Promise<T> {
  */
 export async function budgetParler(): Promise<Budget | null> {
   try {
-    return await appelle<Budget>('/api/parler');
+    const b = await appelle<Budget>('/api/parler');
+    noteAbonne(b);
+    return b;
   } catch (e) {
-    if (e instanceof ErreurParler && e.message === 'compte requis') return null;
+    if (e instanceof ErreurParler && e.message === 'compte requis') { noteAbonne(null); return null; }
+    if (e instanceof ErreurParler && e.budget) noteAbonne(e.budget);
     throw e;
   }
 }

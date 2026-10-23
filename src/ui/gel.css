@@ -14,6 +14,12 @@
   background: repeating-linear-gradient(45deg, var(--grey) 0 2px, transparent 2px 4px);
 }
 .xpj-legende i.xpj-gel { height: 10px; }
+/* 315 — le gel prévu : le même gel, en pointillés, tant que la semaine n'est pas close. */
+.xpj-gel-prevu {
+  display: block; width: 100%; height: 6px; border-radius: 2px;
+  box-sizing: border-box; border: 1.5px dashed var(--grey); background: transparent;
+}
+.xpj-legende i.xpj-gel-prevu { height: 10px; }
 
 /* CHANTIER 229 — les tuiles « Cette semaine » et « Parler » sur les premières
    apparences (Automatique, Clair, Sombre, Cahiers). Les règles de base de

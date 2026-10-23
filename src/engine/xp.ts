@@ -37,8 +37,22 @@ export const XP_WEEKEND = 30;
 export const GELS_MAX = 4;
 export const XP_MAX_GRATUIT = 1000;
 
+/**
+ * CHANTIER 315 — L'ABONNÉ, VU DU TÉLÉPHONE.
+ *
+ * Il n'y avait aucun moyen de le savoir : estPremium() renvoyait toujours
+ * faux, et tout le monde plafonnait à 1 000 XP. Le serveur le dit déjà à
+ * chaque lecture du temps de parole (10 min par jour = abonné, adresses de
+ * PARLER_ILLIMITE) ; data/parler.ts le note ici, on le relit.
+ */
+export const CLE_ABONNE = 'vocab:abonne';
+
 export function estPremium(): boolean {
-  return false;
+  try {
+    return localStorage.getItem(CLE_ABONNE) === '1';
+  } catch {
+    return false;
+  }
 }
 
 /** Le bonus de la n-ième semaine complète d'affilée : 20, 40, puis 60. */
@@ -217,6 +231,25 @@ export function cartesDuJour(s: Streak, today = todayKey()): number {
  * Ce que la journée rapporte (ou a rapporté) : la base, le bonus de semaine
  * si c'est le vendredi qui boucle le 5 / 5, et le gel du week-end.
  */
+/**
+ * CHANTIER 315 — LES GELS PRÉVUS.
+ *
+ * Le gel n'est posé qu'à la clôture de la semaine (vendredi validé, ou
+ * passé). D'ici là, un mercredi manqué s'affichait « manqué » alors que la
+ * réserve allait le combler. Ces jours-là, semaine en cours encore ouverte
+ * et gels suffisants, sont rendus ici pour être dessinés « gel prévu ».
+ * Le calcul des XP n'en dépend pas.
+ */
+export function gelsPrevus(s: Streak, today = todayKey()): string[] {
+  const b = bilan(s, today);
+  const lundi = lundiDe(today);
+  const vendredi = shiftDay(lundi, 4);
+  const ouverte = !(today > vendredi || jourValide(s, vendredi));
+  if (!ouverte) return [];
+  const manques = Object.keys(b.jours).filter((d) => d >= lundi && d < today && b.jours[d].etat === 'manque');
+  return manques.length && manques.length <= b.gels ? manques : [];
+}
+
 export function gainDuJour(s: Streak, today = todayKey()): { valide: boolean; xp: number; gel: boolean } {
   const valide = jourValide(s, today) && s.counts?.[today] !== undefined;
   if (valide) {
