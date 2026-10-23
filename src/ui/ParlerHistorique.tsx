@@ -38,11 +38,18 @@ import { detailExploitant } from '../data/messageErreur';
 
 type Etat = 'charge' | 'pret' | 'panne';
 
-export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
-  onRetour: () => void;
+export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }: {
+  onRetour?: () => void;
   enJeu: string[];
   onReprise: () => Promise<void>;
+  /**
+   * CHANTIER 312 — affiché dans le sous-onglet « Conversations » de Parler :
+   * ni bouton retour ni titre (l'en-tête de Parler reste au-dessus).
+   */
+  integre?: boolean;
 }) {
+  const Racine = integre ? 'div' : 'section';
+  const classeRacine = integre ? 'parler-histo-integre' : 'parler';
   const [seances, setSeances] = useState<SeanceGardee[]>([]);
   const [etat, setEtat] = useState<Etat>('charge');
   const [ouverte, setOuverte] = useState<SeanceGardee | null>(null);
@@ -73,7 +80,7 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
   /* ---------------- une conversation ouverte ---------------- */
   if (ouverte) {
     return (
-      <section className="parler" aria-label="Une conversation">
+      <Racine className={classeRacine} aria-label="Une conversation">
         <button className="histo-retour" onClick={() => { setOuverte(null); setAEffacer(null); }}>
           ← Toutes mes conversations
         </button>
@@ -144,16 +151,19 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
             Effacer cette conversation
           </button>
         )}
-      </section>
+      </Racine>
     );
   }
 
   /* ---------------- la liste ---------------- */
   return (
-    <section className="parler" aria-label="Tes conversations">
-      <button className="histo-retour" onClick={onRetour}>← Parler</button>
-
-      <h2 className="screen-title">Tes conversations</h2>
+    <Racine className={classeRacine} aria-label="Tes conversations">
+      {!integre && (
+        <>
+          <button className="histo-retour" onClick={onRetour}>← Parler</button>
+          <h2 className="screen-title">Tes conversations</h2>
+        </>
+      )}
 
       {etat === 'charge' ? (
         <p className="hint">Lecture de tes conversations…</p>
@@ -187,6 +197,6 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise }: {
           ))}
         </div>
       )}
-    </section>
+    </Racine>
   );
 }

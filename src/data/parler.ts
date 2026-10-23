@@ -192,19 +192,31 @@ export async function budgetParler(): Promise<Budget | null> {
  * le titre et les deux rôles ; le déroulé reste sur le serveur. On les
  * choisit par `situation: 'idee:0' | 'idee:1' | 'idee:2'`.
  */
-export interface Idee { titre: string; role: string; eleve: string }
+export interface Idee {
+  titre: string; role: string; eleve: string;
+  /** CHANTIER 312 — mots anglais utiles pour la scène. */
+  mots?: string[];
+  /** 312 — la classe pour laquelle elle a été inventée. */
+  classe?: string | null;
+}
 export interface Idees { scenes: Idee[] | null; encore: boolean }
 
-export async function ideesDuJour(): Promise<Idees | null> {
+/** 312 — la classe part avec la lecture : le serveur dit si les scènes sont à refaire. */
+export async function ideesDuJour(classe: string | null): Promise<Idees | null> {
   try {
-    return await appelle<Idees>('/api/parler-idees');
+    return await appelle<Idees>(`/api/parler-idees${classe ? `?classe=${encodeURIComponent(classe)}` : ''}`);
   } catch {
     return null;
   }
 }
 
-export async function demandeIdees(classe: string | null): Promise<Idees> {
-  return appelle<Idees>('/api/parler-idees', { classe });
+/**
+ * CHANTIER 312 — le niveau part avec la demande : la classe, le cran et les
+ * mots de la semaine (anglais seulement). La grammaire, elle, est relue côté
+ * serveur à partir de la classe.
+ */
+export async function demandeIdees(classe: string | null, cran: number, mots: string[]): Promise<Idees> {
+  return appelle<Idees>('/api/parler-idees', { classe, cran, mots: mots.slice(0, 20) });
 }
 
 /**

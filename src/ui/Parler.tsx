@@ -35,6 +35,16 @@
  * `localStorage`, comme les thèmes : c'est une préférence d'appareil.
  * Elle ne concerne que la conversation ; les cartes gardent le débit
  * des Réglages.
+ *
+ * CHANTIER 312 — TROIS SOUS-ONGLETS.
+ * L'écran empilait sept cartes. Le temps de parole tient désormais sur une
+ * ligne, au-dessus de trois sous-onglets :
+ *   • S'exercer (par défaut) : le mode, le choix, le bouton. Rien d'autre.
+ *   • Conversations : l'archive, directement en liste (ParlerHistorique intégré).
+ *   • Préparer : les mots de la semaine, la vitesse de la voix, le niveau.
+ * « Pas d'inspiration ? » est replié. Le pied ne parle plus de thèmes en
+ * mise en situation. Les scènes inventées partent avec le niveau (classe,
+ * cran, mots) et affichent leurs mots utiles.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Classe, Deck, Settings } from '../domain/types';
@@ -46,6 +56,7 @@ import { mesure } from '../data/mesures';
 import { ParlerHistorique } from './ParlerHistorique';
 import { SITUATIONS, titreSituation } from '../data/situations';
 import { detailExploitant } from '../data/messageErreur';
+import './parler-onglets.css';
 
 /**
  * Les thèmes proposés. Au plus dix retenus.
@@ -118,6 +129,8 @@ function themesRetenus(): string[] {
 const CLASSES_VOIX: readonly string[] = ['4e', '3e', '2de', '1re', 'Tle'];
 
 type Etat = 'charge' | 'pret' | 'anonyme' | 'panne';
+/** CHANTIER 312 — les sous-onglets. Toujours « S'exercer » à l'ouverture (la visite guidée y compte). */
+type Onglet = 'exercer' | 'conversations' | 'preparer';
 
 export function Parler({
   decks, active, settings, onSettings, onReglages, onReprise,
@@ -166,14 +179,17 @@ export function Parler({
   const [ideesEtat, setIdeesEtat] = useState<'repos' | 'charge' | 'erreur'>('repos');
   /** 311 — la vraie cause d'un échec, affichée en petit (comme pour la conversation). */
   const [ideesPanne, setIdeesPanne] = useState<string | null>(null);
+  /** 312 — replié par défaut ; ouvert d'office si une scène inventée est retenue. */
+  const [ideesOuvert, setIdeesOuvert] = useState(() => /^idee:/.test(situation ?? ''));
+  const [onglet, setOnglet] = useState<Onglet>('exercer');
   useEffect(() => {
-    void ideesDuJour().then((r) => { if (r) { setIdees(r.scenes); setIdeesEncore(r.encore); } });
-  }, []);
+    void ideesDuJour(settings.classe ?? null).then((r) => { if (r) { setIdees(r.scenes); setIdeesEncore(r.encore); } });
+  }, [settings.classe]);
   const inspire = async () => {
     setIdeesEtat('charge');
     setIdeesPanne(null);
     try {
-      const r = await demandeIdees(classe);
+      const r = await demandeIdees(classe ?? null, cran, mots.map((m) => m.en));
       setIdees(r.scenes);
       setIdeesEncore(r.encore);
       setIdeesEtat('repos');
@@ -199,7 +215,6 @@ export function Parler({
   /** Le motif brut de la panne. Petit, monospace, sélectionnable. */
   const [pourquoi, setPourquoi] = useState<string | null>(null);
   const [enSeance, setEnSeance] = useState(false);
-  const [historique, setHistorique] = useState(false);
 
   const [exploitant, setExploitant] = useState(
     () => localStorage.getItem(CLE_EXPLOITANT) === '1',
@@ -305,14 +320,6 @@ export function Parler({
     );
   }
 
-  if (historique) {
-    return <ParlerHistorique
-        onRetour={() => setHistorique(false)}
-        enJeu={active}
-        onReprise={onReprise}
-      />;
-  }
-
   if (enSeance && budget) {
     return (
       <ParlerSeance
@@ -336,6 +343,14 @@ export function Parler({
   const autres = Math.max(0, totalMots - mots.length);
   const minutes = budget?.minutes ?? 0;
   const part = etat === 'pret' ? (100 * minutes) / (budget?.max ?? 10) : 0;
+  /* 312 — la scène inventée retenue, et si les idées du jour datent d'une autre classe. */
+  const ideeChoisie = idIdee ? idees?.[Number(idIdee[1])] ?? null : null;
+  const classeChangee = !!idees?.[0]?.classe && idees[0].classe !== classe;
+  const pret = mode === 'scene' ? !!titreScene : choisis.length > 0;
+
+  const ONGLETS: Array<[Onglet, string]> = [
+    ['exercer', 'S’exercer'], ['conversations', 'Conversations'], ['preparer', 'Préparer'],
+  ];
 
   return (
     <section className="parler" aria-label="Parler anglais">
@@ -345,19 +360,14 @@ export function Parler({
         Tu parles avec une intelligence artificielle, pas avec une personne.
       </p>
 
-      <div className="parler-carte">
-        <div className="parler-tete">
-          <p className="parler-kicker">Ton temps de parole</p>
-          <button className="parler-note" onClick={tape}>remis à zéro à minuit</button>
-        </div>
-
+      {/* 312 — le temps de parole sur une ligne, visible depuis les trois sous-onglets. */}
+      <div className="parler-budget">
         {etat === 'charge' ? (
           <p className="hint">Lecture de ton budget…</p>
         ) : etat === 'anonyme' ? (
           <p className="hint">
             La conversation demande un compte : ton temps de parole est tenu
-            sur le serveur, pas dans le téléphone. Connecte-toi depuis les
-            Réglages.
+            sur le serveur. Connecte-toi depuis les Réglages.
           </p>
         ) : etat === 'panne' ? (
           <>
@@ -372,261 +382,304 @@ export function Parler({
           </>
         ) : (
           <>
-            <p className="parler-min">
+            <div className="parler-budget-ligne">
               <b>{minutes}</b>
-              <span>
-                minute{minutes > 1 ? 's' : ''} disponible{minutes > 1 ? 's' : ''} {quandDit(budget)}
+              <span>min disponible{minutes > 1 ? 's' : ''} {quandDit(budget)}</span>
+              <span className="parler-jauge" aria-hidden="true">
+                <i style={{ width: `${part}%` }} />
               </span>
-            </p>
-            <span className="parler-jauge" aria-hidden="true">
-              <i style={{ width: `${part}%` }} />
-            </span>
-            <p className="hint">
-              {budget?.appels === 0
-                ? `Tu n’as encore rien utilisé ${quandDit(budget)}.`
-                : `${budget?.appels} échange${(budget?.appels ?? 0) > 1 ? 's' : ''} ${quandDit(budget)}.`}
-            </p>
+            </div>
             {exploitant && (
               <p className="seance-exploitant">
                 Vue exploitant · {euros(budget?.coutJour ?? 0)} dépensés {quandDit(budget)}
-                sur ce compte. Trois tapes sur la mention de droite pour masquer.
+                {' '}sur ce compte ({budget?.appels ?? 0} échanges). Trois tapes sur
+                « remis à zéro à minuit » (Préparer) pour masquer.
               </p>
             )}
           </>
         )}
       </div>
 
-      <div className="parler-carte">
-        <p className="parler-kicker">Tes mots de la semaine</p>
-        {chargeMots ? (
-          <p className="hint">Lecture de tes paliers…</p>
-        ) : mots.length === 0 ? (
-          <p className="hint">
-            Aucun mot acquis pour l’instant dans tes paquets en jeu. Travaille
-            quelques cartes : ce sont ces mots-là que la conversation
-            emploiera, sans que tu aies à les chercher.
-          </p>
-        ) : (
-          <>
-            <div className="parler-mots">
-              {mots.map((m) => (
-                <span key={m.en} className="parler-mot" title={m.fr}>{m.en}</span>
-              ))}
-              {autres > 0 && <span className="parler-mot plus">+ {autres}</span>}
-            </div>
-            <p className="hint">
-              Ils reviendront dans la conversation, sans que tu aies à les
-              chercher.
-            </p>
-          </>
-        )}
+      <div className="parler-onglets" role="tablist" aria-label="Parler">
+        {ONGLETS.map(([id, nom]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={onglet === id}
+            className={onglet === id ? 'on' : ''}
+            onClick={() => setOnglet(id)}
+          >
+            {nom}
+          </button>
+        ))}
       </div>
 
-      {/*
-        * CHANTIER 106 — la porte de l'archive. Elle est ici, sous les
-        * mots de la semaine, et non dans les Réglages : on y va pour
-        * relire une correction, c'est-à-dire pour travailler, pas pour
-        * administrer quoi que ce soit.
-        */}
-      {etat !== 'anonyme' && (
-        <div className="parler-carte">
-          <p className="parler-kicker">Tes conversations</p>
-          <p className="hint">
-            Chaque séance terminée est gardée en entier : ce que tu as dit,
-            et le compte rendu. C’est en les relisant à quelques jours
-            d’écart qu’on voit ce qui a bougé.
-          </p>
-          <button className="parler-histo-go" onClick={() => setHistorique(true)}>
-            Relire mes conversations
-          </button>
-        </div>
-      )}
-
-      <div className="parler-carte">
-        {/* CHANTIER 308 — deux façons de s'exercer. */}
-        <div className="parler-themes" role="group" aria-label="Type de séance">
-          <button className={mode === 'libre' ? 'on' : ''} aria-pressed={mode === 'libre'} onClick={() => setMode('libre')}>
-            Conversation
-          </button>
-          <button className={mode === 'scene' ? 'on' : ''} aria-pressed={mode === 'scene'} onClick={() => setMode('scene')}>
-            Mise en situation
-          </button>
-        </div>
-      </div>
-
-      <div className="parler-carte">
-        <div className="parler-tete">
-          <p className="parler-kicker">{mode === 'scene' ? 'Quelle situation ?' : 'De quoi parle-t-on ?'}</p>
-          {mode === 'libre' && <em className="parler-compte">{choisis.length} / {MAX_THEMES}</em>}
-        </div>
-
-        {classe ? (
-          <p className="parler-niveau">
-            <b>Niveau {CLASSE_LABELS[classe]}</b> — {GRAMMAIRE[classe]}.
-          </p>
-        ) : (
-          <p className="parler-niveau">
-            Classe non déclarée : la conversation restera simple.{' '}
-            <button className="parler-lien" onClick={onReglages}>
-              Choisir ma classe
+      {onglet === 'exercer' && (
+        <div role="tabpanel" aria-label="S’exercer">
+          {/* CHANTIER 308 — deux façons de s'exercer ; 312 — deux cartes côte à côte. */}
+          <div className="parler-modes" role="group" aria-label="Type de séance">
+            <button className={mode === 'libre' ? 'parler-mode on' : 'parler-mode'} aria-pressed={mode === 'libre'} onClick={() => setMode('libre')}>
+              <b>Conversation</b>
+              <small>On discute sur tes thèmes.</small>
             </button>
-          </p>
-        )}
+            <button className={mode === 'scene' ? 'parler-mode on' : 'parler-mode'} aria-pressed={mode === 'scene'} onClick={() => setMode('scene')}>
+              <b>Mise en situation</b>
+              <small>L’IA joue un rôle, avec un imprévu.</small>
+            </button>
+          </div>
 
-        {mode === 'scene' ? (
-          <>
-            <p className="hint">
-              L’IA joue le rôle (réceptionniste, serveur, pharmacien…) et mène
-              la scène étape par étape, avec un imprévu en cours de route.
-              Les corrections arrivent dans le bilan.
-            </p>
-
-            {/* CHANTIER 310 — trois scènes inventées par l'IA, une fois par jour. */}
-            <p className="parler-kicker" style={{ marginTop: 16 }}>Pas d’inspiration ?</p>
-            {idees && (
-              <div className="parler-themes" role="group" aria-label="Scènes inventées">
-                {idees.map((s, i) => (
+          {mode === 'libre' ? (
+            <div className="parler-carte">
+              <div className="parler-tete">
+                <p className="parler-kicker">De quoi parle-t-on ?</p>
+                <em className="parler-compte">{choisis.length} / {MAX_THEMES}</em>
+              </div>
+              <div className="parler-themes">
+                {THEMES.map((t) => {
+                  const on = choisis.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      className={on ? 'on' : ''}
+                      aria-pressed={on}
+                      disabled={!on && choisis.length >= MAX_THEMES}
+                      onClick={() => bascule(t)}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="parler-carte">
+              {/* 309 — étape 1 : la catégorie ; étape 2 : la scène. */}
+              <p className="parler-kicker">1. Catégorie</p>
+              <div className="parler-themes" role="group" aria-label="Catégorie">
+                {SITUATIONS.map((c) => (
                   <button
-                    key={i}
-                    className={situation === `idee:${i}` ? 'on' : ''}
-                    aria-pressed={situation === `idee:${i}`}
-                    onClick={() => setSituation(`idee:${i}`)}
-                    title={`L’IA : ${s.role}. Toi : ${s.eleve}.`}
+                    key={c.cat}
+                    className={cat === c.cat ? 'on' : ''}
+                    aria-pressed={cat === c.cat}
+                    onClick={() => setCat(c.cat)}
                   >
-                    {s.titre}
+                    {c.cat}
                   </button>
                 ))}
               </div>
-            )}
-            {idIdee && idees?.[Number(idIdee[1])] && (
-              <p className="hint">
-                L’IA : {idees[Number(idIdee[1])].role}. Toi : {idees[Number(idIdee[1])].eleve}.
-              </p>
-            )}
-            {ideesEncore ? (
-              <div className="parler-themes">
-                <button onClick={() => void inspire()} disabled={ideesEtat === 'charge'}>
-                  {ideesEtat === 'charge' ? 'L’IA invente…' : idees ? 'Trois autres' : 'Invente-moi 3 scènes'}
-                </button>
+              <p className="parler-kicker" style={{ marginTop: 20 }}>2. Scène</p>
+              <div className="parler-scenes" role="group" aria-label="Scène">
+                {scenesDeCat.map((s) => (
+                  <button
+                    key={s.id}
+                    className={situation === s.id ? 'parler-scene on' : 'parler-scene'}
+                    aria-pressed={situation === s.id}
+                    onClick={() => setSituation(s.id)}
+                  >
+                    <span>{s.titre}</span>
+                    {situation === s.id && <i aria-hidden="true">✓</i>}
+                  </button>
+                ))}
               </div>
-            ) : null}
-            <p className="hint">
-              {ideesEtat === 'erreur'
-                ? 'L’IA n’a pas répondu. Réessaie dans un instant.'
-                : idees && !ideesEncore
-                  ? 'Trois nouvelles scènes demain.'
-                  : 'L’IA invente trois scènes rien que pour toi. Une fois par jour.'}
+
+              {/* CHANTIER 310 — trois scènes inventées par l'IA ; 312 — repliées, et à ton niveau. */}
+              <div className="parler-inspi">
+                <button className="parler-inspi-tete" aria-expanded={ideesOuvert} onClick={() => setIdeesOuvert((o) => !o)}>
+                  <b>Pas d’inspiration ?</b>
+                  <span>{ideesOuvert ? 'Replier' : 'Ouvrir'}</span>
+                </button>
+                {ideesOuvert && (
+                  <>
+                    {idees && (
+                      <div className="parler-scenes" role="group" aria-label="Scènes inventées">
+                        {idees.map((s, i) => (
+                          <button
+                            key={i}
+                            className={situation === `idee:${i}` ? 'parler-scene on' : 'parler-scene'}
+                            aria-pressed={situation === `idee:${i}`}
+                            onClick={() => setSituation(`idee:${i}`)}
+                          >
+                            <span>{s.titre}</span>
+                            {situation === `idee:${i}` && <i aria-hidden="true">✓</i>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {ideeChoisie && (
+                      <>
+                        <p className="hint">L’IA : {ideeChoisie.role}. Toi : {ideeChoisie.eleve}.</p>
+                        {!!ideeChoisie.mots?.length && (
+                          <p className="parler-utiles">
+                            <span>Mots utiles</span>
+                            {ideeChoisie.mots.map((m) => <em key={m}>{m}</em>)}
+                          </p>
+                        )}
+                      </>
+                    )}
+                    {ideesEncore && (
+                      <div className="parler-themes">
+                        <button onClick={() => void inspire()} disabled={ideesEtat === 'charge'}>
+                          {ideesEtat === 'charge'
+                            ? 'L’IA invente…'
+                            : classeChangee
+                              ? 'Trois scènes à mon nouveau niveau'
+                              : idees ? 'Trois autres' : 'Invente-moi 3 scènes'}
+                        </button>
+                      </div>
+                    )}
+                    <p className="hint">
+                      {ideesEtat === 'erreur'
+                        ? 'L’IA n’a pas répondu. Réessaie dans un instant.'
+                        : classeChangee && ideesEncore
+                          ? 'Ta classe a changé : ces scènes ont été inventées pour l’ancienne.'
+                          : idees && !ideesEncore
+                            ? 'Trois nouvelles scènes demain.'
+                            : 'L’IA invente trois scènes à ton niveau. Une fois par jour.'}
+                    </p>
+                    {ideesEtat === 'erreur' && ideesPanne && (
+                      <p className="hint" style={{ fontFamily: 'monospace', fontSize: 12, userSelect: 'text', wordBreak: 'break-word' }}>
+                        {ideesPanne}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {classe ? (
+            <p className="parler-niveau">
+              <b>Niveau {CLASSE_LABELS[classe]}</b> — {GRAMMAIRE[classe]}.{' '}
+              <button className="parler-lien" onClick={() => setOnglet('preparer')}>Voix et mots</button>
             </p>
-            {ideesEtat === 'erreur' && ideesPanne && (
-              <p className="hint" style={{ fontFamily: 'monospace', fontSize: 12, userSelect: 'text', wordBreak: 'break-word' }}>
-                {ideesPanne}
-              </p>
-            )}
-            {/* 309 — étape 1 : la catégorie ; étape 2 : la scène. Plus de mélange. */}
-            <p className="parler-kicker" style={{ marginTop: 16 }}>1. Catégorie</p>
-            <div className="parler-themes" role="group" aria-label="Catégorie">
-              {SITUATIONS.map((c) => (
-                <button
-                  key={c.cat}
-                  className={cat === c.cat ? 'on' : ''}
-                  aria-pressed={cat === c.cat}
-                  onClick={() => setCat(c.cat)}
-                >
-                  {c.cat}
-                </button>
-              ))}
-            </div>
-            <p className="parler-kicker" style={{ marginTop: 24 }}>2. Scène</p>
-            <div className="parler-themes" role="group" aria-label="Scène">
-              {scenesDeCat.map((s) => (
-                <button
-                  key={s.id}
-                  className={situation === s.id ? 'on' : ''}
-                  aria-pressed={situation === s.id}
-                  onClick={() => setSituation(s.id)}
-                >
-                  {s.titre}
-                </button>
-              ))}
-            </div>
-            {titreScene && (
-              <p className="hint" style={{ marginTop: 12 }}>
-                Scène retenue : <b>{titreScene}</b>
-              </p>
-            )}
-          </>
-        ) : (
-        <div className="parler-themes">
-          {THEMES.map((t) => {
-            const on = choisis.includes(t);
-            return (
-              <button
-                key={t}
-                className={on ? 'on' : ''}
-                aria-pressed={on}
-                disabled={!on && choisis.length >= MAX_THEMES}
-                onClick={() => bascule(t)}
-              >
-                {t}
+          ) : (
+            <p className="parler-niveau">
+              Classe non déclarée : la conversation restera simple.{' '}
+              <button className="parler-lien" onClick={onReglages}>
+                Choisir ma classe
               </button>
-            );
-          })}
-        </div>
-        )}
-      </div>
+            </p>
+          )}
 
-      <div className="parler-carte">
-        <div className="parler-tete">
-          <p className="parler-kicker">Vitesse de la voix</p>
-          <em className="parler-compte">{vitesse} %</em>
-        </div>
-        <div className="parler-vitesse">
-          <span aria-hidden="true">Lente</span>
-          <input
-            type="range"
-            min={VITESSE_MIN}
-            max={VITESSE_MAX}
-            step={5}
-            value={vitesse}
-            aria-label="Vitesse de la voix de l’IA"
-            onChange={(e) => changeVitesse(Number(e.target.value))}
-          />
-          <span aria-hidden="true">Normale</span>
-        </div>
-        <p className="hint">
-          {vitesse < 80
-            ? 'L’IA parlera lentement : pratique pour bien suivre au début.'
-            : vitesse < 100
-              ? 'Un peu plus lent que la normale.'
-              : 'Vitesse normale, comme une vraie conversation.'}
-        </p>
-      </div>
+          <button
+            className="btn parler-go"
+            disabled={etat !== 'pret' || !!budget?.fini || !pret}
+            onClick={() => { mesure('parler'); setEnSeance(true); }}
+          >
+            Commencer à parler
+          </button>
 
-      <button
-        className="btn parler-go"
-        disabled={etat !== 'pret' || !!budget?.fini || (mode === 'scene' ? !titreScene : choisis.length === 0)}
-        onClick={() => { mesure('parler'); setEnSeance(true); }}
-      >
-        Commencer à parler
-      </button>
+          {/* 312 — le pied suit le mode : plus de « thème » demandé en mise en situation. */}
+          <p className="hint parler-pied">
+            {etat === 'anonyme'
+              ? 'Connecte-toi pour parler. Le reste de l’application marche sans compte, comme avant.'
+              : budget?.fini
+                ? finDit(budget)
+                : mode === 'scene'
+                  ? titreScene
+                    ? `Scène retenue : ${titreScene}. Appuie sur le micro et parle.`
+                    : 'Choisis une scène pour commencer.'
+                  : choisis.length === 0
+                    ? 'Choisis au moins un thème. Sans sujet, la conversation tourne à vide au bout de deux phrases.'
+                    : 'Appuie sur le micro et parle. Le clavier reste disponible pendant la séance, en second.'}
+          </p>
+        </div>
+      )}
 
-      {etat === 'anonyme' ? (
-        <p className="hint parler-pied">
-          Connecte-toi pour parler. Le reste de l’application marche sans
-          compte, comme avant.
-        </p>
-      ) : choisis.length === 0 ? (
-        <p className="hint parler-pied">
-          Choisis au moins un thème. Sans sujet, la conversation tourne à vide
-          au bout de deux phrases.
-        </p>
-      ) : budget?.fini ? (
-        <p className="hint parler-pied">{finDit(budget)}</p>
-      ) : (
-        <p className="hint parler-pied">
-          Appuie sur le micro et parle. Le clavier reste disponible pendant
-          la séance, en second.
-        </p>
+      {onglet === 'conversations' && (
+        <div role="tabpanel" aria-label="Conversations">
+          {etat === 'anonyme' ? (
+            <div className="parler-carte">
+              <p className="hint">Connecte-toi pour retrouver tes conversations.</p>
+            </div>
+          ) : (
+            <>
+              <p className="hint">
+                Chaque séance terminée est gardée en entier : ce que tu as dit,
+                et le compte rendu. C’est en les relisant à quelques jours
+                d’écart qu’on voit ce qui a bougé.
+              </p>
+              <ParlerHistorique integre enJeu={active} onReprise={onReprise} />
+            </>
+          )}
+        </div>
+      )}
+
+      {onglet === 'preparer' && (
+        <div role="tabpanel" aria-label="Préparer">
+          <div className="parler-carte">
+            <p className="parler-kicker">Tes mots de la semaine</p>
+            {chargeMots ? (
+              <p className="hint">Lecture de tes paliers…</p>
+            ) : mots.length === 0 ? (
+              <p className="hint">
+                Aucun mot acquis pour l’instant dans tes paquets en jeu. Travaille
+                quelques cartes : ce sont ces mots-là que la conversation
+                emploiera, sans que tu aies à les chercher.
+              </p>
+            ) : (
+              <>
+                <div className="parler-mots">
+                  {mots.map((m) => (
+                    <span key={m.en} className="parler-mot" title={m.fr}>{m.en}</span>
+                  ))}
+                  {autres > 0 && <span className="parler-mot plus">+ {autres}</span>}
+                </div>
+                <p className="hint">
+                  Ils reviendront dans la conversation, sans que tu aies à les
+                  chercher.
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="parler-carte">
+            <div className="parler-tete">
+              <p className="parler-kicker">Vitesse de la voix</p>
+              <em className="parler-compte">{vitesse} %</em>
+            </div>
+            <div className="parler-vitesse">
+              <span aria-hidden="true">Lente</span>
+              <input
+                type="range"
+                min={VITESSE_MIN}
+                max={VITESSE_MAX}
+                step={5}
+                value={vitesse}
+                aria-label="Vitesse de la voix de l’IA"
+                onChange={(e) => changeVitesse(Number(e.target.value))}
+              />
+              <span aria-hidden="true">Normale</span>
+            </div>
+            <p className="hint">
+              {vitesse < 80
+                ? 'L’IA parlera lentement : pratique pour bien suivre au début.'
+                : vitesse < 100
+                  ? 'Un peu plus lent que la normale.'
+                  : 'Vitesse normale, comme une vraie conversation.'}
+            </p>
+          </div>
+
+          <div className="parler-carte">
+            <p className="parler-kicker">Ton niveau</p>
+            {classe ? (
+              <p className="parler-niveau">
+                <b>{CLASSE_LABELS[classe]}</b> — {GRAMMAIRE[classe]}.
+              </p>
+            ) : (
+              <p className="parler-niveau">Classe non déclarée.</p>
+            )}
+            <p className="hint">
+              Difficulté actuelle : {cran} / 20. Elle s’ajuste après chaque
+              bilan, selon ce que tu as ressenti.{' '}
+              <button className="parler-lien" onClick={onReglages}>Changer de classe</button>
+            </p>
+          </div>
+
+          <p className="hint parler-pied">
+            <button className="parler-note" onClick={tape}>Temps de parole remis à zéro à minuit</button>
+          </p>
+        </div>
       )}
     </section>
   );

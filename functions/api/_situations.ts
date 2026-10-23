@@ -15,6 +15,12 @@ export interface Scene {
   eleve: string;
   etapes: string[];
   imprevus: string[];
+  /** CHANTIER 312 — scènes inventées seulement : 3 à 6 mots anglais utiles, affichés à l'élève. */
+  mots?: string[];
+  /** 312 — la classe pour laquelle la scène a été inventée. */
+  classe?: string;
+  /** 312 — combien de générations ce jour-là (refaites quand la classe change ; 3 au plus). */
+  gen?: number;
 }
 
 export const SCENES: Record<string, Scene> = {
@@ -264,5 +270,14 @@ export function sceneValide(x: unknown): Scene | null {
     etapes: liste(o.etapes, 6),
     imprevus: liste(o.imprevus, 3),
   };
+  /* 312 — champs facultatifs : absents des scènes enregistrées avant, sans effet sur la validité. */
+  const mots = Array.isArray(o.mots)
+    ? o.mots.map((e) => ligne(e, 40)).filter((m) => /^[A-Za-z][A-Za-z '’-]*$/.test(m)).slice(0, 6)
+    : [];
+  if (mots.length) s.mots = mots;
+  const classe = ligne(o.classe, 4);
+  if (classe) s.classe = classe;
+  const gen = Number(o.gen);
+  if (Number.isInteger(gen) && gen >= 1 && gen <= 9) s.gen = gen;
   return s.titre && s.role && s.eleve && s.etapes.length >= 3 && s.imprevus.length >= 1 ? s : null;
 }
