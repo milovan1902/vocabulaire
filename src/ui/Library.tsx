@@ -58,10 +58,17 @@ type Filtres = {
   rayon: string | null;
   /** Catalogue seulement : dans la collection tout est déjà payé. */
   tranche: number | null;
+  /** CHANTIER 316 — « Mes paquets » : ceux que j'ai créés, et la reprise des fautes à l'oral. */
+  mien: boolean;
   ouvert: boolean;
 };
 
-const FILTRES_VIDES: Filtres = { consult: [], sc: false, rayon: null, tranche: null, ouvert: false };
+const FILTRES_VIDES: Filtres = { consult: [], sc: false, rayon: null, tranche: null, mien: false, ouvert: false };
+
+/** 316 — un paquet qui ne vient pas du catalogue : créé par l'élève, ou la reprise de l'oral. */
+function estMien(d: Deck): boolean {
+  return !d.builtin;
+}
 
 /**
  * Le nombre de CRITÈRES en vigueur, pas de puces.
@@ -76,7 +83,8 @@ const FILTRES_VIDES: Filtres = { consult: [], sc: false, rayon: null, tranche: n
 function nbCriteres(f: Filtres): number {
   return (f.consult.length > 0 || f.sc ? 1 : 0)
     + (f.tranche !== null ? 1 : 0)
-    + (f.rayon !== null ? 1 : 0);
+    + (f.rayon !== null ? 1 : 0)
+    + (f.mien ? 1 : 0);
 }
 
 /** Le plancher exact de chaque paquet d'un lot. Ne cumule pas. */
@@ -108,6 +116,7 @@ function appliquer(socle: DeckSummary[], f: Filtres): DeckSummary[] {
   return socle.filter((s) => {
     if (f.tranche !== null && (s.deck.priceCents ?? 0) !== f.tranche) return false;
     if (f.rayon !== null && s.deck.categoryId !== f.rayon) return false;
+    if (f.mien && !estMien(s.deck)) return false;
     return true;
   });
 }
@@ -155,6 +164,7 @@ function PanneauFiltres({
 
   const n = nbCriteres(f);
   const nbSC = lot.filter((s) => !!s.deck.sansCategorie).length;
+  const nbMiens = lot.filter((s) => estMien(s.deck)).length;
 
   function basculerConsultation(c: Classe) {
     onChange({
@@ -207,6 +217,20 @@ function PanneauFiltres({
         */}
       <div className={`filterfold${f.ouvert ? ' open' : ''}`}>
         <div className="filterpanel">
+          {(nbMiens > 0 || f.mien) && (
+            <>
+              <p className="flabel">Origine</p>
+              <div className="classechips">
+                <button
+                  className={f.mien ? 'on' : ''}
+                  onClick={() => onChange({ ...f, mien: !f.mien })}
+                >
+                  Mes paquets · {nbMiens}
+                </button>
+              </div>
+            </>
+          )}
+
           <p className="flabel">Niveau scolaire</p>
           <div className="classechips">
             {CYCLES.map((cy) => {
