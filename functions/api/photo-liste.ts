@@ -125,8 +125,14 @@ Garde les articles et le "to" des verbes s'ils sont écrits (the kitchen ; la cu
 La liste peut être en deux colonnes (anglais | français), ou en deux blocs (les mots anglais, puis leurs traductions plus bas) : associe chaque mot anglais à SA traduction, une seule ligne par paire.
 Un mot français n'est JAMAIS une ligne à lui seul : ne le mets jamais à gauche du point-virgule.
 Si un mot anglais n'a vraiment aucune traduction sur la photo, donne la traduction française la plus courante.
-Ignore tout ce qui n'est pas du vocabulaire : consignes, exercices, phrases d'exemple, dates, noms propres.
+Les pays, nationalités et langues SONT du vocabulaire, à garder : Algeria ; l'Algérie, Arabic ; l'arabe, Welsh ; le gallois.
+Si la photo est un tableau qui associe deux informations différentes (un pays et sa langue, un métier et son lieu…), ne les traduis pas l'une par l'autre : fais une ligne par mot ou expression, chacun avec SA traduction (Spain ; l'Espagne, Spanish ; l'espagnol). Un mot écrit seulement en français dans le tableau peut être donné en anglais à gauche avec ce français à droite.
+Ignore tout ce qui n'est pas du vocabulaire : consignes, exercices, phrases d'exemple, dates, noms de personnes, noms de villes et de rues.
 Si la photo ne contient aucune liste de vocabulaire anglais, réponds exactement : AUCUN`;
+
+/* CHANTIER 314 — un tableau « Pays (français) | Langue (anglais) » renvoyait AUCUN :
+   la consigne faisait ignorer les « noms propres » (donc pays et langues), et les
+   deux colonnes ne sont pas la traduction l'une de l'autre. */
 
 /** 284 — « Poisson », « poison », « POISSON » : même mot au crayon près. */
 function plat(s: string): string {
