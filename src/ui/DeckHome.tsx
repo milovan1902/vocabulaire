@@ -1,6 +1,6 @@
 /** Écran d'un paquet : statistiques, filtres de thème, réglages, actions. */
 import { useMemo, useState } from 'react';
-import type { DeckOverride, Settings } from '../domain/types';
+import type { Card, DeckOverride, Progress, Settings } from '../domain/types';
 import type { LoadedDeck } from './useStore';
 import { progressFor } from './useStore';
 import { computeStats } from '../engine/session';
@@ -11,6 +11,165 @@ import { phraseErreur } from '../data/messageErreur';
 import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, motsFragiles, ramenerAuControle, resteControle, type DeckControle } from '../engine/controle';
 
 const jourLong = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+/*
+ * CHANTIER 319 — LES MOTS DU PAQUET, À LIRE ET À CORRIGER.
+ *
+ * Jusqu'ici, un paquet créé ne se relisait qu'en jouant. Une faute vue en
+ * révision ne se corrigeait nulle part. La liste complète est maintenant
+ * ici, repliée comme les autres panneaux.
+ *
+ *  - Paquets du catalogue : lecture seule. Leur contenu vient du serveur et
+ *    une correction locale serait écrasée à la synchronisation suivante.
+ *  - Paquets créés : chaque mot se corrige d'un appui, ou se retire.
+ *    L'IDENTIFIANT DE LA CARTE NE CHANGE PAS quand on corrige l'anglais :
+ *    c'est lui qui porte la progression, qu'on garde. Retirer un mot
+ *    retire aussi sa progression.
+ *  - La synchronisation (chantier 303) recalcule l'empreinte du paquet :
+ *    la correction suit le compte sur les autres appareils sans rien de plus.
+ */
+const cleMot = (t: string) => t.trim().toLowerCase();
+
+function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
+  deckId: string;
+  cards: Card[];
+  progress: Record<string, Progress>;
+  modifiable: boolean;
+  onReload: () => void;
+}) {
+  const [filtre, setFiltre] = useState('');
+  const [edite, setEdite] = useState<string | null>(null);
+  const [en, setEn] = useState('');
+  const [fr, setFr] = useState('');
+  const [erreur, setErreur] = useState('');
+  const [enCours, setEnCours] = useState(false);
+
+  const f = cleMot(filtre);
+  const liste = f
+    ? cards.filter((c) => cleMot(c.en).includes(f) || cleMot(c.fr).includes(f))
+    : cards;
+
+  function ouvre(c: Card) {
+    setEdite(c.id); setEn(c.en); setFr(c.fr); setErreur('');
+  }
+
+  async function enregistre(c: Card) {
+    const e = en.trim(), t = fr.trim();
+    if (!e || !t) { setErreur('Les deux champs sont nécessaires.'); return; }
+    if (cards.some((x) => x.id !== c.id && cleMot(x.en) === cleMot(e))) {
+      setErreur(`« ${e} » est déjà dans le paquet.`); return;
+    }
+    if (enCours) return;
+    setEnCours(true);
+    try {
+      await repository.saveCards(deckId, cards.map((x) => (x.id === c.id ? { ...x, en: e, fr: t } : x)));
+      setEdite(null);
+      onReload();
+    } catch (err) {
+      setErreur('L’enregistrement a échoué. Réessaie.');
+      console.error(err);
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function retire(c: Card) {
+    if (cards.length <= 1) { alert('Un paquet garde au moins un mot. Pour tout effacer, supprime le paquet.'); return; }
+    if (!confirm(`Retirer « ${c.en} » du paquet ?`)) return;
+    setEnCours(true);
+    try {
+      await repository.saveCards(deckId, cards.filter((x) => x.id !== c.id));
+      if (progress[c.id]) {
+        const p = { ...progress };
+        delete p[c.id];
+        await repository.saveProgress(deckId, p);
+      }
+      setEdite(null);
+      onReload();
+    } catch (err) {
+      alert('Le retrait a échoué. Réessaie.');
+      console.error(err);
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  return (
+    <details className="panelbox">
+      <summary>
+        Les mots du paquet
+        <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>{cards.length}</span>
+      </summary>
+      <p className="hint">
+        {modifiable
+          ? 'Touche un mot pour le corriger. Sa progression est conservée.'
+          : 'Paquet du catalogue : les mots se consultent ici mais ne se modifient pas.'}
+      </p>
+      {cards.length > 12 && (
+        <div className="field">
+          <label htmlFor="dh-filtre">Chercher un mot</label>
+          <input
+            id="dh-filtre" type="search" value={filtre} placeholder="en anglais ou en français"
+            autoCapitalize="off" autoCorrect="off" spellCheck={false}
+            onChange={(e) => setFiltre(e.target.value)}
+          />
+        </div>
+      )}
+      {liste.length === 0 && <p className="hint">Aucun mot ne correspond.</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '0 0 8px' }}>
+        {liste.map((c) => {
+          const i = cards.indexOf(c);
+          if (edite === c.id) {
+            return (
+              <div key={c.id} style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: 12, borderRadius: 12, border: '2px solid currentColor' }}>
+                <div className="field" style={{ margin: 0 }}>
+                  <label htmlFor={`dh-en-${i}`}>En anglais</label>
+                  <input
+                    id={`dh-en-${i}`} type="text" value={en} autoFocus
+                    autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="next"
+                    onChange={(e) => { setEn(e.target.value); setErreur(''); }}
+                  />
+                </div>
+                <div className="field" style={{ margin: 0 }}>
+                  <label htmlFor={`dh-fr-${i}`}>En français</label>
+                  <input
+                    id={`dh-fr-${i}`} type="text" value={fr} enterKeyHint="done"
+                    onChange={(e) => { setFr(e.target.value); setErreur(''); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void enregistre(c); } }}
+                  />
+                </div>
+                {erreur && <p className="error" style={{ margin: '0 0 4px' }}>{erreur}</p>}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button className="btn" style={{ flex: 1, margin: 0 }} disabled={enCours || !en.trim() || !fr.trim()} onClick={() => void enregistre(c)}>Enregistrer</button>
+                  <button className="btn ghost" style={{ flex: 1, margin: 0 }} disabled={enCours} onClick={() => setEdite(null)}>Annuler</button>
+                </div>
+                <button className="btn ghost danger" style={{ margin: 0 }} disabled={enCours} onClick={() => void retire(c)}>Retirer ce mot</button>
+              </div>
+            );
+          }
+          const contenu = (
+            <>
+              <span style={{ width: 24, fontSize: 11, opacity: 0.6, fontVariantNumeric: 'tabular-nums', flex: 'none' }}>{i + 1}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, overflowWrap: 'anywhere' }}>{c.en}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14.5, opacity: 0.75, overflowWrap: 'anywhere' }}>{c.fr}</span>
+            </>
+          );
+          const cadre = { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '6px 12px', borderRadius: 10, border: '1px solid var(--rule)' } as const;
+          return modifiable ? (
+            <button
+              key={c.id} onClick={() => ouvre(c)} aria-label={`Corriger ${c.en}`}
+              style={{ ...cadre, width: '100%', background: 'none', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
+            >
+              {contenu}
+            </button>
+          ) : (
+            <div key={c.id} style={cadre}>{contenu}</div>
+          );
+        })}
+      </div>
+    </details>
+  );
+}
 
 /*
  * CHANTIER 59 — DEUX ACTIONS RETIRÉES : L'IMAGE ET LE RENOMMAGE
@@ -246,6 +405,12 @@ export function DeckHome({
           )}
         </details>
       )}
+
+      <MotsDuPaquet
+        key={deck.id}
+        deckId={deck.id} cards={cards} progress={progress}
+        modifiable={!deck.builtin} onReload={onReload}
+      />
 
       <details className="panelbox">
         <summary>Réglages</summary>
