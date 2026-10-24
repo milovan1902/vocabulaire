@@ -26,7 +26,12 @@
 import { json, utilisateur, type Contexte } from './_parler-commun';
 
 /** Les tables qui portent une colonne `user_id`. À compléter si une table s'ajoute. */
-const TABLES = ['progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement'];
+/*
+ * CHANTIER 320 — `photo_usage` (281) et `parler_idees` (310) manquaient :
+ * un compte supprimé laissait derrière lui ses relevés de photos et ses
+ * scènes inventées.
+ */
+const TABLES = ['progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement', 'photo_usage', 'parler_idees'];
 
 export const onRequestDelete = async ({ request, env }: Contexte): Promise<Response> => {
   const userId = await utilisateur(request, env);
