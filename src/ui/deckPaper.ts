@@ -678,6 +678,24 @@ const PAR_ID: Record<string, number> = {
   'tle-fin-epreuve': 0,    // bleu ardoise
 
   /*
+   * CHANTIER 323 — les dix paquets pour adultes, tous au rayon
+   * « Vocabulaire de base ». Sans épingle, les dix seraient miel à la
+   * suite : chacun reçoit un papier qui tient son dessin (pas de vert sur
+   * sauge, pas de brun sur terracotta). Deux miels et deux terracottas,
+   * jamais voisins dans la liste.
+   */
+  'ad-emploi': 0, // bleu ardoise
+  'ad-bureau': 3, // lilas
+  'ad-emails': 2, // miel
+  'ad-banque': 7, // glycine
+  'ad-logement': 1, // sauge
+  'ad-sante': 5, // rose poudré
+  'ad-demarches': 6, // bleu-vert
+  'ad-voyager': 4, // terracotta
+  'ad-famille': 2, // miel
+  'ad-maison': 4, // terracotta
+
+  /*
    * CHANTIER 124 — LES CINQ PAQUETS DE FIN DE TROISIÈME
    *
    *    D'ici et d'ailleurs — 3e            miel        (Vocabulaire de base)

@@ -89,6 +89,17 @@ import etudesFinTle from '../assets/packs/tle-fin-etudes.webp';
 import fauxAmisFinTle from '../assets/packs/tle-fin-faux-amis.webp';
 import grammaireFinTle from '../assets/packs/tle-fin-grammaire.webp';
 import epreuveFinTle from '../assets/packs/tle-fin-epreuve.webp';
+// CHANTIER 323 — les dix paquets pour adultes.
+import emploiAd from '../assets/packs/ad-emploi.webp';
+import bureauAd from '../assets/packs/ad-bureau.webp';
+import emailsAd from '../assets/packs/ad-emails.webp';
+import banqueAd from '../assets/packs/ad-banque.webp';
+import logementAd from '../assets/packs/ad-logement.webp';
+import santeAd from '../assets/packs/ad-sante.webp';
+import demarchesAd from '../assets/packs/ad-demarches.webp';
+import voyagerAd from '../assets/packs/ad-voyager.webp';
+import familleAd from '../assets/packs/ad-famille.webp';
+import maisonAd from '../assets/packs/ad-maison.webp';
 
 const FOURNIS: Record<string, string> = {
   'college-us': collegeUs,
@@ -941,6 +952,51 @@ const ILLUSTRATIONS: Record<string, string> = {
   'tle-fin-epreuve': epreuveFinTle,
   'reussir-l-epreuve-term': epreuveFinTle,
   'reussir-l-epreuve': epreuveFinTle,
+
+  /*
+   * CHANTIER 323 — LES DOS DES DIX PAQUETS POUR ADULTES (livraison 321)
+   *
+   * Vos dix planches JPEG, fond blanc retiré par diffusion depuis les bords
+   * (les blancs intérieurs enclos restent : CV, enveloppe, cartes
+   * d'embarquement), recadrées à leur boîte, WebP 512 px.
+   *   - Santé, Démarches, Famille, Maison : vos versions sans cadre.
+   *   - Voyager : l'ancienne planche, cadre vert retiré ici (la nouvelle
+   *     portait par erreur le tampon de Démarches).
+   *   - Emploi, Bureau, E-mails, Banque, Logement : gardent leur cercle,
+   *     qui fait partie du dessin.
+   *   - Démarches garde son tampon « APPROUVÉ ADMINISTRATION », validé.
+   * Le nom en base porte « · B1 » : les clés couvrent les deux graphies.
+   */
+  'ad-emploi': emploiAd,
+  'chercher-un-emploi': emploiAd,
+  'chercher-un-emploi-b1': emploiAd,
+  'ad-bureau': bureauAd,
+  'au-bureau': bureauAd,
+  'au-bureau-a2': bureauAd,
+  'ad-emails': emailsAd,
+  'e-mails-et-telephone': emailsAd,
+  'e-mails-et-telephone-b1': emailsAd,
+  'ad-banque': banqueAd,
+  'banque-et-budget': banqueAd,
+  'banque-et-budget-b1': banqueAd,
+  'ad-logement': logementAd,
+  'le-logement': logementAd,
+  'le-logement-a2': logementAd,
+  'ad-sante': santeAd,
+  'la-sante': santeAd,
+  'la-sante-a2': santeAd,
+  'ad-demarches': demarchesAd,
+  'demarches-et-administration': demarchesAd,
+  'demarches-et-administration-b1': demarchesAd,
+  'ad-voyager': voyagerAd,
+  'voyager': voyagerAd,
+  'voyager-a1': voyagerAd,
+  'ad-famille': familleAd,
+  'famille-et-enfants': familleAd,
+  'famille-et-enfants-a2': familleAd,
+  'ad-maison': maisonAd,
+  'maison-bricolage-et-jardin': maisonAd,
+  'maison-bricolage-et-jardin-a2': maisonAd,
 };
 
 /** Minuscules, sans accent ni ponctuation. */
