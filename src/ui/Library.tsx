@@ -56,6 +56,8 @@ type Filtres = {
   consult: Classe[];
   /** CHANTIER 108 — la puce « Sans catégorie », cochable avec les classes. */
   sc: boolean;
+  /** CHANTIER 322 — la puce « Adultes », cochable avec les classes. */
+  ad: boolean;
   rayon: string | null;
   /** Catalogue seulement : dans la collection tout est déjà payé. */
   tranche: number | null;
@@ -64,7 +66,7 @@ type Filtres = {
   ouvert: boolean;
 };
 
-const FILTRES_VIDES: Filtres = { consult: [], sc: false, rayon: null, tranche: null, mien: false, ouvert: false };
+const FILTRES_VIDES: Filtres = { consult: [], sc: false, ad: false, rayon: null, tranche: null, mien: false, ouvert: false };
 
 /** 316 — un paquet qui ne vient pas du catalogue : créé par l'élève, ou la reprise de l'oral. */
 function estMien(d: Deck): boolean {
@@ -82,7 +84,7 @@ function estMien(d: Deck): boolean {
  * de quoi on cherche pendant dix minutes pourquoi un paquet manque.
  */
 function nbCriteres(f: Filtres): number {
-  return (f.consult.length > 0 || f.sc ? 1 : 0)
+  return (f.consult.length > 0 || f.sc || f.ad ? 1 : 0)
     + (f.tranche !== null ? 1 : 0)
     + (f.rayon !== null ? 1 : 0)
     + (f.mien ? 1 : 0);
@@ -100,10 +102,11 @@ function comptesParClasse(lot: DeckSummary[]): Map<Classe, number> {
 
 /** Le lot réduit aux planchers cochés. Rien de coché = tout le lot. */
 function socleDe(lot: DeckSummary[], f: Filtres): DeckSummary[] {
-  if (f.consult.length === 0 && !f.sc) return lot;
+  if (f.consult.length === 0 && !f.sc && !f.ad) return lot;
   return lot.filter((s) =>
     (!!s.deck.classeFrom && f.consult.includes(s.deck.classeFrom))
-    || (f.sc && !!s.deck.sansCategorie));
+    || (f.sc && !!s.deck.sansCategorie)
+    || (f.ad && !!s.deck.pourAdultes));
 }
 
 /** CHANTIER 108 — la pastille : la classe plancher, ou « SC ». */
@@ -167,6 +170,7 @@ function PanneauFiltres({
   const n = nbCriteres(f);
   const nbSC = lot.filter((s) => !!s.deck.sansCategorie).length;
   const nbMiens = lot.filter((s) => estMien(s.deck)).length;
+  const nbAD = lot.filter((s) => !!s.deck.pourAdultes).length;
 
   function basculerConsultation(c: Classe) {
     onChange({
@@ -256,6 +260,14 @@ function PanneauFiltres({
                 onClick={() => onChange({ ...f, sc: !f.sc })}
               >
                 Sans catégorie · {nbSC}
+              </button>
+            )}
+            {(nbAD > 0 || f.ad) && (
+              <button
+                className={f.ad ? 'on' : ''}
+                onClick={() => onChange({ ...f, ad: !f.ad })}
+              >
+                Adultes · {nbAD}
               </button>
             )}
           </div>
@@ -901,10 +913,11 @@ export function Library({
   function vueCatalogue() {
     const tous = charge?.summaries ?? [];
     const maClasse = settings.classe;
-    const enConsultation = fCatalogue.consult.length > 0 || fCatalogue.sc;
+    const enConsultation = fCatalogue.consult.length > 0 || fCatalogue.sc || fCatalogue.ad;
     const consultes = [
       ...fCatalogue.consult.map((c) => CLASSE_LABELS[c]),
       ...(fCatalogue.sc ? ['Sans catégorie'] : []),
+      ...(fCatalogue.ad ? ['Adultes'] : []),
     ];
 
     /*
@@ -920,7 +933,8 @@ export function Library({
 
     const filtresTous = appliquer(socleDe(tous, fCatalogue), fCatalogue);
     /* 318 — les paquets adultes : dans les rayons pour un adulte, à part pour un élève. */
-    const adulte = !!settings.adulte;
+    /* 322 — la puce « Adultes » cochée : ils rejoignent les rayons, comme pour un adulte. */
+    const adulte = !!settings.adulte || fCatalogue.ad;
     const pourAdultes = adulte ? [] : filtresTous.filter((s) => s.deck.pourAdultes);
     const filtres = adulte ? filtresTous : filtresTous.filter((s) => !s.deck.pourAdultes);
 
@@ -965,7 +979,7 @@ export function Library({
                 className={`classrow${maClasse === c ? ' on' : ''}`}
                 onClick={() => {
                   onSettings({ ...settings, classe: c });
-                  setFCatalogue((f) => ({ ...f, consult: [], sc: false }));
+                  setFCatalogue((f) => ({ ...f, consult: [], sc: false, ad: false }));
                   setChoixClasse(false);
                 }}
               >
@@ -978,7 +992,7 @@ export function Library({
               className="classrow plain"
               onClick={() => {
                 onSettings({ ...settings, classe: null });
-                setFCatalogue((f) => ({ ...f, consult: [], sc: false }));
+                setFCatalogue((f) => ({ ...f, consult: [], sc: false, ad: false }));
                 setChoixClasse(false);
               }}
             >
@@ -999,7 +1013,7 @@ export function Library({
             </p>
             <button
               className="btn ghost"
-              onClick={() => setFCatalogue((f) => ({ ...f, consult: [], sc: false }))}
+              onClick={() => setFCatalogue((f) => ({ ...f, consult: [], sc: false, ad: false }))}
             >
               {maClasse ? `Revenir à ma classe — ${CLASSE_LABELS[maClasse]}` : 'Revenir au catalogue'}
             </button>
