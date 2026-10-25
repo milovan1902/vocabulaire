@@ -126,13 +126,19 @@ La liste peut être en deux colonnes (anglais | français), ou en deux blocs (le
 Un mot français n'est JAMAIS une ligne à lui seul : ne le mets jamais à gauche du point-virgule.
 Si un mot anglais n'a vraiment aucune traduction sur la photo, donne la traduction française la plus courante.
 Les pays, nationalités et langues SONT du vocabulaire, à garder : Algeria ; l'Algérie, Arabic ; l'arabe, Welsh ; le gallois.
-Si la photo est un tableau qui associe deux informations différentes (un pays et sa langue, un métier et son lieu…), ne les traduis pas l'une par l'autre : fais une ligne par mot ou expression, chacun avec SA traduction (Spain ; l'Espagne, Spanish ; l'espagnol). Un mot écrit seulement en français dans le tableau peut être donné en anglais à gauche avec ce français à droite.
+Ne fabrique JAMAIS un mot anglais qui n'est pas écrit sur la photo : chaque mot à gauche du point-virgule doit se lire tel quel sur la photo.
+Si la photo est un tableau qui associe deux informations différentes (un pays et sa langue, un métier et son lieu…), ne les traduis pas l'une par l'autre : garde SEULEMENT la colonne écrite en anglais, une ligne par mot avec sa traduction française. La colonne écrite en français n'est pas à apprendre : ne la traduis pas en anglais, n'en fais aucune ligne.
+Exemple : « Espagne | Spanish », « Algérie | Arabic », « Maroc | Arabic » donnent seulement : Spanish ; l'espagnol, Arabic ; l'arabe (et rien pour Espagne, Algérie, Maroc).
+Une cellule qui contient plusieurs mots anglais (« Dutch, French, German », « English (and Welsh) ») donne une ligne par mot. Un mot qui revient plusieurs fois n'est écrit qu'une fois.
 Ignore tout ce qui n'est pas du vocabulaire : consignes, exercices, phrases d'exemple, dates, noms de personnes, noms de villes et de rues.
 Si la photo ne contient aucune liste de vocabulaire anglais, réponds exactement : AUCUN`;
 
 /* CHANTIER 314 — un tableau « Pays (français) | Langue (anglais) » renvoyait AUCUN :
    la consigne faisait ignorer les « noms propres » (donc pays et langues), et les
-   deux colonnes ne sont pas la traduction l'une de l'autre. */
+   deux colonnes ne sont pas la traduction l'une de l'autre.
+   CHANTIER 324 — à l'inverse, le même tableau donnait 39 mots : les langues ET les
+   pays, retraduits en anglais (Spain ; l'Espagne) alors qu'aucun n'était écrit en
+   anglais. On ne garde plus que la colonne anglaise, sans inventer de mot. */
 
 /** 284 — « Poisson », « poison », « POISSON » : même mot au crayon près. */
 function plat(s: string): string {
