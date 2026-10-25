@@ -47,6 +47,9 @@ import { MaParole } from './MaParole';
 import { Ligne, Tiroir } from './tiroir';
 import { MesXp } from './MesXp';
 import { xpTotal } from '../engine/xp';
+/* CHANTIER 325 — « Pourquoi ça marche » : la boucle d'apprentissage. */
+import { Pourquoi } from './Pourquoi';
+import { estAdulte } from './ton';
 
 const nb = (n: number) => n.toLocaleString('fr-FR');
 
@@ -85,6 +88,7 @@ export function Progress({
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
   /* CHANTIER 185 — « Mes XP », venu des Réglages. */
   const [xpOuvert, setXpOuvert] = useState(ouvrir === 'xp');
+  const [pourquoi, setPourquoi] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -128,7 +132,7 @@ export function Progress({
   return (
     <>
       {/* CHANTIER 186 — « Mes paquets » et « Mes XP » prennent la place de la liste. */}
-      {!xpOuvert && !tiroirOuvert && (<>
+      {!xpOuvert && !tiroirOuvert && !pourquoi && (<>
       <h2 className="screen-title">Mes progrès</h2>
 
       <div className="reglist">
@@ -183,8 +187,22 @@ export function Progress({
           valeur={`${xpTotal(streak).toLocaleString('fr-FR')} XP`}
           onClick={() => setXpOuvert(true)}
         />
+        {/* CHANTIER 325 — même icône que l'Aide des Réglages : c'est une explication. */}
+        <Ligne
+          icone="/ico-aide.png"
+          titre="Pourquoi ça marche"
+          sous="La boucle qui fait retenir."
+          valeur=""
+          onClick={() => setPourquoi(true)}
+        />
       </div>
       </>)}
+
+      {pourquoi && (
+        <Tiroir titre="Pourquoi ça marche" retour="Mes progrès" onFermer={() => setPourquoi(false)}>
+          <Pourquoi adulte={estAdulte(settings)} />
+        </Tiroir>
+      )}
 
       {xpOuvert && (
         <Tiroir titre="Mes XP" retour="Mes progrès" onFermer={() => setXpOuvert(false)}>

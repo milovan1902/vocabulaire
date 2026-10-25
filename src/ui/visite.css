@@ -116,3 +116,19 @@
 .visite-boucle li::before { content: counter(b); grid-row: span 2; width: 26px; height: 26px; border-radius: 999px; border: 2px solid #f2b705; display: flex; align-items: center; justify-content: center; font-weight: 700; }
 .visite-boucle small { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b4e00; font-weight: 700; }
 .visite-or { color: #6b4e00 !important; font-weight: 700; }
+
+/* 325 — élève ou adulte : la toute première question. */
+.visite-profils { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.visite-profil {
+  min-height: 72px; padding: 10px 8px; border-radius: 14px; border: 2px solid #16233f; background: #fff; color: #16233f;
+  font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;
+}
+.visite-profil small { font-size: 12.5px; font-weight: 400; color: #3d4f73; }
+.visite-profil:active { background: #fff6d6; }
+.visite-profil:focus-visible { outline: 2px solid #f2b705; outline-offset: 2px; }
+/* 325 — « Passer » pendant le test de niveau de l'adulte : discret, en haut à droite. */
+.visite-attente {
+  position: fixed; top: 12px; right: 12px; padding: 0 16px; border-radius: 999px;
+  background: #fff; border: 2px solid #f2b705; box-shadow: 0 4px 14px rgba(10, 18, 36, 0.2);
+}

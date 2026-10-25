@@ -9,6 +9,8 @@
  * Oui = 2 : le total (0 à 10) donne le niveau. Le résultat se propose, il ne
  * s'impose pas : on peut choisir un autre niveau avant de valider. Pas de
  * nouveau test ensuite ; le niveau se change à la main dans les Réglages.
+ *
+ * CHANTIER 325 — un adulte est vouvoyé : tout ce parcours passe au « vous ».
  */
 import { useState, type CSSProperties } from 'react';
 import type { NiveauAdulte } from '../domain/types';
@@ -93,7 +95,7 @@ export function ChoixAdulte({ actuel, onChoisi }: {
         <p className="hint">
           Le mode adulte est fait pour se remettre à l’anglais hors du collège ou
           du lycée. Il ouvre des mises en situation de la vie d’adulte (travail,
-          banque, logement) et calera tes paquets et tes conversations sur ton niveau.
+          banque, logement) et calera vos paquets et vos conversations sur votre niveau.
         </p>
         <label style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 44, cursor: 'pointer' }}>
           <input type="checkbox" checked={majeur} onChange={(e) => setMajeur(e.target.checked)} style={{ width: 22, height: 22 }} />
@@ -114,7 +116,7 @@ export function ChoixAdulte({ actuel, onChoisi }: {
   if (etape === 'questions') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <p className="hint">Cinq phrases. Réponds sans réfléchir trop : tu pourras ajuster ensuite.</p>
+        <p className="hint">Cinq phrases. Répondez sans trop réfléchir : vous pourrez ajuster ensuite.</p>
         {QUESTIONS.map((q, i) => (
           <div key={q} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p style={{ margin: 0, fontWeight: 600 }}>{i + 1}. {q}</p>
@@ -157,7 +159,7 @@ export function ChoixAdulte({ actuel, onChoisi }: {
     };
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <p className="hint" style={{ margin: 0 }}>Mot {qi + 1} sur {QCM.length} · choisis la traduction anglaise.</p>
+        <p className="hint" style={{ margin: 0 }}>Mot {qi + 1} sur {QCM.length} · choisissez la traduction anglaise.</p>
         <p style={{ margin: 0, fontSize: 22 }}><b>{q.fr}</b></p>
         <div role="group" aria-label={`Traduction de ${q.fr}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
           {ordre.map((k) => (
@@ -178,9 +180,9 @@ export function ChoixAdulte({ actuel, onChoisi }: {
       </p>
       <p className="hint">{DECRIT[n]}</p>
       {qcm.some((x) => x !== null) && (
-        <p className="hint">Mots reconnus : {bonnes} sur {QCM.length}. Le niveau tient compte de tes réponses et de ces mots.</p>
+        <p className="hint">Mots reconnus : {bonnes} sur {QCM.length}. Le niveau tient compte de vos réponses et de ces mots.</p>
       )}
-      <p className="hint" style={{ marginBottom: 0 }}>Pas tout à fait toi ? Choisis un autre niveau :</p>
+      <p className="hint" style={{ marginBottom: 0 }}>Pas tout à fait vous ? Choisissez un autre niveau :</p>
       <div role="group" aria-label="Niveau" style={{ display: 'flex', gap: 8 }}>
         {NIVEAUX_ADULTE.map((x) => (
           <button key={x} aria-pressed={x === n} style={choix(x === n)} onClick={() => setRetenu(x)}>{x}</button>

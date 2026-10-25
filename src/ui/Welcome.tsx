@@ -9,6 +9,8 @@
 import { useState } from "react";
 import type { Auth } from "./useAuth";
 import { useAccordCompte } from "./accordParental";
+/* CHANTIER 325 — les promesses : élèves d'abord, adultes ensuite. */
+import "./promesse.css";
 
 export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
   const [openMethod, setOpenMethod] = useState(false);
@@ -27,10 +29,30 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
         </p>
       </header>
 
+      {/*
+        * CHANTIER 325 — la promesse aux élèves, en quatre axes, puis une
+        * ligne pour les adultes. « Neuro » est dit en une phrase.
+        */}
+      <section className="promesse" aria-label="Ce que fait l’application">
+        <p className="promesse-titre">
+          Prépare tes contrôles, enrichis ton vocabulaire et ose parler anglais.
+        </p>
+        <ul className="promesse-axes">
+          <li><b>Contrôles</b><span>La liste du prof en photo, révisée jusqu’au jour J.</span></li>
+          <li><b>Vocabulaire</b><span>Des paquets par classe et par thème.</span></li>
+          <li><b>Oral</b><span>Des conversations avec une IA à ton niveau.</span></li>
+          <li><b>La boucle</b><span>Les mots qui coincent à l’oral rejoignent un paquet spécial : tu les révises, tu les réemploies, et tu montes d’un cran.</span></li>
+        </ul>
+        <p className="promesse-adulte">
+          <b>Adulte ?</b> Remettez-vous à l’anglais, gardez le niveau ou progressez !
+          Un test de niveau, des paquets par thème et des mises en situation à l’oral.
+        </p>
+      </section>
+
       <p className="welcome-lead">
-        Chaque mot revient juste avant que tu ne l’oublies. Ni plus tôt, ce
-        serait du temps perdu, ni plus tard, il faudrait tout réapprendre.
-        L’application choisit le moment ; tu n’as qu’à répondre.
+        <em>Neuro</em>, parce que l’application suit ta mémoire : chaque mot
+        revient juste avant que tu ne l’oublies. Ni plus tôt, ce serait du
+        temps perdu, ni plus tard, il faudrait tout réapprendre.
       </p>
 
       <div className="welcome-actions">

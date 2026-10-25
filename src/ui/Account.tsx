@@ -98,6 +98,9 @@ import { xpTotal } from '../engine/xp';
 import { Boutique } from './Boutique';
 /* CHANTIER 293 — seul le compte administrateur peut relancer la première connexion. */
 import { estCreateur } from '../data/createur';
+/* CHANTIER 325 — élève ou adulte (le ton suit), et la bulle Abonnement. */
+import { EVT_PROFIL, estAdulte, poseProfil, profilLocal, tv } from './ton';
+import { Abonnement } from './Abonnement';
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -166,7 +169,7 @@ function tempsDit(s: Settings): string {
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'connexion' | 'classe' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide';
+type Tiroirs = null | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide';
 
 
 export function Account({
@@ -225,21 +228,29 @@ export function Account({
    * un vide : il se dit, sinon la ligne a l'air de ne pas être réglée.
    */
   const classeDite = niveauDit(settings) ?? 'Non déclarée';
-  /* 317 — le parcours adulte s'ouvre dans le même tiroir. */
-  const [versAdulte, setVersAdulte] = useState(false);
+  /* 317 — le parcours adulte s'ouvre dans le même tiroir.
+     325 — derrière « Je suis élève / Je suis adulte », en tête du tiroir « Mon profil ». */
+  const [vueProfil, setVueProfil] = useState<'eleve' | 'adulte'>(() =>
+    settings.adulte || (!settings.classe && profilLocal() === 'adulte') ? 'adulte' : 'eleve');
+  /* 325 — adulte : vouvoiement. */
+  const a = estAdulte(settings);
 
   /* Le tiroir se ferme dès qu'on a choisi : un réglage à choix unique
      n'a rien à confirmer. Les tiroirs à plusieurs réglages, eux, restent
      ouverts — on y règle souvent deux choses de suite. */
   function choisir(c: Classe | null) {
     onSettings({ ...settings, classe: c, adulte: null });
+    poseProfil('eleve');
+    /* 325 — la visite guidée attend peut-être ce choix. */
+    window.dispatchEvent(new CustomEvent(EVT_PROFIL, { detail: { classe: c } }));
     setTiroir(null);
   }
 
   /* 317 — un adulte : la classe calée sur son niveau, et le niveau lui-même. */
   function choisirAdulte(n: NiveauAdulte) {
     onSettings({ ...settings, classe: NIVEAU_ADULTE_CLASSE[n], adulte: n });
-    setVersAdulte(false);
+    poseProfil('adulte');
+    window.dispatchEvent(new CustomEvent(EVT_PROFIL, { detail: { classe: NIVEAU_ADULTE_CLASSE[n] } }));
     setTiroir(null);
   }
 
@@ -250,6 +261,7 @@ export function Account({
   const valeurs = {
     connexion: auth.email ? 'Connecté' : 'Sans compte',
     classe: classeDite,
+    abonnement: 'Bientôt',
     apparence: THEME_LABELS[theme],
     rappel: settings.reminderAt ? settings.reminderAt.replace(':', ' h ') : 'Désactivé',
     charge: `${settings.newPerDay} mots/j`,
@@ -317,15 +329,22 @@ export function Account({
         />
         <Ligne
           icone="/btn-classe.png"
-          titre="Ma classe"
-          sous="Elle range le catalogue, sans rien fermer."
+          titre="Mon profil"
+          sous={tv(a, 'Élève ou adulte, et ton niveau.', 'Élève ou adulte, et votre niveau.')}
           valeur={valeurs.classe}
           onClick={() => setTiroir('classe')}
+        />
+        {/* CHANTIER 325 — pas encore d'icône dessinée : le carré d'attente de tiroir.tsx. */}
+        <Ligne
+          titre="Abonnement"
+          sous={a ? 'Ce qui est gratuit, ce qu’il ajoute.' : 'Ce qui est gratuit, et le mot aux parents.'}
+          valeur={valeurs.abonnement}
+          onClick={() => setTiroir('abonnement')}
         />
         <Ligne
           icone="/ico-apparence.png"
           titre="Apparence"
-          sous="Gagne des crédits, choisis ton style."
+          sous={tv(a, 'Gagne des crédits, choisis ton style.', 'Gagnez des crédits, choisissez votre style.')}
           valeur={valeurs.apparence}
           onClick={() => setTiroir('apparence')}
         />
@@ -403,9 +422,9 @@ export function Account({
         <Tiroir titre="Connexion" retour="Réglages" onFermer={() => setTiroir(null)}>
           <AccountPanel auth={auth} />
           <p className="hint" style={{ marginTop: 14 }}>
-            Sans compte, la progression reste sur cet appareil. Pour la
-            retrouver ailleurs, exporte une sauvegarde ici et restaure-la
-            là-bas.
+            {tv(a,
+              'Sans compte, la progression reste sur cet appareil. Pour la retrouver ailleurs, exporte une sauvegarde ici et restaure-la là-bas.',
+              'Sans compte, la progression reste sur cet appareil. Pour la retrouver ailleurs, exportez une sauvegarde ici et restaurez-la là-bas.')}
           </p>
           <button className="btn ghost" onClick={exportBackup}>Enregistrer une sauvegarde</button>
           <button className="btn ghost" onClick={() => fileRef.current?.click()}>
@@ -423,45 +442,59 @@ export function Account({
       )}
 
       {tiroir === 'classe' && (
-        <Tiroir titre={versAdulte ? 'Mon niveau d’adulte' : 'Ma classe'} retour="Réglages" onFermer={() => { setVersAdulte(false); setTiroir(null); }}>
-          {versAdulte ? (
-            <>
-              <ChoixAdulte actuel={settings.adulte ?? null} onChoisi={choisirAdulte} />
-              <button className="btn ghost" style={{ marginTop: 14 }} onClick={() => setVersAdulte(false)}>Revenir aux classes</button>
-            </>
-          ) : (
-          <>
-          <p className="hint">
-            Elle range le catalogue en « pour ma classe » et « pour plus tard ».
-            Rien ne se ferme : les paquets des classes suivantes restent
-            visibles, plus bas.
-          </p>
-          <button
-            className={`classrow${settings.adulte ? ' on' : ''}`}
-            onClick={() => setVersAdulte(true)}
-          >
-            <i />
-            <span>{settings.adulte ? `Adulte · niveau ${settings.adulte}` : 'Adulte — je me remets à niveau'}</span>
-          </button>
-          {CLASSES.map((c: Classe) => (
+        <Tiroir titre="Mon profil" retour="Réglages" onFermer={() => setTiroir(null)}>
+          {/* CHANTIER 325 — élève ou adulte d'abord ; la classe ou le niveau ensuite. */}
+          <div className="heures" role="group" aria-label="Profil">
             <button
-              key={c}
-              className={`classrow${!settings.adulte && settings.classe === c ? ' on' : ''}`}
-              onClick={() => choisir(c)}
+              className={vueProfil === 'eleve' ? 'on' : ''}
+              aria-pressed={vueProfil === 'eleve'}
+              onClick={() => setVueProfil('eleve')}
             >
-              <i />
-              <span>{CLASSE_LABELS[c]}</span>
+              Je suis élève
             </button>
-          ))}
-          <button
-            className={`classrow${settings.classe === null ? ' on' : ''}`}
-            onClick={() => choisir(null)}
-          >
-            <i />
-            <span>Non déclarée — voir tout le catalogue</span>
-          </button>
-          </>
+            <button
+              className={vueProfil === 'adulte' ? 'on' : ''}
+              aria-pressed={vueProfil === 'adulte'}
+              onClick={() => setVueProfil('adulte')}
+            >
+              Je suis adulte
+            </button>
+          </div>
+          {vueProfil === 'adulte' ? (
+            <ChoixAdulte actuel={settings.adulte ?? null} onChoisi={choisirAdulte} />
+          ) : (
+            <>
+              <p className="hint">
+                Ta classe range le catalogue en « pour ma classe » et « pour plus tard ».
+                Rien ne se ferme : les paquets des classes suivantes restent
+                visibles, plus bas.
+              </p>
+              {CLASSES.map((c: Classe) => (
+                <button
+                  key={c}
+                  className={`classrow${!settings.adulte && settings.classe === c ? ' on' : ''}`}
+                  onClick={() => choisir(c)}
+                >
+                  <i />
+                  <span>{CLASSE_LABELS[c]}</span>
+                </button>
+              ))}
+              <button
+                className={`classrow${!settings.adulte && settings.classe === null ? ' on' : ''}`}
+                onClick={() => choisir(null)}
+              >
+                <i />
+                <span>Non déclarée — voir tout le catalogue</span>
+              </button>
+            </>
           )}
+        </Tiroir>
+      )}
+
+      {/* CHANTIER 325 — ce qui est gratuit, ce que l'abonnement ajoutera, le mot aux parents. */}
+      {tiroir === 'abonnement' && (
+        <Tiroir titre="Abonnement" retour="Réglages" onFermer={() => setTiroir(null)}>
+          <Abonnement adulte={a} />
         </Tiroir>
       )}
 
