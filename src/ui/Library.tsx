@@ -916,8 +916,8 @@ export function Library({
           )
         ) : reserveAbonnes(s.deck) ? (
           /* 318 — inclus dans l'abonnement : visible par tous, obtenu par les abonnés.
-             336 — vaut pour tout le catalogue, sauf un paquet offert par classe. */
-          {/* 337 — pas le vert de « À moi » : un cadenas, au trait. */}
+             336 — vaut pour tout le catalogue, sauf un paquet offert par classe.
+             337 — pas le vert de « À moi » : un cadenas, au trait. */
           <span
             aria-label="Réservé aux abonnés"
             style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, border: '1px solid currentColor', opacity: 0.75, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}
