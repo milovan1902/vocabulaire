@@ -13,6 +13,8 @@ export interface EtatPhoto {
   jusquau: string;
   /** 287 — compte administrateur : pas de plafond. */
   illimite?: boolean;
+  /** 335 — compte gratuit : la photo offerte, une seule fois. */
+  offert?: boolean;
 }
 
 export type CodePhoto = 'compte' | 'ferme' | 'quota' | 'vide' | 'panne';
@@ -65,6 +67,8 @@ export function dateDit(iso: string): string {
 
 export function quotaDit(e: EtatPhoto): string {
   if (e.illimite) return 'Photos illimitées (compte administrateur).';
+  /* 335 — information neutre, sans incitation (politique Familles). */
+  if (e.offert) return e.restantes > 0 ? 'Ta photo offerte : une liste, en une photo.' : 'Ta photo offerte est faite. Avec l’abonnement : 3 photos par semaine.';
   if (e.restantes <= 0) return `Les ${e.max} photos de la semaine sont faites. Elles reviennent lundi.`;
   return `Il reste ${e.restantes} photo${e.restantes > 1 ? 's' : ''} à faire jusqu’au ${dateDit(e.jusquau)}.`;
 }

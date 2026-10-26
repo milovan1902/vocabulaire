@@ -62,7 +62,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Card, Classe, Deck, Grade, Progress } from '../domain/types';
-import { CLASSES, CLASSE_LABELS, classeConvient, classeRank } from '../domain/types';
+import { CLASSES_PROPOSEES, CLASSE_LABELS, classeConvient, classeRank } from '../domain/types';
 import { STATUTS } from '../engine/mastery';
 import { emptyProgress, isNew, previewIntervals } from '../engine/scheduler';
 import { speak } from './speech';
@@ -361,7 +361,7 @@ export function Onboarding({
             accessibles. Cela se change à tout moment dans les réglages.
           </p>
           <div className="guide-classes">
-            {CLASSES.map((c) => (
+            {CLASSES_PROPOSEES.map((c) => (
               <button
                 key={c}
                 className={classe === c ? 'on' : ''}
@@ -668,7 +668,7 @@ export function Onboarding({
           <div className="guide-exemple guide-faits">
             {/* CHANTIER 150 / 292 — information neutre, sans incitation (politique Familles). */}
             <p><b>10 min</b>par jour pour les abonnés.</p>
-            <p><b>5 min</b>par semaine pour les non abonnés.</p>
+            <p><b>10 min</b>offertes une fois pour les non abonnés.</p>
             <p>
               <b>{classeDite ?? 'Classe'}</b>
               {classeDite

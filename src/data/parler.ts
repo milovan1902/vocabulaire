@@ -23,7 +23,8 @@ import { CLE_ABONNE } from '../engine/xp';
  */
 function noteAbonne(b: Budget | null | undefined) {
   if (b === undefined) return;
-  const v = b?.periode === 'jour' || (b?.max ?? 0) >= 10 ? '1' : '0';
+  /* 335 — la conversation offerte fait aussi 10 min : seule la période dit l'abonné. */
+  const v = b?.periode === 'jour' ? '1' : '0';
   try {
     if (localStorage.getItem(CLE_ABONNE) === v) return;
     localStorage.setItem(CLE_ABONNE, v);
@@ -37,7 +38,7 @@ export interface Budget {
   minutes: number;
   /** CHANTIER 144 — 5 (gratuit, par semaine) ou 10 (illimité, par jour). */
   max?: number;
-  periode?: 'jour' | 'semaine';
+  periode?: 'jour' | 'semaine' | 'offert';
   /** Plafond mensuel de l'app atteint. */
   pause?: boolean;
   fini: boolean;
@@ -48,6 +49,7 @@ export interface Budget {
 
 /** CHANTIER 144 — « aujourd'hui » ou « cette semaine », selon la formule. */
 export function quandDit(b?: Budget | null): string {
+  if (b?.periode === 'offert') return 'pour ta conversation offerte';
   return b?.periode === 'semaine' ? 'cette semaine' : 'aujourd’hui';
 }
 
@@ -55,6 +57,8 @@ export function quandDit(b?: Budget | null): string {
 export function finDit(b?: Budget | null): string {
   if (b?.pause) return 'Parler fait une pause jusqu’au 1er du mois prochain. Tes cartes restent disponibles.';
   if (b?.periode === 'semaine') return 'Tes 5 minutes de la semaine sont utilisées. Elles reviennent lundi.';
+  /* 335 — information neutre, sans incitation (politique Familles). */
+  if (b?.periode === 'offert') return 'Ta conversation offerte est faite. Avec l’abonnement : 10 minutes par jour.';
   return 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.';
 }
 

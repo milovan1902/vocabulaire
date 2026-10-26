@@ -6,6 +6,9 @@
  * d'achat : le paiement Google Play n'est pas encore branché. Les chiffres
  * sont ceux des fiches de la visite (Visite.tsx) : les changer aux deux
  * endroits.
+ *
+ * CHANTIER 335 — la grille du 26/10 : 6,99 € par mois ou 69,99 € par an,
+ * 7 jours d'essai, aucune publicité pour personne.
  */
 import './promesse.css';
 
@@ -15,23 +18,24 @@ function lignes(adulte: boolean): Ligne[] {
   return [
     {
       quoi: 'Paquets du catalogue',
-      gratuit: '2 paquets libres par niveau',
+      gratuit: adulte ? '1 paquet offert : Voyager' : '1 paquet offert par classe',
       abonne: 'Tout le catalogue, tous niveaux, paquets adultes compris',
     },
     {
-      quoi: adulte ? 'Parler avec l’IA' : 'Parler avec l’IA (dès la 4e)',
-      gratuit: '5 min par semaine',
-      abonne: '10 min par jour',
+      quoi: 'Paquets personnalisés',
+      gratuit: adulte ? 'Le premier offert, photo comprise' : 'Ton premier offert, photo comprise',
+      abonne: adulte
+        ? 'Autant que vous voulez, et 3 photos par semaine'
+        : 'Autant que tu veux, et 3 photos par semaine',
     },
     {
-      quoi: 'Paquets personnalisés',
-      gratuit: '—',
-      abonne: adulte
-        ? 'Vos listes, la date de l’échéance, les passages calculés jusqu’au jour J'
-        : 'Tes listes, la date du contrôle, les passages calculés jusqu’au jour J',
+      quoi: adulte ? 'Parler avec l’IA' : 'Parler avec l’IA (dès la 4e)',
+      gratuit: '1 conversation de 10 min, offerte',
+      abonne: '10 min par jour',
     },
-    { quoi: 'Liste en photo', gratuit: '—', abonne: '3 photos par semaine' },
-    { quoi: 'Apparences', gratuit: 'Une douzaine', abonne: 'Plus de 40, et celles du mois offertes' },
+    { quoi: 'Mises en situation inventées par l’IA', gratuit: 'Offertes une fois', abonne: 'Trois nouvelles chaque jour' },
+    { quoi: 'Apparences', gratuit: '3, jusqu’à 12 avec les crédits', abonne: 'Les 12 offertes, 30 de plus, et celles du mois' },
+    { quoi: 'Publicité', gratuit: 'Aucune', abonne: 'Aucune' },
   ];
 }
 
@@ -39,7 +43,7 @@ export function Abonnement({ adulte }: { adulte: boolean }) {
   return (
     <div className="abo">
       <p className="hint">
-        L’abonnement arrive bientôt. Voici ce qui reste gratuit, et ce qu’il ajoutera.
+        Application sans publicité. L’abonnement arrive bientôt : voici ce qui reste gratuit, et ce qu’il ajoutera.
       </p>
 
       <div className="abo-tableau" role="table" aria-label="Gratuit et abonnement">
@@ -71,7 +75,7 @@ export function Abonnement({ adulte }: { adulte: boolean }) {
           <ul>
             <li>Aucune publicité, aucun traceur publicitaire.</li>
             <li>Des séances courtes : l’application dose les nouveaux mots et les révisions. La charge se règle dans Réglages › Charge de travail.</li>
-            <li>Calé sur la classe : des paquets du CM2 à la Terminale, rangés par sujet.</li>
+            <li>Calé sur la classe : des paquets de la 6e à la Terminale, rangés par sujet.</li>
             <li>Des conversations encadrées : sujets adaptés, temps limité, bouton « Signaler ».</li>
             <li>Accord d’un parent demandé sous 15 ans. Le compte et ses données s’effacent à tout moment.</li>
           </ul>
@@ -81,7 +85,7 @@ export function Abonnement({ adulte }: { adulte: boolean }) {
         </div>
       )}
 
-      <p className="hint">Le prix sera annoncé au lancement. Rien n’est facturé aujourd’hui.</p>
+      <p className="hint">Au lancement : 6,99 € par mois ou 69,99 € par an, avec 7 jours d’essai offerts. Rien n’est facturé aujourd’hui.</p>
     </div>
   );
 }

@@ -49,7 +49,8 @@ export const LEVEL_LABELS: Record<Level, string> = {
 };
 
 /**
- * Classe scolaire, du CM2 à la Terminale.
+ * Classe scolaire, de la 6e à la Terminale (335 : le CM2 n'est plus proposé ;
+ * il reste dans le type pour relire d'anciennes données).
  *
  * Le type s'appelle `Classe` et non `Grade` : `Grade` désigne déjà la note
  * FSRS dans ce fichier, et deux sens pour un mot dans un même domaine finit
@@ -65,6 +66,9 @@ export const LEVEL_LABELS: Record<Level, string> = {
  */
 export const CLASSES = ['CM2', '6e', '5e', '4e', '3e', '2de', '1re', 'Tle'] as const;
 export type Classe = (typeof CLASSES)[number];
+
+/** 335 — les classes qu'on peut choisir : collège et lycée. */
+export const CLASSES_PROPOSEES: readonly Classe[] = CLASSES.filter((c) => c !== 'CM2');
 
 /** Libellé long, tel qu'on l'écrit dans une liste de choix. */
 export const CLASSE_LABELS: Record<Classe, string> = {
@@ -152,6 +156,8 @@ export function niveauDit(s: Pick<Settings, 'classe' | 'adulte'>): string | null
 
 /** Valeur lue d'une source extérieure (serveur, sauvegarde), filtrée. */
 export function readClasse(v: unknown): Classe | null {
+  /* 335 — un ancien CM2 devient une 6e. */
+  if (v === 'CM2') return '6e';
   return (CLASSES as readonly string[]).includes(v as string) ? (v as Classe) : null;
 }
 

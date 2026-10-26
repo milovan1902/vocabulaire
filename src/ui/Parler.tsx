@@ -53,6 +53,8 @@ import { motsRecents, type MotRecent } from './motsRecents';
 import { quandDit, finDit, budgetParler, euros, sujetsRecents, cranRetenu, ideesDuJour, demandeIdees, type Budget, type Fiche, type Idee } from '../data/parler';
 import { ParlerSeance } from './ParlerSeance';
 import { mesure } from '../data/mesures';
+/* 335 — gratuit : les scènes inventées sont offertes une fois. */
+import { estPremium } from '../engine/xp';
 import { ParlerHistorique } from './ParlerHistorique';
 import { SITUATIONS, titreSituation } from '../data/situations';
 import { detailExploitant } from '../data/messageErreur';
@@ -546,8 +548,8 @@ export function Parler({
                         : classeChangee && ideesEncore
                           ? 'Ta classe a changé : ces scènes ont été inventées pour l’ancienne.'
                           : idees && !ideesEncore
-                            ? 'Trois nouvelles scènes demain.'
-                            : 'L’IA invente trois scènes à ton niveau. Une fois par jour.'}
+                            ? (estPremium() ? 'Trois nouvelles scènes demain.' : 'Tes trois scènes offertes. Avec l’abonnement : trois nouvelles chaque jour.')
+                            : estPremium() ? 'L’IA invente trois scènes à ton niveau. Une fois par jour.' : 'L’IA invente trois scènes à ton niveau. Offert une fois.'}
                     </p>
                     {ideesEtat === 'erreur' && ideesPanne && (
                       <p className="hint" style={{ fontFamily: 'monospace', fontSize: 12, userSelect: 'text', wordBreak: 'break-word' }}>

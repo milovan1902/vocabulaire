@@ -472,7 +472,7 @@ export function Today({
     parlerSous = budget.pause
       ? 'en pause jusqu’au 1er du mois'
       : m === 0 || budget.fini
-        ? (budget.periode === 'semaine' ? 'reviennent lundi' : 'reviennent à minuit')
+        ? (budget.periode === 'offert' ? 'conversation offerte faite' : budget.periode === 'semaine' ? 'reviennent lundi' : 'reviennent à minuit')
         : `restante${m > 1 ? 's' : ''} ${quandDit(budget)}`;
   }
   const faitsSemaine = joursCetteSemaine(streak);

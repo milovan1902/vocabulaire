@@ -570,7 +570,7 @@ export function Visite({
         {e.profil && (
           <div className="visite-profils" role="group" aria-label="Qui apprend ?">
             <button className="visite-profil" onClick={() => choisirProfil('eleve')}>
-              Je suis élève<small>du CM2 à la Terminale</small>
+              Je suis élève<small>de la 6e à la Terminale</small>
             </button>
             <button className="visite-profil" onClick={() => choisirProfil('adulte')}>
               Je suis adulte<small>pour me remettre à l’anglais</small>
@@ -893,7 +893,7 @@ function ContenuFiche({ f, a }: { f: Fiche; a: boolean }) {
     case 'minutes':
       return (
         <>
-          <Lignes l={[['5 min', 'par semaine, avec l’offre gratuite.'], ['10 min', 'par jour, avec l’abonnement.']]} />
+          <Lignes l={[['10 min', 'offertes une fois, pour essayer.'], ['10 min', 'par jour, avec l’abonnement.']]} />
           <p>{a
             ? 'Votre niveau fixe les temps employés et la longueur des phrases. Les mots de vos paquets reviennent dans la conversation.'
             : 'Ta classe fixe les temps employés et la longueur des phrases. Les mots de tes paquets reviennent dans la conversation. La conversation s’ouvre à partir de la 4e.'}</p>
@@ -907,14 +907,14 @@ function ContenuFiche({ f, a }: { f: Fiche; a: boolean }) {
         </>
       );
     case 'gratuit':
-      return <Lignes l={[['Gratuit', '2 paquets libres par niveau.'], ['Abonnement', 'l’intégralité du catalogue, tous niveaux.']]} />;
+      return <Lignes l={[['Gratuit', '1 paquet offert par niveau.'], ['Abonnement', 'l’intégralité du catalogue, tous niveaux.']]} />;
     case 'abonnes':
       return a
-        ? <p>Les <b>paquets personnalisés</b> sont réservés aux abonnés : vos listes, la date de l’échéance, les passages calculés jusqu’au jour J, et la liste de vos mots fragiles à relire le matin même.</p>
-        : <p>Les <b>paquets personnalisés</b> sont réservés aux abonnés : tes listes, la date du contrôle, les passages calculés jusqu’au jour J, et la liste de tes mots fragiles à relire le matin même.</p>;
+        ? <p>Votre <b>premier paquet personnalisé</b> est offert, photo comprise. Avec l’abonnement, autant que vous voulez : vos listes, la date de l’échéance, les passages calculés jusqu’au jour J, et la liste de vos mots fragiles à relire le matin même.</p>
+        : <p>Ton <b>premier paquet personnalisé</b> est offert, photo comprise. Avec l’abonnement, autant que tu veux : tes listes, la date du contrôle, les passages calculés jusqu’au jour J, et la liste de tes mots fragiles à relire le matin même.</p>;
     case 'photos':
-      return <Lignes l={[['En photo', '3 photos par semaine pour les abonnés.'], ['À la main', 'ajout illimité.']]} />;
+      return <Lignes l={[['En photo', '1 photo offerte, puis 3 par semaine avec l’abonnement.'], ['À la main', 'ajout illimité.']]} />;
     case 'apparences':
-      return <Lignes l={[['Pour tous', 'une douzaine d’apparences.'], ['Abonnés', 'plus de 40, et les apparences du mois offertes.']]} />;
+      return <Lignes l={[['Pour tous', '3 apparences, jusqu’à 12 avec tes crédits.'], ['Abonnés', 'les 12 offertes, 30 de plus, et celles du mois.']]} />;
   }
 }

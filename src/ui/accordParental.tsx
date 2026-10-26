@@ -1,7 +1,7 @@
 /**
  * CHANTIER 141 — accord parental avant la création d'un compte.
  *
- * L'application est ouverte dès le CM2 (10 ans) : elle relève donc de la
+ * L'application est ouverte dès la 6e (11 ans ; 335 : plus de CM2) : elle relève donc de la
  * politique Familles de Google Play, et, en France, un moins de 15 ans a
  * besoin de l'accord d'un parent pour qu'on traite ses données en ligne.
  *

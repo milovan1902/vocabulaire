@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
 import {
-  CLASSES, CLASSE_LABELS, LEVEL_LABELS,
+  CLASSES, CLASSES_PROPOSEES, CLASSE_LABELS, LEVEL_LABELS,
   classeConvient, niveauDit, priceLabel,
 } from '../domain/types';
 import { estPremium } from '../engine/xp';
@@ -40,7 +40,7 @@ const TRANCHES: Array<{ cents: number; label: string }> = [
  * « dès la 6ème ».
  */
 const CYCLES: Array<{ id: string; label: string; classes: Classe[] }> = [
-  { id: 'primaire', label: 'Primaire', classes: ['CM2'] },
+  /* 335 — plus de primaire. */
   { id: 'college', label: 'Collège', classes: ['6e', '5e', '4e', '3e'] },
   { id: 'lycee', label: 'Lycée', classes: ['2de', '1re', 'Tle'] },
 ];
@@ -973,7 +973,7 @@ export function Library({
               Le catalogue s’y règle. Rien ne se ferme : les paquets des
               classes suivantes restent visibles, plus bas.
             </p>
-            {CLASSES.map((c) => (
+            {CLASSES_PROPOSEES.map((c) => (
               <button
                 key={c}
                 className={`classrow${maClasse === c ? ' on' : ''}`}

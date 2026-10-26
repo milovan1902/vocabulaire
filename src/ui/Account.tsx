@@ -77,7 +77,7 @@ const MODES: Array<{ k: ModeReponse; l: string }> = [
   { k: 'ecrit', l: 'À l’écrit' },
   { k: 'oral', l: 'À l’oral' },
 ];
-import { CLASSES, CLASSE_LABELS, NIVEAU_ADULTE_CLASSE, niveauDit, type NiveauAdulte } from '../domain/types';
+import { CLASSES_PROPOSEES, CLASSE_LABELS, NIVEAU_ADULTE_CLASSE, niveauDit, type NiveauAdulte } from '../domain/types';
 /* CHANTIER 317 — le mode adulte. */
 import { ChoixAdulte } from './ChoixAdulte';
 import { repository } from '../data/repository';
@@ -468,7 +468,7 @@ export function Account({
                 Rien ne se ferme : les paquets des classes suivantes restent
                 visibles, plus bas.
               </p>
-              {CLASSES.map((c: Classe) => (
+              {CLASSES_PROPOSEES.map((c: Classe) => (
                 <button
                   key={c}
                   className={`classrow${!settings.adulte && settings.classe === c ? ' on' : ''}`}

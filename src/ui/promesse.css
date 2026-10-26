@@ -49,3 +49,9 @@
 .pq-cran { margin: 0; font-weight: 700; }
 .pq h3 { margin: 6px 0 0; font-size: 17px; }
 .pq ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; line-height: 1.45; }
+
+/* 335 — « Application sans publicité » : une étiquette au trait, pas un aplat. */
+.promesse-sanspub {
+  align-self: flex-start; margin: 0; padding: 4px 12px; border-radius: 999px;
+  border: 1.5px solid currentColor; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}

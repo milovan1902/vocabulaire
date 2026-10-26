@@ -20,9 +20,13 @@
  *
  * 287 — les administrateurs (ADMIN_EMAILS, comme /api/admin) n'ont pas de
  * plafond : ni les 3 photos, ni les 10 essais. Leurs appels restent notés.
+ *
+ * CHANTIER 335 — la photo s'ouvre à tous les comptes. Gratuit : UNE photo
+ * lue offerte, pour toujours (2 essais au plus, comptés depuis DEBUT_OFFRE).
+ * Abonné (PARLER_ILLIMITE, ou PHOTO_POUR_TOUS=1) : 3 par semaine, comme avant.
  */
 import {
-  coutCentimes, estIllimite, json, jourUtc, lundiUtc, utilisateurEtEmail,
+  coutCentimes, DEBUT_OFFRE, estIllimite, json, jourUtc, lundiUtc, utilisateurEtEmail,
   type Env, type Usage,
 } from './_parler-commun';
 
@@ -31,6 +35,9 @@ interface ContextePhoto { request: Request; env: EnvPhoto }
 
 export const PHOTOS_SEMAINE = 3;
 const ESSAIS_SEMAINE = 10;
+/** 335 — gratuit : une photo lue, deux essais, une seule fois. */
+export const PHOTOS_OFFERTES = 1;
+const ESSAIS_OFFERTS = 2;
 /** ~2,2 Mo d'image une fois décodée. Le téléphone envoie ~300 Ko. */
 const MAX_BASE64 = 3_000_000;
 const MAX_MOTS = 150;
@@ -48,7 +55,8 @@ function estAdmin(email: string | null, env: EnvPhoto): boolean {
   return admins.includes(email.toLowerCase());
 }
 
-function autorise(email: string | null, env: EnvPhoto): boolean {
+/** 335 — l'abonné a 3 photos par semaine ; les autres ont leur photo offerte. */
+function abonne(email: string | null, env: EnvPhoto): boolean {
   return env.PHOTO_POUR_TOUS === '1' || estIllimite(email, env) || estAdmin(email, env);
 }
 
@@ -69,10 +77,11 @@ function causeDe(e: unknown): string {
   return code ? `quota illisible (${code})` : 'quota illisible';
 }
 
-export interface EtatPhoto { restantes: number; max: number; jusquau: string; illimite?: boolean }
+export interface EtatPhoto { restantes: number; max: number; jusquau: string; illimite?: boolean; offert?: boolean }
 
-function etatDe(lues: number, illimite = false): EtatPhoto {
+function etatDe(lues: number, illimite = false, offert = false): EtatPhoto {
   if (illimite) return { restantes: 999, max: 0, jusquau: dimancheUtc(), illimite: true };
+  if (offert) return { restantes: Math.max(0, PHOTOS_OFFERTES - lues), max: PHOTOS_OFFERTES, jusquau: '', offert: true };
   return { restantes: Math.max(0, PHOTOS_SEMAINE - lues), max: PHOTOS_SEMAINE, jusquau: dimancheUtc() };
 }
 
@@ -84,9 +93,9 @@ function entetesService(env: Env): Record<string, string> {
 }
 
 /** Lecture ratée = on lève : un quota illisible vaut un quota épuisé. */
-async function semaine(userId: string, env: Env): Promise<{ lues: number; essais: number }> {
+async function semaine(userId: string, env: Env, depuis = lundiUtc()): Promise<{ lues: number; essais: number }> {
   const r = await fetch(
-    `${env.SUPABASE_URL}/rest/v1/photo_usage?select=lue&user_id=eq.${userId}&jour=gte.${lundiUtc()}`,
+    `${env.SUPABASE_URL}/rest/v1/photo_usage?select=lue&user_id=eq.${userId}&jour=gte.${depuis}`,
     { headers: entetesService(env) },
   );
   if (!r.ok) {
@@ -242,10 +251,10 @@ function lignesEnMots(texte: string): Array<{ en: string; fr: string }> {
 export const onRequestGet = async ({ request, env }: ContextePhoto): Promise<Response> => {
   const qui = await utilisateurEtEmail(request, env);
   if (!qui) return json({ erreur: 'compte requis' }, 401);
-  if (!autorise(qui.email, env)) return json({ erreur: 'réservé aux abonnés' }, 403);
   if (estAdmin(qui.email, env)) return json(etatDe(0, true));
+  const offert = !abonne(qui.email, env);
   try {
-    return json(etatDe((await semaine(qui.id, env)).lues));
+    return json(etatDe((await semaine(qui.id, env, offert ? DEBUT_OFFRE : lundiUtc())).lues, false, offert));
   } catch (e) {
     console.error('quota photo illisible', String(e));
     return json({ erreur: causeDe(e) }, 503);
@@ -255,7 +264,7 @@ export const onRequestGet = async ({ request, env }: ContextePhoto): Promise<Res
 export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Response> => {
   const qui = await utilisateurEtEmail(request, env);
   if (!qui) return json({ erreur: 'compte requis' }, 401);
-  if (!autorise(qui.email, env)) return json({ erreur: 'réservé aux abonnés' }, 403);
+  const offert = !abonne(qui.email, env);
 
   let corps: { image?: string; type?: string };
   try {
@@ -273,14 +282,16 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
   let avant: { lues: number; essais: number } = { lues: 0, essais: 0 };
   if (!admin) {
     try {
-      avant = await semaine(qui.id, env);
+      avant = await semaine(qui.id, env, offert ? DEBUT_OFFRE : lundiUtc());
     } catch (e) {
       console.error('quota photo non vérifié', String(e));
       return json({ erreur: causeDe(e) }, 503);
     }
   }
-  if (!admin && (avant.lues >= PHOTOS_SEMAINE || avant.essais >= ESSAIS_SEMAINE)) {
-    return json({ erreur: 'quota épuisé', etat: { ...etatDe(avant.lues), restantes: 0 } }, 429);
+  const maxLues = offert ? PHOTOS_OFFERTES : PHOTOS_SEMAINE;
+  const maxEssais = offert ? ESSAIS_OFFERTS : ESSAIS_SEMAINE;
+  if (!admin && (avant.lues >= maxLues || avant.essais >= maxEssais)) {
+    return json({ erreur: 'quota épuisé', etat: { ...etatDe(avant.lues, false, offert), restantes: 0 } }, 429);
   }
 
   const modele = modelePhoto(env);
@@ -327,7 +338,7 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
   const mots = lireReponse(texte);
   await note(qui.id, modele, usage, mots.length, env);
 
-  const etat = etatDe(avant.lues + (mots.length ? 1 : 0), admin);
+  const etat = etatDe(avant.lues + (mots.length ? 1 : 0), admin, offert && !admin);
   if (!mots.length) return json({ erreur: 'aucun mot lu', etat }, 422);
   return json({ mots, etat });
 };

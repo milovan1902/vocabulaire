@@ -34,6 +34,8 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
         * ligne pour les adultes. « Neuro » est dit en une phrase.
         */}
       <section className="promesse" aria-label="Ce que fait l’application">
+        {/* 335 — un argument, pas une note de bas de page. */}
+        <p className="promesse-sanspub">Application sans publicité</p>
         <p className="promesse-titre">
           Prépare tes contrôles, enrichis ton vocabulaire et ose parler anglais.
         </p>

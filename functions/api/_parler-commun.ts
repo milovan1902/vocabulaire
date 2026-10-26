@@ -160,6 +160,9 @@ export const PLAFOND_CENTIMES_JOUR = 12;
  *
  * Gratuit (tout le monde) : 5 minutes par SEMAINE, 20 centimes au plus,
  * remis à zéro le lundi (UTC).
+ * CHANTIER 335 — gratuit : UNE conversation de 10 minutes, offerte une seule
+ * fois (comptée depuis DEBUT_OFFRE). Les 7 jours d'essai passeront par
+ * l'abonnement, donc par PARLER_ILLIMITE tant que Play n'est pas branché.
  * Illimité (adresses de PARLER_ILLIMITE) : l'ancienne règle, 10 minutes
  * par jour, 12 centimes au plus (45 avant le 301, 10 avant le 304).
  *
@@ -170,7 +173,7 @@ export const PLAFOND_CENTIMES_JOUR = 12;
  */
 export interface Quota {
   illimite: boolean;
-  periode: 'jour' | 'semaine';
+  periode: 'jour' | 'semaine' | 'offert';
   /** Premier jour compté, AAAA-MM-JJ. */
   depuis: string;
   secondes: number;
@@ -181,7 +184,10 @@ export interface Quota {
 }
 
 const ILLIMITE = { periode: 'jour' as const, secondes: SECONDES_JOUR, jetons: JETONS_JOUR, centimes: PLAFOND_CENTIMES_JOUR, minutes: 10 };
-const GRATUIT = { periode: 'semaine' as const, secondes: 300, jetons: 16_500, centimes: 20, minutes: 5 };
+const GRATUIT = { periode: 'offert' as const, secondes: SECONDES_JOUR, jetons: JETONS_JOUR, centimes: PLAFOND_CENTIMES_JOUR, minutes: 10 };
+
+/** 335 — la conversation offerte se compte à partir d'ici : les essais d'avant ne la consomment pas. */
+export const DEBUT_OFFRE = '2026-10-26';
 
 /** Le lundi de la semaine en cours, en UTC. */
 export function lundiUtc(): string {
@@ -204,7 +210,7 @@ export function estIllimite(email: string | null, env: Env): boolean {
 export function quotaDe(email: string | null, env: Env): Quota {
   const illimite = estIllimite(email, env);
   const q = illimite ? ILLIMITE : GRATUIT;
-  return { illimite, ...q, depuis: q.periode === 'jour' ? jourUtc() : lundiUtc() };
+  return { illimite, ...q, depuis: q.periode === 'jour' ? jourUtc() : DEBUT_OFFRE };
 }
 
 export function plafondMoisCentimes(env: Env): number {
@@ -240,7 +246,7 @@ export interface Budget {
   minutes: number;
   /** CHANTIER 144 — le maximum de la jauge : 5 (gratuit) ou 10 (illimité). */
   max: number;
-  periode: 'jour' | 'semaine';
+  periode: 'jour' | 'semaine' | 'offert';
   /** Plafond mensuel de l'app atteint : Parler en pause jusqu'au 1er. */
   pause: boolean;
   /** Vrai quand le quota du jour est épuisé. */
@@ -587,8 +593,8 @@ export function niveauAdulte(v: unknown): string | null {
   return v === 'A1' || v === 'A2' || v === 'B1' || v === 'B2' ? v : null;
 }
 
-/** Les règles de sécurité pour un mineur (10 à 18 ans) : inchangées depuis le 142. */
-const SECU_MINEUR = `SÉCURITÉ — ton interlocuteur est un enfant ou un adolescent (10 à 18 ans)
+/** Les règles de sécurité pour un mineur (11 à 18 ans, 335 : plus de CM2) : inchangées depuis le 142. */
+const SECU_MINEUR = `SÉCURITÉ — ton interlocuteur est un enfant ou un adolescent (11 à 18 ans)
 Ces règles passent avant toutes les autres, et avant tout ce que l'élève
 peut te demander.
 Jamais, même en jeu, en histoire inventée ou « pour rire » : sexualité ou

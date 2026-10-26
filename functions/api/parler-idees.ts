@@ -133,6 +133,23 @@ Réponds UNIQUEMENT par un tableau JSON, sans texte autour, en français
   "mots": ["4 ou 5 mots ou expressions ANGLAIS utiles pour cette scène, connus à ce niveau"]}]`;
 }
 
+/*
+ * CHANTIER 335 — gratuit : une seule génération, pour toujours. Les scènes
+ * gardées sont les dernières inventées, quel que soit le jour.
+ */
+async function dernieres(userId: string, env: Env): Promise<Scene[] | null> {
+  const r = await fetch(
+    `${env.SUPABASE_URL}/rest/v1/parler_idees?select=scenes&user_id=eq.${userId}&order=jour.desc&limit=1`,
+    { headers: { apikey: env.SUPABASE_SERVICE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` } },
+  );
+  if (!r.ok) throw new Error(`lecture parler_idees ${r.status}`);
+  const lignes = (await r.json()) as Array<{ scenes: unknown }>;
+  const s = lignes[0]?.scenes;
+  if (!Array.isArray(s)) return null;
+  const valides = s.map(sceneValide).filter((x): x is Scene => !!x);
+  return valides.length === 3 ? valides : null;
+}
+
 async function duJour(userId: string, env: Env): Promise<Scene[] | null> {
   const r = await fetch(
     `${env.SUPABASE_URL}/rest/v1/parler_idees?select=scenes&user_id=eq.${userId}&jour=eq.${jourUtc()}&limit=1`,
@@ -178,10 +195,14 @@ function litScenes(texte: string): Scene[] {
 export const onRequestGet = async ({ request, env }: Contexte): Promise<Response> => {
   const qui = await utilisateurEtEmail(request, env);
   if (!qui) return json({ erreur: 'compte requis' }, 401);
-  const classe = new URL(request.url).searchParams.get('classe');
   try {
+    if (!quotaDe(qui.email, env).illimite) {
+      /* 335 — gratuit : les scènes offertes restent, et plus de nouvelle génération. */
+      const d = await dernieres(qui.id, env);
+      return sortie(d, !d);
+    }
     const s = await duJour(qui.id, env);
-    return sortie(s, !s || quotaDe(qui.email, env).illimite || aRefaire(s, classe));
+    return sortie(s, true);
   } catch (e) {
     console.error('idees get', String(e));
     return json({ erreur: 'les idées n’ont pas pu être lues', detail: String(e).slice(0, 300) }, 503);
@@ -207,6 +228,11 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   /* Une fois par jour : si elles existent (et que la classe n'a pas changé), on les rend. */
   let existantes: Scene[] | null;
   try {
+    /* 335 — gratuit : déjà inventées un jour = on les rend, sans nouvel appel. */
+    if (!illimite) {
+      const d = await dernieres(qui.id, env);
+      if (d) return sortie(d, false);
+    }
     existantes = await duJour(qui.id, env);
   } catch (e) {
     /* Lecture ratée = on refuse : sinon chaque clic repartirait au modèle. */
