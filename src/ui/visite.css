@@ -145,3 +145,25 @@
   100% { opacity: 0; transform: translate3d(var(--vc-x), 105vh, 0) rotate(var(--vc-r)); }
 }
 @media (prefers-reduced-motion: reduce) { .visite-confettis { display: none; } }
+
+/* 325 ter — la frise des rendez-vous, après la première révision. */
+.visite-rdv { gap: 4px; }
+.visite-rdv-ligne { display: grid; grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 10px; align-items: center; min-height: 40px; }
+.visite-rdv-mot { display: flex; flex-direction: column; min-width: 0; }
+.visite-rdv-mot b { font-size: 15px; line-height: 1.2; color: #16233f; overflow-wrap: anywhere; }
+.visite-rdv-mot small { font-size: 12px; font-weight: 700; }
+.visite-rdv-piste { position: relative; height: 34px; margin: 0 8px; }
+.visite-rdv-piste::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid rgba(22, 35, 63, 0.18); }
+.visite-rdv-point { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 999px; background: currentColor; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(22, 35, 63, 0.25); }
+.visite-rdv-quand { position: absolute; top: 0; transform: translateX(10px); font-size: 12px; line-height: 1; color: #16233f; white-space: nowrap; }
+.visite-rdv-quand.gauche { transform: translateX(calc(-100% - 10px)); }
+.visite-rdv-axe { min-height: 0; }
+.visite-rdv-axe .visite-rdv-piste { height: 16px; }
+.visite-rdv-axe .visite-rdv-piste::before { display: none; }
+.visite-rdv-axe span { position: absolute; top: 0; transform: translateX(-50%); font-size: 10.5px; color: #5f6c8a; white-space: nowrap; }
+.visite-rdv-axe span:first-child { transform: none; }
+.visite-rdv-axe span:last-child { transform: translateX(-100%); }
+.visite-rdv .again { color: #b6453a; }
+.visite-rdv .hard { color: #8a5a00; }
+.visite-rdv .good { color: #16233f; }
+.visite-rdv .easy { color: #2f7d5b; }

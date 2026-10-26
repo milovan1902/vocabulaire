@@ -22,7 +22,8 @@ import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
 /* CHANTIER 293 — la première connexion guidée remplace les douze étapes du 292. */
-import { Visite, ETAPES as ETAPES_VISITE } from './ui/Visite';
+import { Visite, ETAPES as ETAPES_VISITE, type RendezVous } from './ui/Visite';
+import { isNew } from './engine/scheduler';
 import { classeConvient, classeRank } from './domain/types';
 import type { Classe } from './domain/types';
 import { REPRISE_ID, repareThemesReprise } from './data/reprise';
@@ -52,6 +53,20 @@ const GUIDE = 'vocab:guidage-fait';
  * retour de Google. Elle est obligatoire à la première connexion.
  */
 const VISITE = 'vocab:visite-etape';
+
+/* CHANTIER 325 ter — la première révision de la visite montre toujours 5 cartes,
+   et retient où chacune a été rangée, pour la frise de l'étape suivante. */
+const VISITE_CARTES = 5;
+const VISITE_RDV = 'vocab:visite-rdv';
+
+function rdvGardes(): RendezVous[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(VISITE_RDV) ?? '[]');
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
 
 function visiteEnCours(): number | null {
   const brut = localStorage.getItem(VISITE);
@@ -202,6 +217,11 @@ export default function App() {
    */
   const [visite, setVisite] = useState<number | null>(visiteEnCours);
   const [visiteRelue, setVisiteRelue] = useState(false);
+  const [rdv, setRdv] = useState<RendezVous[]>(rdvGardes);
+  const poseRdv = useCallback((r: RendezVous[]) => {
+    try { localStorage.setItem(VISITE_RDV, JSON.stringify(r)); } catch { /* la frise retombera sur l'exemple */ }
+    setRdv(r);
+  }, []);
 
   const poseEtape = useCallback((n: number) => {
     localStorage.setItem(VISITE, String(n));
@@ -322,20 +342,38 @@ export default function App() {
   const startSession = useCallback(
     (source: LoadedDeck, ignoreGoal = false) => {
       const visible = source.cards.filter((c) => source.selectedThemes.includes(c.theme));
-      const q = buildSession(
+      const enVisite = visite !== null;
+      let q = buildSession(
         visible,
         (id) => progressFor(source.progress, id),
         store.settingsFor(source.deck.id),
         store.counterFor(source.deck.id),
         Date.now(),
-        ignoreGoal,
+        ignoreGoal || enVisite,
       );
+      /*
+       * CHANTIER 325 ter — pendant la visite, toujours 5 cartes : on complète
+       * avec d'autres cartes du paquet, les nouvelles d'abord. Sans ça, une
+       * visite relancée ne montrait que les 2 ou 3 cartes encore dues.
+       */
+      if (enVisite) {
+        const pris = new Set(q.map((i) => i.card.id));
+        const reste: SessionItem[] = visible
+          .filter((c) => !pris.has(c.id))
+          .map((card) => {
+            const progress = progressFor(source.progress, card.id);
+            return { card, progress, wasNew: isNew(progress) };
+          })
+          .sort((x, y) => Number(y.wasNew) - Number(x.wasNew) || Math.random() - 0.5);
+        q = [...q, ...reste].slice(0, VISITE_CARTES);
+        poseRdv([]);
+      }
       if (!q.length) return false;
       setQueue(q);
       setView({ name: 'study' });
       return true;
     },
-    [store],
+    [store, visite, poseRdv],
   );
 
   /** Ouvrir le paquet et enchaîner sans détour. */
@@ -376,8 +414,13 @@ export default function App() {
       const next = await store.gradeCard(loaded.deck.id, item.progress, grade, item.wasNew);
       // On tient la progression à jour en mémoire pour les statistiques au retour.
       loaded.progress[next.cardId] = next;
+      /* 325 ter — la visite garde le prochain rendez-vous de chaque carte. */
+      if (visite !== null) {
+        const r = rdvGardes().filter((x) => x.id !== next.cardId);
+        poseRdv([...r, { id: next.cardId, en: item.card.en, fr: item.card.fr, note: grade, due: next.due }]);
+      }
     },
-    [loaded, store],
+    [loaded, store, visite, poseRdv],
   );
 
   /** Charge du jour, sur les seuls paquets en jeu. Relue à la demande. */
@@ -511,6 +554,7 @@ export default function App() {
     if (!visiteRelue) mesure('onboarding_fini', 'visite');
     localStorage.setItem(GUIDE, '1');
     localStorage.removeItem(VISITE);
+    poseRdv([]);
     setVisite(null);
     setVisiteRelue(false);
   };
@@ -831,6 +875,7 @@ export default function App() {
           etape={visite}
           vue={view.name}
           relue={visiteRelue}
+          rdv={rdv}
           onEtape={poseEtape}
           onFin={finVisite}
           onClasse={(c) => { void paquetDeClasse(c); }}

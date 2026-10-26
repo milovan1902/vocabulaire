@@ -52,7 +52,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
-import type { Classe } from '../domain/types';
+import type { Classe, Grade } from '../domain/types';
 import { CLASSES, CLASSE_LABELS } from '../domain/types';
 import { mesure } from '../data/mesures';
 import { appliquerApercu, finApercu } from './theme';
@@ -112,7 +112,7 @@ type Etape = {
   /** Pas de geste attendu : un bouton pour continuer. */
   continuer?: string;
   info?: Fiche;
-  exemple?: 'seance' | 'bilan' | 'creer' | 'reviser' | 'credits';
+  exemple?: 'seance' | 'bilan' | 'creer' | 'reviser' | 'credits' | 'rdv';
   /** La visite s'efface pendant la révision et reprend à sa sortie. */
   pause?: boolean;
   /** La cible est déjà dans l'état voulu : l'étape se saute seule. */
@@ -182,7 +182,7 @@ export const ETAPES: Etape[] = [
       : `À toi${virgule(p)} ! Réponds honnêtement : c’est ta note qui décide quand le mot reviendra.`),
   },
   { id: 'etude', n: 4, pause: true, texte: '' },
-  { id: 'echeances', n: 5, continuer: 'Continuer', texte: T('Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', 'Chaque mot revient au bon moment, selon votre réponse : plus il a été difficile, plus il revient tôt.'), info: 'frise' },
+  { id: 'echeances', n: 5, exemple: 'rdv', continuer: 'Continuer', texte: T('Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', 'Chaque mot revient au bon moment, selon votre réponse : plus il a été difficile, plus il revient tôt.'), info: 'frise' },
   { id: 'methode', n: 6, continuer: 'Continuer', texte: 'C’est tout : quelques minutes par jour, l’application tient le calendrier.', info: 'progres' },
   { id: 'parler', n: 7, cible: { sel: ONGLET, texte: 'Parler' }, texte: T('Maintenant, l’oral. Touche « Parler ».', 'Maintenant, l’oral. Touchez « Parler ».') },
   {
@@ -270,9 +270,14 @@ function classeDe(texte: string): Classe | null {
   return CLASSES.find((c) => norm(CLASSE_LABELS[c]) === t) ?? null;
 }
 
+/** 325 ter — une carte de la première révision, et son prochain rendez-vous. */
+export type RendezVous = { id: string; en: string; fr: string; note: Grade; due: number };
+
 export function Visite({
-  etape, vue, relue, onEtape, onFin, onClasse, onAccueil,
+  etape, vue, relue, rdv = [], onEtape, onFin, onClasse, onAccueil,
 }: {
+  /** 325 ter — les cartes de la première révision (vide : la frise n'est pas montrée). */
+  rdv?: RendezVous[];
   etape: number;
   /** Le nom de l'écran affiché (App.tsx) : sert à suivre la révision. */
   vue: string;
@@ -556,6 +561,7 @@ export function Visite({
         {e.exemple === 'bilan' && <ExempleBilan a={adulte} />}
         {e.exemple === 'creer' && <ExempleCreer a={adulte} />}
         {e.exemple === 'reviser' && <ExempleReviser a={adulte} />}
+        {e.exemple === 'rdv' && rdv.length > 0 && <FriseRdv rdv={rdv} a={adulte} />}
         {e.exemple === 'credits' && (
           <div className="visite-cadeau" aria-hidden="true"><b>{CADEAU}</b><small>crédits</small></div>
         )}
@@ -641,6 +647,62 @@ function Confettis() {
   return (
     <div className="visite-confettis" aria-hidden="true">
       {bouts.map((st, k) => <i key={k} style={st} />)}
+    </div>
+  );
+}
+
+/*
+ * CHANTIER 325 ter — LA FRISE DES RENDEZ-VOUS. Les cartes de la première
+ * révision, chacune à la date où elle reviendra. Échelle logarithmique :
+ * aujourd'hui, demain et trois jours restent lisibles à côté d'un mois.
+ */
+const JOUR = 86_400_000;
+const HORIZON = 30;
+const REPERES: Array<[number, string]> = [[0, 'auj.'], [1, '1 j'], [3, '3 j'], [7, '1 sem.'], [30, '1 mois']];
+const NOM_NOTE: Record<string, string> = { again: 'À revoir', hard: 'Difficile', good: 'Correct', easy: 'Facile' };
+
+function joursJusqua(due: number): number {
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  const b = new Date(due); b.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((b.getTime() - a.getTime()) / JOUR));
+}
+function quand(n: number): string {
+  if (n === 0) return 'aujourd’hui';
+  if (n === 1) return 'demain';
+  if (n < 14) return `dans ${n} jours`;
+  if (n < 60) return `dans ${Math.round(n / 7)} semaines`;
+  return `dans ${Math.round(n / 30)} mois`;
+}
+const place = (n: number) => Math.min(1, Math.log1p(n) / Math.log1p(HORIZON)) * 100;
+
+function FriseRdv({ rdv, a }: { rdv: RendezVous[]; a: boolean }) {
+  const lignes = [...rdv].sort((x, y) => x.due - y.due).map((r) => ({ ...r, j: joursJusqua(r.due) }));
+  return (
+    <div className="visite-exemple visite-rdv">
+      <span className="visite-petit">{a ? 'Vos' : 'Tes'} {lignes.length} mots · prochain rendez-vous</span>
+      {lignes.map((r) => {
+        const x = place(r.j);
+        return (
+          <div key={r.id} className="visite-rdv-ligne">
+            <div className="visite-rdv-mot">
+              <b>{r.en}</b>
+              <small className={r.note}>{NOM_NOTE[r.note] ?? ''}</small>
+            </div>
+            <div className="visite-rdv-piste" aria-label={`${r.en} : ${quand(r.j)}`}>
+              <i className={`visite-rdv-point ${r.note}`} style={{ left: `${x}%` }} />
+              <span className={`visite-rdv-quand${x > 62 ? ' gauche' : ''}`} style={{ left: `${x}%` }}>{quand(r.j)}</span>
+            </div>
+          </div>
+        );
+      })}
+      <div className="visite-rdv-ligne visite-rdv-axe" aria-hidden="true">
+        <div />
+        <div className="visite-rdv-piste">
+          {REPERES.map(([n, l]) => (
+            <span key={l} style={{ left: `${place(n)}%` }}>{l}</span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
