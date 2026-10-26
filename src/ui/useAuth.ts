@@ -26,6 +26,9 @@ import { oubliePersonne, visiteARefaire } from '../data/appareil';
  */
 const PROPRIETAIRE = 'vocab:proprietaire';
 
+/** 338 — l'appareil vient d'être vidé pour un autre compte (survit au rechargement). */
+const CHANGE_COMPTE = 'vocab:compte-change';
+
 /** Vrai si un AUTRE compte vient de prendre l'appareil (données locales vidées). */
 async function rattache(userId: string): Promise<boolean> {
   const avant = localStorage.getItem(PROPRIETAIRE);
@@ -92,7 +95,20 @@ export function useAuth(onDataChanged: () => void): Auth {
     busy.current = true;
     setSync({ status: 'running' });
     try {
-      const change = await rattache(userId);
+      /*
+       * CHANTIER 338 — un autre compte prend l'appareil : on vide, puis on
+       * RECHARGE avant de synchroniser. Sans ça, les paquets encore en
+       * mémoire (ceux du compte d'avant) étaient réécrits sur l'appareil
+       * puis envoyés au nouveau compte : 11 paquets sur un compte créé le
+       * jour même.
+       */
+      if (await rattache(userId)) {
+        try { sessionStorage.setItem(CHANGE_COMPTE, '1'); } catch { /* rien */ }
+        window.location.reload();
+        return;
+      }
+      let change = false;
+      try { change = sessionStorage.getItem(CHANGE_COMPTE) === '1'; sessionStorage.removeItem(CHANGE_COMPTE); } catch { /* rien */ }
       const report = await syncAll(userId);
       if (change && !report.error && (await compteNeuf(userId))) visiteARefaire();
       if (report.error) {
