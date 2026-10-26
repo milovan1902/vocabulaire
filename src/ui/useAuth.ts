@@ -10,6 +10,26 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, signInWithGoogle, signOut, type Session } from '../data/supabase';
 import { syncAll, type SyncReport } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
+import { repository } from '../data/repository';
+
+/*
+ * CHANTIER 327 — À QUI SONT LES DONNÉES DE CET APPAREIL ?
+ *
+ * Les données locales n'étaient rattachées à aucun compte : se connecter avec
+ * un second compte Google affichait la progression du premier, et la
+ * synchronisation la recopiait dans le second. On retient maintenant le
+ * compte propriétaire. Si un AUTRE compte se connecte, l'appareil est vidé
+ * avant de synchroniser : il se remplit ensuite avec les données en ligne du
+ * nouveau compte. Une progression faite sans compte (aucun propriétaire) est
+ * toujours rattachée au premier compte qui se connecte, comme avant.
+ */
+const PROPRIETAIRE = 'vocab:proprietaire';
+
+async function rattache(userId: string): Promise<void> {
+  const avant = localStorage.getItem(PROPRIETAIRE);
+  if (avant && avant !== userId) await repository.importAll({});
+  localStorage.setItem(PROPRIETAIRE, userId);
+}
 
 export type SyncState =
   | { status: 'idle' }
@@ -54,6 +74,7 @@ export function useAuth(onDataChanged: () => void): Auth {
     busy.current = true;
     setSync({ status: 'running' });
     try {
+      await rattache(userId);
       const report = await syncAll(userId);
       if (report.error) {
         setSync({ status: 'error', message: report.error });
@@ -109,10 +130,13 @@ export function useAuth(onDataChanged: () => void): Auth {
     }
   }, []);
 
+  /* 327 — on enregistre en ligne les dernières révisions avant de partir :
+     si un autre compte se connecte ensuite, l'appareil sera vidé. */
   const logOut = useCallback(async () => {
+    await runSync().catch(() => undefined);
     await signOut();
     setSession(null);
-  }, []);
+  }, [runSync]);
 
   return {
     session,
