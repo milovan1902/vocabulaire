@@ -39,7 +39,9 @@ import { json, utilisateur, type Contexte } from './_parler-commun';
 /* 330 — la suppression se dit aussi dans les journaux, étape par étape. */
 const TABLES = [
   'progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement',
-  'photo_usage', 'parler_idees', 'entitlements', 'parler_mois',
+  'photo_usage', 'parler_idees', 'entitlements',
+  /* 333 — `parler_mois` retiré : c'est une VUE calculée sur parler_usage
+     (« cannot delete from view », 55000). Elle se vide avec parler_usage. */
 ];
 
 /** 328 — le seul code d'erreur Postgres/Supabase (« 23503 », « 42501 »…), jamais le message entier. */
