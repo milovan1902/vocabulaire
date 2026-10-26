@@ -13,6 +13,8 @@ import { Defile } from './ui/Defile';
 import { Salle } from './ui/Salle';
 import { Vitrine } from './ui/Vitrine';
 import { appliquerApercu, estTheme } from './ui/theme';
+/* CHANTIER 341 — le changement de compte se règle avant l'affichage. */
+import { verifieCompteAuDemarrage } from './data/appareil';
 /* CHANTIER 161 — Atkinson Hyperlegible, livrée avec l'application : elle
    marche hors ligne. Installée par `npm install @fontsource/atkinson-hyperlegible`. */
 import '@fontsource/atkinson-hyperlegible/400.css';
@@ -108,6 +110,7 @@ if (!estVitrine) {
 /* CHANTIER 156 — une nouvelle version s'annonce et s'applique en un geste. */
 if (!estVitrine) installeMiseAJour();
 
+function monte() {
 createRoot(document.getElementById('root')!, {
   onUncaughtError: (e) => signaleErreur(e, 'react'),
   onCaughtError: (e) => signaleErreur(e, 'react-rattrapee'),
@@ -145,3 +148,8 @@ createRoot(document.getElementById('root')!, {
     </FiletErreur>
   </StrictMode>
 ));
+}
+
+/* 341 — l'application ne se monte qu'après la vérification du compte (une lecture locale, quelques millisecondes). */
+if (estAdmin || estVitrine) monte();
+else void verifieCompteAuDemarrage().catch(() => undefined).finally(monte);

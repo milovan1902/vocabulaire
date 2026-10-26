@@ -10,8 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase, signInWithGoogle, signOut, type Session } from '../data/supabase';
 import { syncAll, type SyncReport } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
-import { repository } from '../data/repository';
-import { oubliePersonne, visiteARefaire } from '../data/appareil';
+import { CHANGE_COMPTE, verifieCompte, visiteARefaire } from '../data/appareil';
 
 /*
  * CHANTIER 327 — À QUI SONT LES DONNÉES DE CET APPAREIL ?
@@ -26,28 +25,10 @@ import { oubliePersonne, visiteARefaire } from '../data/appareil';
  */
 const PROPRIETAIRE = 'vocab:proprietaire';
 
-/** 338 — l'appareil vient d'être vidé pour un autre compte (survit au rechargement). */
-const CHANGE_COMPTE = 'vocab:compte-change';
-
-/** Vrai si un AUTRE compte vient de prendre l'appareil (données locales vidées). */
+/** Vrai si un AUTRE compte vient de prendre l'appareil (données locales vidées).
+    341 — le travail est fait par appareil.ts, au démarrage ; ceci reste en filet. */
 async function rattache(userId: string): Promise<boolean> {
-  const avant = localStorage.getItem(PROPRIETAIRE);
-  const change = !!avant && avant !== userId;
-  if (change) {
-    await repository.importAll({});
-    /*
-     * 340 — listes VIDES, et non absentes. Absentes, le démarrage croyait à
-     * une très ancienne version (« tout paquet présent est possédé ») et
-     * mettait en jeu TOUT le catalogue téléchargé : les 11 paquets de lilou.
-     */
-    await repository.saveInstalled([]);
-    await repository.saveActive([]);
-    await repository.saveDeckJournal({});
-    /* 334 — le prénom et le profil de la personne d'avant partent aussi. */
-    oubliePersonne();
-  }
-  localStorage.setItem(PROPRIETAIRE, userId);
-  return change;
+  return verifieCompte(userId);
 }
 
 /*
@@ -111,7 +92,6 @@ export function useAuth(onDataChanged: () => void): Auth {
        * jour même.
        */
       if (await rattache(userId)) {
-        try { sessionStorage.setItem(CHANGE_COMPTE, '1'); } catch { /* rien */ }
         /*
          * 339 — sans les paramètres de retour de Google (?code=…, #access_token=…).
          * reload() les gardait : au rechargement, la connexion était rejouée avec
