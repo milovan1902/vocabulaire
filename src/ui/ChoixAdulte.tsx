@@ -11,6 +11,8 @@
  * nouveau test ensuite ; le niveau se change à la main dans les Réglages.
  *
  * CHANTIER 325 — un adulte est vouvoyé : tout ce parcours passe au « vous ».
+ * CHANTIER 326 — après « J’ai 18 ans ou plus » : trouver son niveau (le test)
+ *   ou le choisir soi-même, sans test.
  */
 import { useState, type CSSProperties } from 'react';
 import type { NiveauAdulte } from '../domain/types';
@@ -78,7 +80,7 @@ export function ChoixAdulte({ actuel, onChoisi }: {
   actuel?: NiveauAdulte | null;
   onChoisi: (n: NiveauAdulte) => void;
 }) {
-  const [etape, setEtape] = useState<'age' | 'questions' | 'qcm' | 'resultat'>('age');
+  const [etape, setEtape] = useState<'age' | 'questions' | 'qcm' | 'resultat' | 'manuel'>('age');
   /* 318 — l'indice choisi pour chaque mot du QCM (dans l'ordre d'origine), null = pas répondu. */
   const [qcm, setQcm] = useState<Array<number | null>>(() => QCM.map(() => null));
   const [qi, setQi] = useState(0);
@@ -102,7 +104,10 @@ export function ChoixAdulte({ actuel, onChoisi }: {
           <span>J’ai 18 ans ou plus.</span>
         </label>
         <button className="btn" disabled={!majeur} onClick={() => setEtape('questions')}>
-          Trouver mon niveau
+          Trouver mon niveau · 2 minutes
+        </button>
+        <button className="btn ghost" disabled={!majeur} onClick={() => setEtape('manuel')}>
+          Choisir mon niveau moi-même
         </button>
         {actuel && (
           <button className="btn ghost" onClick={() => setEtape('resultat')}>
@@ -167,6 +172,33 @@ export function ChoixAdulte({ actuel, onChoisi }: {
           ))}
         </div>
         <button className="btn ghost" onClick={() => repondre(null)}>Je ne sais pas</button>
+      </div>
+    );
+  }
+
+  /* 326 — le niveau choisi à la main, sans test : les quatre niveaux, décrits. */
+  if (etape === 'manuel') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <p className="hint" style={{ margin: 0 }}>Choisissez le niveau qui vous ressemble. Vous pourrez le changer à tout moment.</p>
+        <div role="radiogroup" aria-label="Niveau" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {NIVEAUX_ADULTE.map((x) => (
+            <button
+              key={x}
+              role="radio"
+              aria-checked={retenu === x}
+              onClick={() => setRetenu(x)}
+              style={{ ...choix(retenu === x), display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '10px 14px', textAlign: 'left' }}
+            >
+              <span><b>{x}</b> · {NIVEAU_ADULTE_LABELS[x]}</span>
+              <small style={{ fontWeight: 400, opacity: 0.85 }}>{DECRIT[x]}</small>
+            </button>
+          ))}
+        </div>
+        <button className="btn" disabled={!retenu} onClick={() => retenu && onChoisi(retenu)}>
+          {retenu ? `Valider : niveau ${retenu}` : 'Choisissez un niveau'}
+        </button>
+        <button className="btn ghost" onClick={() => setEtape('questions')}>Plutôt passer le test</button>
       </div>
     );
   }

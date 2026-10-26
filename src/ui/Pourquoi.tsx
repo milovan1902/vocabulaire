@@ -11,7 +11,14 @@ export function Pourquoi({ adulte }: { adulte: boolean }) {
   const t = (tu: string, vous: string) => tv(adulte, tu, vous);
   const etapes: Array<[string, string]> = [
     [t('Tu découvres un mot', 'Vous découvrez un mot'), 'Avec sa voix, et souvent un exemple.'],
-    [t('Tu le retrouves de mémoire', 'Vous le retrouvez de mémoire'), 'Sans le relire : c’est cet effort qui l’ancre.'],
+    [
+      t('Tu le retrouves de mémoire', 'Vous le retrouvez de mémoire'),
+      /* 326 — on peut aussi répondre à l'écrit. */
+      t(
+        'Sans le relire : c’est cet effort qui l’ancre. Tu peux aussi répondre à l’écrit : idéal pour préparer un contrôle, orthographe comprise.',
+        'Sans le relire : c’est cet effort qui l’ancre. Vous pouvez aussi répondre à l’écrit : idéal pour préparer un examen, orthographe comprise.',
+      ),
+    ],
     ['Il revient juste avant l’oubli', 'À chaque réussite, un peu plus tard. L’écart est calculé mot par mot (algorithme FSRS).'],
     [
       t('Tu l’emploies à l’oral', 'Vous l’employez à l’oral'),

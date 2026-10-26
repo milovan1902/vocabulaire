@@ -116,7 +116,11 @@ async function note(userId: string, modele: string, u: Usage, mots: number, env:
 
 const CONSIGNE = `Tu lis la photo d'une liste de vocabulaire d'un élève français qui apprend l'anglais (cahier, fiche du professeur, page de manuel).
 
-Réponds UNIQUEMENT par des lignes de cette forme :
+Ta réponse a DEUX parties, dans cet ordre.
+
+1. Une ligne « LU », puis la photo recopiée telle quelle, une ligne par ligne de la photo. Dans un tableau, sépare les cellules par « | », en commençant par la ligne d'en-tête si elle existe. N'ajoute, ne traduis et ne corrige rien dans cette partie.
+
+2. Une ligne « MOTS », puis des lignes de cette forme :
 mot anglais ; traduction française
 
 Une ligne par mot ou expression. Rien d'autre : pas de titre, pas de numéro, pas de tiret, pas de commentaire.
@@ -132,6 +136,56 @@ Exemple : « Espagne | Spanish », « Algérie | Arabic », « Maroc | Arabic »
 Une cellule qui contient plusieurs mots anglais (« Dutch, French, German », « English (and Welsh) ») donne une ligne par mot. Un mot qui revient plusieurs fois n'est écrit qu'une fois.
 Ignore tout ce qui n'est pas du vocabulaire : consignes, exercices, phrases d'exemple, dates, noms de personnes, noms de villes et de rues.
 Si la photo ne contient aucune liste de vocabulaire anglais, réponds exactement : AUCUN`;
+
+/*
+ * CHANTIER 326 — la consigne ne suffisait pas : le tableau « Pays (français) |
+ * Langue (anglais) » donnait encore 11 pays traduits (England, Wales, Spain…).
+ * Le modèle recopie maintenant la photo (« LU »), et le serveur ne garde un mot
+ * que s'il est écrit dans cette copie, hors d'une colonne dont l'en-tête dit
+ * « français ». Sans copie lisible, rien n'est filtré (comportement d'avant).
+ */
+const VIDES = new Set(['the', 'a', 'an', 'to', 'and', 'or']);
+function jetons(s: string): string[] {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z]+/).filter((t) => t && !VIDES.has(t));
+}
+
+function separe(texte: string): { lu: string[][] | null; mots: string } {
+  const l = texte.split('\n');
+  const iMots = l.findIndex((x) => /^\s*MOTS\s*:?\s*$/i.test(x));
+  if (iMots < 0) return { lu: null, mots: texte };
+  const iLu = l.findIndex((x) => /^\s*LU\s*:?\s*$/i.test(x));
+  const lu = l.slice(iLu < 0 ? 0 : iLu + 1, iMots)
+    .map((x) => x.split('|').map((c) => c.trim()))
+    .filter((r) => r.some(Boolean));
+  return { lu: lu.length ? lu : null, mots: l.slice(iMots + 1).join('\n') };
+}
+
+/** Les cellules où un mot anglais a le droit d'avoir été lu. */
+function cellulesAnglaises(lu: string[][]): string[][] {
+  const toutes = lu.flatMap((r) => r.map(jetons));
+  /* L'en-tête : la première ligne à plusieurs cellules (un titre peut la précéder). */
+  const iTete = lu.findIndex((r) => r.length >= 2);
+  if (iTete < 0) return toutes;
+  const francaise = lu[iTete].map((c) => /fran[cç]ais|french/i.test(c) && !/anglais|english/i.test(c));
+  if (!francaise.some(Boolean)) return toutes;
+  return lu.slice(iTete + 1).flatMap((r) => r.filter((_, k) => !francaise[k]).map(jetons));
+}
+
+function estEcrit(en: string, cellules: string[][]): boolean {
+  const t = jetons(en);
+  if (!t.length) return true;
+  return cellules.some((c) => t.every((x) => c.some((y) => presque(x, y))));
+}
+
+function lireReponse(texte: string): Array<{ en: string; fr: string }> {
+  const { lu, mots } = separe(texte);
+  const tous = lignesEnMots(mots);
+  if (!lu) return tous;
+  const cellules = cellulesAnglaises(lu);
+  const gardes = tous.filter((m) => estEcrit(m.en, cellules));
+  /* Copie ratée (rien ne correspond) : on rend tout plutôt que rien. */
+  return gardes.length ? gardes : tous;
+}
 
 /* CHANTIER 314 — un tableau « Pays (français) | Langue (anglais) » renvoyait AUCUN :
    la consigne faisait ignorer les « noms propres » (donc pays et langues), et les
@@ -245,8 +299,8 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
       headers: entetes,
       body: JSON.stringify({
         model: modele,
-        /* ~100 mots : 2 000 jetons suffisent largement, et bornent la facture. */
-        max_tokens: 2000,
+        /* ~100 mots, et la copie de la photo (326) : 3 500 jetons bornent la facture. */
+        max_tokens: 3500,
         system: CONSIGNE,
         messages: [{
           role: 'user',
@@ -270,7 +324,7 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
     return json({ erreur: 'la lecture de la photo n’a pas répondu' }, 502);
   }
 
-  const mots = lignesEnMots(texte);
+  const mots = lireReponse(texte);
   await note(qui.id, modele, usage, mots.length, env);
 
   const etat = etatDe(avant.lues + (mots.length ? 1 : 0), admin);
