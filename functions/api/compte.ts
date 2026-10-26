@@ -31,7 +31,15 @@ import { json, utilisateur, type Contexte } from './_parler-commun';
  * un compte supprimé laissait derrière lui ses relevés de photos et ses
  * scènes inventées.
  */
-const TABLES = ['progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement', 'photo_usage', 'parler_idees'];
+/*
+ * CHANTIER 329 — `entitlements` (paquets obtenus) et `parler_mois` (minutes du
+ * mois) manquaient aussi : leurs lignes empêchaient d'effacer le compte, d'où
+ * « un souci technique » au moment de la suppression.
+ */
+const TABLES = [
+  'progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement',
+  'photo_usage', 'parler_idees', 'entitlements', 'parler_mois',
+];
 
 /** 328 — le seul code d'erreur Postgres/Supabase (« 23503 », « 42501 »…), jamais le message entier. */
 function codeDe(dit: string): string | null {
