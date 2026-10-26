@@ -11,6 +11,7 @@ import { supabase, signInWithGoogle, signOut, type Session } from '../data/supab
 import { syncAll, type SyncReport } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
 import { repository } from '../data/repository';
+import { oubliePersonne, visiteARefaire } from '../data/appareil';
 
 /*
  * CHANTIER 327 — À QUI SONT LES DONNÉES DE CET APPAREIL ?
@@ -25,10 +26,27 @@ import { repository } from '../data/repository';
  */
 const PROPRIETAIRE = 'vocab:proprietaire';
 
-async function rattache(userId: string): Promise<void> {
+/** Vrai si un AUTRE compte vient de prendre l'appareil (données locales vidées). */
+async function rattache(userId: string): Promise<boolean> {
   const avant = localStorage.getItem(PROPRIETAIRE);
-  if (avant && avant !== userId) await repository.importAll({});
+  const change = !!avant && avant !== userId;
+  if (change) {
+    await repository.importAll({});
+    /* 334 — le prénom et le profil de la personne d'avant partent aussi. */
+    oubliePersonne();
+  }
   localStorage.setItem(PROPRIETAIRE, userId);
+  return change;
+}
+
+/*
+ * 334 — un compte tout neuf (aucune carte révisée en ligne) qui prend
+ * l'appareil d'un autre : la première connexion guidée se relance. Un
+ * compte déjà utilisé ailleurs retrouve ses données, sans visite.
+ */
+async function compteNeuf(userId: string): Promise<boolean> {
+  const { count, error } = await supabase.from('progress').select('user_id', { count: 'exact', head: true }).eq('user_id', userId);
+  return !error && count === 0;
 }
 
 export type SyncState =
@@ -74,8 +92,9 @@ export function useAuth(onDataChanged: () => void): Auth {
     busy.current = true;
     setSync({ status: 'running' });
     try {
-      await rattache(userId);
+      const change = await rattache(userId);
       const report = await syncAll(userId);
+      if (change && !report.error && (await compteNeuf(userId))) visiteARefaire();
       if (report.error) {
         setSync({ status: 'error', message: report.error });
         return;

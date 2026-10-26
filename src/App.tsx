@@ -24,6 +24,7 @@ import { Welcome } from './ui/Welcome';
 /* CHANTIER 293 — la première connexion guidée remplace les douze étapes du 292. */
 import { Visite, ETAPES as ETAPES_VISITE, type RendezVous } from './ui/Visite';
 import { isNew } from './engine/scheduler';
+import { EVT_NOUVEAU_COMPTE } from './data/appareil';
 import { classeConvient, classeRank } from './domain/types';
 import type { Classe } from './domain/types';
 import { REPRISE_ID, repareThemesReprise } from './data/reprise';
@@ -234,6 +235,13 @@ export default function App() {
     const aGuider = premierLancement.current && !localStorage.getItem(GUIDE);
     setView({ name: 'today' });
     if (aGuider) { setVisiteRelue(false); poseEtape(0); }
+  }, [setView, poseEtape]);
+
+  /* 334 — un compte tout neuf vient de prendre l'appareil d'un autre : sa première connexion guidée. */
+  useEffect(() => {
+    const lance = () => { setVisiteRelue(false); setView({ name: 'today' }); poseEtape(0); };
+    window.addEventListener(EVT_NOUVEAU_COMPTE, lance);
+    return () => window.removeEventListener(EVT_NOUVEAU_COMPTE, lance);
   }, [setView, poseEtape]);
 
   /*

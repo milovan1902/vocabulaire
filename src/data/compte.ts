@@ -7,6 +7,7 @@
  */
 import { supabase } from './supabase';
 import { repository } from './repository';
+import { appareilNeuf } from './appareil';
 
 export async function supprimeCompte(): Promise<void> {
   const { data } = await supabase.auth.getSession();
@@ -40,5 +41,7 @@ export async function supprimeCompte(): Promise<void> {
    * l'utilisateur local sans rien réécrire.
    */
   await repository.importAll({});
+  /* 334 — l'appareil redevient neuf : au rechargement, l'accueil puis la visite. */
+  appareilNeuf();
   await supabase.auth.signOut().catch(() => undefined);
 }
