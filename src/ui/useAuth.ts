@@ -23,7 +23,7 @@ import { CHANGE_COMPTE, verifieCompte, visiteARefaire } from '../data/appareil';
  * nouveau compte. Une progression faite sans compte (aucun propriétaire) est
  * toujours rattachée au premier compte qui se connecte, comme avant.
  */
-const PROPRIETAIRE = 'vocab:proprietaire';
+/* 341 — la clé du propriétaire vit maintenant dans data/appareil.ts. */
 
 /** Vrai si un AUTRE compte vient de prendre l'appareil (données locales vidées).
     341 — le travail est fait par appareil.ts, au démarrage ; ceci reste en filet. */
