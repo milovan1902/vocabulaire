@@ -35,6 +35,14 @@ async function rattache(userId: string): Promise<boolean> {
   const change = !!avant && avant !== userId;
   if (change) {
     await repository.importAll({});
+    /*
+     * 340 — listes VIDES, et non absentes. Absentes, le démarrage croyait à
+     * une très ancienne version (« tout paquet présent est possédé ») et
+     * mettait en jeu TOUT le catalogue téléchargé : les 11 paquets de lilou.
+     */
+    await repository.saveInstalled([]);
+    await repository.saveActive([]);
+    await repository.saveDeckJournal({});
     /* 334 — le prénom et le profil de la personne d'avant partent aussi. */
     oubliePersonne();
   }
@@ -104,7 +112,12 @@ export function useAuth(onDataChanged: () => void): Auth {
        */
       if (await rattache(userId)) {
         try { sessionStorage.setItem(CHANGE_COMPTE, '1'); } catch { /* rien */ }
-        window.location.reload();
+        /*
+         * 339 — sans les paramètres de retour de Google (?code=…, #access_token=…).
+         * reload() les gardait : au rechargement, la connexion était rejouée avec
+         * un code déjà utilisé, elle échouait, et la session se perdait.
+         */
+        window.location.replace(window.location.origin + window.location.pathname);
         return;
       }
       let change = false;
