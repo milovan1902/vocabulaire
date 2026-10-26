@@ -43,10 +43,20 @@ const TABLES = [
 ];
 
 /** 328 — le seul code d'erreur Postgres/Supabase (« 23503 », « 42501 »…), jamais le message entier. */
+/* 331 — le message court de Supabase (« Database error deleting user »…), sans données. */
+function motDe(dit: string): string {
+  return (dit.match(/"(?:msg|message|error_description|error)"\s*:\s*"([^"]{1,120})"/)?.[1] ?? '').trim();
+}
+
 function codeDe(dit: string): string | null {
   return dit.match(/"code"\s*:\s*"([A-Za-z0-9_]+)"/)?.[1] ?? dit.match(/\b(23503|42501|42703|42P01|PGRST\d+)\b/)?.[1] ?? null;
 }
 
+/*
+ * CHANTIER 331 — JAMAIS DE 502. Cloudflare remplace une réponse 502 d'une
+ * fonction par sa propre page « Bad gateway » : notre explication en JSON
+ * n'arrivait jamais au téléphone. Toutes les erreurs repartent en 500.
+ */
 export const onRequestDelete = async (ctx: Contexte): Promise<Response> => {
   /* 330 — une exception (réseau, variable manquante…) donnait un 502 de Cloudflare,
      sans rien dire. Elle est maintenant rattrapée et décrite en une ligne. */
@@ -81,7 +91,7 @@ async function supprime({ request, env }: Contexte): Promise<Response> {
       console.error(`suppression ${table}`, r.status, dit);
       /* 328 — l'étape et le code partent au suivi des erreurs (app_erreur) : sans eux,
          « un souci technique » ne disait pas quelle table bloquait. Aucun contenu de la base. */
-      return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `${table} ${r.status}`, code: codeDe(dit) }, 502);
+      return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `${table} ${r.status} ${motDe(dit)}`.trim(), code: codeDe(dit) }, 500);
     }
   }
 
@@ -92,7 +102,7 @@ async function supprime({ request, env }: Contexte): Promise<Response> {
   if (!r.ok && r.status !== 404) {
     const dit = (await r.text()).slice(0, 300);
     console.error('suppression du compte', r.status, dit);
-    return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `compte ${r.status}`, code: codeDe(dit) }, 502);
+    return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `compte ${r.status} ${motDe(dit)}`.trim(), code: codeDe(dit) }, 500);
   }
 
   return json({ ok: true });
