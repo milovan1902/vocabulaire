@@ -24,6 +24,8 @@ import { Welcome } from './ui/Welcome';
 /* CHANTIER 293 — la première connexion guidée remplace les douze étapes du 292. */
 import { Visite, ETAPES as ETAPES_VISITE, type RendezVous } from './ui/Visite';
 import { isNew } from './engine/scheduler';
+import { PAQUETS_OFFERTS, PAQUET_OFFERT_ADULTE } from './data/offre';
+import { estAdulte } from './ui/ton';
 import { EVT_NOUVEAU_COMPTE } from './data/appareil';
 import { classeConvient, classeRank } from './domain/types';
 import type { Classe } from './domain/types';
@@ -548,7 +550,13 @@ export default function App() {
    */
   const paquetDeClasse = async (c: Classe | null) => {
     if (store.active.length) return;
-    const libres = store.decks.filter((d) => !d.priceCents);
+    /* 336 — d'abord le paquet offert de la classe (Voyager pour un adulte). */
+    const offerts = store.decks.filter((d) => PAQUETS_OFFERTS.has(d.id));
+    const offert = estAdulte(store.common)
+      ? offerts.find((d) => d.id === PAQUET_OFFERT_ADULTE)
+      : [...offerts.filter((d) => !d.pourAdultes && classeConvient(d.classeFrom, c))]
+          .sort((a, b) => classeRank(b.classeFrom) - classeRank(a.classeFrom))[0];
+    const libres = offert ? [offert] : store.decks.filter((d) => !d.priceCents && !d.pourAdultes);
     const pourMoi = libres.filter((d) => classeConvient(d.classeFrom, c));
     const liste = pourMoi.length ? pourMoi : libres;
     const d = [...liste].sort((a, b) => classeRank(b.classeFrom) - classeRank(a.classeFrom))[0];

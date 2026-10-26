@@ -25,7 +25,7 @@ import { bilan } from '../engine/xp';
 import type { Theme } from './theme';
 import { THEME_LABELS, setTheme, themeChoisi } from './theme';
 import { FAMILLES, NOM_PALIER, PRIX, texteSur, type Article } from './boutique';
-import { acheter, credits, possede } from './apparences';
+import { acheter, credits, plafondAtteint, possede } from './apparences';
 import './boutique.css';
 
 type Filtre = 'toutes' | 'moi' | 'gagner';
@@ -167,10 +167,17 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
           {!enCours && aMoi && (
             <button className="btq-principal" onClick={() => { utiliser(a.id); setOuverte(null); setMessage(null); }}>Utiliser</button>
           )}
-          {!aMoi && solde >= prix && (
+          {/* 336 — information neutre, sans incitation (politique Familles). */}
+          {!aMoi && plafondAtteint() && (
+            <div className="btq-manque">
+              <span className="btq-etat">12 apparences sur 12</span>
+              <small>C’est le maximum sans abonnement. Avec l’abonnement, toutes les apparences sont à toi.</small>
+            </div>
+          )}
+          {!aMoi && !plafondAtteint() && solde >= prix && (
             <button className="btq-principal" onClick={() => echanger(a)}>Échanger {nb(prix)} crédits</button>
           )}
-          {!aMoi && solde < prix && (
+          {!aMoi && !plafondAtteint() && solde < prix && (
             <div className="btq-manque">
               <span className="btq-etat">{nb(prix)} crédits</span>
               <small>Il t’en manque {nb(prix - solde)} · {delai(prix - solde)}</small>

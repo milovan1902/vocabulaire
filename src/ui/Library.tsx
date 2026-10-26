@@ -5,7 +5,8 @@ import {
   CLASSES, CLASSES_PROPOSEES, CLASSE_LABELS, LEVEL_LABELS,
   classeConvient, niveauDit, priceLabel,
 } from '../domain/types';
-import { estPremium } from '../engine/xp';
+/* 336 — l'offre gratuite : paquets offerts, paquet personnalisé offert. */
+import { PAQUETS_OFFERTS, persoOffertPris, reserveAbonnes, sansLimite } from '../data/offre';
 import { DeckVign } from './components';
 import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
@@ -383,6 +384,15 @@ export function Library({
   /** CHANTIER 282 — « Créer mon paquet », en tête de Ma collection. */
   onCreer?: () => void;
 }) {
+  /* 336 — le paquet personnalisé offert a-t-il déjà servi ? */
+  const [persoPris, setPersoPris] = useState(false);
+  const [msgCreer, setMsgCreer] = useState(false);
+  useEffect(() => {
+    let vivant = true;
+    void persoOffertPris(decks).then((v) => { if (vivant) setPersoPris(v); });
+    return () => { vivant = false; };
+  }, [decks]);
+
   const [charge, setCharge] = useState<Charge | null>(null);
   /*
    * Le rayon vient du parent s'il le tient, sinon de l'état local. Les
@@ -698,11 +708,14 @@ export function Library({
 
   /* ---------------- Ma collection ---------------- */
 
-  /** CHANTIER 286 — le bouton de la maquette : cadre pointillé, « + », mention Abonné. */
+  /** CHANTIER 286 — le bouton de la maquette : cadre pointillé, « + », mention Abonné.
+      336 — le premier est offert ; ensuite, une phrase neutre au lieu de l'éditeur. */
   function boutonCreer(go: () => void) {
+    const bloque = persoPris && !sansLimite();
     return (
+      <>
       <button
-        onClick={go}
+        onClick={() => (bloque ? setMsgCreer(true) : go())}
         style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 64, padding: 12, margin: '0 0 14px', borderRadius: 14, border: '1.5px dashed var(--chalk, currentColor)', background: 'color-mix(in srgb, var(--chalk, currentColor) 6%, transparent)', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
       >
         <span aria-hidden="true" style={{ flex: 'none', width: 40, height: 40, borderRadius: 12, border: '1.5px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', display: 'grid', placeItems: 'center', fontSize: 22, lineHeight: 1 }}>+</span>
@@ -710,8 +723,14 @@ export function Library({
           <b style={{ fontSize: 14, fontWeight: 600 }}>Créer mon paquet de révision</b>
           <small style={{ fontSize: 11.5, lineHeight: 1.4, color: 'var(--grey, currentColor)' }}>Vos mots à vous : la liste du prof, du manuel, du contrôle.</small>
         </span>
-        <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 999, border: '1px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Abonné</span>
+        <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 999, border: '1px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{sansLimite() ? 'Abonné' : persoPris ? 'Abonnés' : '1 offert'}</span>
       </button>
+      {bloque && msgCreer && (
+        <p className="hint" role="status" style={{ margin: '-6px 0 14px' }}>
+          Ton paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que tu veux.
+        </p>
+      )}
+      </>
     );
   }
 
@@ -895,15 +914,16 @@ export function Library({
           ) : (
             <span className="ownedtag">À moi</span>
           )
-        ) : s.deck.pourAdultes && !estPremium() ? (
-          /* 318 — inclus dans l'abonnement : visible par tous, obtenu par les abonnés. */
+        ) : reserveAbonnes(s.deck) ? (
+          /* 318 — inclus dans l'abonnement : visible par tous, obtenu par les abonnés.
+             336 — vaut pour tout le catalogue, sauf un paquet offert par classe. */
           <span className="ownedtag">Abonnés</span>
         ) : (
           <button
             className={`minibtn${plusTard ? ' outline' : ''}`}
             onClick={() => onAdd(s.deck.id)}
           >
-            {s.deck.pourAdultes ? 'Obtenir' : gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
+            {PAQUETS_OFFERTS.has(s.deck.id) && !sansLimite() ? 'Offert' : s.deck.pourAdultes ? 'Obtenir' : gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
           </button>
         )}
       </div>

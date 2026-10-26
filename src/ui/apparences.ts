@@ -12,11 +12,13 @@
  * et celles des anciens paliers déjà atteints sont offertes.
  *
  * CHANTIER 270 — le compte du créateur possède tout (data/createur.ts).
+ * CHANTIER 336 — sans abonnement, 12 apparences au plus (les 3 de base comprises).
  */
 import type { Theme } from './theme';
 import { themeChoisi } from './theme';
 import { estPremium } from '../engine/xp';
-import { prixDe } from './boutique';
+import { FAMILLES, prixDe } from './boutique';
+import { APPARENCES_MAX_GRATUIT, sansLimite } from '../data/offre';
 import { ajouterAchat, ajouterOfferte, lireAchats, lireOffertes } from '../data/apparencesStock';
 import { estCreateur } from '../data/createur';
 
@@ -26,6 +28,16 @@ const ANCIENS_PALIERS: Partial<Record<Theme, number>> = { cahier: 100, 'lycee-cl
 
 export function possede(t: Theme): boolean {
   return prixDe(t) === 0 || estPremium() || estCreateur() || lireOffertes().includes(t) || lireAchats().some((a) => a.t === t);
+}
+
+/** 336 — combien d'apparences sont à moi. */
+export function nombrePossedees(): number {
+  return FAMILLES.flatMap((f) => f.articles).filter((a) => possede(a.id)).length;
+}
+
+/** 336 — sans abonnement, la douzième est la dernière. */
+export function plafondAtteint(): boolean {
+  return !sansLimite() && nombrePossedees() >= APPARENCES_MAX_GRATUIT;
 }
 
 export function depense(): number {
@@ -40,6 +52,7 @@ export function credits(xpBrut: number): number {
 /** Échange des crédits contre une apparence. false si le solde ne suffit pas. */
 export function acheter(t: Theme, xpBrut: number): boolean {
   if (possede(t)) return true;
+  if (plafondAtteint()) return false;
   const prix = prixDe(t);
   if (credits(xpBrut) < prix) return false;
   ajouterAchat({ t, prix, at: Date.now() });
