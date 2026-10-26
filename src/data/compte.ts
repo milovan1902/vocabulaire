@@ -23,10 +23,13 @@ export async function supprimeCompte(): Promise<void> {
     throw new Error('Pas de connexion internet : la suppression demande d’être en ligne.');
   }
   if (!r.ok) {
-    const d = (await r.json().catch(() => ({}))) as { erreur?: string; etape?: string; code?: string | null };
+    /* 330 — sans réponse JSON (erreur de Cloudflare), on garde le début du texte reçu. */
+    const brut = await r.text().catch(() => '');
+    let d: { erreur?: string; etape?: string; code?: string | null } = {};
+    try { d = JSON.parse(brut); } catch { /* pas du JSON */ }
     /* 328 — l'étape qui bloque est gardée dans le message : elle part au suivi des
        erreurs (app_erreur, origine « compte »). L'élève lit toujours une phrase simple. */
-    const etape = d.etape ? ` [${d.etape}${d.code ? ` ${d.code}` : ''}]` : ` [http ${r.status}]`;
+    const etape = d.etape ? ` [${d.etape}${d.code ? ` ${d.code}` : ''}]` : ` [http ${r.status} ${brut.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)}]`;
     throw new Error((d.erreur ?? 'La suppression n’a pas abouti, réessaie dans un instant.') + etape);
   }
 

@@ -36,6 +36,7 @@ import { json, utilisateur, type Contexte } from './_parler-commun';
  * mois) manquaient aussi : leurs lignes empêchaient d'effacer le compte, d'où
  * « un souci technique » au moment de la suppression.
  */
+/* 330 — la suppression se dit aussi dans les journaux, étape par étape. */
 const TABLES = [
   'progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement',
   'photo_usage', 'parler_idees', 'entitlements', 'parler_mois',
@@ -46,7 +47,21 @@ function codeDe(dit: string): string | null {
   return dit.match(/"code"\s*:\s*"([A-Za-z0-9_]+)"/)?.[1] ?? dit.match(/\b(23503|42501|42703|42P01|PGRST\d+)\b/)?.[1] ?? null;
 }
 
-export const onRequestDelete = async ({ request, env }: Contexte): Promise<Response> => {
+export const onRequestDelete = async (ctx: Contexte): Promise<Response> => {
+  /* 330 — une exception (réseau, variable manquante…) donnait un 502 de Cloudflare,
+     sans rien dire. Elle est maintenant rattrapée et décrite en une ligne. */
+  try {
+    return await supprime(ctx);
+  } catch (e) {
+    console.error('suppression : exception', String(e));
+    return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `exception ${String(e).slice(0, 160)}` }, 500);
+  }
+};
+
+async function supprime({ request, env }: Contexte): Promise<Response> {
+  if (!env.SUPABASE_SERVICE_KEY) {
+    return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: 'configuration SUPABASE_SERVICE_KEY absente' }, 500);
+  }
   const userId = await utilisateur(request, env);
   if (!userId) return json({ erreur: 'compte requis' }, 401);
 
@@ -81,4 +96,4 @@ export const onRequestDelete = async ({ request, env }: Contexte): Promise<Respo
   }
 
   return json({ ok: true });
-};
+}
