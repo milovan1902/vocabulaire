@@ -762,6 +762,8 @@ export default function App() {
               ? store.settingsFor(loaded.deck.id).reponseJeu ?? 'tete'
               : store.settingsFor(loaded.deck.id).reponsePerso ?? 'ecrit'}
             onGrade={handleGrade}
+            /* CHANTIER 325 bis — premiers pas : une carte ratée ne revient pas dans la même séance. */
+            sansRetour={visite !== null}
             onQuit={() => { void endSession(); setView({ name: 'deck' }); }}
             onDone={(reviewed) => { void endSession(); setView({ name: 'done', reviewed }); }}
           />

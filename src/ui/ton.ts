@@ -30,10 +30,13 @@ export function poseProfil(p: Profil): void {
   try { localStorage.setItem(CLE, p); } catch { /* stockage plein : le ton restera celui par défaut */ }
 }
 
+/* 325 bis — le dernier choix fait sur cet appareil (visite ou Mon profil)
+   l'emporte : un ancien niveau adulte ne doit pas cacher la liste des classes
+   à quelqu'un qui vient de dire « Je suis élève ». */
 export function estAdulte(s?: Pick<Settings, 'adulte' | 'classe'> | null): boolean {
-  if (s?.adulte) return true;
-  if (s?.classe) return false;
-  return profilLocal() === 'adulte';
+  const p = profilLocal();
+  if (p) return p === 'adulte';
+  return !!s?.adulte;
 }
 
 /** Le même texte, au tutoiement ou au vouvoiement. */

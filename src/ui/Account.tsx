@@ -99,7 +99,7 @@ import { Boutique } from './Boutique';
 /* CHANTIER 293 — seul le compte administrateur peut relancer la première connexion. */
 import { estCreateur } from '../data/createur';
 /* CHANTIER 325 — élève ou adulte (le ton suit), et la bulle Abonnement. */
-import { EVT_PROFIL, estAdulte, poseProfil, profilLocal, tv } from './ton';
+import { EVT_PROFIL, estAdulte, poseProfil, tv } from './ton';
 import { Abonnement } from './Abonnement';
 
 /**
@@ -230,8 +230,7 @@ export function Account({
   const classeDite = niveauDit(settings) ?? 'Non déclarée';
   /* 317 — le parcours adulte s'ouvre dans le même tiroir.
      325 — derrière « Je suis élève / Je suis adulte », en tête du tiroir « Mon profil ». */
-  const [vueProfil, setVueProfil] = useState<'eleve' | 'adulte'>(() =>
-    settings.adulte || (!settings.classe && profilLocal() === 'adulte') ? 'adulte' : 'eleve');
+  const [vueProfil, setVueProfil] = useState<'eleve' | 'adulte'>(() => (estAdulte(settings) ? 'adulte' : 'eleve'));
   /* 325 — adulte : vouvoiement. */
   const a = estAdulte(settings);
 
@@ -332,7 +331,7 @@ export function Account({
           titre="Mon profil"
           sous={tv(a, 'Élève ou adulte, et ton niveau.', 'Élève ou adulte, et votre niveau.')}
           valeur={valeurs.classe}
-          onClick={() => setTiroir('classe')}
+          onClick={() => { setVueProfil(estAdulte(settings) ? 'adulte' : 'eleve'); setTiroir('classe'); }}
         />
         {/* CHANTIER 325 — pas encore d'icône dessinée : le carré d'attente de tiroir.tsx. */}
         <Ligne

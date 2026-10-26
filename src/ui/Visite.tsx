@@ -49,7 +49,7 @@
  * App.tsx, la visite reprend donc après un rechargement. L'administrateur
  * la relance depuis Réglages › Aide › Revoir la première connexion.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import type { Classe } from '../domain/types';
@@ -528,6 +528,7 @@ export function Visite({
       {voiles.map((s, i) => (
         <div key={i} className="visite-voile" style={s} onClick={verrou} />
       ))}
+      {e.cadeau && <Confettis />}
       {trou && (
         <>
           <div className="visite-anneau" style={trou} aria-hidden="true" />
@@ -622,6 +623,28 @@ export function Visite({
   );
 }
 
+/* CHANTIER 325 bis — les 1000 crédits : une pluie de confettis, une seule fois (2,6 s).
+   Rien ne bouge si le téléphone demande moins d'animations (visite.css). */
+const COULEURS_CONFETTIS = ['#f2b705', '#e4572e', '#29a36a', '#2f6fde', '#c04ab5', '#ffffff'];
+function Confettis() {
+  const bouts = useMemo(() => Array.from({ length: 70 }, (_, k) => ({
+    left: `${Math.random() * 100}%`,
+    background: COULEURS_CONFETTIS[k % COULEURS_CONFETTIS.length],
+    width: `${6 + Math.random() * 6}px`,
+    height: `${8 + Math.random() * 8}px`,
+    animationDelay: `${Math.random() * 0.6}s`,
+    animationDuration: `${1.8 + Math.random() * 1.2}s`,
+    ['--vc-x' as string]: `${(Math.random() - 0.5) * 160}px`,
+    ['--vc-r' as string]: `${(Math.random() - 0.5) * 1440}deg`,
+    borderRadius: k % 3 === 0 ? '999px' : '2px',
+  }) as CSSProperties), []);
+  return (
+    <div className="visite-confettis" aria-hidden="true">
+      {bouts.map((st, k) => <i key={k} style={st} />)}
+    </div>
+  );
+}
+
 /* 297 — comment travailler une carte, avant la première révision. */
 const NOTES: Array<[string, string, string]> = [
   ['again', 'À revoir', 'je ne l’avais pas'],
@@ -666,9 +689,9 @@ function ExempleSeance({ prenom, a }: { prenom: string; a: boolean }) {
     <div className="visite-exemple">
       <span className="visite-petit">Exemple · Me présenter</span>
       <p className="visite-b lui">Hi! What’s your name, and how old are you?</p>
-      <p className="visite-b moi">My name is {prenom}. I have thirteen years.</p>
-      <p className="visite-b fr">En anglais, l’âge se dit avec « be » : I am thirteen.</p>
-      <p className="visite-b moi">I am thirteen. I live near my school.</p>
+      <p className="visite-b moi">My name is {prenom}. I have fourteen years.</p>
+      <p className="visite-b fr">En anglais, l’âge se dit avec « be » : I am fourteen.</p>
+      <p className="visite-b moi">I am fourteen. I live near my school.</p>
       <p className="visite-b lui">Nice! Do you have a <u>neighbour</u> you like?</p>
     </div>
   );
@@ -693,8 +716,8 @@ function ExempleBilan({ a }: { a: boolean }) {
   return (
     <div className="visite-exemple">
       <span className="visite-petit">Ce qui a coincé</span>
-      <p className="visite-faux">I have thirteen years.</p>
-      <p className="visite-juste">I am thirteen.</p>
+      <p className="visite-faux">I have fourteen years.</p>
+      <p className="visite-juste">I am fourteen.</p>
       <span className="visite-petit">Tu veux les revoir ?</span>
       <ul className="visite-coches">
         <li className="on"><b>a neighbour</b> un voisin</li>

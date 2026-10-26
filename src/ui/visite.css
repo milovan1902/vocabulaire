@@ -132,3 +132,16 @@
   position: fixed; top: 12px; right: 12px; padding: 0 16px; border-radius: 999px;
   background: #fff; border: 2px solid #f2b705; box-shadow: 0 4px 14px rgba(10, 18, 36, 0.2);
 }
+
+/* 325 bis — confettis des crédits de bienvenue : ils tombent par-dessus tout, sans capter les touchers. */
+.visite > .visite-confettis { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+.visite-confettis i {
+  position: absolute; top: -20px; opacity: 0;
+  animation-name: visite-confetti; animation-timing-function: cubic-bezier(.25,.6,.45,1); animation-fill-mode: forwards;
+}
+@keyframes visite-confetti {
+  0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--vc-x), 105vh, 0) rotate(var(--vc-r)); }
+}
+@media (prefers-reduced-motion: reduce) { .visite-confettis { display: none; } }

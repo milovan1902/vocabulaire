@@ -387,8 +387,11 @@ function useAjuste(texte: string, visible = true) {
 }
 
 export function Study({
-  queue, image, settings, onGrade, onQuit, onDone, revele = false, modeReponse = 'tete',
+  queue, image, settings, onGrade, onQuit, onDone, revele = false, modeReponse = 'tete', sansRetour = false,
 }: {
+  /** CHANTIER 325 bis — pendant la visite guidée, « Raté » ne remet pas la carte dans la séance :
+      le débutant ne comprenait pas la boucle. Elle revient quand même demain (FSRS). */
+  sansRetour?: boolean;
   /** CHANTIER 302 — de tête (comme avant), à l'écrit ou à l'oral. Ne vaut que pour les cartes-mots. */
   modeReponse?: ModeReponse;
   queue: SessionItem[];
@@ -526,7 +529,7 @@ export function Study({
 
       const rest = [...items];
       // « À revoir » remet la carte un peu plus loin dans la même session.
-      if (g === 'again') {
+      if (g === 'again' && !sansRetour) {
         rest.splice(Math.min(index + 4, rest.length), 0, current);
       }
       const nextIndex = index + 1;
@@ -535,7 +538,7 @@ export function Study({
       if (nextIndex >= rest.length) onDone(reviewed + 1);
       else setIndex(nextIndex);
     },
-    [current, index, items, onGrade, onDone, reviewed],
+    [current, index, items, onGrade, onDone, reviewed, sansRetour],
   );
 
   /* 302 — la réponse saisie ou dite est comparée, puis la carte se retourne. */
