@@ -917,7 +917,14 @@ export function Library({
         ) : reserveAbonnes(s.deck) ? (
           /* 318 — inclus dans l'abonnement : visible par tous, obtenu par les abonnés.
              336 — vaut pour tout le catalogue, sauf un paquet offert par classe. */
-          <span className="ownedtag">Abonnés</span>
+          {/* 337 — pas le vert de « À moi » : un cadenas, au trait. */}
+          <span
+            aria-label="Réservé aux abonnés"
+            style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, border: '1px solid currentColor', opacity: 0.75, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+            Abonnés
+          </span>
         ) : (
           <button
             className={`minibtn${plusTard ? ' outline' : ''}`}

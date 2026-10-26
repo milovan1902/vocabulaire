@@ -207,8 +207,10 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
 
 export function DeckHome({
   loaded, settings, overrides, counter, userId, general,
-  onGeneral, onOverrides, onStart, onAddCards, onReload, onBackToLibrary,
+  onGeneral, onOverrides, onStart, onAddCards, onReload, onBackToLibrary, verrouille = false,
 }: {
+  /** CHANTIER 337 — paquet réservé aux abonnés, pas dans la collection : on le parcourt, on ne le révise pas. */
+  verrouille?: boolean;
   loaded: LoadedDeck;
   /** Réglages réellement appliqués : le général, corrigé du particulier. */
   settings: Settings;
@@ -481,7 +483,16 @@ export function DeckHome({
         </div>
       </details>
 
-      {available > 0 ? (
+      {/* 337 — information neutre, sans incitation (politique Familles). */}
+      {verrouille ? (
+        <div className="goal" role="status">
+          <b>Inclus dans l’abonnement.</b>
+          <p>
+            Tu peux parcourir ses mots. La révision de ce paquet est réservée aux
+            abonnés ; ton paquet offert t’attend dans le catalogue.
+          </p>
+        </div>
+      ) : available > 0 ? (
         <button className="btn" onClick={() => onStart(false)}>
           Réviser {Math.min(available, settings.cardsPerSession)} cartes
         </button>
@@ -506,7 +517,7 @@ export function DeckHome({
         </button>
       )}
 
-      <button className="btn ghost" onClick={onAddCards}>Ajouter des mots à ce paquet</button>
+      {!verrouille && <button className="btn ghost" onClick={onAddCards}>Ajouter des mots à ce paquet</button>}
 
       <button className="btn ghost danger" onClick={async () => {
         const message = userId

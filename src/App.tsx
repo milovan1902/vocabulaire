@@ -24,7 +24,7 @@ import { Welcome } from './ui/Welcome';
 /* CHANTIER 293 — la première connexion guidée remplace les douze étapes du 292. */
 import { Visite, ETAPES as ETAPES_VISITE, type RendezVous } from './ui/Visite';
 import { isNew } from './engine/scheduler';
-import { PAQUETS_OFFERTS, PAQUET_OFFERT_ADULTE } from './data/offre';
+import { PAQUETS_OFFERTS, PAQUET_OFFERT_ADULTE, reserveAbonnes } from './data/offre';
 import { estAdulte } from './ui/ton';
 import { EVT_NOUVEAU_COMPTE } from './data/appareil';
 import { classeConvient, classeRank } from './domain/types';
@@ -704,7 +704,12 @@ export default function App() {
               void openDeck(id);
             }}
             onReview={(id) => void reviewDeck(id)}
-            onAdd={(id) => void store.addDeck(id)}
+            onAdd={(id) => {
+              /* 337 — le serveur ne vérifie pas encore : on refuse ici aussi. */
+              const d = store.decks.find((x) => x.id === id);
+              if (d && reserveAbonnes(d)) return;
+              void store.addDeck(id);
+            }}
             onRemove={(id) => void store.removeDeck(id)}
             onSetActive={(id, on) => void store.setActive(id, on)}
           />
@@ -805,7 +810,12 @@ export default function App() {
               await store.setOverride(loaded.deck.id, o);
               await reload();
             }}
-            onStart={(ignoreGoal) => { startSession(loaded, ignoreGoal); }}
+            /* 337 — un paquet réservé, hors collection : pas de révision. */
+            verrouille={reserveAbonnes(loaded.deck) && !store.installed.includes(loaded.deck.id)}
+            onStart={(ignoreGoal) => {
+              if (reserveAbonnes(loaded.deck) && !store.installed.includes(loaded.deck.id)) return;
+              startSession(loaded, ignoreGoal);
+            }}
             onAddCards={() => setView({ name: 'editor', mode: 'append' })}
             onReload={() => void reload()}
             onBackToLibrary={() => void backToLibrary()}
