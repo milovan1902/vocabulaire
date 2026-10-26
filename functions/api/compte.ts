@@ -33,6 +33,11 @@ import { json, utilisateur, type Contexte } from './_parler-commun';
  */
 const TABLES = ['progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement', 'photo_usage', 'parler_idees'];
 
+/** 328 — le seul code d'erreur Postgres/Supabase (« 23503 », « 42501 »…), jamais le message entier. */
+function codeDe(dit: string): string | null {
+  return dit.match(/"code"\s*:\s*"([A-Za-z0-9_]+)"/)?.[1] ?? dit.match(/\b(23503|42501|42703|42P01|PGRST\d+)\b/)?.[1] ?? null;
+}
+
 export const onRequestDelete = async ({ request, env }: Contexte): Promise<Response> => {
   const userId = await utilisateur(request, env);
   if (!userId) return json({ erreur: 'compte requis' }, 401);
@@ -49,8 +54,11 @@ export const onRequestDelete = async ({ request, env }: Contexte): Promise<Respo
     );
     // Une table absente (404) n'empêche pas la suite : il n'y a rien à y effacer.
     if (!r.ok && r.status !== 404) {
-      console.error(`suppression ${table}`, r.status, await r.text());
-      return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant' }, 502);
+      const dit = (await r.text()).slice(0, 300);
+      console.error(`suppression ${table}`, r.status, dit);
+      /* 328 — l'étape et le code partent au suivi des erreurs (app_erreur) : sans eux,
+         « un souci technique » ne disait pas quelle table bloquait. Aucun contenu de la base. */
+      return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `${table} ${r.status}`, code: codeDe(dit) }, 502);
     }
   }
 
@@ -59,8 +67,9 @@ export const onRequestDelete = async ({ request, env }: Contexte): Promise<Respo
     { method: 'DELETE', headers: entetes },
   );
   if (!r.ok && r.status !== 404) {
-    console.error('suppression du compte', r.status, await r.text());
-    return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant' }, 502);
+    const dit = (await r.text()).slice(0, 300);
+    console.error('suppression du compte', r.status, dit);
+    return json({ erreur: 'la suppression n’a pas abouti, réessaie dans un instant', etape: `compte ${r.status}`, code: codeDe(dit) }, 502);
   }
 
   return json({ ok: true });
