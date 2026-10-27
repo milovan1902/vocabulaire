@@ -15,6 +15,9 @@ import { Vitrine } from './ui/Vitrine';
 import { appliquerApercu, estTheme } from './ui/theme';
 /* CHANTIER 341 — le changement de compte se règle avant l'affichage. */
 import { verifieCompteAuDemarrage } from './data/appareil';
+/* CHANTIER 350 — la taille du texte choisie dans Réglages › Apparence, posée avant l'affichage. */
+import { installeTaille } from './data/tailleTexte';
+installeTaille();
 /* CHANTIER 161 — Atkinson Hyperlegible, livrée avec l'application : elle
    marche hors ligne. Installée par `npm install @fontsource/atkinson-hyperlegible`. */
 import '@fontsource/atkinson-hyperlegible/400.css';

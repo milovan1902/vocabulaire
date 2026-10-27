@@ -83,6 +83,8 @@ import { ChoixAdulte } from './ChoixAdulte';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
 import { Ligne, Tiroir } from './tiroir';
+/* CHANTIER 350 — la taille du texte. */
+import { TAILLES, choisisTaille, lisTaille, type TailleTexte } from '../data/tailleTexte';
 import { minutesPour } from '../engine/tempo';
 import { AccountPanel } from './AccountPanel';
 import { phraseErreur } from '../data/messageErreur';
@@ -187,6 +189,7 @@ export function Account({
   const fileRef = useRef<HTMLInputElement>(null);
   const [autorisation, setAutorisation] = useState(permission());
   /* 318 — un autre écran peut demander d'ouvrir un tiroir précis (Parler › Changer de niveau). */
+  const [taille, setTaille] = useState<TailleTexte>(lisTaille);
   const [tiroir, setTiroir] = useState<Tiroirs>(() => {
     try {
       const t = sessionStorage.getItem('vocab:ouvrir-tiroir');
@@ -500,6 +503,23 @@ export function Account({
 
       {tiroir === 'apparence' && (
         <Tiroir titre="Apparence" retour="Réglages" onFermer={() => setTiroir(null)}>
+          {/* CHANTIER 350 — la taille du texte, avant les apparences. */}
+          <div className="setting">
+            <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Taille du texte</p>
+            <div className="heures">
+              {TAILLES.map((t) => (
+                <button
+                  key={t.id}
+                  className={taille === t.id ? 'on' : ''}
+                  aria-pressed={taille === t.id}
+                  onClick={() => { choisisTaille(t.id); setTaille(t.id); }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <p className="hint">Agrandit tout l’écran : textes, boutons et cartes. Ce réglage reste sur ce téléphone.</p>
+          </div>
           <Boutique streak={streak} onTheme={setThemeLocal} />
         </Tiroir>
       )}
