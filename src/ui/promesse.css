@@ -24,23 +24,43 @@
   margin: 0; padding-top: 0; font-size: 15px; line-height: 1.45; text-wrap: pretty;
 }
 
-/* Réglages › Abonnement (Abonnement.tsx) */
-.abo { display: flex; flex-direction: column; gap: 14px; }
-.abo-tableau { border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent); }
-.abo-tete, .abo-ligne {
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 14px; padding: 10px 0;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+/* Réglages › Abonnement (Abonnement.tsx).
+   346 — deux cartes, Gratuit puis Abonnement. Les cartes ont leur propre fond
+   blanc et leur encre fixe : lisibles sur les quarante apparences. Le reste
+   (étiquette, encart, mentions) hérite de la couleur de l'apparence. */
+.abo { display: flex; flex-direction: column; gap: 18px; }
+.abo-sanspub {
+  align-self: flex-start; margin: 0; padding: 5px 14px; border-radius: 999px; border: 1.5px solid currentColor;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
 }
-.abo-tete span { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
-.abo-ligne b { grid-column: 1 / -1; font-size: 15px; }
-.abo-ligne span { font-size: 14px; line-height: 1.4; }
-.abo-ligne span + span { font-weight: 700; }
+.abo-carte {
+  display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 18px;
+  background: #fff; color: #16233f; border: 1px solid #dcd6c6;
+}
+.abo-carte.abo-plus { gap: 14px; border: 2.5px solid #f2b705; box-shadow: 0 8px 22px rgba(242, 183, 5, 0.18); }
+.abo-carte-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.abo-carte h3 { margin: 0; font-size: 20px; }
+.abo-carte-tete small { font-size: 14px; color: #5f6c8a; }
+.abo-marque { display: flex; gap: 12px; align-items: center; }
+.abo-marque img { width: 52px; height: 52px; flex: none; }
+.abo-marque div { display: flex; flex-direction: column; gap: 2px; }
+.abo-essai { font-size: 13px; font-weight: 700; color: #6b4e00; }
+.abo-prix { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.abo-prix div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid #dcd6c6; }
+.abo-prix div + div { border: 1.5px solid #16233f; }
+.abo-prix b { font-size: 22px; }
+.abo-prix span { font-size: 13px; color: #5f6c8a; }
+.abo-kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b4e00; }
+.abo-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.abo-liste li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font-size: 15px; line-height: 1.45; text-wrap: pretty; }
+.abo-liste svg { margin-top: 1px; }
+.abo-bientot { margin: 0; font-size: 13px; color: #5f6c8a; }
 .abo-encart {
-  display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px;
-  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  display: flex; flex-direction: column; gap: 10px; padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
 }
 .abo-encart h3 { margin: 0; font-size: 17px; }
-.abo-encart ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; line-height: 1.45; }
+.abo-encart ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; line-height: 1.45; }
 .abo-lien { align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; color: inherit; font-weight: 700; text-underline-offset: 3px; }
 
 /* Mes progrès › Pourquoi ça marche (Pourquoi.tsx) */

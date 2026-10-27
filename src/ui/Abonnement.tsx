@@ -9,56 +9,80 @@
  *
  * CHANTIER 335 — la grille du 26/10 : 6,99 € par mois ou 69,99 € par an,
  * 7 jours d'essai, aucune publicité pour personne.
+ *
+ * CHANTIER 346 — deux cartes au lieu d'un tableau : « Gratuit », puis
+ * « Abonnement » (logo, prix, ce qu'il ajoute). Maquette 2a validée.
  */
 import './promesse.css';
 
-type Ligne = { quoi: string; gratuit: string; abonne: string };
+function gratuit(adulte: boolean): string[] {
+  return adulte
+    ? [
+        '1 paquet du catalogue offert : Voyager',
+        'Votre premier paquet personnalisé, photo comprise',
+        '1 conversation de 10 min avec l’IA',
+        'Les mises en situation, offertes une fois',
+        '3 apparences, jusqu’à 12 avec vos crédits',
+      ]
+    : [
+        '1 paquet offert par classe',
+        'Ton premier paquet personnalisé, photo comprise',
+        '1 conversation de 10 min avec l’IA (dès la 4e)',
+        'Les mises en situation, offertes une fois',
+        '3 apparences, jusqu’à 12 avec tes crédits',
+      ];
+}
 
-function lignes(adulte: boolean): Ligne[] {
-  return [
-    {
-      quoi: 'Paquets du catalogue',
-      gratuit: adulte ? '1 paquet offert : Voyager' : '1 paquet offert par classe',
-      abonne: 'Tout le catalogue, tous niveaux, paquets adultes compris',
-    },
-    {
-      quoi: 'Paquets personnalisés',
-      gratuit: adulte ? 'Le premier offert, photo comprise' : 'Ton premier offert, photo comprise',
-      abonne: adulte
-        ? 'Autant que vous voulez, et 3 photos par semaine'
-        : 'Autant que tu veux, et 3 photos par semaine',
-    },
-    {
-      quoi: adulte ? 'Parler avec l’IA' : 'Parler avec l’IA (dès la 4e)',
-      gratuit: '1 conversation de 10 min, offerte',
-      abonne: '10 min par jour',
-    },
-    { quoi: 'Mises en situation inventées par l’IA', gratuit: 'Offertes une fois', abonne: 'Trois nouvelles chaque jour' },
-    { quoi: 'Apparences', gratuit: '3, jusqu’à 12 avec les crédits', abonne: 'Les 12 offertes, 30 de plus, et celles du mois' },
-    { quoi: 'Publicité', gratuit: 'Aucune', abonne: 'Aucune' },
-  ];
+const ABONNE: Array<[string, string]> = [
+  ['Tout le catalogue,', 'tous niveaux, paquets adultes compris'],
+  ['Paquets personnalisés illimités,', 'dont 3 photos par semaine'],
+  ['10 min d’oral par jour', 'avec l’IA'],
+  ['3 mises en situation', 'nouvelles chaque jour'],
+  ['Les 12 apparences offertes, 30 de plus,', 'et celles du mois'],
+];
+
+function Coche({ or }: { or?: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={or ? '#c99700' : '#5f6c8a'}
+      strokeWidth={or ? 2.6 : 2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
 }
 
 export function Abonnement({ adulte }: { adulte: boolean }) {
   return (
     <div className="abo">
-      <p className="hint">
-        Application sans publicité. L’abonnement arrive bientôt : voici ce qui reste gratuit, et ce qu’il ajoutera.
-      </p>
+      <p className="abo-sanspub">Sans publicité, pour tous</p>
 
-      <div className="abo-tableau" role="table" aria-label="Gratuit et abonnement">
-        <div className="abo-tete" role="row">
-          <span role="columnheader">Gratuit</span>
-          <span role="columnheader">Abonnement</span>
+      <section className="abo-carte" aria-label="Gratuit">
+        <div className="abo-carte-tete">
+          <h3>Gratuit</h3>
+          <small>pour toujours</small>
         </div>
-        {lignes(adulte).map((l) => (
-          <div key={l.quoi} className="abo-ligne" role="row">
-            <b role="rowheader">{l.quoi}</b>
-            <span role="cell">{l.gratuit}</span>
-            <span role="cell">{l.abonne}</span>
+        <ul className="abo-liste">
+          {gratuit(adulte).map((t) => <li key={t}><Coche /><span>{t}</span></li>)}
+        </ul>
+      </section>
+
+      <section className="abo-carte abo-plus" aria-label="Abonnement">
+        <div className="abo-marque">
+          <img src="/ico-abonnement.png" alt="" />
+          <div>
+            <h3>Abonnement</h3>
+            <span className="abo-essai">7 jours d’essai offerts</span>
           </div>
-        ))}
-      </div>
+        </div>
+        <div className="abo-prix">
+          <div><b>6,99 €</b><span>par mois</span></div>
+          <div><b>69,99 €</b><span>par an · 2 mois offerts</span></div>
+        </div>
+        <span className="abo-kicker">En plus du gratuit</span>
+        <ul className="abo-liste">
+          {ABONNE.map(([gras, suite]) => <li key={gras}><Coche or /><span><b>{gras}</b> {suite}</span></li>)}
+        </ul>
+        <p className="abo-bientot">Bientôt disponible. Rien n’est facturé aujourd’hui.</p>
+      </section>
 
       {adulte ? (
         <div className="abo-encart">
@@ -74,18 +98,16 @@ export function Abonnement({ adulte }: { adulte: boolean }) {
           <h3>Pour les parents</h3>
           <ul>
             <li>Aucune publicité, aucun traceur publicitaire.</li>
-            <li>Des séances courtes : l’application dose les nouveaux mots et les révisions. La charge se règle dans Réglages › Charge de travail.</li>
-            <li>Calé sur la classe : des paquets de la 6e à la Terminale, rangés par sujet.</li>
-            <li>Des conversations encadrées : sujets adaptés, temps limité, bouton « Signaler ».</li>
-            <li>Accord d’un parent demandé sous 15 ans. Le compte et ses données s’effacent à tout moment.</li>
+            <li>Des séances courtes : l’application dose les mots et les révisions.</li>
+            <li>Des paquets de la 6e à la Terminale, et des conversations encadrées, avec un bouton « Signaler ».</li>
+            <li>Avant 15 ans, l’accord d’un parent est demandé pour créer un compte.</li>
+            <li>Vous pouvez supprimer le compte et toutes ses données à tout moment, depuis Réglages › Connexion.</li>
           </ul>
           <a className="abo-lien" href="/confidentialite.html" target="_blank" rel="noopener">
             Politique de confidentialité
           </a>
         </div>
       )}
-
-      <p className="hint">Au lancement : 6,99 € par mois ou 69,99 € par an, avec 7 jours d’essai offerts. Rien n’est facturé aujourd’hui.</p>
     </div>
   );
 }
