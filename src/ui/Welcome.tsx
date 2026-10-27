@@ -25,7 +25,7 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
         <Mark />
         <h1>Neuro Anglais</h1>
         <p className="welcome-sub">
-          L’anglais qui reste, quinze minutes par jour.
+          L’apprentissage par révision espacée, une méthode efficace en quelques minutes par jour.
         </p>
       </header>
 
@@ -39,11 +39,19 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
         <p className="promesse-titre">
           Prépare tes contrôles, enrichis ton vocabulaire et ose parler anglais.
         </p>
+        {/* 343 — plus d'air, et une icône (Lucide) au-dessus de chaque axe. */}
         <ul className="promesse-axes">
-          <li><b>Contrôles</b><span>La liste du prof en photo, révisée jusqu’au jour J.</span></li>
-          <li><b>Vocabulaire</b><span>Des paquets par classe et par thème.</span></li>
-          <li><b>Oral</b><span>Des conversations avec une IA à ton niveau.</span></li>
-          <li><b>La boucle</b><span>Les mots qui coincent à l’oral rejoignent un paquet spécial : tu les révises, tu les réemploies, et tu montes d’un cran.</span></li>
+          {AXES.map(([nom, icone, texte]) => (
+            <li key={nom}>
+              <div className="promesse-axe">
+                <span className="promesse-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icone}</svg>
+                </span>
+                <b>{nom}</b>
+              </div>
+              <span>{texte}</span>
+            </li>
+          ))}
         </ul>
         <p className="promesse-adulte">
           <b>Adulte ?</b> Remettez-vous à l’anglais, gardez le niveau ou progressez !
@@ -110,35 +118,37 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
 
         {openMethod && (
           <div className="method-body">
-            <Boxes />
-            <p className="boxes-caption">
-              Un mot su avance d’une boîte ; un mot raté revient à la première.
-            </p>
+            {/* 343 — l'espacement dans le temps, plus les boîtes de Leitner. */}
+            <div className="frise-rappels">
+              <span className="frise-titre">Les rappels d’un mot</span>
+              <Frise />
+              <p>Chaque rappel réussi éloigne le suivant ; un mot qui résiste revient plus souvent.</p>
+            </div>
 
             <p>
-              Dans les années 1970, le journaliste allemand Sebastian Leitner
-              range ses fiches dans cinq boîtes. Un mot su passe à la boîte
-              suivante, qu’on révise plus rarement. Un mot raté retourne à la
-              première, revue chaque jour. Le travail se concentre tout seul sur
-              ce qui résiste.
+              Sans révision, on oublie vite : une grande partie de ce qu’on
+              vient d’apprendre s’efface en quelques jours. C’est la{" "}
+              <strong>courbe de l’oubli</strong>, décrite dès 1885 par le
+              psychologue Hermann Ebbinghaus.
             </p>
             <p>
-              L’idée derrière est la <strong>répétition espacée</strong> :
-              réviser à intervalles qui s’allongent ancre bien mieux qu’un
-              bachotage de la veille, pour un temps total bien inférieur. C’est
-              l’un des résultats les plus solides de la psychologie de la
-              mémoire.
+              La <strong>répétition espacée</strong> consiste à revoir un mot au
+              moment où il commence à s’effacer. À chaque rappel réussi, le
+              souvenir se renforce et le rappel suivant peut attendre plus
+              longtemps : un jour, puis trois, une semaine, trois semaines, deux
+              mois… On retient mieux qu’en bachotant la veille, en y passant
+              bien moins de temps.
             </p>
             <p>
-              Les boîtes ont un défaut : elles traitent tous les mots de la même
-              façon. Cette application utilise un algorithme moderne, FSRS, qui
-              garde le principe mais calcule un intervalle propre à chaque mot,
-              d’après tes réponses passées. Un mot facile peut partir à trois
-              semaines pendant qu’un mot rétif revient demain.
+              L’application calcule cet espacement pour chaque mot, d’après tes
+              réponses, avec un algorithme moderne (FSRS). Un mot facile peut
+              partir à trois semaines pendant qu’un mot qui résiste revient
+              demain.
             </p>
             <p className="method-foot">
-              En pratique : tu juges chaque carte d’un mot — au hasard, dur,
-              correct, facile. C’est tout. Le calendrier se fait seul.
+              En pratique : tu notes chaque carte — <strong>À revoir</strong>,{" "}
+              <strong>Difficile</strong>, <strong>Correct</strong> ou{" "}
+              <strong>Facile</strong>. C’est tout, le calendrier se fait seul.
             </p>
           </div>
         )}
@@ -249,48 +259,46 @@ function Mark() {
   );
 }
 
-/** Les cinq boîtes de Leitner, avec l'intervalle qui s'allonge. */
-function Boxes() {
-  const gaps = ["1 j", "2 j", "4 j", "1 sem", "2 sem"];
+/** 343 — les quatre axes de l'accueil : nom, icône Lucide, texte. */
+const AXES: Array<[string, JSX.Element, string]> = [
+  ['Contrôles', <><rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></>,
+    'Prépare tes interrogations toi-même ou en prenant une liste en photo : l’application se charge du programme de révision !'],
+  ['Vocabulaire', <><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" /></>,
+    'Des paquets de cartes de révision par classe et par thème.'],
+  ['Oral', <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" x2="12" y1="19" y2="22" /></>,
+    'Des conversations et mises en situation avec une IA à ton niveau, qui te corrige en direct et te crée des rapports.'],
+  ['La boucle', <><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></>,
+    'Les mots qui coincent à l’oral rejoignent un paquet spécial : tu les révises, tu les réemploies, et tu montes d’un cran dans tes compétences.'],
+];
+
+/**
+ * 343 — la frise des rappels : un mot facile (rappels de plus en plus
+ * espacés, jusqu'à 2 mois) et un mot qui résiste (rappels rapprochés).
+ * Échelle en racine carrée des jours, pour que les premiers jours se lisent.
+ */
+function Frise() {
+  const X = (j: number) => 20 + Math.sqrt(j / 60) * 280;
+  const facile = [0, 1, 3, 8, 21, 60];
+  const resiste = [0, 1, 2, 4, 7, 12, 20];
+  const reperes: Array<[number, string]> = [[0, 'auj.'], [1, '1 j'], [7, '1 sem'], [21, '3 sem'], [60, '2 mois']];
+  const ligne = (y: number, jours: number[], c: string) => (
+    <>
+      <line x1="20" y1={y} x2="304" y2={y} stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" />
+      {jours.map((j, i) => <circle key={j} cx={X(j)} cy={y} r="5" fill={i ? c : 'currentColor'} />)}
+    </>
+  );
   return (
-    <svg className="boxes" viewBox="0 0 314 74" aria-hidden="true">
-      {gaps.map((g, i) => {
-        const x = 4 + i * 62;
-        const h = 26 + i * 7;
-        return (
-          <g key={g}>
-            <rect
-              x={x}
-              y={54 - h}
-              width="48"
-              height={h}
-              rx="4"
-              fill="#f2b705"
-              fillOpacity={0.13 + i * 0.06}
-              stroke="#d9d5c8"
-            />
-            <text
-              x={x + 24}
-              y="68"
-              textAnchor="middle"
-              fontSize="10"
-              fill="#6c7488"
-              fontFamily="-apple-system, system-ui, sans-serif"
-            >
-              {g}
-            </text>
-            {i < 4 && (
-              <path
-                d={`M${x + 51} 40 l7 0 m-3 -3 l3 3 l-3 3`}
-                stroke="#6c7488"
-                strokeWidth="1"
-                fill="none"
-                strokeLinecap="round"
-              />
-            )}
-          </g>
-        );
-      })}
+    <svg className="frise" viewBox="0 0 314 112" aria-label="Un mot facile revient après 1 jour, 3 jours, 8 jours, 3 semaines puis 2 mois ; un mot qui résiste revient bien plus souvent.">
+      <g fontSize="10" fontWeight="700" fill="currentColor">
+        <text x="0" y="22">Facile</text>
+        <text x="0" y="60">Qui résiste</text>
+      </g>
+      {ligne(34, facile, '#f2b705')}
+      {ligne(72, resiste, '#d9822b')}
+      <line x1="20" y1="90" x2="304" y2="90" stroke="currentColor" strokeOpacity="0.3" />
+      <g fontSize="9.5" fill="currentColor" fillOpacity="0.75" textAnchor="middle">
+        {reperes.map(([j, t]) => <text key={t} x={Math.min(X(j), 296)} y="105">{t}</text>)}
+      </g>
     </svg>
   );
 }

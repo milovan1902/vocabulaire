@@ -4,14 +4,24 @@
    Seul l'or des pastilles est fixe, comme dans la visite. */
 
 /* Accueil (Welcome.tsx) */
-.promesse { display: flex; flex-direction: column; gap: 12px; margin: 0 0 8px; }
+.promesse { display: flex; flex-direction: column; gap: 18px; margin: 0 0 12px; }
 .promesse-titre { margin: 0; font-size: 20px; line-height: 1.3; font-weight: 700; text-wrap: balance; }
-.promesse-axes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
-.promesse-axes li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 15px; line-height: 1.4; text-wrap: pretty; }
-.promesse-axes b { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; padding-top: 2px; }
+/* 343 — plus d'air : un filet entre les axes, l'icône au-dessus du nom. */
+.promesse-axes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.promesse-axes li {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 16px 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 15px; line-height: 1.5; text-wrap: pretty;
+}
+.promesse-axes li:last-child { border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent); }
+.promesse-axe { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.promesse-ico {
+  width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid #f2b705;
+  background: rgba(242, 183, 5, 0.12); display: flex; align-items: center; justify-content: center;
+}
+.promesse-axes b { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
 .promesse-adulte {
-  margin: 2px 0 0; padding-top: 10px; font-size: 15px; line-height: 1.45; text-wrap: pretty;
-  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  margin: 0; padding-top: 0; font-size: 15px; line-height: 1.45; text-wrap: pretty;
 }
 
 /* Réglages › Abonnement (Abonnement.tsx) */
@@ -55,3 +65,12 @@
   align-self: flex-start; margin: 0; padding: 4px 12px; border-radius: 999px;
   border: 1.5px solid currentColor; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
 }
+
+/* 343 — La méthode : la frise des rappels remplace les boîtes de Leitner. */
+.frise-rappels {
+  display: flex; flex-direction: column; gap: 8px; padding: 14px 12px 12px; margin: 0 0 6px; border-radius: 14px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+.frise-titre { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+.frise { display: block; width: 100%; height: auto; font-family: inherit; }
+.frise-rappels p { margin: 0; font-size: 13.5px; line-height: 1.45; opacity: 0.85; text-wrap: pretty; }
