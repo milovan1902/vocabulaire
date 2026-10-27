@@ -624,6 +624,8 @@ export function Study({
        * Toute la zone du mot révèle la réponse : sur téléphone, la cible
        * est bien plus large que le bouton, et le geste devient naturel.
        */}
+      {/* CHANTIER 352 — pour TalkBack : la réponse est lue quand la carte se retourne. */}
+      <p role="status" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }} lang={langBack}>{revealed ? back : ''}</p>
       <div
         ref={refStage}
         className={`studystage t${index % 2}${(style === 'strass' || style === 'circuit' || style === 'diner' || style === 'tv' || style === 'station' || style === 'fashion' || style === 'cinema' || style === 'biblio' || style === 'patisserie' || style === 'cabinet' || style === 'japon' || style === 'jazz' || style === 'chateau' || style === 'plage' || style === 'western' || style === 'jungle' || style === 'jardin' || style === 'ocean' || style === 'decollage' || style === 'orbite' || style === 'cahier' || style === 'tableau' || style === 'lycee' || style === 'arcade' || style === 'neon' || style === 'voyage' || style === 'manga' || style === 'bd') && frappe ? ` n-${frappe}` : ''}`}
@@ -1400,10 +1402,13 @@ export function Study({
       ) : (
         <>
         {verdict && (
-          <p className={`rp-verdict rp-${verdict.etat}`}>
+          /* CHANTIER 352 — role="status" : TalkBack lit le verdict dès qu'il paraît. */
+          <p className={`rp-verdict rp-${verdict.etat}`} role="status">
             {!verdict.saisi ? 'Pas de réponse : on la revoit bientôt.' : <>
               {verdict.oral ? 'Tu as dit : ' : 'Tu as écrit : '}
-              {verdict.etat === 'faux' ? <s>{verdict.saisi}</s> : <b>{verdict.saisi}</b>}
+              {verdict.etat === 'faux'
+                ? <><s>{verdict.saisi}</s><span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}> : faux</span></>
+                : <><b>{verdict.saisi}</b><span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>{verdict.etat === 'faute' ? ' : presque juste' : ' : juste'}</span></>}
               {verdict.etat === 'faute' && <small>Petite faute acceptée · regarde bien l’orthographe.</small>}
               {verdict.conteste && <small>Comptée juste · choisis ta note.</small>}
             </>}

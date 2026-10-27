@@ -416,7 +416,15 @@ export function Onboarding({
               ? 'Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'
               : 'Avouer un oubli n’est pas une faute : c’est ce qui règle la suite.'}
           </p>
-          <div className="guide-carte" onClick={() => { if (!montre) setMontre(true); }}>
+          {/* CHANTIER 352 — la carte se touche : TalkBack l'annonce comme un bouton. */}
+          <div
+            className="guide-carte"
+            role="button"
+            tabIndex={0}
+            aria-expanded={montre}
+            onClick={() => { if (!montre) setMontre(true); }}
+            onKeyDown={(ev) => { if (!montre && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); setMontre(true); } }}
+          >
             <span className="guide-kicker">{charge?.deck?.name ?? ''}</span>
             <p className="recto">{carte.fr}</p>
             {montre && (
