@@ -6,7 +6,7 @@
  * commence, pourquoi la méthode marche. La connexion reste facultative —
  * un visiteur doit pouvoir réviser sans jamais donner d'adresse.
  */
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { Auth } from "./useAuth";
 import { useAccordCompte } from "./accordParental";
 /* CHANTIER 325 — les promesses : élèves d'abord, adultes ensuite. */
@@ -260,7 +260,7 @@ function Mark() {
 }
 
 /** 343 — les quatre axes de l'accueil : nom, icône Lucide, texte. */
-const AXES: Array<[string, JSX.Element, string]> = [
+const AXES: Array<[string, ReactNode, string]> = [
   ['Contrôles', <><rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></>,
     'Prépare tes interrogations toi-même ou en prenant une liste en photo : l’application se charge du programme de révision !'],
   ['Vocabulaire', <><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" /></>,
