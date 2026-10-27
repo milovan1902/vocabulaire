@@ -30,3 +30,20 @@
 .rp-faute small { color: #f29a3b; }
 .rp-faux s { color: var(--bad); }
 @media (prefers-reduced-motion: reduce) { .rp-micro.on { animation: none; } }
+
+/*
+ * CHANTIER 347 — CONTRASTES DE LA RÉVISION EN APPARENCE « CLAIR ».
+ * En Clair (data-theme="clair", sans data-style), la révision se joue sur
+ * le fond sombre de .studybg, mais plusieurs textes gardaient l'encre du
+ * clair (var(--ink), bleu nuit) : illisibles. Pendant la révision
+ * seulement, ces textes passent en clair. Les autres apparences, qui
+ * peignent leur propre fond de révision, ne sont pas touchées.
+ */
+html[data-theme='clair']:not([data-style]) body:has(.studybg) :is(.topbar h1, .topbar button, .topbar a) { color: #eef1f7; }
+html[data-theme='clair']:not([data-style]) .rp-champ { color: #f4f6fb; border-color: #f2b705; }
+html[data-theme='clair']:not([data-style]) .rp-champ::placeholder { color: #aeb6c8; }
+html[data-theme='clair']:not([data-style]) .rp-verdict { color: #e3e7f0; }
+html[data-theme='clair']:not([data-style]) .rp-juste b { color: #5fd39a; }
+html[data-theme='clair']:not([data-style]) .rp-faux s { color: #ff9a9a; }
+html[data-theme='clair']:not([data-style]) .rp-entendu { color: #c9d0de; }
+html[data-theme='clair']:not([data-style]) .rp-entendu b { color: #f4f6fb; }
