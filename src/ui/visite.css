@@ -4,21 +4,32 @@
 .visite { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; font-family: inherit; }
 .visite > * { pointer-events: auto; }
 .visite-voile { position: fixed; background: rgba(10, 18, 36, 0.62); }
+/* 342 — le bouton à toucher se voit nettement : anneau or épais sur un liseré
+   blanc (lisible sur fond sombre ET clair), halo qui respire, et une onde qui
+   part de l'anneau toutes les 1,6 s. La bulle d'explication, elle, devient sobre. */
 .visite-anneau {
   position: fixed; pointer-events: none !important; border-radius: 14px;
-  border: 3px solid #f2b705; box-shadow: 0 0 0 4px rgba(242, 183, 5, 0.28);
+  border: 4px solid #ffc21a;
+  box-shadow: 0 0 0 2px #fff, 0 0 18px 6px rgba(255, 194, 26, 0.75), inset 0 0 12px rgba(255, 194, 26, 0.45);
   animation: visite-pouls 1.6s ease-in-out infinite;
 }
+.visite-anneau::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 16px; border: 3px solid #ffc21a;
+  animation: visite-onde 1.6s ease-out infinite;
+}
 .visite-capte { position: fixed; border: 0; padding: 0; margin: 0; background: transparent; border-radius: 14px; cursor: pointer; }
-@keyframes visite-pouls { 50% { box-shadow: 0 0 0 9px rgba(242, 183, 5, 0.12); } }
-@media (prefers-reduced-motion: reduce) { .visite-anneau { animation: none; } }
+@keyframes visite-pouls {
+  50% { box-shadow: 0 0 0 2px #fff, 0 0 30px 12px rgba(255, 194, 26, 0.95), inset 0 0 16px rgba(255, 194, 26, 0.6); }
+}
+@keyframes visite-onde { 0% { opacity: 0.9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .visite-anneau, .visite-anneau::after { animation: none; } }
 
 .visite-bulle {
   position: fixed; left: 0; right: 0; margin: 0 auto; width: min(92vw, 420px); box-sizing: border-box;
   max-height: calc(100vh - 24px); overflow: auto;
   display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px;
-  border-radius: 18px; background: #fff; color: #16233f; border: 2px solid #f2b705;
-  box-shadow: 0 10px 30px rgba(10, 18, 36, 0.28);
+  border-radius: 18px; background: #fff; color: #16233f; border: 1px solid #d6dce8;
+  box-shadow: 0 8px 24px rgba(10, 18, 36, 0.22);
 }
 .visite-tete { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .visite-kicker { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6b4e00; font-weight: 700; }
