@@ -2,10 +2,31 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/*
+ * CHANTIER 351 — LA TAILLE DU TEXTE (Réglages › Apparence).
+ *
+ * Nos tailles de texte sont en pixels, dans une quarantaine de feuilles. Plutôt
+ * que de les réécrire à la main, la construction les transforme toutes :
+ * « font-size: 15px » devient « font-size: calc(15px * var(--texte, 1)) ».
+ * Sans réglage, --texte vaut 1 : rien ne change. « Grand » le pose à 1,15,
+ * « Très grand » à 1,3 (src/data/tailleTexte.ts). Seul le texte grandit ;
+ * la mise en page, elle, reste à la largeur de l'écran.
+ */
+const tailleTexte = {
+  postcssPlugin: 'taille-texte',
+  Declaration: {
+    'font-size': (decl: { value: string }) => {
+      if (decl.value.includes('--texte') || !/\dpx/.test(decl.value)) return;
+      decl.value = decl.value.replace(/(-?\d*\.?\d+)px/g, 'calc($1px * var(--texte, 1))');
+    },
+  },
+};
+
 export default defineConfig({
   // Chemins relatifs : l'application fonctionne aussi bien à la racine d'un
   // domaine que dans un sous-dossier, sans reconfiguration.
   base: './',
+  css: { postcss: { plugins: [tailleTexte] } },
   plugins: [
     react(),
     VitePWA({

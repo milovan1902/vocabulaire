@@ -518,7 +518,7 @@ export function Account({
                 </button>
               ))}
             </div>
-            <p className="hint">Agrandit tout l’écran : textes, boutons et cartes. Ce réglage reste sur ce téléphone.</p>
+            <p className="hint">Agrandit les textes de toute l’application. Ce réglage reste sur ce téléphone.</p>
           </div>
           <Boutique streak={streak} onTheme={setThemeLocal} />
         </Tiroir>
