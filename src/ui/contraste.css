@@ -1,0 +1,83 @@
+/*
+ * CHANTIER 348 — ACCESSIBILITÉ, ÉTAPE 1 : LES CONTRASTES DE LA RÉVISION.
+ * D'après les captures du 27/10. Chargé APRÈS les fichiers d'apparence
+ * (main.tsx) et préfixé par « html » : ces règles passent devant.
+ * Une même recette partout : quand le fond est trop chargé (pelouse,
+ * ardoise, parquet, mer, crépuscule), le texte se pose sur une pastille
+ * crème à l'encre sombre, plutôt que de chercher une couleur par fond.
+ */
+
+/* 1. « Tu as écrit : … » sur une pastille crème. */
+html[data-style='foot'] .rp-verdict,
+html[data-style='rugby'] .rp-verdict,
+html[data-style='tableau'] .rp-verdict,
+html[data-style='basket'] .rp-verdict,
+html[data-style='plage'] .rp-verdict,
+html[data-style='japon'] .rp-verdict {
+  display: table; margin: 0 auto 12px; padding: 6px 14px; border-radius: 999px;
+  background: rgba(255, 253, 245, 0.95); color: #1c2330; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+html[data-style='foot'] .rp-juste b,
+html[data-style='rugby'] .rp-juste b,
+html[data-style='tableau'] .rp-juste b,
+html[data-style='basket'] .rp-juste b,
+html[data-style='plage'] .rp-juste b,
+html[data-style='japon'] .rp-juste b { color: #1f7a5c; }
+html[data-style='foot'] .rp-faute b, html[data-style='foot'] .rp-faute small,
+html[data-style='rugby'] .rp-faute b, html[data-style='rugby'] .rp-faute small,
+html[data-style='tableau'] .rp-faute b, html[data-style='tableau'] .rp-faute small,
+html[data-style='basket'] .rp-faute b, html[data-style='basket'] .rp-faute small,
+html[data-style='plage'] .rp-faute b, html[data-style='plage'] .rp-faute small,
+html[data-style='japon'] .rp-faute b, html[data-style='japon'] .rp-faute small { color: #8a4b00; }
+html[data-style='foot'] .rp-faux s,
+html[data-style='rugby'] .rp-faux s,
+html[data-style='tableau'] .rp-faux s,
+html[data-style='basket'] .rp-faux s,
+html[data-style='plage'] .rp-faux s,
+html[data-style='japon'] .rp-faux s { color: #b6453a; }
+
+/* 2. Le champ de réponse : fond crème, encre sombre. */
+html[data-style='foot'] .rp-champ,
+html[data-style='rugby'] .rp-champ,
+html[data-style='tableau'] .rp-champ,
+html[data-style='plage'] .rp-champ,
+html[data-style='japon'] .rp-champ { background: rgba(255, 253, 245, 0.95); color: #16233f; }
+html[data-style='foot'] .rp-champ::placeholder,
+html[data-style='rugby'] .rp-champ::placeholder,
+html[data-style='tableau'] .rp-champ::placeholder,
+html[data-style='plage'] .rp-champ::placeholder,
+html[data-style='japon'] .rp-champ::placeholder { color: #5f6c8a; }
+
+/* 3. Le titre du paquet en haut de l'écran. */
+html[data-style='foot'] .topbar h1, html[data-style='foot'] .topbar button,
+html[data-style='station'] .topbar h1, html[data-style='station'] .topbar button { color: #fffdf5; }
+html[data-style='rugby'] .topbar h1, html[data-style='rugby'] .topbar button { color: #fffdf5; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); }
+html[data-style='tableau'] .topbar h1, html[data-style='tableau'] .topbar button { color: #3b2a1a; }
+
+/* 4. Le compteur et la croix. */
+html[data-style='voyage'] .studytop .pos,
+html[data-style='manga'] .studytop .pos,
+html[data-style='bd'] .studytop .pos { color: #2b2420; }
+html[data-style='voyage'] .studytop .stop,
+html[data-style='manga'] .studytop .stop,
+html[data-style='bd'] .studytop .stop { color: #2b2420; background: rgba(255, 253, 245, 0.92); }
+
+/* 5. Le mot de départ, rappelé en petit au-dessus de la réponse. */
+html[data-style='manga'] .wordsmall { color: #4a4a5a; }
+html[data-style='voyage'] .wordsmall { color: #6b5a48; }
+
+/* 6. « Entrée pour valider · Je ne sais pas ». */
+html[data-style='manga'] .tap-hint,
+html[data-style='bd'] .tap-hint { color: #2b2b2b; }
+html[data-style='tableau'] .tap-hint {
+  display: table; margin-left: auto; margin-right: auto; padding: 6px 14px; border-radius: 999px;
+  background: rgba(255, 253, 245, 0.95); color: #2a2520;
+}
+
+/* 7. Le décor (chaises, lignes du terrain, poteaux) passe DERRIÈRE le texte. */
+html[data-style='tableau'] .studytop,
+html[data-style='foot'] .studytop,
+html[data-style='rugby'] .studytop { z-index: 5; }
+html[data-style='tableau'] .rp-ecrit, html[data-style='tableau'] .rp-verdict, html[data-style='tableau'] .grades, html[data-style='tableau'] .tap-hint,
+html[data-style='foot'] .rp-ecrit, html[data-style='foot'] .rp-verdict, html[data-style='foot'] .grades, html[data-style='foot'] .tap-hint,
+html[data-style='rugby'] .rp-ecrit, html[data-style='rugby'] .rp-verdict, html[data-style='rugby'] .grades, html[data-style='rugby'] .tap-hint { position: relative; z-index: 5; }

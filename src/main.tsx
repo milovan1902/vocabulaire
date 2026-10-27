@@ -78,6 +78,8 @@ import './ui/jungle.css';
 import './ui/western.css';
 /* CHANTIER 269 — Atelier d'horloger (Marcellus, police dans public/fonts). */
 import './ui/horloger.css';
+/* CHANTIER 348 — contrastes de la révision, apparence par apparence : chargé en dernier. */
+import './ui/contraste.css';
 
 /* CHANTIER 266 — /admin : le tableau de bord de l'exploitant, chargé à part.
    Il ne monte ni l'application ni les fonds animés, et sa visite ne compte
