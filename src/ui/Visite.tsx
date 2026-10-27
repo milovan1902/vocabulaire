@@ -916,7 +916,7 @@ function ContenuFiche({ f, a }: { f: Fiche; a: boolean }) {
       /* 344 — sans abonnement, un seul paquet personnalisé (photo ou main) : rien d'illimité. */
       return <Lignes l={[
         ['Gratuit', '1 paquet personnalisé offert, à la main ou avec 1 photo.'],
-        ['Abonnement', 'autant de paquets que tu veux, dont 3 photos par semaine.'],
+        ['Abonnement', a ? 'autant de paquets que vous voulez, dont 3 photos par semaine.' : 'autant de paquets que tu veux, dont 3 photos par semaine.'],
       ]} />;
     case 'apparences':
       return <Lignes l={[['Pour tous', '3 apparences, jusqu’à 12 avec tes crédits.'], ['Abonnés', 'les 12 offertes, 30 de plus, et celles du mois.']]} />;
