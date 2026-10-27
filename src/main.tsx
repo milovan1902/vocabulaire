@@ -80,6 +80,8 @@ import './ui/western.css';
 import './ui/horloger.css';
 /* CHANTIER 348 — contrastes de la révision, apparence par apparence : chargé en dernier. */
 import './ui/contraste.css';
+/* CHANTIER 349 — « Supprimer les animations » d'Android : le filet de sécurité, chargé en dernier. */
+import './ui/mouvement.css';
 
 /* CHANTIER 266 — /admin : le tableau de bord de l'exploitant, chargé à part.
    Il ne monte ni l'application ni les fonds animés, et sa visite ne compte

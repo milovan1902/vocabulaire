@@ -1,0 +1,26 @@
+/*
+ * CHANTIER 349 — ACCESSIBILITÉ, ÉTAPE 2 : « SUPPRIMER LES ANIMATIONS ».
+ *
+ * Les fonds dessinés (FondAnime.tsx), l'éventail, la vitrine, l'horloger,
+ * le défilé et la visite lisent déjà ce réglage et se figent. Restaient des
+ * animations CSS posées au fil des apparences (néons qui clignotent, vagues,
+ * étoiles, pastilles qui sautent) sans règle « réduire » de leur côté.
+ *
+ * Ce filet les arrête TOUTES quand le téléphone demande moins de mouvement :
+ * chaque animation saute directement à sa dernière image et ne boucle plus,
+ * les transitions deviennent instantanées. Rien ne disparaît : un élément
+ * qui apparaissait en fondu est simplement là tout de suite.
+ *
+ * Chargé en dernier (main.tsx) et en !important, pour passer devant les
+ * quarante apparences sans les modifier une à une.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
