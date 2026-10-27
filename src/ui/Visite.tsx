@@ -913,7 +913,11 @@ function ContenuFiche({ f, a }: { f: Fiche; a: boolean }) {
         ? <p>Votre <b>premier paquet personnalisé</b> est offert, photo comprise. Avec l’abonnement, autant que vous voulez : vos listes, la date de l’échéance, les passages calculés jusqu’au jour J, et la liste de vos mots fragiles à relire le matin même.</p>
         : <p>Ton <b>premier paquet personnalisé</b> est offert, photo comprise. Avec l’abonnement, autant que tu veux : tes listes, la date du contrôle, les passages calculés jusqu’au jour J, et la liste de tes mots fragiles à relire le matin même.</p>;
     case 'photos':
-      return <Lignes l={[['En photo', '1 photo offerte, puis 3 par semaine avec l’abonnement.'], ['À la main', 'ajout illimité.']]} />;
+      /* 344 — sans abonnement, un seul paquet personnalisé (photo ou main) : rien d'illimité. */
+      return <Lignes l={[
+        ['Gratuit', '1 paquet personnalisé offert, à la main ou avec 1 photo.'],
+        ['Abonnement', 'autant de paquets que tu veux, dont 3 photos par semaine.'],
+      ]} />;
     case 'apparences':
       return <Lignes l={[['Pour tous', '3 apparences, jusqu’à 12 avec tes crédits.'], ['Abonnés', 'les 12 offertes, 30 de plus, et celles du mois.']]} />;
   }
