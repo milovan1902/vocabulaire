@@ -333,8 +333,9 @@ export function Account({
           valeur={valeurs.classe}
           onClick={() => { setVueProfil(estAdulte(settings) ? 'adulte' : 'eleve'); setTiroir('classe'); }}
         />
-        {/* CHANTIER 325 — pas encore d'icône dessinée : le carré d'attente de tiroir.tsx. */}
+        {/* 345 — l'icône de l'abonnement : couronne, diplôme et coupe. */}
         <Ligne
+          icone="/ico-abonnement.png"
           titre="Abonnement"
           sous={a ? 'Ce qui est gratuit, ce qu’il ajoute.' : 'Ce qui est gratuit, et le mot aux parents.'}
           valeur={valeurs.abonnement}
