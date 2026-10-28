@@ -96,6 +96,9 @@ const estAdmin = /^\/admin\/?$/.test(window.location.pathname);
 /* CHANTIER 276 — /vitrine : l'aperçu d'une apparence pour la boutique (Vitrine.tsx), affiché en
    réduction dans la fiche. Rien n'y est écrit : ni apparence, ni progression, ni mesures. */
 const estVitrine = /^\/vitrine\/?$/.test(window.location.pathname);
+/* CHANTIER 355 — ni /admin ni l'aperçu de la boutique n'ont d'ouverture : on retire celle
+   d'index.html ici, quoi qu'il arrive au petit script de la page (l'aperçu restait caché derrière). */
+if (estAdmin || estVitrine) document.getElementById('ouverture')?.remove();
 if (estVitrine) {
   const t = new URLSearchParams(window.location.search).get('apparence');
   if (t && estTheme(t)) appliquerApercu(t);
