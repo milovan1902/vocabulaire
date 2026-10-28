@@ -8,8 +8,51 @@
     <link rel="icon" href="./favicon.png" sizes="64x64" type="image/png" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <title>Neuro Anglais</title>
+    <!-- 353 — Newsreader (nom du lancement, titres) : chargée sans bloquer l'affichage. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&amp;display=swap" media="print" onload="this.media='all'" />
+    <!--
+      CHANTIER 353 — L'OUVERTURE EST ÉCRITE DANS LA PAGE.
+      Elle s'affiche dès l'arrivée de ce fichier, sans attendre ni la feuille de
+      styles ni le code : c'était 4 s d'écran blanc sur un téléphone lent.
+      Mêmes temps que l'ancienne ouverture : profils à 0,06 s, trait à 1,15 s,
+      nom à 2 s. Lancement.tsx l'estompe à 4 s, ou au toucher.
+    -->
+    <style>
+      #ouverture { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; background: #0f253c; opacity: 1; transition: opacity 0.45s ease; }
+      #ouverture.sort { opacity: 0; }
+      .ouv-scene { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+      .ouv-profils { position: relative; width: min(74vw, 300px); aspect-ratio: 252 / 172; }
+      .ouv-profils img { position: absolute; top: 0; width: 44.4%; }
+      .ouv-g { left: 0; animation: ouv-g 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.06s both, ouv-fondu 0.75s ease 0.06s both; }
+      .ouv-d { right: 0; animation: ouv-d 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.06s both, ouv-fondu 0.75s ease 0.06s both; }
+      .ouv-trait { width: 48%; max-width: 140px; height: 1px; background: #f2b705; transform-origin: center; animation: ouv-trait 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 1.15s both; }
+      .ouv-nom { margin: 0; height: 26px; display: flex; align-items: center; white-space: nowrap; font-family: 'Newsreader', Georgia, 'Times New Roman', serif; font-size: 21px; font-weight: 400; line-height: 1.2; text-transform: uppercase; color: #eae6db; letter-spacing: 0.2em; animation: ouv-nom 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 2s both; }
+      @keyframes ouv-g { from { transform: translateX(-62%); } to { transform: translateX(0); } }
+      @keyframes ouv-d { from { transform: translateX(62%); } to { transform: translateX(0); } }
+      @keyframes ouv-fondu { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes ouv-trait { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      @keyframes ouv-nom { from { opacity: 0; letter-spacing: 0.34em; transform: translateY(7px); } to { opacity: 1; letter-spacing: 0.2em; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { .ouv-g, .ouv-d, .ouv-trait, .ouv-nom { animation: none; } }
+    </style>
   </head>
   <body>
+    <div id="ouverture" aria-hidden="true">
+      <div class="ouv-scene">
+        <div class="ouv-profils">
+          <img class="ouv-g" src="/src/assets/profil-gauche.webp" alt="" fetchpriority="high" />
+          <img class="ouv-d" src="/src/assets/profil-droit.webp" alt="" fetchpriority="high" />
+        </div>
+        <div class="ouv-trait"></div>
+        <p class="ouv-nom">Neuro Anglais</p>
+      </div>
+    </div>
+    <script>
+      /* /admin et /vitrine (aperçu de la boutique) n'ont pas d'ouverture. */
+      if (/^\/(admin|vitrine)\/?$/.test(location.pathname)) document.getElementById('ouverture').remove();
+      else window.__ouverture = performance.now();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

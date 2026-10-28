@@ -22,6 +22,27 @@ const tailleTexte = {
   },
 };
 
+/*
+ * CHANTIER 353 — LA FEUILLE DE STYLES NE BLOQUE PLUS L'AFFICHAGE.
+ *
+ * Le navigateur attendait les ~400 Ko de styles avant de peindre quoi que ce
+ * soit. Elle est maintenant chargée en priorité mais sans bloquer (preload +
+ * media="print" basculé à l'arrivée) : l'ouverture d'index.html s'affiche
+ * tout de suite. main.tsx attend la fin du chargement (window.__cssPret)
+ * avant de monter l'application : aucun écran sans styles.
+ */
+const cssSansBlocage = {
+  name: 'css-sans-blocage',
+  apply: 'build' as const,
+  transformIndexHtml: {
+    order: 'post' as const,
+    handler: (html: string) =>
+      html.replace(/<link rel="stylesheet"([^>]*?) href="([^"]+\.css)"([^>]*)>/g, (_m, a: string, href: string, b: string) =>
+        `<link rel="preload" as="style"${a} href="${href}"${b}>` +
+        `<link rel="stylesheet" data-css-app${a} href="${href}"${b} media="print" onload="this.media='all';window.__cssPret=1">`),
+  },
+};
+
 export default defineConfig({
   // Chemins relatifs : l'application fonctionne aussi bien à la racine d'un
   // domaine que dans un sous-dossier, sans reconfiguration.
@@ -29,6 +50,7 @@ export default defineConfig({
   css: { postcss: { plugins: [tailleTexte] } },
   plugins: [
     react(),
+    cssSansBlocage,
     VitePWA({
       // CHANTIER 156 — « prompt » : la page est prévenue qu'une version attend,
       // et le bandeau « Recharger » l'applique tout de suite.
@@ -106,7 +128,7 @@ export default defineConfig({
          * CHANTIER 264 — mentions légales et /.well-known/ (fichier assetlinks.json
          * de la future version Google Play) sont de vrais fichiers, pas l'application.
          */
-        navigateFallbackDenylist: [/^\/api\//, /^\/suppression-compte/, /^\/confidentialite/, /^\/mentions-legales/, /^\/\.well-known\//],
+        navigateFallbackDenylist: [/^\/robots\.txt$/, /^\/api\//, /^\/suppression-compte/, /^\/confidentialite/, /^\/mentions-legales/, /^\/\.well-known\//],
       },
     }),
   ],

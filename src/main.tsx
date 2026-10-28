@@ -8,10 +8,8 @@ import { mesure } from './data/mesures';
 import { demandeStockagePersistant, noteJourUsage } from './data/stockage';
 import { installeMiseAJour } from './data/miseAJour';
 import { MiseAJour } from './ui/MiseAJour';
-import { FondAnime } from './ui/FondAnime';
 import { Defile } from './ui/Defile';
 import { Salle } from './ui/Salle';
-import { Vitrine } from './ui/Vitrine';
 import { appliquerApercu, estTheme } from './ui/theme';
 /* CHANTIER 341 — le changement de compte se règle avant l'affichage. */
 import { verifieCompteAuDemarrage } from './data/appareil';
@@ -90,6 +88,10 @@ import './ui/mouvement.css';
    Il ne monte ni l'application ni les fonds animés, et sa visite ne compte
    pas comme une ouverture dans les mesures d'usage. */
 const Admin = lazy(() => import('./ui/Admin'));
+/* CHANTIER 353 — les fonds animés (93 Ko de code) et l'aperçu de la boutique se chargent à part :
+   le premier écran n'attend plus le décor. */
+const FondAnime = lazy(() => import('./ui/FondAnime').then((m) => ({ default: m.FondAnime })));
+const Vitrine = lazy(() => import('./ui/Vitrine').then((m) => ({ default: m.Vitrine })));
 const estAdmin = /^\/admin\/?$/.test(window.location.pathname);
 /* CHANTIER 276 — /vitrine : l'aperçu d'une apparence pour la boutique (Vitrine.tsx), affiché en
    réduction dans la fiche. Rien n'y est écrit : ni apparence, ni progression, ni mesures. */
@@ -124,7 +126,9 @@ createRoot(document.getElementById('root')!, {
 }).render(estVitrine ? (
   <StrictMode>
     <FiletErreur>
-      <Vitrine />
+      <Suspense fallback={null}>
+        <Vitrine />
+      </Suspense>
     </FiletErreur>
   </StrictMode>
 ) : estAdmin ? (
@@ -145,7 +149,9 @@ createRoot(document.getElementById('root')!, {
           les trois sans qu'aucune ne la connaisse. */}
       <Lancement />
       {/* CHANTIER 187 — bulles, ciel étoilé, éclats au toucher : derrière tout, hors de l'application. */}
-      <FondAnime />
+      <Suspense fallback={null}>
+        <FondAnime />
+      </Suspense>
       {/* CHANTIER 213 — Fashion week : le podium et les mannequins. */}
       <Defile />
       {/* CHANTIER 221 — Cinéma muet et Bibliothèque : le projecteur, le pianiste ; la lampe, l'horloge, le chat. */}
@@ -158,5 +164,17 @@ createRoot(document.getElementById('root')!, {
 }
 
 /* 341 — l'application ne se monte qu'après la vérification du compte (une lecture locale, quelques millisecondes). */
-if (estAdmin || estVitrine) monte();
-else void verifieCompteAuDemarrage().catch(() => undefined).finally(monte);
+/* CHANTIER 353 — la feuille de styles se charge sans bloquer (vite.config.ts) : on l'attend ici,
+   derrière l'ouverture, pour ne jamais montrer un écran sans styles. */
+function stylesPrets(): Promise<void> {
+  const lien = document.querySelector<HTMLLinkElement>('link[data-css-app]');
+  if (!lien || (window as unknown as { __cssPret?: number }).__cssPret) return Promise.resolve();
+  return new Promise((ok) => {
+    lien.addEventListener('load', () => ok(), { once: true });
+    lien.addEventListener('error', () => ok(), { once: true });
+    window.setTimeout(ok, 8000);
+  });
+}
+
+if (estAdmin || estVitrine) void stylesPrets().then(monte);
+else void Promise.all([stylesPrets(), verifieCompteAuDemarrage().catch(() => undefined)]).finally(monte);

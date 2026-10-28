@@ -1,120 +1,43 @@
-import { useEffect, useRef, useState } from 'react';
-import profilGauche from '../assets/profil-gauche.webp';
-import profilDroit from '../assets/profil-droit.webp';
+import { useEffect } from 'react';
 
 /*
  * L'ouverture de l'application.
  *
- * Tout ce qui bouge est écrit dans le style en ligne des éléments, et non
- * dans une classe : un style en ligne est présent dans la toute première
- * image peinte, avant même que la feuille de styles soit lue. C'est la
- * seule façon d'être certain que les deux profils ne se montrent jamais à
- * leur place d'arrivée avant d'avoir glissé.
+ * CHANTIER 353 — elle est écrite dans index.html (#ouverture), en HTML et en
+ * animations CSS : elle s'affiche avant que la feuille de styles et le code
+ * soient arrivés. Ce composant ne dessine plus rien : il l'estompe à la fin
+ * de l'animation (4 s après son apparition), ou au premier toucher.
+ * Si le code arrive après ce délai, elle s'estompe tout de suite.
  *
  * Un seul passage par lancement : le drapeau vit au niveau du module, donc
- * un remontage de React ne rejoue pas l'ouverture.
+ * un remontage de React (StrictMode compris) ne rejoue rien.
  */
-let dejaJoue = false;
+let fait = false;
 
-/** Les étapes, en millisecondes depuis le premier rendu. */
-const PROFILS = 60;
-const TRAIT = 1150;
-const NOM = 2000;
 const FIN = 4000;
-/** L'estompage qui découvre l'application. */
-const SORTIE = 450;
 /** Mouvement réduit : l'état final, tenu sept dixièmes de seconde. */
 const FIN_SOBRE = 700;
-
-const COURBE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+/** L'estompage qui découvre l'application. */
+const SORTIE = 450;
 
 export default function Lancement() {
-  const [vivant, setVivant] = useState(!dejaJoue);
-  const [etape, setEtape] = useState(0);
-  const [sort, setSort] = useState(false);
-  const [sobre, setSobre] = useState(false);
-  const minuteries = useRef<number[]>([]);
-
-  const arreter = () => {
-    minuteries.current.forEach((m) => clearTimeout(m));
-    minuteries.current = [];
-  };
-
   useEffect(() => {
-    if (dejaJoue) return;
-    dejaJoue = true;
+    const el = document.getElementById('ouverture');
+    if (!el || fait) return;
+    fait = true;
     const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setSobre(reduit);
-    const t = (ms: number, f: () => void) => window.setTimeout(f, ms);
-    minuteries.current = reduit
-      ? [
-          t(0, () => setEtape(3)),
-          t(FIN_SOBRE, () => setSort(true)),
-          t(FIN_SOBRE + SORTIE, () => setVivant(false)),
-        ]
-      : [
-          t(PROFILS, () => setEtape(1)),
-          t(TRAIT, () => setEtape(2)),
-          t(NOM, () => setEtape(3)),
-          t(FIN, () => setSort(true)),
-          t(FIN + SORTIE, () => setVivant(false)),
-        ];
-    return arreter;
+    const debut = (window as unknown as { __ouverture?: number }).__ouverture ?? 0;
+    let fini = false;
+    const sortir = () => {
+      if (fini) return;
+      fini = true;
+      el.classList.add('sort');
+      window.setTimeout(() => el.remove(), SORTIE);
+    };
+    /* Un appui passe l'ouverture : personne ne doit attendre son application. */
+    el.addEventListener('click', sortir);
+    const reste = (reduit ? FIN_SOBRE : FIN) - (performance.now() - debut);
+    window.setTimeout(sortir, Math.max(0, reste));
   }, []);
-
-  if (!vivant) return null;
-
-  /** Un appui passe l'ouverture : personne ne doit attendre son application. */
-  const passer = () => {
-    arreter();
-    setSort(true);
-    minuteries.current = [window.setTimeout(() => setVivant(false), SORTIE)];
-  };
-
-  const duree = (s: number) => (sobre ? '0.01s' : `${s}s`);
-  const entre = etape >= 1;
-
-  const profil = (cote: 'g' | 'd') => ({
-    transition: `transform ${duree(1)} ${COURBE}, opacity ${duree(0.75)} ease`,
-    transform: entre ? 'translateX(0)' : `translateX(${cote === 'g' ? '-62%' : '62%'})`,
-    opacity: entre ? 1 : 0,
-  });
-
-  return (
-    <div
-      className={`lancement${sort ? ' sort' : ''}`}
-      onClick={passer}
-      role="presentation"
-      aria-hidden="true"
-    >
-      <div className="lancement-scene">
-        <div className="lancement-profils">
-          <img className="lancement-g" src={profilGauche} alt="" style={profil('g')} />
-          <img className="lancement-d" src={profilDroit} alt="" style={profil('d')} />
-        </div>
-        <div
-          className="lancement-trait"
-          style={{
-            transition: `transform ${duree(0.6)} ${COURBE}`,
-            transform: `scaleX(${etape >= 2 ? 1 : 0})`,
-          }}
-        />
-        <p
-          className="lancement-nom"
-          style={{
-            /* CHANTIER 226 — la police du nom ne suit plus l'apparence choisie. Elle lisait --serif,
-               que chaque apparence redéfinit (Cinzel en Cabinet 1900, Parisienne en Salon de thé…) :
-               le lancement changeait d'écriture selon le thème. On fixe l'ancienne valeur. */
-            fontFamily: "'Newsreader', Georgia, 'Times New Roman', serif",
-            transition: `opacity ${duree(0.7)} ease, letter-spacing ${duree(0.7)} ${COURBE}, transform ${duree(0.7)} ${COURBE}`,
-            opacity: etape >= 3 ? 1 : 0,
-            letterSpacing: etape >= 3 ? '0.2em' : '0.34em',
-            transform: etape >= 3 ? 'translateY(0)' : 'translateY(7px)',
-          }}
-        >
-          Neuro Anglais
-        </p>
-      </div>
-    </div>
-  );
+  return null;
 }

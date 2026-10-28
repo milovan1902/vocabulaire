@@ -16,7 +16,7 @@
  * ligne, déposer les .woff2 de Newsreader dans src/assets/fonts et
  * remplacer cet @import par des règles @font-face.
  */
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&display=swap');
+/* 353 — Newsreader est chargée par index.html, sans bloquer l'affichage (l'@import ici attendait Google avant de peindre). */
 
 :root {
   /* Encres, sur fond sombre */

@@ -1,23 +1,17 @@
 /** Composant racine : navigation entre les écrans. */
 import { mesure } from './data/mesures';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import type { Grade } from './domain/types';
 import { useStore, progressFor, type LoadedDeck } from './ui/useStore';
 import { buildSession, type SessionItem } from './engine/session';
 import { Today } from './ui/Today';
-import { Library } from './ui/Library';
-import { Account } from './ui/Account';
-import { Progress } from './ui/Progress';
-import { Parler } from './ui/Parler';
 import { IconAujourdhui, IconPaquets, IconParler, IconReglages, IconProgres } from './ui/icons';
-import { Search } from './ui/Search';
 import { DeckHome } from './ui/DeckHome';
 import { CardZoom, type ZoomSource } from './ui/CardZoom';
 import { motsRates, type DeckControle } from './engine/controle';
 import { VeilleControle } from './ui/VeilleControle';
 import { Study } from './ui/Study';
-import { Editor } from './ui/Editor';
 import { Screen } from './ui/components';
 import { useAuth } from './ui/useAuth';
 import { Welcome } from './ui/Welcome';
@@ -31,6 +25,33 @@ import { classeConvient, classeRank } from './domain/types';
 import type { Classe } from './domain/types';
 import { REPRISE_ID, repareThemesReprise } from './data/reprise';
 import { loadSummaries } from './ui/deckSummary';
+
+/*
+ * CHANTIER 353 — LES ÉCRANS SECONDAIRES SE CHARGENT À PART.
+ * Paquets, Parler, Réglages, Mes progrès, Recherche et l'éditeur ne sont plus
+ * dans le code du démarrage. Ils sont pré-chargés en tâche de fond quelques
+ * secondes après l'ouverture : changer d'onglet reste instantané.
+ */
+const charge = {
+  Library: () => import('./ui/Library'),
+  Account: () => import('./ui/Account'),
+  Progress: () => import('./ui/Progress'),
+  Parler: () => import('./ui/Parler'),
+  Search: () => import('./ui/Search'),
+  Editor: () => import('./ui/Editor'),
+};
+const Library = lazy(() => charge.Library().then((m) => ({ default: m.Library })));
+const Account = lazy(() => charge.Account().then((m) => ({ default: m.Account })));
+const Progress = lazy(() => charge.Progress().then((m) => ({ default: m.Progress })));
+const Parler = lazy(() => charge.Parler().then((m) => ({ default: m.Parler })));
+const Search = lazy(() => charge.Search().then((m) => ({ default: m.Search })));
+const Editor = lazy(() => charge.Editor().then((m) => ({ default: m.Editor })));
+let prechargeFait = false;
+function precharge() {
+  if (prechargeFait) return;
+  prechargeFait = true;
+  window.setTimeout(() => Object.values(charge).forEach((f) => void f().catch(() => undefined)), 3000);
+}
 import { scheduleReminder } from './ui/reminder';
 
 /**
@@ -598,6 +619,8 @@ export default function App() {
    * passer d'un paquet à un autre est un déplacement, pas une mise à jour,
    * et sans cela l'écran changerait de contenu sans rien dire.
    */
+  /* Pas un hook : cette ligne suit des « return » anticipés. precharge() ne s'exécute qu'une fois. */
+  precharge();
   const cleEcran = view.name === 'deck' ? `deck:${loaded?.deck.id ?? ''}` : view.name;
 
   return (
@@ -635,7 +658,9 @@ export default function App() {
       <div
         key={cleEcran}
         className={`screen${anime ? ` ecran-${sens.current}` : ''}`}
+        role="main"
       >
+        <Suspense fallback={null}>
         {view.name === 'today' && (
           <VeilleControle
             decks={store.decks}
@@ -878,6 +903,7 @@ export default function App() {
             }}
           />
         )}
+        </Suspense>
       </div>
 
       {surOnglet && (
