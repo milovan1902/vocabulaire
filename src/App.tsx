@@ -803,6 +803,8 @@ export default function App() {
           */}
         {view.name === 'parler' && (
           <Parler
+            /* CHANTIER 359 — pendant la visite, Parler s'ouvre sur « Discuter » (elle y montre un sujet). */
+            directDiscuter={visite !== null}
             decks={store.decks}
             active={store.active}
             settings={store.common}

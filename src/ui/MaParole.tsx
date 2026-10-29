@@ -16,7 +16,11 @@
  * Moins de trois conversations : seul le temps de parole s'affiche, avec
  * une phrase d'attente. Une courbe à deux points ne dit rien.
  */
-import { useEffect, useMemo, useState } from 'react';
+/* CHANTIER 359 — le tu et le vous. */
+import { tvp } from './ton';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+/* CHANTIER 359 — le temps de parole semaine par semaine, à l'échelle. */
+import './parole-semaines.css';
 import { supabase } from '../data/supabase';
 import { duree } from '../data/parler';
 
@@ -28,10 +32,6 @@ interface Ligne {
   corrections: Correction[] | null;
 }
 
-const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.',
-  'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-const MOIS_LONGS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
-  'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 const J = 86_400_000;
 const virgule = (n: number) => n.toFixed(1).replace('.', ',');
 
@@ -139,7 +139,12 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
     return <section className="sousecran" aria-label="Oral">{entete}<p className="lead">Chargement…</p></section>;
   }
 
-  const ceMois = st.mois[5];
+  /* 359 — la semaine en cours contre la moyenne des 7 précédentes (semaines vides comprises). */
+  const cetteSemaine = st.semaines[7];
+  const moyenne = Math.round(st.semaines.slice(0, 7).reduce((s, w) => s + w.sec, 0) / 7 / 60);
+  const ecart = Math.round(cetteSemaine.sec / 60) - moyenne;
+  const maxSem = Math.max(...st.semaines.map((w) => w.sec), 60);
+  const haut = (sec: number) => (85 * sec) / maxSem;
   const assez = st.n >= 3;
 
   /* La courbe : 320 × 90, l'échelle part de zéro pour ne pas exagérer. */
@@ -158,9 +163,9 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
       {entete}
       <p className="hint parole-intro">
         {panne
-          ? 'Les conversations n’ont pas pu être lues. Réessaie plus tard.'
+          ? tvp('Les conversations n’ont pas pu être lues. Réessaie plus tard.', 'Les conversations n’ont pas pu être lues. Réessayez plus tard.')
           : st.n === 0
-            ? 'Aucune conversation pour l’instant. Les chiffres apparaîtront ici après ta première séance dans Parler.'
+            ? tvp('Aucune conversation pour l’instant. Les chiffres apparaîtront ici après ta première séance dans Parler.', 'Aucune conversation pour l’instant. Les chiffres apparaîtront ici après votre première séance dans Parler.')
             : `${st.n} conversation${st.n > 1 ? 's' : ''} depuis le début.`}
       </p>
 
@@ -168,22 +173,25 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
         <div className="parole-carte">
           <p className="parole-kicker">1 · Temps de parole</p>
           <p className="parole-chiffre">
-            <b>{duree(ceMois.sec)}</b>
-            <span>en {MOIS_LONGS[ceMois.m]}</span>
+            <b>{duree(cetteSemaine.sec)}</b>
+            <span>cette semaine</span>
           </p>
-          <div className="parole-mois">
-            {st.mois.map((m, i) => {
-              const min = Math.round(m.sec / 60);
-              return (
-                <span key={`${m.a}-${m.m}`} className={i === 5 ? 'now' : ''}>
-                  <small>{min > 0 ? min : ''}</small>
-                  <i style={{ height: `${m.sec > 0 ? Math.max(6, (100 * Math.sqrt(m.sec)) / st.moisMax) : 2}%` }} />
-                  <em>{MOIS_COURTS[m.m]}</em>
-                </span>
-              );
-            })}
+          {moyenne > 0 && (
+            <p className={`parole-ecart${ecart >= 0 ? ' plus' : ''}`}>
+              {ecart >= 0 ? '+' : '−'} {Math.abs(ecart)} min par rapport à la moyenne ({moyenne} min)
+            </p>
+          )}
+          <div className="parole-semaines" role="img" aria-label={`Minutes parlées, 8 dernières semaines : ${st.semaines.map((w) => Math.round(w.sec / 60)).join(', ')}`}>
+            {moyenne > 0 && <span className="parole-moy" style={{ bottom: `${haut(moyenne * 60)}%` }} aria-hidden="true"><small>moy.</small></span>}
+            {st.semaines.map((w, i) => (
+              <span key={w.debut} className={i === 7 ? 'now' : ''} style={{ '--h': `${w.sec > 0 ? Math.max(2, haut(w.sec)) : 0.8}%` } as CSSProperties}>
+                <small>{Math.round(w.sec / 60)}</small>
+                <i />
+              </span>
+            ))}
           </div>
-          <p className="parole-note">En minutes, mois par mois.</p>
+          <div className="parole-axe"><span>il y a 7 sem.</span><span>cette sem.</span></div>
+          <p className="parole-note">En minutes, semaine par semaine. Une barre deux fois plus haute = deux fois plus de minutes.</p>
         </div>
       )}
 
@@ -225,7 +233,7 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
 
       {assez && (
         <div className="parole-carte">
-          <p className="parole-kicker">3 · Tes fautes qui reviennent</p>
+          <p className="parole-kicker">3 · {tvp('Tes fautes qui reviennent', 'Vos fautes qui reviennent')}</p>
           {st.recurrentes.length === 0 ? (
             <p className="parole-note">Aucune faute répétée ces 30 derniers jours. Bravo.</p>
           ) : (
@@ -263,7 +271,7 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
             <i className="now" style={{ left: pos(st.aisance) }} />
           </div>
           <p className="parole-note">
-            Au début : {virgule(st.aisanceDebut)}. Plus tu réponds vite, plus l’échange ressemble à une vraie conversation.
+            Au début : {virgule(st.aisanceDebut)}. {tvp('Plus tu réponds vite', 'Plus vous répondez vite')}, plus l’échange ressemble à une vraie conversation.
           </p>
         </div>
       )}

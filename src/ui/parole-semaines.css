@@ -1,0 +1,15 @@
+/* CHANTIER 359 — Mes progrès › Oral : le temps de parole, 8 semaines, à l'échelle. */
+.parole-ecart { margin: -4px 0 10px; font-size: 13px; color: var(--ink-soft); }
+.parole-ecart.plus { color: var(--good); }
+.parole-semaines {
+  position: relative; height: 150px; margin-top: 6px;
+  display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.parole-semaines > span:not(.parole-moy) { position: relative; height: 100%; }
+.parole-semaines i { position: absolute; left: 0; right: 0; bottom: 0; height: var(--h); border-radius: 5px 5px 0 0; background: color-mix(in srgb, var(--ink-soft) 35%, transparent); }
+.parole-semaines small { position: absolute; left: 0; right: 0; bottom: calc(var(--h) + 3px); text-align: center; font-size: 10.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.parole-semaines .now i { background: var(--chalk); }
+.parole-semaines .now small { color: var(--ink); font-weight: 700; }
+.parole-moy { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed var(--rule-strong); pointer-events: none; z-index: 1; }
+.parole-moy small { position: absolute; right: 0; bottom: 2px; font-size: 10px; color: var(--grey); }

@@ -34,6 +34,8 @@
  * La carte « Mots rencontrés » devient « Tu veux les revoir ? » : une case
  * par mot, et la règle de `data/reprise.ts` (jamais de doublon).
  */
+/* CHANTIER 359 — le tu et le vous. */
+import { tvp } from './ton';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { parle, nettoie } from './speech';
 import { ReprendreMots } from './ReprendreMots';
@@ -71,7 +73,7 @@ function Signaler({ reponse, avant, classe }: { reponse: string; avant: Tour[]; 
     return (
       <div style={{ margin: '0 0 8px', fontSize: 13 }}>
         <button style={petit} onClick={() => setEtat('choix')}>Signaler cette réponse</button>
-        {etat === 'echec' && <span style={{ color: 'var(--bad)', marginLeft: 8 }}>Pas envoyé, réessaie.</span>}
+        {etat === 'echec' && <span style={{ color: 'var(--bad)', marginLeft: 8 }}>{tvp('Pas envoyé, réessaie.', 'Pas envoyé, réessayez.')}</span>}
       </div>
     );
   }
@@ -184,7 +186,7 @@ export function ParlerSeance({
       setErreur(
         e instanceof ErreurParler && e.quotaEpuise
           ? finDit(e.budget)
-          : 'La conversation ne répond pas. Réessaie dans un instant.',
+          : tvp('La conversation ne répond pas. Réessaie dans un instant.', 'La conversation ne répond pas. Réessayez dans un instant.'),
       );
       if (!(e instanceof ErreurParler && e.quotaEpuise)) setDetail(detailExploitant(e, 'parler-tour'));
       if (e instanceof ErreurParler && e.budget) setB(e.budget);
@@ -218,8 +220,8 @@ export function ParlerSeance({
         session.current = null;
         setErreur(
           raison === 'not-allowed'
-            ? 'Le micro est refusé. Autorise-le dans les réglages du navigateur, ou passe au clavier.'
-            : 'Le micro n’a pas marché. Tu peux réessayer, ou passer au clavier.',
+            ? tvp('Le micro est refusé. Autorise-le dans les réglages du navigateur, ou passe au clavier.', 'Le micro est refusé. Autorisez-le dans les réglages du navigateur, ou passez au clavier.')
+            : tvp('Le micro n’a pas marché. Tu peux réessayer, ou passer au clavier.', 'Le micro n’a pas marché. Vous pouvez réessayer, ou passer au clavier.'),
         );
         if (raison === 'indisponible' || raison === 'not-allowed') setMode('clavier');
       },
@@ -249,8 +251,8 @@ export function ParlerSeance({
   /* ---------------- le compte rendu ---------------- */
   if (bilan) {
     return (
-      <section className="parler" aria-label="Ta conversation">
-        <h2 className="screen-title">Ta conversation</h2>
+      <section className="parler" aria-label={tvp('Ta conversation', 'Votre conversation')}>
+        <h2 className="screen-title">{tvp('Ta conversation', 'Votre conversation')}</h2>
         <p className="seance-meta">
           {horloge(secondes)} · {messages.length} répliques · {b.minutes} min restantes
         </p>
@@ -260,7 +262,7 @@ export function ParlerSeance({
           {tropCourt || bilan.corrections.length === 0 ? (
             <p className="hint">
               {tropCourt
-                ? 'La conversation était trop courte pour en tirer quelque chose d’honnête. Parle un peu plus longtemps la prochaine fois.'
+                ? tvp('La conversation était trop courte pour en tirer quelque chose d’honnête. Parle un peu plus longtemps la prochaine fois.', 'La conversation était trop courte pour en tirer quelque chose d’honnête. Parlez un peu plus longtemps la prochaine fois.')
                 : 'Rien à reprendre cette fois. C’est rare, et c’est bon signe.'}
             </p>
           ) : (
@@ -305,9 +307,9 @@ export function ParlerSeance({
           * en diagonale.
           */}
         <p className="hint seance-gardee">
-          Cette conversation est gardée. Tu la retrouveras en entier —
+          Cette conversation est gardée. {tvp('Tu la retrouveras', 'Vous la retrouverez')} en entier —
           la transcription et ce compte rendu — dans <b>Parler ›
-          Tes conversations</b>.
+          Mes conversations</b>.
         </p>
 
         {exploitant && (
@@ -344,8 +346,8 @@ export function ParlerSeance({
         {messages.length === 0 && !ecoutant && (
           <p className="hint">
             {mode === 'voix'
-              ? 'Appuie sur le micro et dis bonjour en anglais. Prends tout ton temps : rien ne part tant que tu n’as pas appuyé une seconde fois.'
-              : 'Écris en anglais. La réponse est dite à voix haute.'}
+              ? tvp('Appuie sur le micro et dis bonjour en anglais. Prends tout ton temps : rien ne part tant que tu n’as pas appuyé une seconde fois.', 'Appuyez sur le micro et dites bonjour en anglais. Prenez tout votre temps : rien ne part tant que vous n’avez pas appuyé une seconde fois.')
+              : tvp('Écris en anglais. La réponse est dite à voix haute.', 'Écrivez en anglais. La réponse est dite à voix haute.')}
           </p>
         )}
         {messages.map((m, i) => (
@@ -389,11 +391,11 @@ export function ParlerSeance({
                 ? 'Il réfléchit…'
                 : ecoutant
                   ? (enFrancais
-                    ? 'J’écoute en français — appuie quand tu as fini'
-                    : 'J’écoute — appuie quand tu as fini')
+                    ? tvp('J’écoute en français — appuie quand tu as fini', 'J’écoute en français — appuyez quand vous avez fini')
+                    : tvp('J’écoute — appuie quand tu as fini', 'J’écoute — appuyez quand vous avez fini'))
                   : enFrancais
-                    ? 'Appuie et parle en français'
-                    : 'Appuie et parle'}
+                    ? tvp('Appuie et parle en français', 'Appuyez et parlez en français')
+                    : tvp('Appuie et parle', 'Appuyez et parlez')}
           </p>
           {!ecoutant && !b.fini && (
             <button
@@ -418,7 +420,7 @@ export function ParlerSeance({
             <input
               value={saisie}
               onChange={(e) => setSaisie(e.target.value)}
-              placeholder="Écris ici…"
+              placeholder={tvp('Écris ici…', 'Écrivez ici…')}
               autoComplete="off"
               disabled={enVol || b.fini}
             />

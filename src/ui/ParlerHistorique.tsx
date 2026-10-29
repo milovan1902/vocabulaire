@@ -28,6 +28,8 @@
  * CHANTIER 110 — les mots d'une conversation passée peuvent encore partir
  * en cartes. Ceux déjà versés apparaissent grisés : pas de doublon.
  */
+/* CHANTIER 359 — le tu et le vous. */
+import { tvp } from './ton';
 import { useCallback, useEffect, useState } from 'react';
 import {
   duree, mesSeances, oublieSeance, quand, type SeanceGardee,
@@ -114,7 +116,7 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
         />
 
         <div className="parler-carte">
-          <p className="parler-kicker">Ce que tu as dit</p>
+          <p className="parler-kicker">{tvp('Ce que tu as dit', 'Ce que vous avez dit')}</p>
           {ouverte.transcription.length === 0 ? (
             <p className="hint">
               Le texte complet est effacé au bout de 90 jours. Le compte rendu,
@@ -157,20 +159,20 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
 
   /* ---------------- la liste ---------------- */
   return (
-    <Racine className={classeRacine} aria-label="Tes conversations">
+    <Racine className={classeRacine} aria-label={tvp('Tes conversations', 'Vos conversations')}>
       {!integre && (
         <>
           <button className="histo-retour" onClick={onRetour}>← Parler</button>
-          <h2 className="screen-title">Tes conversations</h2>
+          <h2 className="screen-title">{tvp('Tes conversations', 'Vos conversations')}</h2>
         </>
       )}
 
       {etat === 'charge' ? (
-        <p className="hint">Lecture de tes conversations…</p>
+        <p className="hint">{tvp('Lecture de tes conversations…', 'Lecture de vos conversations…')}</p>
       ) : etat === 'panne' ? (
         <>
           <p className="hint">
-            Tes conversations ne sont pas joignables pour l’instant.{' '}
+            {tvp('Tes conversations ne sont pas joignables pour l’instant.', 'Vos conversations ne sont pas joignables pour l’instant.')}{' '}
             <button className="parler-lien" onClick={() => void lit()}>Réessayer</button>
           </p>
           {pourquoi && <p className="seance-detail">{pourquoi}</p>}

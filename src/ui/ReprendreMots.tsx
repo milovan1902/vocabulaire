@@ -8,6 +8,8 @@
  * La règle elle-même vit dans `data/reprise.ts`. Ce fichier ne fait que la
  * montrer, et la déclencher.
  */
+/* CHANTIER 359 — le tu et le vous. */
+import { tvp } from './ton';
 import { useEffect, useState } from 'react';
 import { analyse, verse, REPRISE_NOM, type Proposition, type Versement } from '../data/reprise';
 import './reprise.css';
@@ -15,7 +17,7 @@ import { phraseErreur } from '../data/messageErreur';
 
 function note(p: Proposition): string {
   switch (p.statut.type) {
-    case 'ramene': return `Déjà dans « ${p.statut.deckNom} » : il revient dans ta journée.`;
+    case 'ramene': return `Déjà dans « ${p.statut.deckNom} » : il revient dans ${tvp('ta', 'votre')} journée.`;
     case 'copie': return `« ${p.statut.deckNom} » est en pause : il rejoint le paquet de reprise.`;
     case 'nouveau': return 'Nouveau : il rejoint le paquet de reprise.';
     case 'deja': return 'Déjà dans le paquet de reprise.';
@@ -82,23 +84,23 @@ export function ReprendreMots({
 
   return (
     <div className="parler-carte reprise">
-      <p className="parler-kicker">Tu veux les revoir ?</p>
+      <p className="parler-kicker">{tvp('Tu veux les revoir ?', 'Vous voulez les revoir ?')}</p>
 
       {!props ? (
-        <p className="hint">Recherche dans tes paquets…</p>
+        <p className="hint">{tvp('Recherche dans tes paquets…', 'Recherche dans vos paquets…')}</p>
       ) : fait ? (
         <p className="reprise-fait">
           {fait.ajoutes + fait.ramenes === 0
             ? 'Rien d’ajouté cette fois.'
             : [
                 fait.ajoutes > 0 && `${fait.ajoutes} mot${fait.ajoutes > 1 ? 's' : ''} dans « ${REPRISE_NOM} »`,
-                fait.ramenes > 0 && `${fait.ramenes} mot${fait.ramenes > 1 ? 's' : ''} ramené${fait.ramenes > 1 ? 's' : ''} depuis tes paquets`,
-              ].filter(Boolean).join(', ') + '. Ils sont dans ta journée.'}
+                fait.ramenes > 0 && `${fait.ramenes} mot${fait.ramenes > 1 ? 's' : ''} ramené${fait.ramenes > 1 ? 's' : ''} depuis ${tvp('tes', 'vos')} paquets`,
+              ].filter(Boolean).join(', ') + tvp('. Ils sont dans ta journée.', '. Ils sont dans votre journée.')}
         </p>
       ) : (
         <>
           <p className="hint">
-            Coche ceux que tu veux retravailler. Un mot que tu as déjà dans
+            {tvp('Coche ceux que tu veux retravailler. Un mot que tu as déjà dans', 'Cochez ceux que vous voulez retravailler. Un mot que vous avez déjà dans')}
             un paquet n’est jamais créé deux fois.
           </p>
           <div className="reprise-liste">
