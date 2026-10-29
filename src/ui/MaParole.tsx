@@ -51,6 +51,9 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
   const [lignes, setLignes] = useState<Ligne[] | null>(null);
   const [panne, setPanne] = useState(false);
   const [ouverte, setOuverte] = useState<string | null>(null);
+  /* CHANTIER 360 — le temps parlé jour par jour, lu dans le compteur du temps de parole
+     (vue parler_jour). Il remonte plus loin que les conversations gardées. null = indisponible. */
+  const [parJour, setParJour] = useState<Array<{ jour: string; secondes: number }> | null>(null);
 
   useEffect(() => {
     let vivant = true;
@@ -65,6 +68,10 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
       if (!vivant) return;
       if (error) { setPanne(true); setLignes([]); return; }
       setLignes((data ?? []) as Ligne[]);
+      const d = new Date(lundi(new Date()) - 49 * J);
+      const depuis = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const { data: jours, error: e2 } = await supabase.from('parler_jour').select('jour,secondes').gte('jour', depuis);
+      if (vivant && !e2 && jours) setParJour(jours as Array<{ jour: string; secondes: number }>);
     })();
     return () => { vivant = false; };
   }, []);
@@ -87,12 +94,21 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
 
     /* 2. Huit semaines. Une semaine sans au moins une minute parlée ne compte pas. */
     const semaines = Array.from({ length: 8 }, (_, i) => ({
-      debut: lundi(maintenant) - (7 - i) * 7 * J, sec: 0, fautes: 0,
+      debut: lundi(maintenant) - (7 - i) * 7 * J, sec: 0, fautes: 0, parle: 0,
     }));
     for (const l of L) {
       const w = lundi(new Date(l.finie_le));
       const b = semaines.find((x) => x.debut === w);
       if (b) { b.sec += l.secondes ?? 0; b.fautes += (l.corrections ?? []).length; }
+    }
+    /* 360 — le temps parlé : le compteur du jour s'il est lisible, sinon les conversations gardées. */
+    if (parJour && parJour.length) {
+      for (const j of parJour) {
+        const b = semaines.find((x) => x.debut === lundi(new Date(`${j.jour}T12:00:00`)));
+        if (b) b.parle += j.secondes ?? 0;
+      }
+    } else {
+      for (const s of semaines) s.parle = s.sec;
     }
     const points = semaines
       .map((s, i) => ({ i, v: s.sec >= 60 ? (s.fautes * 600) / s.sec : null }))
@@ -123,7 +139,7 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
     const aisance = rythme(L.slice(-3));
 
     return { n: L.length, mois, moisMax, semaines, points, recurrentes, aisanceDebut, aisance };
-  }, [lignes]);
+  }, [lignes, parJour]);
 
   const entete = (
     <>
@@ -141,9 +157,10 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
 
   /* 359 — la semaine en cours contre la moyenne des 7 précédentes (semaines vides comprises). */
   const cetteSemaine = st.semaines[7];
-  const moyenne = Math.round(st.semaines.slice(0, 7).reduce((s, w) => s + w.sec, 0) / 7 / 60);
-  const ecart = Math.round(cetteSemaine.sec / 60) - moyenne;
-  const maxSem = Math.max(...st.semaines.map((w) => w.sec), 60);
+  const moyenne = Math.round(st.semaines.slice(0, 7).reduce((s, w) => s + w.parle, 0) / 7 / 60);
+  const ecart = Math.round(cetteSemaine.parle / 60) - moyenne;
+  const maxSem = Math.max(...st.semaines.map((w) => w.parle), 60);
+  const aParle = st.semaines.some((w) => w.parle > 0);
   const haut = (sec: number) => (85 * sec) / maxSem;
   const assez = st.n >= 3;
 
@@ -169,11 +186,11 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
             : `${st.n} conversation${st.n > 1 ? 's' : ''} depuis le début.`}
       </p>
 
-      {st.n > 0 && (
+      {(st.n > 0 || aParle) && (
         <div className="parole-carte">
           <p className="parole-kicker">1 · Temps de parole</p>
           <p className="parole-chiffre">
-            <b>{duree(cetteSemaine.sec)}</b>
+            <b>{duree(cetteSemaine.parle)}</b>
             <span>cette semaine</span>
           </p>
           {moyenne > 0 && (
@@ -181,11 +198,11 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
               {ecart >= 0 ? '+' : '−'} {Math.abs(ecart)} min par rapport à la moyenne ({moyenne} min)
             </p>
           )}
-          <div className="parole-semaines" role="img" aria-label={`Minutes parlées, 8 dernières semaines : ${st.semaines.map((w) => Math.round(w.sec / 60)).join(', ')}`}>
+          <div className="parole-semaines" role="img" aria-label={`Minutes parlées, 8 dernières semaines : ${st.semaines.map((w) => Math.round(w.parle / 60)).join(', ')}`}>
             {moyenne > 0 && <span className="parole-moy" style={{ bottom: `${haut(moyenne * 60)}%` }} aria-hidden="true"><small>moy.</small></span>}
             {st.semaines.map((w, i) => (
-              <span key={w.debut} className={i === 7 ? 'now' : ''} style={{ '--h': `${w.sec > 0 ? Math.max(2, haut(w.sec)) : 0.8}%` } as CSSProperties}>
-                <small>{Math.round(w.sec / 60)}</small>
+              <span key={w.debut} className={i === 7 ? 'now' : ''} style={{ '--h': `${w.parle > 0 ? Math.max(2, haut(w.parle)) : 0.8}%` } as CSSProperties}>
+                <small>{Math.round(w.parle / 60)}</small>
                 <i />
               </span>
             ))}
