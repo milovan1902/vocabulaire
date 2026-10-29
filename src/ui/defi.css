@@ -1,0 +1,82 @@
+/* CHANTIER 357 — le défi éclair (Defi.tsx). Couleurs de l'apparence. */
+.defi-carte {
+  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+  margin: 2px 0 12px; padding: 14px 16px;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--chalk) 50%, transparent); border-radius: 16px;
+  font: inherit; cursor: pointer;
+}
+.defi-carte:active { transform: scale(0.99); }
+.defi-carte:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.defi-icone { flex: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--chalk); background: color-mix(in srgb, var(--chalk) 14%, transparent); }
+.defi-icone svg { width: 22px; height: 22px; }
+.defi-carte-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.defi-carte-txt b { font-size: 15.5px; font-weight: 600; }
+.defi-carte-txt span { font-size: 13px; line-height: 1.4; color: var(--ink-soft); text-wrap: pretty; }
+.defi-carte-xp { flex: none; font-size: 13px; font-weight: 650; color: var(--chalk); }
+
+.defi-fait {
+  display: flex; align-items: center; gap: 12px; margin: 12px 0 4px; padding: 12px 16px;
+  background: var(--panel); color: var(--ink); border: 1px solid var(--rule); border-radius: 16px;
+}
+.defi-pastille { flex: none; width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: var(--good); background: color-mix(in srgb, var(--good) 18%, transparent); }
+.defi-pastille.rate { color: var(--ink-soft); background: var(--rule); }
+.defi-fait-txt { flex: 1; font-size: 14.5px; }
+.defi-fait-xp { font-size: 13px; font-weight: 650; color: var(--good); }
+
+.defi { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 8px 0 24px; }
+.defi-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.defi-etiquette { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--chalk); }
+.defi-compte { font-size: 14px; color: var(--ink-soft); min-width: 44px; text-align: right; }
+.defi-etapes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.defi-etapes i { height: 5px; border-radius: 5px; background: var(--rule); }
+.defi-etapes i.en-cours { background: var(--chalk); }
+.defi-etapes i.ok { background: var(--good); }
+.defi-etapes i.ko { background: var(--bad); }
+.defi-mot { min-height: 180px; border-radius: 20px; background: var(--panel); border: 1px solid var(--rule); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px; text-align: center; }
+.defi-mot span { font-size: 12px; color: var(--grey); }
+.defi-mot b { font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.15; overflow-wrap: anywhere; }
+.defi-chrono { display: flex; flex-direction: column; gap: 6px; }
+.defi-chrono > div { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-soft); }
+.defi-chrono b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.defi-chrono-barre { display: block; height: 6px; border-radius: 6px; background: var(--rule); overflow: hidden; }
+.defi-chrono-barre i { display: block; height: 100%; border-radius: 6px; background: var(--chalk); transition: width 0.2s linear; }
+.defi-chrono-barre i.presse { background: var(--bad); }
+.defi-form { display: flex; flex-direction: column; gap: 12px; }
+.defi-saisie {
+  min-height: 54px; padding: 0 16px; border-radius: 14px;
+  border: 2px solid var(--chalk); background: var(--paper); color: var(--ink);
+  font: inherit; font-size: 18px;
+}
+.defi-saisie:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--chalk) 30%, transparent); }
+.defi-form .btn { margin: 0; }
+.defi-correction { border-radius: 20px; background: var(--panel); border: 1px solid var(--rule); padding: 22px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.defi-correction.ok { border-color: color-mix(in srgb, var(--good) 55%, transparent); }
+.defi-correction.ko { border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+.defi-correction.ko .defi-pastille { color: var(--bad); background: color-mix(in srgb, var(--bad) 18%, transparent); }
+.defi-pastille.grande { width: 44px; height: 44px; font-size: 20px; }
+.defi-verdict { font-size: 18px; font-weight: 600; }
+.defi-correction.ok .defi-verdict { color: var(--good); }
+.defi-correction.ko .defi-verdict { color: var(--bad); }
+.defi-reponse { font-family: var(--serif); font-size: 30px; overflow-wrap: anywhere; }
+.defi-ecrit { font-size: 14px; color: var(--ink-soft); }
+.defi-ecrit span { color: var(--ink); }
+
+.defi-resultat { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding-top: 12px; }
+.defi-resultat h2 { margin: 4px 0 0; font-family: var(--serif); font-weight: 400; font-size: 28px; }
+.defi-gain { margin: 0; font-size: 15px; font-weight: 650; color: var(--chalk); }
+.defi-note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); text-align: center; }
+.defi-liste { list-style: none; margin: 0; padding: 4px 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; }
+.defi-liste li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; font-size: 14.5px; border-bottom: 1px solid var(--rule); }
+.defi-liste li:last-child { border-bottom: none; }
+.defi-liste .ok { color: var(--good); }
+.defi-liste .ko { color: var(--bad); }
+.defi-fr { font-size: 13px; color: var(--ink-soft); text-align: right; }
+
+.defi-confettis { position: fixed; inset: 0 0 auto 0; height: 0; z-index: 150; pointer-events: none; }
+.defi-confettis i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; animation: defi-tombe 2.6s cubic-bezier(0.25, 0.6, 0.4, 1) both; }
+@keyframes defi-tombe {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  100% { transform: translate(var(--dx), 90vh) rotate(var(--r)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .defi-confettis { display: none; } .defi-chrono-barre i { transition: none; } }

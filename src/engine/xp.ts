@@ -30,6 +30,8 @@
 import type { Streak } from './streak';
 import { shiftDay } from './streak';
 import { todayKey } from './session';
+/* CHANTIER 357 — le défi éclair rapporte aussi (5/5 : +10, 4/5 : +5). */
+import { xpDefi } from './defi';
 
 export const CARTES_PAR_JOUR = 20;
 export const XP_PAR_JOUR = 20;
@@ -177,6 +179,8 @@ export function bilan(s: Streak, today = todayKey()): Bilan {
       }
     }
   }
+  /* 357 — les défis éclair, jusqu'à aujourd'hui. */
+  for (const [d, n] of Object.entries(s.defis ?? {})) if (d <= today) xp += xpDefi(n);
   return { jours, xp, gels, semaines };
 }
 

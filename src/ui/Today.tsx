@@ -36,6 +36,8 @@ import { estLudique, useStyle } from './useStyle';
 import { Eventail } from './Eventail';
 import { Alambic, Amorce } from './Salle';
 import { AujourdhuiHorloger } from './Horloger';
+/* CHANTIER 357 — la carte du défi éclair. */
+import { DefiCarte } from './Defi';
 import { createPortal } from 'react-dom';
 import { BrosseTableau, CercleStylo, SemaineCahier, SemaineTableau } from './Ecole';
 import { SemaineLAN, TransitionArcade, TransitionLycee } from './LyceeArcadeNeon';
@@ -187,8 +189,11 @@ function Fusee() {
 }
 
 export function Today({
-  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler, onXp, apercu,
+  decks, active, settings, streak, onReview, onOpen, onManage, onCalendrier, onParler, onXp, apercu, defi, onDefi,
 }: {
+  /** CHANTIER 357 — le défi éclair : à faire, fait, ou absent (moins de 5 mots acquis). */
+  defi?: { etat: 'afaire' | 'fait'; score: number; secondes: number } | null;
+  onDefi?: () => void;
   decks: Deck[];
   /** Paquets en jeu. */
   active: string[];
@@ -287,6 +292,11 @@ export function Today({
   const ligneXp = gain.valide
     ? `Journée validée : +${gain.xp} XP${etGel}.`
     : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes aujourd’hui — +${gain.xp} XP${etGel} à la clé.`;
+
+  /* CHANTIER 357 — à faire : sous le bouton principal ; fait : tout en bas, en une ligne. */
+  const carteDefi = defi && onDefi ? <DefiCarte etat={defi.etat} score={defi.score} secondes={defi.secondes} onOuvrir={onDefi} /> : null;
+  const defiHaut = defi?.etat === 'afaire' ? carteDefi : null;
+  const defiBas = defi?.etat === 'fait' ? carteDefi : null;
 
   const date = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
@@ -483,6 +493,7 @@ export function Today({
     const iH = Math.max(0, aFaire.findIndex((r) => r.deck.id === choisi));
     const nH = niveauDe(xpTotal(streak));
     return (
+      <>
       <AujourdhuiHorloger
         paquets={aFaire}
         centre={iH}
@@ -509,6 +520,8 @@ export function Today({
         onCalendrier={onCalendrier}
         onParler={onParler}
       />
+      {carteDefi}
+      </>
     );
   }
 
@@ -953,6 +966,8 @@ export function Today({
           )}
         </button>
 
+        {defiHaut}
+
         {/* CHANTIER 166 — deux tuiles : l'assiduité ouvre le calendrier,
             le temps de parole ouvre l'onglet Parler. */}
         <div className="ly-bas">
@@ -1078,6 +1093,7 @@ export function Today({
             <small>{parlerSous}</small>
           </button>
         </div>
+        {defiBas}
         {/* CHANTIER 225 — Cabinet 1900 : l'alambic, tout en bas, sous les tuiles. */}
         {style === 'cabinet' && <Alambic />}
       </div>
@@ -1163,6 +1179,7 @@ export function Today({
               même » : encore {manque} carte{manque > 1 ? 's' : ''}.
             </p>
           )}
+          {defiHaut}
         </>
       ) : (
         <>
@@ -1184,6 +1201,7 @@ export function Today({
           </div>
 
           {enAvant && carteEnAvant(enAvant)}
+          {defiHaut}
 
           {suite.length > 0 && (
             <>
@@ -1227,6 +1245,7 @@ export function Today({
           <small>{parlerSous}</small>
         </button>
       </div>
+      {defiBas}
     </div>
   );
 }

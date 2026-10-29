@@ -4,7 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactElement } from 'react';
 import type { Grade } from './domain/types';
 import { useStore, progressFor, type LoadedDeck } from './ui/useStore';
-import { buildSession, type SessionItem } from './engine/session';
+import { buildSession, todayKey, type SessionItem } from './engine/session';
 import { Today } from './ui/Today';
 import { IconAujourdhui, IconPaquets, IconParler, IconReglages, IconProgres } from './ui/icons';
 import { DeckHome } from './ui/DeckHome';
@@ -30,6 +30,12 @@ import { Dialogues, demande, type Question } from './ui/Dialogue';
 import { BilanFin } from './ui/BilanSession';
 import type { BilanSession } from './engine/bilan';
 import { cartesDuJour, gainDuJour } from './engine/xp';
+/* CHANTIER 357 — le défi éclair. */
+import { Defi } from './ui/Defi';
+import { useDefi } from './ui/useDefi';
+import { MOTS_DEFI, type MotDefi } from './engine/defi';
+import { lisTaille } from './data/tailleTexte';
+import type { Streak } from './engine/streak';
 
 const QUITTER: Question = {
   titre: 'Quitter la session ?',
@@ -131,6 +137,7 @@ type View =
   | { name: 'deck' }
   | { name: 'study' }
   | { name: 'done'; reviewed: number; bilan: BilanSession }
+  | { name: 'defi' }
   | { name: 'editor'; mode: 'create' | 'append' };
 
 const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = [
@@ -181,7 +188,7 @@ function rang(v: View): number {
   if (v.name === 'search') return 20;
   if (v.name === 'deck') return 21;
   if (v.name === 'editor') return 30;
-  if (v.name === 'study') return 31;
+  if (v.name === 'study' || v.name === 'defi') return 31;
   return 32; // 'done'
 }
 
@@ -470,6 +477,8 @@ export default function App() {
     [loaded, store],
   );
   const [suivant, setSuivant] = useState<{ id: string; nom: string; cartes: number } | null>(null);
+  /* CHANTIER 357 — les 5 mots du défi éclair, lus en arrière-plan. */
+  const motsDefi = useDefi(store);
 
   const handleGrade = useCallback(
     async (item: SessionItem, grade: Grade) => {
@@ -667,7 +676,7 @@ export default function App() {
       {zoom && <CardZoom source={zoom} onDone={() => setZoom(null)} />}
       <Dialogues />
 
-      {!surOnglet && (
+      {!surOnglet && view.name !== 'defi' && (
         <div className="topbar">
           <button
             className="iconbtn"
@@ -721,6 +730,8 @@ export default function App() {
             onCalendrier={() => { setProgresOuvre('calendrier'); setView({ name: 'progress' }); }}
             onParler={() => setView({ name: 'parler' })}
             onXp={() => { setProgresOuvre('xp'); setView({ name: 'progress' }); }}
+            defi={infoDefi(store.streak, motsDefi)}
+            onDefi={() => setView({ name: 'defi' })}
           />
         )}
 
@@ -915,6 +926,23 @@ export default function App() {
           />
         )}
 
+        {view.name === 'defi' && motsDefi && motsDefi.length === MOTS_DEFI && (
+          <Defi
+            mots={motsDefi}
+            secondes={lisTaille() === 'tresgrand' ? 30 : 20}
+            onReponse={(m, juste) => {
+              /* Réussi : compte dans la journée, sa date ne bouge pas. Raté : « à revoir ». */
+              if (juste) store.compteCarteDefi();
+              else void store.gradeCard(m.deckId, m.progress, 'again', false);
+            }}
+            onFin={(score) => {
+              store.noteDefi(score);
+              if (auth.session) void auth.runSync();
+            }}
+            onQuitter={() => setView({ name: 'today' })}
+          />
+        )}
+
         {view.name === 'done' && (
           <BilanFin
             bilan={view.bilan}
@@ -986,6 +1014,14 @@ export default function App() {
       )}
     </div>
   );
+}
+
+/** CHANTIER 357 — la carte du défi éclair sur Aujourd'hui : faite, à faire, ou absente. */
+function infoDefi(streak: Streak, mots: MotDefi[] | null): { etat: 'afaire' | 'fait'; score: number; secondes: number } | null {
+  const secondes = lisTaille() === 'tresgrand' ? 30 : 20;
+  const score = streak.defis?.[todayKey()];
+  if (score !== undefined) return { etat: 'fait', score, secondes };
+  return mots && mots.length === MOTS_DEFI ? { etat: 'afaire', score: 0, secondes } : null;
 }
 
 function title(view: View, loaded: LoadedDeck | null): string {

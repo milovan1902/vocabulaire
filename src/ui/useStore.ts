@@ -37,7 +37,7 @@ import { emptyProgress, review } from '../engine/scheduler';
 import { freshCounter, rollDay } from '../engine/session';
 import { avecControle, controleActif, plafonner } from '../engine/controle';
 import type { Streak } from '../engine/streak';
-import { EMPTY_STREAK, compterCarte, record as recordDay } from '../engine/streak';
+import { EMPTY_STREAK, compterCarte, noterDefi, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
 import { mesure } from '../data/mesures';
 
@@ -66,6 +66,10 @@ export interface Store {
     grade: Grade,
     wasNew: boolean,
   ): Promise<Progress>;
+  /** CHANTIER 357 — un mot du défi éclair réussi : il compte dans les 20 cartes du jour, sans changer sa date. */
+  compteCarteDefi(): void;
+  /** CHANTIER 357 — le score du défi éclair du jour. */
+  noteDefi(score: number): void;
 }
 
 export interface LoadedDeck {
@@ -381,18 +385,34 @@ export function useStore(): Store {
     [],
   );
 
+  const compteCarteDefi = useCallback(() => {
+    setStreak((prev) => {
+      const suivant = compterCarte(recordDay(prev));
+      void repository.saveStreak(suivant);
+      return suivant;
+    });
+  }, []);
+
+  const noteDefi = useCallback((score: number) => {
+    setStreak((prev) => {
+      const suivant = noterDefi(prev, score);
+      void repository.saveStreak(suivant);
+      return suivant;
+    });
+  }, []);
+
   return useMemo(
     () => ({
       ready, decks, installed, active, categories, common, overrides, streak,
       addDeck, removeDeck, setActive,
       setCommon, setOverride, settingsFor, counterFor,
-      refreshAll, loadDeck, gradeCard,
+      refreshAll, loadDeck, gradeCard, compteCarteDefi, noteDefi,
     }),
     [
       ready, decks, installed, active, categories, common, overrides, streak,
       addDeck, removeDeck, setActive,
       setCommon, setOverride, settingsFor, counterFor,
-      refreshAll, loadDeck, gradeCard,
+      refreshAll, loadDeck, gradeCard, compteCarteDefi, noteDefi,
     ],
   );
 }

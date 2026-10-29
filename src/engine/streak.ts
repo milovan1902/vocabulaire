@@ -28,6 +28,11 @@ export interface Streak {
    * (voir engine/xp.ts). Fusion entre appareils : le plus grand des deux.
    */
   counts?: Record<string, number>;
+  /**
+   * CHANTIER 357 — le défi éclair : AAAA-MM-JJ → score sur 5. Une valeur =
+   * défi fait ce jour-là. Fusion entre appareils : le plus grand des deux.
+   */
+  defis?: Record<string, number>;
   updatedAt: number;
 }
 
@@ -93,8 +98,16 @@ export function record(s: Streak, today = todayKey()): Streak {
        ligne, chaque nouvelle journée les effaçait : les jours d'avant
        passaient pour « anciens », donc validés d'office. */
     ...(s.counts ? { counts: s.counts } : {}),
+    /* 357 — et les défis éclair des jours passés. */
+    ...(s.defis ? { defis: s.defis } : {}),
     updatedAt: Date.now(),
   };
+}
+
+/** CHANTIER 357 — le résultat du défi éclair du jour. */
+export function noterDefi(s: Streak, score: number, today = todayKey()): Streak {
+  const avant = s.defis?.[today];
+  return { ...s, defis: { ...(s.defis ?? {}), [today]: avant === undefined ? score : Math.max(avant, score) }, updatedAt: Date.now() };
 }
 
 /**
@@ -188,12 +201,22 @@ export function mergeStreak(local: Streak, remote: Streak | null): Streak {
     }
   }
 
+  /* CHANTIER 357 — les défis éclair : le meilleur score de chaque jour. */
+  let defis: Record<string, number> | undefined;
+  if (local.defis || remote.defis) {
+    defis = {};
+    for (const src of [local.defis ?? {}, remote.defis ?? {}]) {
+      for (const [k, v] of Object.entries(src)) defis[k] = Math.max(defis[k] ?? 0, v);
+    }
+  }
+
   return {
     lastDay: last,
     current,
     best: Math.max(local.best, remote.best, current),
     days,
     ...(counts ? { counts } : {}),
+    ...(defis ? { defis } : {}),
     updatedAt: Math.max(local.updatedAt, remote.updatedAt),
   };
 }
