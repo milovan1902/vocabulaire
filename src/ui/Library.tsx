@@ -1,4 +1,6 @@
 /** Onglet « Paquets » : mon travail, ma collection, mon catalogue. */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useEffect, useMemo, useState } from 'react';
 import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
 import {
@@ -568,14 +570,14 @@ export function Library({
             {plein ? (
               <>
                 <b>Le 100 % est indicatif.</b> Tant que le paquet reste ouvert
-                dans ton espace de travail, il te fera réviser son contenu
+                dans {tvp('ton', 'votre')} espace de travail, il {tvp('te', 'vous')} fera réviser son contenu
                 à intervalles importants pour ne rien oublier. Seule la mise en
                 pause de ce paquet arrêtera le travail sur ce dernier.
               </>
             ) : (
               <>
                 {m.partial
-                  ? `Sur les ${m.counted} mots des thèmes que tu as retenus, et non sur le paquet entier.`
+                  ? `Sur les ${m.counted} mots des thèmes que ${tvp('tu as retenus', 'vous avez retenus')}, et non sur le paquet entier.`
                   : `Sur les ${m.counted} mots du paquet.`}{' '}
                 Un mot noté « Facile » avance de moitié, « Bien » d’un quart.
                 Un mot raté recule.
@@ -628,8 +630,7 @@ export function Library({
         <>
           {!auth.session && <RappelSauvegarde />}
           <p className="lead">
-            Aucun paquet en jeu. Mets-en un depuis ta collection pour
-            commencer à travailler.
+            {tvp('Aucun paquet en jeu. Mets-en un depuis ta collection pour commencer à travailler.', 'Aucun paquet en jeu. Mettez-en un depuis votre collection pour commencer à travailler.')}
           </p>
           <button className="btn" onClick={() => setTab('collection')}>
             Choisir un paquet
@@ -727,7 +728,7 @@ export function Library({
       </button>
       {bloque && msgCreer && (
         <p className="hint" role="status" style={{ margin: '-6px 0 14px' }}>
-          Ton paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que tu veux.
+          {tvp('Ton paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que tu veux.', 'Votre paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que vous voulez.')}
         </p>
       )}
       </>
@@ -785,7 +786,7 @@ export function Library({
     if (mine.length === 0) {
       return (
         <div className="empty">
-          <p>Ta collection est vide.</p>
+          <p>{tvp('Ta collection est vide.', 'Votre collection est vide.')}</p>
           <button className="btn ghost" onClick={() => setTab('catalogue')}>
             Parcourir le catalogue
           </button>
@@ -810,8 +811,7 @@ export function Library({
     return (
       <>
         <p className="lead">
-          Mets en jeu ceux sur lesquels tu travailles. Les autres attendent
-          sans rien perdre.
+          {tvp('Mets en jeu ceux sur lesquels tu travailles. Les autres attendent sans rien perdre.', 'Mettez en jeu ceux sur lesquels vous travaillez. Les autres attendent sans rien perdre.')}
         </p>
 
         {onCreer && boutonCreer(onCreer)}
@@ -833,7 +833,7 @@ export function Library({
 
         {retenus.length === 0 && (
           <p className="hint">
-            Aucun paquet de ta collection ne correspond à ce filtre.
+            {tvp('Aucun paquet de ta collection ne correspond à ce filtre.', 'Aucun paquet de votre collection ne correspond à ce filtre.')}
           </p>
         )}
 
@@ -863,7 +863,7 @@ export function Library({
 
         <p className="hint">
           Un paquet en pause ne compte pas dans la charge du jour et ne
-          rappelle rien : le remettre en jeu reprend là où tu l’as laissé.
+          rappelle rien : le remettre en jeu reprend là où {tvp('tu l’as laissé', 'vous l’avez laissé')}.
         </p>
       </>
     );
@@ -1031,12 +1031,10 @@ export function Library({
         {enConsultation && (
           <div className="consultbox">
             <p className="ttl">
-              Tu consultes {consultes.join(', ')}
+              {tvp('Tu consultes', 'Vous consultez')} {consultes.join(', ')}
             </p>
             <p className="hint">
-              Ce sont les paquets dont le plancher tombe dans ce que tu as
-              coché, et non ceux de ta classe. Un paquet d’un cycle plus bas
-              n’y figure pas, même s’il te conviendrait.
+              {tvp('Ce sont les paquets dont le plancher tombe dans ce que tu as coché, et non ceux de ta classe. Un paquet d’un cycle plus bas n’y figure pas, même s’il te conviendrait.', 'Ce sont les paquets dont le plancher tombe dans ce que vous avez coché, et non ceux de votre niveau. Un paquet d’un cycle plus bas n’y figure pas, même s’il vous conviendrait.')}
             </p>
             <button
               className="btn ghost"
@@ -1068,7 +1066,7 @@ export function Library({
 
         {!auth.session && (
           <p className="hint">
-            Tu n’es pas connecté : seuls les paquets fournis avec
+            {tvp('Tu n’es pas connecté', 'Vous n’êtes pas connecté')} : seuls les paquets fournis avec
             l’application sont visibles. La connexion donne accès au catalogue
             complet.
           </p>
@@ -1126,7 +1124,7 @@ export function Library({
         )}
 
         <p className="hint">
-          Un paquet obtenu arrive en pause : c’est toi qui le mets en jeu.
+          {tvp('Un paquet obtenu arrive en pause : c’est toi qui le mets en jeu.', 'Un paquet obtenu arrive en pause : c’est vous qui le mettez en jeu.')}
         </p>
       </>
     );

@@ -9,6 +9,8 @@
  *
  * CHANTIER 228 — barème de la semaine de cinq jours, et les gels.
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import type { Streak } from '../engine/streak';
 import {
   CARTES_PAR_JOUR, GELS_MAX, XP_MAX_GRATUIT, bilan, estPremium, gelsEnReserve, gelsPrevus, historiqueXp, meilleureSerie, serieValidee, xpTotal,
@@ -55,8 +57,10 @@ export function MesXp({ streak }: { streak: Streak }) {
         {jours14.map((j) => {
           const nom = JOURS_COURTS[new Date(j.key + 'T12:00:00').getDay()];
           return (
-            <span key={j.key} className={`xpj-jour ${prevus.includes(j.key) ? 'gel-prevu' : j.etat}`} title={prevus.includes(j.key) ? `${j.key.slice(8)}/${j.key.slice(5, 7)} : comblé par un gel à la fin de la semaine` : `${j.key.slice(8)}/${j.key.slice(5, 7)} : ${j.base + j.bonus} XP`}>
+            <span key={j.key} className={`xpj-jour ${prevus.includes(j.key) ? 'gel-prevu' : j.etat}`} title={prevus.includes(j.key) ? `${j.key.slice(8)}/${j.key.slice(5, 7)} : comblé par un gel à la fin de la semaine` : `${j.key.slice(8)}/${j.key.slice(5, 7)} : ${j.base + j.bonus + (j.defi ?? 0)} XP${j.defi ? ` (dont ${j.defi} du défi éclair)` : ''}`}>
               <span className="xpj-col">
+                {/* 358 — le défi éclair, posé au-dessus, quel que soit l'état du jour. */}
+                {!!j.defi && <i className="xpj-defi" style={{ height: `${(100 * j.defi) / 80}%` }} />}
                 {j.etat === 'valide' && (
                   <>
                     {j.bonus > 0 && <i className="xpj-bonus" style={{ height: `${(100 * j.bonus) / 80}%` }} />}
@@ -77,6 +81,7 @@ export function MesXp({ streak }: { streak: Streak }) {
       <div className="xpj-legende">
         <span><i className="xpj-base" />XP du jour</span>
         <span><i className="xpj-bonus" />bonus de semaine</span>
+        <span><i className="xpj-defi" />défi éclair</span>
         <span><i className="xpj-gel" />jour comblé par un gel</span>
         {prevus.length > 0 && <span><i className="xpj-gel-prevu" />gel prévu, posé en fin de semaine</span>}
         <span><i className="xpj-manque" />jour manqué</span>
@@ -89,19 +94,20 @@ export function MesXp({ streak }: { streak: Streak }) {
         <span><span>2e semaine à 5 / 5 d’affilée</span><b>+40 bonus</b></span>
         <span><span>3e semaine et suivantes</span><b>+60 bonus</b></span>
         <span><span>Samedi ou dimanche, 20 cartes</span><b>+30 XP + 1 gel</b></span>
+        <span><span>Défi éclair 5 / 5 (4 / 5)</span><b>+10 XP (+5)</b></span>
       </div>
       <p className="hint">
         La semaine repart à zéro chaque lundi. Un gel comble un jour manqué
         du lundi au vendredi : ce jour ne rapporte rien, mais la semaine
         compte pour 5 / 5. Le gel est posé quand la semaine se ferme : vendredi validé, ou samedi. {GELS_MAX} gels au plus en réserve. Une semaine
-        incomplète fait repartir le bonus à +20, jamais tes XP. « Facile » ne
+        incomplète fait repartir le bonus à +20, jamais {tvp('tes', 'vos')} XP. « Facile » ne
         rapporte rien de plus. Parler ne rapporte pas d’XP.
       </p>
 
-      <p className="xpj-titre">Tes crédits</p>
+      <p className="xpj-titre">{tvp('Tes crédits', 'Vos crédits')}</p>
       <p className="hint">
-        Chaque XP gagné devient un crédit, à échanger contre l’apparence de ton
-        choix dans Réglages › Apparence. Tu as {credits(bilan(streak).xp).toLocaleString('fr-FR')} crédits.
+        Chaque XP gagné devient un crédit, à échanger contre l’apparence de {tvp('ton', 'votre')} choix
+        dans Réglages › Apparence. {tvp('Tu as', 'Vous avez')} {credits(bilan(streak).xp).toLocaleString('fr-FR')} crédits.
       </p>
     </>
   );

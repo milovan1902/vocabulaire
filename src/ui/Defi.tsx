@@ -1,3 +1,5 @@
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { compareEcrit, type Verdict } from '../engine/reponse';
 import { MOTS_DEFI, xpDefi, type MotDefi } from '../engine/defi';
@@ -36,7 +38,7 @@ export function DefiCarte({ etat, score, secondes, onOuvrir }: {
         <span className="defi-icone">{ICONE_CHRONO}</span>
         <span className="defi-carte-txt">
           <b>Défi éclair</b>
-          <span>{MOTS_DEFI} mots que tu connais déjà, à écrire en {secondes} s chacun.</span>
+          <span>{MOTS_DEFI} {tvp('mots que tu connais déjà', 'mots que vous connaissez déjà')}, à écrire en {secondes} s chacun.</span>
         </span>
         <span className="defi-carte-xp">+{xpDefi(MOTS_DEFI)} XP</span>
       </button>
@@ -141,7 +143,7 @@ export function Defi({ mots, secondes, onReponse, onFin, onQuitter }: {
       titre: 'Abandonner le défi ?',
       texte: entame
         ? 'Les mots restants comptent ratés, et le défi ne se refait pas aujourd’hui.'
-        : 'Tu pourras le reprendre plus tard aujourd’hui.',
+        : tvp('Tu pourras le reprendre plus tard aujourd’hui.', 'Vous pourrez le reprendre plus tard aujourd’hui.'),
       agir: 'Abandonner',
       garder: 'Continuer le défi',
       ton: 'prudent',
@@ -185,7 +187,7 @@ export function Defi({ mots, secondes, onReponse, onFin, onQuitter }: {
             );
           })}
         </ul>
-        {total < n && <p className="defi-note">Les mots ratés reviennent dans tes révisions. Les mots réussis gardent leur date.</p>}
+        {total < n && <p className="defi-note">{tvp('Les mots ratés reviennent dans tes révisions.', 'Les mots ratés reviennent dans vos révisions.')} Les mots réussis gardent leur date.</p>}
         <button className="btn" onClick={onQuitter}>Revenir à aujourd’hui</button>
       </div>
     );
@@ -245,8 +247,8 @@ export function Defi({ mots, secondes, onReponse, onFin, onQuitter }: {
               {r === 'juste' ? 'Réussi !' : r === 'faute' ? 'Réussi, à une lettre près' : r === 'temps' ? 'Temps écoulé' : 'Raté'}
             </b>
             <span className="defi-reponse" lang="en">{mot.card.en}</span>
-            {saisis[i] && r !== 'juste' && <span className="defi-ecrit">Tu as écrit : <span lang="en">{saisis[i]}</span></span>}
-            {!ok && <span className="defi-ecrit">Ce mot revient dans tes révisions.</span>}
+            {saisis[i] && r !== 'juste' && <span className="defi-ecrit">{tvp('Tu as écrit : ', 'Vous avez écrit : ')}<span lang="en">{saisis[i]}</span></span>}
+            {!ok && <span className="defi-ecrit">{tvp('Ce mot revient dans tes révisions.', 'Ce mot revient dans vos révisions.')}</span>}
           </div>
           <button className="btn" onClick={suivant} autoFocus>{i + 1 < n ? 'Mot suivant' : 'Voir le résultat'}</button>
         </>

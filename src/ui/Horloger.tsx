@@ -18,6 +18,8 @@
  * Les couleurs et les formes fixes sont dans horloger.css ; ici, seulement
  * ce qui se calcule (positions, angles, phases).
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import type { Grade } from '../domain/types';
@@ -558,7 +560,7 @@ export function AujourdhuiHorloger(p: {
               <i style={{ width: `${Math.min(100, (100 * p.cartesAuj) / p.cartesParJour)}%` }} />
               <em style={{ left: `${Math.min(100, (100 * p.cartesAuj) / p.cartesParJour)}%` }} />
             </span>
-            <span>{p.gainValide ? 'Journée validée' : `${p.cartesAuj} / ${p.cartesParJour} cartes pour gagner tes XP`}</span>
+            <span>{p.gainValide ? 'Journée validée' : `${p.cartesAuj} / ${p.cartesParJour} cartes pour gagner ${tvp('tes', 'vos')} XP`}</span>
           </span>
         </div>
 

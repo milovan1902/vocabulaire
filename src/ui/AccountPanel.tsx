@@ -6,6 +6,8 @@
  * navigateur (`confirm`) : elle est laide dans l'application installée
  * et ne dit pas ce qui va disparaître.
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useState } from 'react';
 import type { Auth } from './useAuth';
 import { supprimeCompte } from '../data/compte';
@@ -21,9 +23,7 @@ export function AccountPanel({ auth }: { auth: Auth }) {
     return (
       <div className="account">
         <p className="hint" style={{ marginBottom: 10 }}>
-          Sans compte, tout reste sur cet appareil. Connecte-toi pour
-          retrouver ta progression ailleurs et accéder aux paquets
-          de la bibliothèque.
+          {tvp('Sans compte, tout reste sur cet appareil. Connecte-toi pour retrouver ta progression ailleurs et accéder aux paquets de la bibliothèque.', 'Sans compte, tout reste sur cet appareil. Connectez-vous pour retrouver votre progression ailleurs et accéder aux paquets de la bibliothèque.')}
         </p>
         {accord.caseAccord}
         <button
@@ -90,10 +90,8 @@ function SupprimerCompte() {
   return (
     <div className="setting" style={{ marginTop: 10 }}>
       <p className="hint" style={{ marginBottom: 10 }}>
-        <b>Supprimer ton compte efface définitivement</b> ta progression, tes
-        réglages, tes conversations et leurs corrections, en ligne et sur cet
-        appareil. Ça ne peut pas être annulé. Si tu veux garder ta
-        progression, enregistre d’abord une sauvegarde.
+        <b>{tvp('Supprimer ton compte efface définitivement', 'Supprimer votre compte efface définitivement')}</b>{' '}
+        {tvp('ta progression, tes réglages, tes conversations et leurs corrections, en ligne et sur cet appareil. Ça ne peut pas être annulé. Si tu veux garder ta progression, enregistre d’abord une sauvegarde.', 'votre progression, vos réglages, vos conversations et leurs corrections, en ligne et sur cet appareil. Ça ne peut pas être annulé. Si vous voulez garder votre progression, enregistrez d’abord une sauvegarde.')}
       </p>
       {erreur && (
         <p className="hint" style={{ color: 'var(--bad)', marginBottom: 10 }}>{erreur}</p>

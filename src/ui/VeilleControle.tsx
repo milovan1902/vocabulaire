@@ -5,6 +5,8 @@
  * ratés à la dernière révision : un encart et un bouton qui ne révise
  * qu'eux. Posé au-dessus de l'écran, il vaut pour toutes les apparences.
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useEffect, useState } from 'react';
 import type { Deck } from '../domain/types';
 import { repository } from '../data/repository';
@@ -46,7 +48,7 @@ export function VeilleControle({
         <div key={v.id} className="goal">
           <b>Contrôle demain · {v.nom}</b>
           <p>
-            {v.n} mot{v.n > 1 ? 's' : ''} raté{v.n > 1 ? 's' : ''} à ta dernière révision.
+            {v.n} mot{v.n > 1 ? 's' : ''} raté{v.n > 1 ? 's' : ''} à {tvp('ta', 'votre')} dernière révision.
             Un dernier passage dessus avant le contrôle.
           </p>
           <button className="btn" onClick={() => onRates(v.id)}>

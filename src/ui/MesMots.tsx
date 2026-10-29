@@ -38,6 +38,8 @@
  * les notes qui expliquent pourquoi « à découvrir » n'est pas tracé, la
  * courbe mensuelle héritée du chantier 34 — tout est là, rangé.
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useState } from 'react';
 import { courbe, monthLabel } from '../engine/jalons';
 import { GRAINS, labelDe, serie, type Grain, type Releve } from '../engine/paliers';
@@ -179,8 +181,8 @@ function CourbePaliers({ releves }: { releves: Releve[] }) {
         <div className="prog-courbe attente haute">
           <p className="hint">
             {choixUtile
-              ? 'Pas encore deux relevés à ce grain. Essaie « Jour », ou reviens dans quelques semaines.'
-              : 'Le premier relevé est fait. Reviens demain : chaque jour travaillé ajoute une mesure, et la courbe se dessinera d’elle-même.'}
+              ? tvp('Pas encore deux relevés à ce grain. Essaie « Jour », ou reviens dans quelques semaines.', 'Pas encore deux relevés à ce grain. Essayez « Jour », ou revenez dans quelques semaines.')
+              : tvp('Le premier relevé est fait. Reviens demain : chaque jour travaillé ajoute une mesure, et la courbe se dessinera d’elle-même.', 'Le premier relevé est fait. Revenez demain : chaque jour travaillé ajoute une mesure, et la courbe se dessinera d’elle-même.')}
           </p>
         </div>
         <div className="prog-courbe-axe">
@@ -356,7 +358,7 @@ export function MesMots({
    * à l'écran juste au-dessus.
    */
   const noteCharge = charge.paquets === 0
-    ? 'Aucun paquet en jeu : ta charge de travail est vide. Remets-en un en jeu depuis l’onglet Paquets.'
+    ? tvp('Aucun paquet en jeu : ta charge de travail est vide. Remets-en un en jeu depuis l’onglet Paquets.', 'Aucun paquet en jeu : votre charge de travail est vide. Remettez-en un en jeu depuis l’onglet Paquets.')
     : `Sur ${nb(charge.mots)} mots en jeu, dans ${charge.paquets} paquet${charge.paquets > 1 ? 's' : ''}.`
       + ` ${nb(charge.enCours)} sont en cours d’apprentissage.`;
 
@@ -401,8 +403,7 @@ export function MesMots({
             <BlocMots titre="Tout compris, pauses incluses" p={tout} note={noteTout} />
           ) : (
             <p className="hint prog-perim-note">
-              Aucun paquet en pause : ta charge de travail couvre tout
-              ton vocabulaire, et ce total est donc le seul.
+              {tvp('Aucun paquet en pause : ta charge de travail couvre tout ton vocabulaire, et ce total est donc le seul.', 'Aucun paquet en pause : votre charge de travail couvre tout votre vocabulaire, et ce total est donc le seul.')}
             </p>
           )}
 

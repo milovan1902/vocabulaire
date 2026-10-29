@@ -17,6 +17,8 @@
  *
  * Pas d'achat en euros pour l'instant (Google Play n'est pas branché).
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
@@ -134,7 +136,7 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
     utiliser(a.id);
     setTic((n) => n + 1);
     setOuverte(null);
-    setMessage(`« ${THEME_LABELS[a.id]} » est à toi, pour ${nb(PRIX[a.palier])} crédits.`);
+    setMessage(`« ${THEME_LABELS[a.id]} » est ${tvp('à toi', 'à vous')}, pour ${nb(PRIX[a.palier])} crédits.`);
   }
 
   /* La recherche et « À moi / À gagner » d'abord : les pastilles comptent ce qui reste. */
@@ -171,7 +173,7 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
           {!aMoi && plafondAtteint() && (
             <div className="btq-manque">
               <span className="btq-etat">12 apparences sur 12</span>
-              <small>C’est le maximum sans abonnement. Avec l’abonnement, toutes les apparences sont à toi.</small>
+              <small>C’est le maximum sans abonnement. Avec l’abonnement, toutes les apparences sont {tvp('à toi', 'à vous')}.</small>
             </div>
           )}
           {!aMoi && !plafondAtteint() && solde >= prix && (
@@ -204,7 +206,7 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
           <ul className="btq-aide">
             <li>20 crédits par jour validé (20 cartes), 30 le week-end.</li>
             <li>Semaine à 5 / 5 : bonus le vendredi, +20, +40 puis +60.</li>
-            <li>Tes crédits ne se perdent jamais.</li>
+            <li>{tvp('Tes crédits ne se perdent jamais.', 'Vos crédits ne se perdent jamais.')}</li>
           </ul>
         )}
       </div>
@@ -234,7 +236,7 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
       </div>
 
       {nbVisibles === 0 && (
-        <p className="hint">{q ? 'Aucune apparence ne correspond.' : filtre === 'gagner' ? 'Tu as déjà toutes les apparences.' : 'Rien ici pour l’instant.'}</p>
+        <p className="hint">{q ? 'Aucune apparence ne correspond.' : filtre === 'gagner' ? tvp('Tu as déjà toutes les apparences.', 'Vous avez déjà toutes les apparences.') : 'Rien ici pour l’instant.'}</p>
       )}
 
       {visibles.map((f) => (
@@ -254,7 +256,7 @@ export function Boutique({ streak, onTheme }: { streak: Streak; onTheme?: (t: Th
                     {enCours
                       ? <em className="encours">● En cours</em>
                       : aMoi
-                        ? <em className="amoi">✓ À toi</em>
+                        ? <em className="amoi">✓ {tvp('À toi', 'À vous')}</em>
                         : <em className={solde >= prix ? 'prix assez' : 'prix'}>{nb(prix)} crédits</em>}
                   </span>
                 </button>

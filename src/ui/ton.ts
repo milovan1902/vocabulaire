@@ -41,3 +41,9 @@ export function estAdulte(s?: Pick<Settings, 'adulte' | 'classe'> | null): boole
 
 /** Le même texte, au tutoiement ou au vouvoiement. */
 export const tv = (adulte: boolean, tu: string, vous: string): string => (adulte ? vous : tu);
+
+/**
+ * CHANTIER 358 — le même texte, selon le profil de l'appareil, sans rien
+ * faire passer : lu à chaque affichage (une lecture locale, instantanée).
+ */
+export const tvp = (tu: string, vous: string): string => (estAdulte() ? vous : tu);

@@ -18,6 +18,8 @@
  * n'était qu'une erreur de vocabulaire. Ici, c'est « à revoir » : ce qui est
  * dû ce matin, et rien d'autre.
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Deck, Settings } from '../domain/types';
 import { loadSummaries, type DeckSummary } from './deckSummary';
@@ -474,7 +476,7 @@ export function Today({
    */
   let parlerN = '…';
   let parlerSous = '';
-  if (budget === null) { parlerN = 'Parler'; parlerSous = 'connecte-toi pour commencer'; }
+  if (budget === null) { parlerN = 'Parler'; parlerSous = tvp('connecte-toi pour commencer', 'connectez-vous pour commencer'); }
   else if (budget === 'erreur') { parlerN = '—'; parlerSous = 'indisponible pour l’instant'; }
   else if (budget) {
     const m = Math.max(0, Math.floor(budget.minutes));
@@ -538,7 +540,7 @@ export function Today({
       : style === 'arcade'
         ? { defi: 'Stage du jour', go: '▶ Jouer', jour: `${cartesAuj} / ${CARTES_PAR_JOUR}` }
       : style === 'neon'
-        ? { defi: 'Défi du soir', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+        ? { defi: 'Défi du soir', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner ${tvp('tes', 'vos')} XP` }
       : style === 'voyage'
         ? { defi: 'Étape du jour', go: 'En route', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} km` }
       : style === 'manga'
@@ -563,7 +565,7 @@ export function Today({
         ? { defi: 'La mise du jour', go: 'Miser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} jetons` }
       /* CHANTIER 210 — Station 1936 : le forfait de remontée. */
       : style === 'station'
-        ? { defi: 'Forfait du jour', go: 'Monter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+        ? { defi: 'Forfait du jour', go: 'Monter', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner ${tvp('tes', 'vos')} XP` }
       /* CHANTIER 213 — Fashion week : le défilé. */
       : style === 'fashion'
         ? { defi: 'Le défilé du jour', go: 'Défiler', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} looks` }
@@ -599,10 +601,10 @@ export function Today({
       : style === 'ocean'
         ? { defi: 'Plongée du jour', go: 'Plonger', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} m de profondeur` }
       : style === 'tableau'
-        ? { defi: 'Au tableau aujourd’hui', go: 'Réviser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
+        ? { defi: 'Au tableau aujourd’hui', go: 'Réviser', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner ${tvp('tes', 'vos')} XP` }
       : style === 'orbite'
-        ? { defi: 'Exploration du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` }
-        : { defi: 'Défi du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP` };
+        ? { defi: 'Exploration du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner ${tvp('tes', 'vos')} XP` }
+        : { defi: 'Défi du jour', go: 'C’est parti', jour: `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner ${tvp('tes', 'vos')} XP` };
     /* Le dessin des deux boutons qui changent de paquet.
        CHANTIER 182 — Strass : un diamant ; Grille de départ : un pneu ;
        Diner : un bouton chromé ; TV : une étoile. */
@@ -1152,8 +1154,7 @@ export function Today({
             <span>carte<br />à revoir</span>
           </div>
           <p className="hint">
-            Aucun paquet en jeu. Choisis ceux sur lesquels tu veux
-            travailler ; leur charge apparaîtra ici.
+            {tvp('Aucun paquet en jeu. Choisis ceux sur lesquels tu veux travailler ; leur charge apparaîtra ici.', 'Aucun paquet en jeu. Choisissez ceux sur lesquels vous voulez travailler ; leur charge apparaîtra ici.')}
           </p>
           <button className="btn" onClick={onManage}>Mettre un paquet en jeu</button>
         </>
@@ -1175,7 +1176,7 @@ export function Today({
           ) : (
             <p className="today-xp">
               {cartesAuj} / {CARTES_PAR_JOUR} cartes aujourd’hui. Pour gagner
-              tes {gain.xp} XP, ouvre un paquet et choisis « Continuer quand
+              {tvp(' tes ', ' vos ')}{gain.xp} XP, {tvp('ouvre un paquet et choisis', 'ouvrez un paquet et choisissez')} « Continuer quand
               même » : encore {manque} carte{manque > 1 ? 's' : ''}.
             </p>
           )}
@@ -1196,7 +1197,7 @@ export function Today({
             </span>
             <span className="ly-defi-jour">
               <span className="ly-barre"><i style={{ width: `${Math.min(100, (100 * cartesAuj) / CARTES_PAR_JOUR)}%` }} /></span>
-              <span>{gain.valide ? 'Journée validée' : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner tes XP`}</span>
+              <span>{gain.valide ? 'Journée validée' : `${cartesAuj} / ${CARTES_PAR_JOUR} cartes pour gagner ${tvp('tes', 'vos')} XP`}</span>
             </span>
           </div>
 
@@ -1206,7 +1207,7 @@ export function Today({
           {suite.length > 0 && (
             <>
               <p className="rayon-label">
-                {enAvant ? 'Les autres paquets' : 'Sur quoi tu travailles ?'}
+                {enAvant ? 'Les autres paquets' : tvp('Sur quoi tu travailles ?', 'Sur quoi travaillez-vous ?')}
               </p>
               <div className="worklist todaylist">
                 {suite.map(ligne)}

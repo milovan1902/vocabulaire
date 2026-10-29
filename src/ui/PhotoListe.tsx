@@ -8,6 +8,8 @@
  * 283 — le compteur est lu par l'éditeur (l'onglet « En photo · reste 2 »
  * l'affiche) et passé ici. Une panne dit enfin sa cause.
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useEffect, useRef, useState, type PointerEvent as PE } from 'react';
 import { ErreurPhoto, lirePhoto, prepareImage, quotaDit, type EtatPhoto } from '../data/photoListe';
 
@@ -43,7 +45,7 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
       <div style={cadreBox}>
         <p className="hint" style={{ margin: 0 }}>
           {fermee === 'compte'
-            ? 'Connecte-toi à ton compte (Réglages) pour faire lire une liste en photo.'
+            ? tvp('Connecte-toi à ton compte (Réglages) pour faire lire une liste en photo.', 'Connectez-vous à votre compte (Réglages) pour faire lire une liste en photo.')
             : 'La lecture d’une liste en photo est réservée aux abonnés.'}
         </p>
       </div>
@@ -86,11 +88,11 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
     } catch (e) {
       if (e instanceof ErreurPhoto) {
         if (e.etat) onEtat(e.etat);
-        if (e.code === 'vide') setMessage('Aucun mot lu sur cette photo. Recadre plus près de la liste, ou reprends-la avec plus de lumière. Elle n’est pas comptée.');
+        if (e.code === 'vide') setMessage(tvp('Aucun mot lu sur cette photo. Recadre plus près de la liste, ou reprends-la avec plus de lumière. Elle n’est pas comptée.', 'Aucun mot lu sur cette photo. Recadrez plus près de la liste, ou reprenez-la avec plus de lumière. Elle n’est pas comptée.'));
         else if (e.code === 'quota') setUrl(null);
         else setMessage(`La lecture n’a pas abouti (${e.message}). La photo n’est pas comptée.`);
       } else {
-        setMessage('La photo n’a pas pu être préparée. Essaie avec une autre.');
+        setMessage(tvp('La photo n’a pas pu être préparée. Essaie avec une autre.', 'La photo n’a pas pu être préparée. Essayez avec une autre.'));
       }
     } finally {
       setLecture(false);

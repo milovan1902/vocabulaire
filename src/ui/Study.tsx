@@ -9,6 +9,8 @@
  * dans les réglages, sans effet sur cet écran, et pourront être retirés
  * lors du chantier « réglages ».
  */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Grade, ModeReponse, Settings } from '../domain/types';
 /* CHANTIER 356 — la première note de chaque carte, pour le bilan de fin. */
@@ -1379,7 +1381,7 @@ export function Study({
             lang={langBack}
             value={saisie}
             onChange={(e) => setSaisie(e.target.value)}
-            placeholder={langBack === 'en' ? 'Écris en anglais' : 'Écris en français'}
+            placeholder={langBack === 'en' ? tvp('Écris en anglais', 'Écrivez en anglais') : tvp('Écris en français', 'Écrivez en français')}
             autoFocus autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
             enterKeyHint="done"
           />
@@ -1392,20 +1394,20 @@ export function Study({
       ) : !revealed && actif && mode === 'oral' ? (
         <div className="rp-oral">
           <p className="rp-entendu">
-            {ecoutant ? <>J’écoute… {entendu && <b>« {entendu} »</b>}</> : langBack === 'en' ? 'Dis-le en anglais' : 'Dis-le en français'}
+            {ecoutant ? <>J’écoute… {entendu && <b>« {entendu} »</b>}</> : langBack === 'en' ? tvp('Dis-le en anglais', 'Dites-le en anglais') : tvp('Dis-le en français', 'Dites-le en français')}
           </p>
           <button className={`rp-micro${ecoutant ? ' on' : ''}`} onClick={micro} aria-label={ecoutant ? 'Arrêter' : 'Parler'}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" x2="12" y1="19" y2="22" /></svg>
           </button>
           <p className="tap-hint">
-            {ecoutant ? 'Touche pour arrêter' : 'Touche le micro'} ·{' '}
+            {ecoutant ? tvp('Touche pour arrêter', 'Touchez pour arrêter') : tvp('Touche le micro', 'Touchez le micro')} ·{' '}
             <button type="button" className="rp-lien" onClick={() => { refEcoute.current?.arrete(); setModeCarte('ecrit'); }}>Écrire à la place</button>
           </p>
         </div>
       ) : !revealed ? (
         <>
           <button className="reveal" onClick={reveal}>{style === 'horloger' ? 'Ouvrir la montre' : 'Afficher la réponse'}</button>
-          <p className="tap-hint">Touche le mot, ou appuie sur espace au clavier.</p>
+          <p className="tap-hint">{tvp('Touche le mot, ou appuie sur espace au clavier.', 'Touchez le mot, ou appuyez sur espace au clavier.')}</p>
         </>
       ) : (
         <>
@@ -1413,12 +1415,12 @@ export function Study({
           /* CHANTIER 352 — role="status" : TalkBack lit le verdict dès qu'il paraît. */
           <p className={`rp-verdict rp-${verdict.etat}`} role="status">
             {!verdict.saisi ? 'Pas de réponse : on la revoit bientôt.' : <>
-              {verdict.oral ? 'Tu as dit : ' : 'Tu as écrit : '}
+              {verdict.oral ? tvp('Tu as dit : ', 'Vous avez dit : ') : tvp('Tu as écrit : ', 'Vous avez écrit : ')}
               {verdict.etat === 'faux'
                 ? <><s>{verdict.saisi}</s><span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}> : faux</span></>
                 : <><b>{verdict.saisi}</b><span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>{verdict.etat === 'faute' ? ' : presque juste' : ' : juste'}</span></>}
-              {verdict.etat === 'faute' && <small>Petite faute acceptée · regarde bien l’orthographe.</small>}
-              {verdict.conteste && <small>Comptée juste · choisis ta note.</small>}
+              {verdict.etat === 'faute' && <small>{tvp('Petite faute acceptée · regarde bien l’orthographe.', 'Petite faute acceptée · regardez bien l’orthographe.')}</small>}
+              {verdict.conteste && <small>{tvp('Comptée juste · choisis ta note.', 'Comptée juste · choisissez votre note.')}</small>}
             </>}
           </p>
         )}

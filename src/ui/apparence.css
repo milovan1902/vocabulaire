@@ -183,6 +183,10 @@ body { font-family: var(--sans); }
 .xpj-col > .xpj-base:first-child { border-radius: 4px 4px 0 0; }
 .xpj-base { background: var(--good); }
 .xpj-bonus { background: var(--chalk); }
+/* CHANTIER 358 — le défi éclair, au-dessus de la colonne du jour. */
+.xpj-col .xpj-defi { border-radius: 4px 4px 0 0; }
+.xpj-col > .xpj-defi + .xpj-base, .xpj-col > .xpj-defi + .xpj-bonus { border-radius: 0; }
+.xpj-defi { background: var(--ink-soft); }
 .xpj-manque { height: 3px; border-radius: 2px; background: var(--bad); }
 .xpj-auj { border-radius: 4px 4px 0 0; border: 1.5px dashed var(--chalk); background: color-mix(in srgb, var(--chalk) 12%, transparent); }
 .xpj-legende { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 16px; font-size: 12.5px; color: var(--grey); }

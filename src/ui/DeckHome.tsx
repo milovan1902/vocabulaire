@@ -1,4 +1,6 @@
 /** Écran d'un paquet : statistiques, filtres de thème, réglages, actions. */
+/* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
+import { tvp } from './ton';
 import { useMemo, useState } from 'react';
 /* CHANTIER 356 — boîtes de dialogue maison à la place de confirm() et alert(). */
 import { demande, informe } from './Dialogue';
@@ -68,7 +70,7 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
       setEdite(null);
       onReload();
     } catch (err) {
-      setErreur('L’enregistrement a échoué. Réessaie.');
+      setErreur(tvp('L’enregistrement a échoué. Réessaie.', 'L’enregistrement a échoué. Réessayez.'));
       console.error(err);
     } finally {
       setEnCours(false);
@@ -76,7 +78,7 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
   }
 
   async function retire(c: Card) {
-    if (cards.length <= 1) { informe('Un paquet garde au moins un mot. Pour tout effacer, supprime le paquet.'); return; }
+    if (cards.length <= 1) { informe(tvp('Un paquet garde au moins un mot. Pour tout effacer, supprime le paquet.', 'Un paquet garde au moins un mot. Pour tout effacer, supprimez le paquet.')); return; }
     if (!(await demande({ titre: `Retirer « ${c.en} » du paquet ?`, texte: 'Sa progression sera effacée aussi.', agir: 'Retirer', ton: 'danger' }))) return;
     setEnCours(true);
     try {
@@ -89,7 +91,7 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
       setEdite(null);
       onReload();
     } catch (err) {
-      informe('Le retrait a échoué. Réessaie.', true);
+      informe(tvp('Le retrait a échoué. Réessaie.', 'Le retrait a échoué. Réessayez.'), true);
       console.error(err);
     } finally {
       setEnCours(false);
@@ -104,7 +106,7 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
       </summary>
       <p className="hint">
         {modifiable
-          ? 'Touche un mot pour le corriger. Sa progression est conservée.'
+          ? tvp('Touche un mot pour le corriger. Sa progression est conservée.', 'Touchez un mot pour le corriger. Sa progression est conservée.')
           : 'Paquet du catalogue : les mots se consultent ici mais ne se modifient pas.'}
       </p>
       {cards.length > 12 && (
@@ -262,7 +264,7 @@ export function DeckHome({
       }
       onReload();
     } catch (e) {
-      informe('L’enregistrement a échoué. Réessaie.', true);
+      informe(tvp('L’enregistrement a échoué. Réessaie.', 'L’enregistrement a échoué. Réessayez.'), true);
       console.error(e);
     } finally {
       setCtrlEnCours(false);
@@ -368,15 +370,15 @@ export function DeckHome({
           <p className="hint">
             {ctrl
               ? `Prévu ${jourLong(dateLocale(ctrl))}. Les révisions de ce paquet sont resserrées jusque-là, et tout le paquet revient la veille.`
-              : 'Aucun contrôle prévu. Ajoute une date : l’appli resserre les révisions pour que les mots soient sus le jour J.'}
+              : tvp('Aucun contrôle prévu. Ajoute une date : l’appli resserre les révisions pour que les mots soient sus le jour J.', 'Aucun contrôle prévu. Ajoutez une date : l’appli resserre les révisions pour que les mots soient sus le jour J.')}
           </p>
           {bilan && (
             <div className="bilan">
               <b>{fragiles.length === 0 ? 'Aucun mot fragile' : `${fragiles.length} mot${fragiles.length > 1 ? 's' : ''} fragile${fragiles.length > 1 ? 's' : ''}`}</b>
               <p className="hint" style={{ margin: '4px 0 8px' }}>
                 {fragiles.length === 0
-                  ? 'À ta dernière révision, tu as su tous les mots déjà vus.'
-                  : 'Notés « À revoir » ou « Difficile » à ta dernière révision. Relis-les avant le contrôle.'}
+                  ? tvp('À ta dernière révision, tu as su tous les mots déjà vus.', 'À votre dernière révision, vous avez su tous les mots déjà vus.')
+                  : tvp('Notés « À revoir » ou « Difficile » à ta dernière révision. Relis-les avant le contrôle.', 'Notés « À revoir » ou « Difficile » à votre dernière révision. Relisez-les avant le contrôle.')}
               </p>
               {fragiles.length > 0 && (
                 <div className="rows">
@@ -398,7 +400,7 @@ export function DeckHome({
               onChange={(e) => { if (e.target.value) setDateCtrl(e.target.value); }}
             />
           </div>
-          {!dateCtrlOk && <p className="error">Choisis une date entre demain et dans 3 mois.</p>}
+          {!dateCtrlOk && <p className="error">{tvp('Choisis une date entre demain et dans 3 mois.', 'Choisissez une date entre demain et dans 3 mois.')}</p>}
           <button className="btn" disabled={!dateCtrlOk || dateCtrl === ctrl || ctrlEnCours} onClick={() => void enregistreControle(dateCtrl)}>
             {ctrl ? 'Changer la date' : 'Ajouter ce contrôle'}
           </button>
@@ -490,8 +492,7 @@ export function DeckHome({
         <div className="goal" role="status">
           <b>Inclus dans l’abonnement.</b>
           <p>
-            Tu peux parcourir ses mots. La révision de ce paquet est réservée aux
-            abonnés ; ton paquet offert t’attend dans le catalogue.
+            {tvp('Tu peux parcourir ses mots. La révision de ce paquet est réservée aux abonnés ; ton paquet offert t’attend dans le catalogue.', 'Vous pouvez parcourir ses mots. La révision de ce paquet est réservée aux abonnés ; votre paquet offert vous attend dans le catalogue.')}
           </p>
         </div>
       ) : available > 0 ? (
@@ -503,7 +504,7 @@ export function DeckHome({
           <div className="goal">
             <b>Objectif du jour atteint.</b>
             <p>
-              Il reste {beyond} carte{beyond > 1 ? 's' : ''} si tu veux continuer.
+              Il reste {beyond} carte{beyond > 1 ? 's' : ''} {tvp('si tu veux continuer.', 'si vous voulez continuer.')}
               Sache seulement que chaque carte prise en avance revient plus tard :
               en faire davantage aujourd’hui, c’est plus de révisions demain
               et les jours suivants.
@@ -525,7 +526,7 @@ export function DeckHome({
         if (!(await demande({
           titre: `Effacer la progression de « ${deck.name} » ?`,
           texte: userId
-            ? 'Elle sera effacée sur tous tes appareils, pas seulement celui-ci.'
+            ? tvp('Elle sera effacée sur tous tes appareils, pas seulement celui-ci.', 'Elle sera effacée sur tous vos appareils, pas seulement celui-ci.')
             : 'Les mots repartiront comme neufs.',
           agir: 'Effacer la progression',
           ton: 'danger',
@@ -538,7 +539,7 @@ export function DeckHome({
           } catch (e) {
             informe(
               'Effacement impossible sur le serveur. ' + phraseErreur(e, 'effacement-progression') +
-              ' Rien n’a été modifié. Réessaie une fois connecté.',
+              tvp(' Rien n’a été modifié. Réessaie une fois connecté.', ' Rien n’a été modifié. Réessayez une fois connecté.'),
               true,
             );
             return;
