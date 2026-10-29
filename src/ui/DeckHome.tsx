@@ -1,5 +1,7 @@
 /** Écran d'un paquet : statistiques, filtres de thème, réglages, actions. */
 import { useMemo, useState } from 'react';
+/* CHANTIER 356 — boîtes de dialogue maison à la place de confirm() et alert(). */
+import { demande, informe } from './Dialogue';
 import type { Card, DeckOverride, Progress, Settings } from '../domain/types';
 import type { LoadedDeck } from './useStore';
 import { progressFor } from './useStore';
@@ -74,8 +76,8 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
   }
 
   async function retire(c: Card) {
-    if (cards.length <= 1) { alert('Un paquet garde au moins un mot. Pour tout effacer, supprime le paquet.'); return; }
-    if (!confirm(`Retirer « ${c.en} » du paquet ?`)) return;
+    if (cards.length <= 1) { informe('Un paquet garde au moins un mot. Pour tout effacer, supprime le paquet.'); return; }
+    if (!(await demande({ titre: `Retirer « ${c.en} » du paquet ?`, texte: 'Sa progression sera effacée aussi.', agir: 'Retirer', ton: 'danger' }))) return;
     setEnCours(true);
     try {
       await repository.saveCards(deckId, cards.filter((x) => x.id !== c.id));
@@ -87,7 +89,7 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
       setEdite(null);
       onReload();
     } catch (err) {
-      alert('Le retrait a échoué. Réessaie.');
+      informe('Le retrait a échoué. Réessaie.', true);
       console.error(err);
     } finally {
       setEnCours(false);
@@ -260,7 +262,7 @@ export function DeckHome({
       }
       onReload();
     } catch (e) {
-      alert('L’enregistrement a échoué. Réessaie.');
+      informe('L’enregistrement a échoué. Réessaie.', true);
       console.error(e);
     } finally {
       setCtrlEnCours(false);
@@ -401,7 +403,7 @@ export function DeckHome({
             {ctrl ? 'Changer la date' : 'Ajouter ce contrôle'}
           </button>
           {ctrl && (
-            <button className="btn ghost" disabled={ctrlEnCours} onClick={() => { if (confirm('Retirer le contrôle ? Le paquet reprend le rythme normal.')) void enregistreControle(null); }}>
+            <button className="btn ghost" disabled={ctrlEnCours} onClick={async () => { if (await demande({ titre: 'Retirer le contrôle ?', texte: 'Le paquet reprend le rythme normal.', agir: 'Retirer le contrôle' })) void enregistreControle(null); }}>
               Retirer le contrôle
             </button>
           )}
@@ -520,20 +522,24 @@ export function DeckHome({
       {!verrouille && <button className="btn ghost" onClick={onAddCards}>Ajouter des mots à ce paquet</button>}
 
       <button className="btn ghost danger" onClick={async () => {
-        const message = userId
-          ? `Effacer la progression de « ${deck.name} » ?\n\n` +
-            'Elle sera effacée sur tous tes appareils, pas seulement celui-ci.'
-          : `Effacer la progression de « ${deck.name} » ?`;
-        if (!confirm(message)) return;
+        if (!(await demande({
+          titre: `Effacer la progression de « ${deck.name} » ?`,
+          texte: userId
+            ? 'Elle sera effacée sur tous tes appareils, pas seulement celui-ci.'
+            : 'Les mots repartiront comme neufs.',
+          agir: 'Effacer la progression',
+          ton: 'danger',
+        }))) return;
         // L'ordre compte : si le serveur refuse, on ne veut pas avoir déjà
         // effacé en local une progression qu'il rapatrierait ensuite.
         if (userId) {
           try {
             await clearRemoteProgress(userId, deck.id);
           } catch (e) {
-            alert(
+            informe(
               'Effacement impossible sur le serveur. ' + phraseErreur(e, 'effacement-progression') +
-              '\n\nRien n’a été modifié. Réessaie une fois connecté.',
+              ' Rien n’a été modifié. Réessaie une fois connecté.',
+              true,
             );
             return;
           }
@@ -546,7 +552,12 @@ export function DeckHome({
 
       {!deck.builtin && (
         <button className="btn ghost danger" onClick={async () => {
-          if (!confirm(`Supprimer définitivement « ${deck.name} » ?`)) return;
+          if (!(await demande({
+            titre: `Supprimer « ${deck.name} » ?`,
+            texte: 'Ses mots et leur progression seront effacés. On ne pourra pas les récupérer.',
+            agir: 'Supprimer définitivement',
+            ton: 'danger',
+          }))) return;
           await repository.deleteDeck(deck.id);
           onBackToLibrary();
         }}>

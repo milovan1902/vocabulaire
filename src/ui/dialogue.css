@@ -1,0 +1,51 @@
+/* CHANTIER 356 — boîtes de dialogue et bandeaux (Dialogue.tsx). Couleurs de l'apparence. */
+.dlg-fond {
+  position: fixed; inset: 0; z-index: 160;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  background: rgba(5, 10, 20, 0.62);
+  animation: dlg-fondu 0.18s ease both;
+}
+.dlg {
+  width: 100%; max-width: var(--shell);
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 22px;
+  padding: 24px 20px 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  animation: dlg-monte 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.dlg h2 { margin: 0 0 10px; font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1.2; text-wrap: pretty; }
+.dlg p { margin: 0 0 18px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.dlg-actions { display: flex; flex-direction: column; margin-top: 6px; }
+.btn.dlg-danger { background: var(--bad); color: var(--on-chalk); border: none; }
+
+.bandeau {
+  position: fixed; z-index: 160;
+  left: 16px; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom));
+  max-width: calc(var(--shell) - 32px); margin: 0 auto;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 10px 12px 14px;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 16px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+  animation: dlg-monte 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.bandeau.erreur { border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+.bandeau-pastille {
+  flex: none; width: 28px; height: 28px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+  background: color-mix(in srgb, var(--good) 20%, transparent); color: var(--good);
+}
+.bandeau.erreur .bandeau-pastille { background: color-mix(in srgb, var(--bad) 20%, transparent); color: var(--bad); }
+.bandeau-texte { flex: 1; min-width: 0; font-size: 15px; line-height: 1.4; }
+.bandeau-ok {
+  flex: none; min-width: 44px; min-height: 44px; padding: 0 8px;
+  background: none; border: none; color: var(--ink-soft);
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.bandeau-ok:focus-visible, .dlg .btn:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+@keyframes dlg-fondu { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dlg-monte { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .dlg-fond, .dlg, .bandeau { animation: none; } }

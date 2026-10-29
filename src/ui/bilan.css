@@ -1,0 +1,55 @@
+/* CHANTIER 356 — la fin de session (BilanSession.tsx). Couleurs de l'apparence. */
+.done.bilan { text-align: center; padding: 26px 0 20px; display: flex; flex-direction: column; gap: 14px; }
+.done.bilan h2 { margin: 2px 0 0; font-size: 27px; line-height: 1.2; text-wrap: balance; }
+.done.bilan p { margin: 0; }
+.bilan-paquet { font-family: var(--serif); font-size: 17px; color: var(--ink); }
+.bilan-resume { font-size: 14px; color: var(--ink-soft); margin-top: -8px !important; }
+
+.bilan-anneau {
+  align-self: center; width: 108px; height: 108px; border-radius: 999px;
+  background: conic-gradient(var(--good) 0 var(--pct), var(--rule) var(--pct) 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.bilan-anneau > div {
+  width: 88px; height: 88px; border-radius: 999px; background: var(--paper);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.bilan-anneau b { font-size: 26px; font-weight: 650; color: var(--ink); line-height: 1.1; }
+.bilan-anneau span { font-size: 11px; color: var(--ink-soft); }
+
+.bilan-chiffres { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; text-align: left; }
+.bilan-notes, .bilan-xp, .bilan-bloc { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; }
+.bilan-notes { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bilan-barre { display: flex; height: 8px; border-radius: 8px; overflow: hidden; gap: 2px; background: var(--rule); }
+.bilan-barre.fine { height: 6px; }
+.bilan-barre span { display: block; min-width: 4px; }
+.bilan-legende { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--ink-soft); }
+.bilan-legende li { display: flex; align-items: center; gap: 5px; }
+.bilan-legende b { color: var(--ink); font-weight: 650; }
+.bilan-legende i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.b-again { background: var(--bad); }
+.b-hard { background: var(--chalk); }
+.b-good { background: color-mix(in srgb, var(--good) 55%, var(--panel)); }
+.b-easy { background: var(--good); }
+.bilan-xp { padding: 10px 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 84px; }
+.bilan-xp b { font-size: 21px; font-weight: 650; color: var(--chalk); }
+.bilan-xp span { font-size: 12px; color: var(--ink-soft); }
+
+.bilan-bloc { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.bilan-bloc h3 { margin: 0; font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); }
+.bilan-mots { margin: 0; display: flex; flex-direction: column; gap: 7px; }
+.bilan-mots > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; font-size: 14.5px; }
+.bilan-mots dt { color: var(--ink); overflow-wrap: anywhere; }
+.bilan-mots dd { margin: 0; color: var(--ink-soft); overflow-wrap: anywhere; }
+.bilan-autres { font-size: 13px; color: var(--grey); }
+.btn.ghost.bilan-revoir { margin: 2px 0 0; color: var(--chalk); border-color: color-mix(in srgb, var(--chalk) 55%, transparent); font-weight: 600; }
+.bilan-retours { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.bilan-retours > div { display: flex; flex-direction: column; gap: 3px; }
+.bilan-retours b { font-size: 20px; font-weight: 650; color: var(--ink); }
+.bilan-retours span { font-size: 12px; color: var(--ink-soft); }
+.bilan-retours b.r-demain { color: var(--bad); }
+.bilan-retours b.r-tard { color: var(--good); }
+.bilan-barre .r-demain { background: var(--bad); }
+.bilan-barre .r-semaine { background: var(--ink-soft); }
+.bilan-barre .r-tard { background: var(--good); }
+.bilan-actions { display: flex; flex-direction: column; margin-top: 4px; }

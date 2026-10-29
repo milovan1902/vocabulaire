@@ -83,6 +83,8 @@ import { ChoixAdulte } from './ChoixAdulte';
 import { repository } from '../data/repository';
 import { Slider, Toggle } from './components';
 import { Ligne, Tiroir } from './tiroir';
+/* CHANTIER 356 — boîtes de dialogue maison à la place de confirm() et alert(). */
+import { demande, informe } from './Dialogue';
 /* CHANTIER 350 — la taille du texte. */
 import { TAILLES, choisisTaille, lisTaille, type TailleTexte } from '../data/tailleTexte';
 import { minutesPour } from '../engine/tempo';
@@ -287,7 +289,7 @@ export function Account({
     try {
       await telechargeSauvegarde();
     } catch (e) {
-      alert('Sauvegarde impossible. ' + phraseErreur(e, 'sauvegarde'));
+      informe('Sauvegarde impossible. ' + phraseErreur(e, 'sauvegarde'), true);
     }
   }
 
@@ -296,23 +298,26 @@ export function Account({
     try {
       payload = JSON.parse(await file.text());
     } catch {
-      alert("Fichier illisible : ce n'est pas une sauvegarde valide.");
+      informe("Fichier illisible : ce n'est pas une sauvegarde valide.", true);
       return;
     }
     if (payload.format !== 'vocab-backup' || !payload.data) {
-      alert("Ce fichier n'est pas une sauvegarde de cette application.");
+      informe("Ce fichier n'est pas une sauvegarde de cette application.", true);
       return;
     }
     const when = (payload.date ?? '').slice(0, 10);
-    if (!confirm(
-      `Restaurer la sauvegarde du ${when} ?\n\n` +
-      'Tous les paquets et la progression de cet appareil seront remplacés.',
-    )) return;
+    if (!(await demande({
+      titre: `Restaurer la sauvegarde du ${when} ?`,
+      texte: 'Tous les paquets et la progression de cet appareil seront remplacés.',
+      agir: 'Restaurer',
+      ton: 'danger',
+    }))) return;
     await repository.importAll(payload.data);
-    alert('Sauvegarde restaurée.');
+    informe('Sauvegarde restaurée.');
     // Rechargement complet : les réglages, la série et le compteur du jour
     // sont relus depuis la sauvegarde, pas seulement la liste des paquets.
-    location.reload();
+    // 356 — un instant d'abord, pour qu'on lise le bandeau.
+    window.setTimeout(() => location.reload(), 1200);
   }
 
   return (

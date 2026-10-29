@@ -25,6 +25,19 @@ import { classeConvient, classeRank } from './domain/types';
 import type { Classe } from './domain/types';
 import { REPRISE_ID, repareThemesReprise } from './data/reprise';
 import { loadSummaries } from './ui/deckSummary';
+/* CHANTIER 356 — boîtes de dialogue maison et bilan de fin de session. */
+import { Dialogues, demande, type Question } from './ui/Dialogue';
+import { BilanFin } from './ui/BilanSession';
+import type { BilanSession } from './engine/bilan';
+import { cartesDuJour, gainDuJour } from './engine/xp';
+
+const QUITTER: Question = {
+  titre: 'Quitter la session ?',
+  texte: 'Les cartes déjà notées sont enregistrées.',
+  agir: 'Quitter',
+  garder: 'Continuer la session',
+  ton: 'prudent',
+};
 
 /*
  * CHANTIER 353 — LES ÉCRANS SECONDAIRES SE CHARGENT À PART.
@@ -117,7 +130,7 @@ type View =
   | { name: 'search' }
   | { name: 'deck' }
   | { name: 'study' }
-  | { name: 'done'; reviewed: number }
+  | { name: 'done'; reviewed: number; bilan: BilanSession }
   | { name: 'editor'; mode: 'create' | 'append' };
 
 const ONGLETS: Array<{ name: Tab; label: string; Icone: () => ReactElement }> = [
@@ -439,6 +452,25 @@ export default function App() {
     [store, view.name],
   );
 
+  /* CHANTIER 356 — « Revoir ces mots maintenant » : les cartes ratées de la session qui vient de finir. */
+  const revoirMots = useCallback(
+    async (ids: string[]) => {
+      if (!loaded) return;
+      const deck = await store.loadDeck(loaded.deck.id);
+      setLoaded(deck);
+      const garde = new Set(ids);
+      const q: SessionItem[] = deck.cards
+        .filter((c) => garde.has(c.id))
+        .map((card) => ({ card, progress: progressFor(deck.progress, card.id), wasNew: false }))
+        .sort(() => Math.random() - 0.5);
+      if (!q.length) return;
+      setQueue(q);
+      setView({ name: 'study' });
+    },
+    [loaded, store],
+  );
+  const [suivant, setSuivant] = useState<{ id: string; nom: string; cartes: number } | null>(null);
+
   const handleGrade = useCallback(
     async (item: SessionItem, grade: Grade) => {
       if (!loaded) return;
@@ -495,12 +527,19 @@ export default function App() {
       depileInterne.current = false;
 
       if (!interne && view.name === 'study') {
-        if (!confirm('Quitter la session en cours ?')) {
-          // Refus : on remet l'entrée que l'appui vient de consommer.
-          history.pushState({ profondeur: p.length }, '');
-          return;
-        }
-        void endSession();
+        /*
+         * 356 — la question est maintenant une boîte maison, qui ne bloque pas :
+         * on remet tout de suite l'entrée que l'appui vient de consommer, et si
+         * la personne confirme, on refait le retour, marqué interne.
+         */
+        history.pushState({ profondeur: p.length }, '');
+        void demande(QUITTER).then((oui) => {
+          if (!oui) return;
+          void endSession();
+          depileInterne.current = true;
+          history.back();
+        });
+        return;
       } else if (!interne && (view.name === 'deck' || view.name === 'done' || view.name === 'editor')) {
         // On a pu écrire depuis ces écrans : l'écran d'arrivée doit relire.
         void store.refreshAll();
@@ -626,14 +665,15 @@ export default function App() {
   return (
     <div className={`app${surOnglet ? ' tabbed' : ''}`}>
       {zoom && <CardZoom source={zoom} onDone={() => setZoom(null)} />}
+      <Dialogues />
 
       {!surOnglet && (
         <div className="topbar">
           <button
             className="iconbtn"
             aria-label="Retour"
-            onClick={() => {
-              if (view.name === 'study' && !confirm('Quitter la session en cours ?')) return;
+            onClick={async () => {
+              if (view.name === 'study' && !(await demande(QUITTER))) return;
               if (view.name === 'search') setView({ name: 'library' });
               else if (view.name === 'deck') void backToLibrary();
               else if (loaded) { void reload(); setView({ name: 'deck' }); }
@@ -860,25 +900,34 @@ export default function App() {
             /* CHANTIER 325 bis — premiers pas : une carte ratée ne revient pas dans la même séance. */
             sansRetour={visite !== null}
             onQuit={() => { void endSession(); setView({ name: 'deck' }); }}
-            onDone={(reviewed) => { void endSession(); setView({ name: 'done', reviewed }); }}
+            onDone={(reviewed, bilan) => {
+              /* 356 — le paquet suivant à réviser aujourd'hui, relu après l'enregistrement. */
+              setSuivant(null);
+              const ici = loaded.deck.id;
+              void endSession().then(async () => {
+                const autres = store.decks.filter((d) => store.active.includes(d.id) && d.id !== ici);
+                const { summaries } = await loadSummaries(autres, store.common);
+                const r = summaries.filter((s) => s.due > 0).sort((x, y) => y.due - x.due)[0];
+                setSuivant(r ? { id: r.deck.id, nom: r.deck.name, cartes: Math.min(r.due, store.common.cardsPerSession) } : null);
+              });
+              setView({ name: 'done', reviewed, bilan });
+            }}
           />
         )}
 
         {view.name === 'done' && (
-          <div className="done">
-            <h2>Session terminée</h2>
-            <p>
-              {view.reviewed} carte{view.reviewed > 1 ? 's' : ''} revue
-              {view.reviewed > 1 ? 's' : ''}. Les mots marqués « à revoir »
-              reviendront très vite.
-            </p>
-            <button className="btn" onClick={() => setView({ name: 'deck' })}>
-              Retour au paquet
-            </button>
-            <button className="btn ghost" onClick={() => setView({ name: 'today' })}>
-              Revenir à aujourd’hui
-            </button>
-          </div>
+          <BilanFin
+            bilan={view.bilan}
+            paquet={loaded?.deck.name ?? ''}
+            dueDe={loaded ? (id) => progressFor(loaded.progress, id).due : undefined}
+            jour={gainDuJour(store.streak)}
+            cartesJour={cartesDuJour(store.streak)}
+            suivant={suivant}
+            onSuivant={(id) => void reviewDeck(id)}
+            onAujourdhui={() => setView({ name: 'today' })}
+            onPaquet={() => setView({ name: 'deck' })}
+            onRevoir={(ids) => void revoirMots(ids)}
+          />
         )}
 
         {view.name === 'editor' && (

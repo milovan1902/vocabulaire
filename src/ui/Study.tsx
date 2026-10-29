@@ -11,6 +11,8 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Grade, ModeReponse, Settings } from '../domain/types';
+/* CHANTIER 356 — la première note de chaque carte, pour le bilan de fin. */
+import type { BilanSession, NoteSession } from '../engine/bilan';
 import { compareEcrit, compareOral, estMot, noteContestation, type Verdict } from '../engine/reponse';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import type { SessionItem } from '../engine/session';
@@ -399,7 +401,7 @@ export function Study({
   settings: Settings;
   onGrade: (item: SessionItem, grade: Grade) => Promise<void>;
   onQuit: () => void;
-  onDone: (reviewed: number) => void;
+  onDone: (reviewed: number, bilan: BilanSession) => void;
   /** CHANTIER 278 — la vitrine de la boutique montre la carte déjà retournée (réponse + les 4 notes). */
   revele?: boolean;
 }) {
@@ -407,6 +409,9 @@ export function Study({
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(revele);
   const [reviewed, setReviewed] = useState(0);
+  /* 356 — la première note de chaque carte (une carte ratée revient : on ne compte que son premier passage). */
+  const premieres = useRef(new Map<string, NoteSession>());
+  const debut = useRef(Date.now());
   const style = useStyle();
   /* Bonnes réponses d'affilée dans la séance. « Raté » remet à zéro. */
   const [combo, setCombo] = useState(0);
@@ -516,6 +521,9 @@ export function Study({
     async (g: Grade) => {
       if (!current) return;
       await onGrade(current, g);
+      if (!premieres.current.has(current.card.id)) {
+        premieres.current.set(current.card.id, { id: current.card.id, en: current.card.en, fr: current.card.fr, note: g });
+      }
       /* 302 — la carte suivante repart vierge. */
       refEcoute.current?.arrete();
       refEcoute.current = null;
@@ -535,7 +543,7 @@ export function Study({
       const nextIndex = index + 1;
       setItems(rest);
       setRevealed(false);
-      if (nextIndex >= rest.length) onDone(reviewed + 1);
+      if (nextIndex >= rest.length) onDone(reviewed + 1, { notes: [...premieres.current.values()], duree: Date.now() - debut.current });
       else setIndex(nextIndex);
     },
     [current, index, items, onGrade, onDone, reviewed, sansRetour],
