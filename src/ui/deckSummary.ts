@@ -151,7 +151,7 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
       savedThemes?.length ? retenus : null,
     );
 
-    if (actifs.has(deck.id)) bruts.push({ i: summaries.length, id: deck.id, nouveaux, revisions: due - nouveaux, controle: controleActif(deck) });
+    if (actifs.has(deck.id)) bruts.push({ i: summaries.length, id: deck.id, nouveaux, revisions: due - nouveaux, controle: !!controleActif(deck) });
     summaries.push({
       deck,
       total: cards.length,

@@ -261,7 +261,7 @@ export function useStore(): Store {
       const s = effectiveSettings(common, overrides[deckId]);
       if (controleActif(deck)) return avecControle(s, deck);
       /* 367 — ce qui reste de la journée, tous paquets réunis (les paquets en contrôle à part). */
-      const g = consommeJour(counters, (id) => controleActif(decks.find((d) => d.id === id)));
+      const g = consommeJour(counters, (id) => !!controleActif(decks.find((d) => d.id === id)));
       return avecQuotaJour(s, common, counters[deckId] ?? freshCounter(), g);
     },
     [common, overrides, decks, counters],
