@@ -70,8 +70,17 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
       setLignes((data ?? []) as Ligne[]);
       const d = new Date(lundi(new Date()) - 49 * J);
       const depuis = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const { data: jours, error: e2 } = await supabase.from('parler_jour').select('jour,secondes').gte('jour', depuis);
-      if (vivant && !e2 && jours) setParJour(jours as Array<{ jour: string; secondes: number }>);
+      /* 362 — la vue d'abord ; si elle n'est pas lisible, le compteur lui-même (une ligne par échange). */
+      let jours: Array<{ jour: string; secondes: number }> | null = null;
+      const v = await supabase.from('parler_jour').select('jour,secondes').gte('jour', depuis);
+      if (!v.error && v.data?.length) jours = v.data as Array<{ jour: string; secondes: number }>;
+      else {
+        if (v.error) console.warn('[oral] vue parler_jour illisible :', v.error.message);
+        const t = await supabase.from('parler_usage').select('jour,secondes').gte('jour', depuis).limit(10000);
+        if (t.error) console.warn('[oral] parler_usage illisible :', t.error.message);
+        else if (t.data?.length) jours = t.data as Array<{ jour: string; secondes: number }>;
+      }
+      if (vivant && jours) setParJour(jours);
     })();
     return () => { vivant = false; };
   }, []);

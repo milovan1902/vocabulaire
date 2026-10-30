@@ -145,3 +145,14 @@
 .parler-jauge20 { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 2px; margin: 8px 0 4px; }
 .parler-jauge20 i { height: 8px; border-radius: 2px; background: var(--rule); }
 .parler-jauge20 i.on { background: var(--chalk); }
+
+/* CHANTIER 362 — les deux portes, plus basses : l'icône à gauche, le texte à côté. Tout l'accueil tient sur un écran. */
+.parler-porte {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; row-gap: 3px;
+  align-items: start; padding: 14px 16px; margin-top: 10px;
+}
+.parler-porte-icone { grid-row: 1 / span 3; width: 44px; height: 44px; }
+.parler-porte > b, .parler-porte > span:not(.parler-porte-icone), .parler-porte > em { grid-column: 2; }
+.parler-porte > b { font-size: 21px; }
+.parler-porte > span:not(.parler-porte-icone) { font-size: 13.5px; line-height: 1.4; }
+.parler-porte > em { margin-top: 2px; }
