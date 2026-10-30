@@ -49,8 +49,12 @@ html[data-style='plage'] .rp-champ::placeholder,
 html[data-style='japon'] .rp-champ::placeholder { color: #5f6c8a; }
 
 /* 3. Le titre du paquet en haut de l'écran. */
-html[data-style='foot'] .topbar h1, html[data-style='foot'] .topbar button,
-html[data-style='station'] .topbar h1, html[data-style='station'] .topbar button { color: #fffdf5; }
+html[data-style='foot'] .topbar h1, html[data-style='foot'] .topbar button { color: #fffdf5; }
+/* CHANTIER 365 — Montagne : le titre blanc n'est lisible que sur la révision (ciel bleu derrière).
+   Ailleurs (nouveau paquet, ajout de mots, recherche, fin de session), le fond est crème : bleu nuit. */
+html[data-style='station'] .topbar h1, html[data-style='station'] .topbar button { color: var(--ink); }
+html[data-style='station'] body:has(.studystage, .studybg) .topbar h1,
+html[data-style='station'] body:has(.studystage, .studybg) .topbar button { color: #fffdf5; }
 html[data-style='rugby'] .topbar h1, html[data-style='rugby'] .topbar button { color: #fffdf5; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); }
 html[data-style='tableau'] .topbar h1, html[data-style='tableau'] .topbar button { color: #3b2a1a; }
 

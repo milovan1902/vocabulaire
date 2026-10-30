@@ -308,7 +308,7 @@ export default function App() {
    * exactement ce qui a fait échouer le déploiement du chantier 79.
    * Chaque fichier se déploie maintenant seul.
    */
-  const [rayon, setRayon] = useState<'travail' | 'ajouter' | 'collection' | 'catalogue'>('travail');
+  const [rayon, setRayon] = useState<'travail' | 'jeu' | 'ajouter' | 'collection' | 'catalogue'>('travail');
   const [origine, setOrigine] = useState<Tab>('library');
   /*
    * CHANTIER 166 — « Cette semaine », touché sur Aujourd'hui (style Lycée),

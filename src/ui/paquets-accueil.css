@@ -53,3 +53,35 @@
 .lib-entete { display: flex; align-items: center; gap: 6px; }
 .lib-entete .screen-title { margin: 0; }
 .lib-retour { flex: none; min-width: 44px; min-height: 44px; margin-left: -10px; background: none; border: none; color: var(--ink-soft); font-size: 28px; line-height: 1; cursor: pointer; }
+
+/* CHANTIER 365 — l'accueil à trois cartes (maquette 364, C1). La marge du bas garde tout au-dessus des onglets. */
+.lib-accueil { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+.lib-carte {
+  display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; column-gap: 14px; align-items: center;
+  width: 100%; margin: 0; padding: 18px; text-align: left;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 22px;
+  font: inherit; cursor: pointer;
+}
+.lib-carte.jeu { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 20px 18px; border-color: color-mix(in srgb, var(--chalk) 60%, transparent); }
+.lib-carte.lib-porte { border-color: color-mix(in srgb, var(--good) 50%, transparent); }
+.lib-carte-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lib-carte-haut em { font-style: normal; font-size: 13px; font-weight: 650; color: var(--on-chalk); background: var(--chalk); border-radius: 999px; padding: 5px 12px; }
+.lib-carte-icone {
+  flex: none; width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
+  color: var(--chalk); background: color-mix(in srgb, var(--chalk) 14%, transparent); font-size: 30px; font-weight: 300; line-height: 1;
+}
+.lib-carte-icone.vert { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.lib-carte-icone.gris { color: var(--ink-soft); background: var(--rule); }
+.lib-carte-icone svg { width: 26px; height: 26px; }
+.lib-carte b { font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1.2; }
+.lib-carte.jeu > b { font-size: 26px; }
+.lib-carte-corps { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lib-carte-txt { font-size: 13.5px; line-height: 1.4; color: var(--ink-soft); text-wrap: pretty; }
+.lib-carte .chev { color: var(--grey); font-size: 22px; }
+.lib-carte-dos { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.lib-carte-dos > span { display: block; width: 30px; height: 42px; border-radius: 5px; overflow: hidden; }
+.lib-carte-dos > span > * { width: 100% !important; height: 100% !important; }
+.lib-carte:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+/* Les sous-écrans gardent aussi leur dernier élément au-dessus des onglets. */
+.lib-entete ~ :last-child { margin-bottom: calc(24px + env(safe-area-inset-bottom)); }

@@ -19,7 +19,8 @@ import './paquets-accueil.css';
 import { etiquetteControle, type DeckControle } from '../engine/controle';
 
 /* CHANTIER 364 — « travail » est l'accueil ; « ajouter », « collection » et « catalogue » en sont les sous-écrans. */
-export type Tab = 'travail' | 'ajouter' | 'collection' | 'catalogue';
+/* CHANTIER 365 — « travail » devient l'accueil à trois cartes ; « jeu » est la liste des paquets en jeu. */
+export type Tab = 'travail' | 'jeu' | 'ajouter' | 'collection' | 'catalogue';
 
 /** Tranches du filtre de prix, en centimes. `null` = pas de filtre. */
 const TRANCHES: Array<{ cents: number; label: string }> = [
@@ -624,7 +625,6 @@ export function Library({
       .filter((s): s is DeckSummary => !!s)
       .sort((a, b) => b.due - a.due);
     const duJour = rows.reduce((n, s) => n + s.due, 0);
-    const enPause = installed.filter((id) => !active.includes(id)).length;
 
     if (rows.length === 0) {
       return (
@@ -633,7 +633,7 @@ export function Library({
           <p className="lead">
             {tvp('Aucun paquet en jeu. Mets-en un depuis ta collection pour commencer à travailler.', 'Aucun paquet en jeu. Mettez-en un depuis votre collection pour commencer à travailler.')}
           </p>
-          {portes(enPause)}
+          <button className="btn" onClick={() => setTab('collection')}>Ouvrir ma collection</button>
         </>
       );
     }
@@ -692,7 +692,7 @@ export function Library({
           </button>
         )}
 
-        {portes(enPause)}
+
 
       </>
     );
@@ -702,25 +702,54 @@ export function Library({
 
   /* ---------------- CHANTIER 364 — les portes de l'accueil, et « Ajouter un paquet » ---------------- */
 
-  function portes(enPause: number) {
+  /** CHANTIER 365 — l'accueil de Paquets : trois grandes cartes, et rien d'autre (maquette 364, C1). */
+  function vueAccueil() {
+    const rows = enJeu
+      .map((d) => parId.get(d.id))
+      .filter((s): s is DeckSummary => !!s);
+    const duJour = rows.reduce((n, s) => n + s.due, 0);
     const total = installed.length;
+    const enPause = installed.filter((id) => !active.includes(id)).length;
     return (
-      <>
-        <button className="lib-porte" onClick={() => setTab('ajouter')}>
-          <span className="lib-porte-icone" aria-hidden="true">+</span>
-          <b>Ajouter un paquet</b>
-          <span>Photographier une liste, choisir dans le catalogue, ou créer à la main.</span>
-        </button>
-        {total > 0 && (
-          <button className="lib-tuile" onClick={() => setTab('collection')}>
-            <span>
-              <b>Ma collection</b>
-              <small>{enPause > 0 ? `${enPause} en pause · ` : ''}{total} paquet{total > 1 ? 's' : ''} en tout</small>
+      <div className="lib-accueil">
+        <button className="lib-carte jeu" onClick={() => setTab('jeu')}>
+          <span className="lib-carte-haut">
+            <span className="lib-carte-icone" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></svg>
             </span>
-            <span className="chev" aria-hidden="true">›</span>
-          </button>
-        )}
-      </>
+            {duJour > 0 && <em>{duJour} carte{duJour > 1 ? 's' : ''} aujourd’hui</em>}
+          </span>
+          <b>Mes paquets en jeu</b>
+          <span className="lib-carte-txt">
+            {rows.length === 0
+              ? tvp('Aucun paquet en jeu pour l’instant.', 'Aucun paquet en jeu pour l’instant.')
+              : `${rows.length} paquet${rows.length > 1 ? 's' : ''} · ~${engagement?.load ?? duJour} cartes par jour, ${engagement?.min ?? 1} min`}
+          </span>
+          {rows.length > 0 && (
+            <span className="lib-carte-dos" aria-hidden="true">
+              {rows.slice(0, 6).map((s) => <span key={s.deck.id}>{vignette(s, 30, 42)}</span>)}
+            </span>
+          )}
+        </button>
+        <button className="lib-carte lib-porte" onClick={() => setTab('ajouter')}>
+          <span className="lib-carte-icone vert" aria-hidden="true">+</span>
+          <span className="lib-carte-corps">
+            <b>Ajouter un paquet</b>
+            <span className="lib-carte-txt">Photo d’une liste, catalogue, ou à la main</span>
+          </span>
+          <span className="chev" aria-hidden="true">›</span>
+        </button>
+        <button className="lib-carte" onClick={() => setTab('collection')}>
+          <span className="lib-carte-icone gris" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h18v13H3z" /><path d="M8 7V4h8v3" /><path d="M10 12h4" /></svg>
+          </span>
+          <span className="lib-carte-corps">
+            <b>Ma collection</b>
+            <span className="lib-carte-txt">{total === 0 ? 'Vide pour l’instant' : `${total} paquet${total > 1 ? 's' : ''}${enPause > 0 ? ` · ${enPause} en pause` : ''}`}</span>
+          </span>
+          <span className="chev" aria-hidden="true">›</span>
+        </button>
+      </div>
     );
   }
 
@@ -1164,13 +1193,14 @@ export function Library({
   }
 
   const titres: Record<Tab, string> = {
-    travail: 'Mes paquets',
+    travail: 'Paquets',
+    jeu: 'Mes paquets en jeu',
     ajouter: 'Ajouter un paquet',
     collection: 'Ma collection',
     catalogue: 'Le catalogue',
   };
   /* 364 — d'où revient le « ‹ » de chaque sous-écran. */
-  const retourDe: Record<Tab, Tab> = { travail: 'travail', ajouter: 'travail', collection: 'travail', catalogue: 'ajouter' };
+  const retourDe: Record<Tab, Tab> = { travail: 'travail', jeu: 'travail', ajouter: 'travail', collection: 'travail', catalogue: 'ajouter' };
 
   return (
     <>
@@ -1186,6 +1216,8 @@ export function Library({
       {charge === null ? (
         <p className="lead">Chargement…</p>
       ) : tab === 'travail' ? (
+        vueAccueil()
+      ) : tab === 'jeu' ? (
         vueTravail()
       ) : tab === 'ajouter' ? (
         vueAjouter()
