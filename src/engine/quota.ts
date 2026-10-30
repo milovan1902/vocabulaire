@@ -61,3 +61,6 @@ export function partager(lignes: Ligne[], reste: { n: number; r: number }): Map<
   for (const l of ordre) { const v = Math.min(l.nouveaux, n); n -= v; out.set(l.id, (out.get(l.id) ?? 0) + v); }
   return out;
 }
+
+/** CHANTIER 368 — la taille d'un passage n'est plus réglable : 20 cartes, environ 7 minutes. */
+export const CARTES_PAR_PASSAGE = 20;

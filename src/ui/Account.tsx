@@ -166,10 +166,10 @@ function tempsDit(s: Settings): string {
     return 'Aucun nouveau mot : il ne reste que les révisions déjà '
       + 'lancées, de moins en moins nombreuses.';
   }
-  const revisions = Math.min(s.newPerDay * 5, s.reviewsPerDay);
-  const cartes = s.newPerDay + revisions;
-  return `Une fois ce rythme installé : environ ${cartes} cartes par `
-    + `jour, soit ${minutesPour(cartes)} minutes.`;
+  const cartes = s.newPerDay + s.reviewsPerDay;
+  /* 368 — en passages de 20 cartes, qu'on peut faire à des moments différents. */
+  const passages = Math.ceil(cartes / 20);
+  return `Environ ${minutesPour(cartes)} minutes par jour, en ${passages} passage${passages > 1 ? 's' : ''} de 20 cartes au plus.`;
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
@@ -565,35 +565,39 @@ export function Account({
         <Tiroir titre="Charge de travail" retour="Réglages" onFermer={() => setTiroir(null)}>
           {/* La journée réglée, dite en une phrase : on voit ce qu'on
               fabrique avant de toucher aux curseurs. */}
+          {/* CHANTIER 368 — deux chiffres : les cartes de la journée, dont les nouveaux mots.
+              Les révisions sont le reste ; le passage est fixé à 20 cartes. */}
           <p className="chargephrase">
-            <b>{settings.newPerDay}</b> nouveaux mots par jour,{' '}
-            <b>{settings.reviewsPerDay}</b> révisions au plus, par passages
-            de <b>{settings.cardsPerSession}</b> cartes.
+            <b>{settings.newPerDay + settings.reviewsPerDay}</b> cartes par jour, dont{' '}
+            <b>{settings.newPerDay}</b> nouveaux mots.
           </p>
           <p className="chargetemps">{tempsDit(settings)}</p>
           <div className="chargelist">
             <Curseur
-              label="Nouveaux mots"
-              min={0} max={20} step={1} value={settings.newPerDay}
-              onChange={(v) => onSettings({ ...settings, newPerDay: v })}
+              label="Cartes par jour"
+              min={20} max={120} step={5} value={settings.newPerDay + settings.reviewsPerDay}
+              onChange={(v) => {
+                const nouveaux = Math.min(settings.newPerDay, v);
+                onSettings({ ...settings, newPerDay: nouveaux, reviewsPerDay: v - nouveaux });
+              }}
             />
             <Curseur
-              label="Révisions max."
-              min={20} max={100} step={5} value={settings.reviewsPerDay}
-              onChange={(v) => onSettings({ ...settings, reviewsPerDay: v })}
-            />
-            <Curseur
-              label="Cartes / passage"
-              min={10} max={100} step={5} value={settings.cardsPerSession}
-              onChange={(v) => onSettings({ ...settings, cardsPerSession: v })}
+              label="Dont nouveaux"
+              min={0} max={Math.min(20, settings.newPerDay + settings.reviewsPerDay)} step={1} value={settings.newPerDay}
+              onChange={(v) => {
+                const total = settings.newPerDay + settings.reviewsPerDay;
+                onSettings({ ...settings, newPerDay: v, reviewsPerDay: total - v });
+              }}
             />
           </div>
+          <p className="hint">
+            Le reste, soit <b>{settings.reviewsPerDay}</b> cartes, va aux révisions : les mots
+            ratés, et les mots réussis qui reviennent au bon moment pour s’installer.
+          </p>
           <p className="hint chargenote">
             Un nouveau mot entraîne environ cinq révisions dans les semaines
-            qui suivent. Le nombre annoncé ici est celui du rythme installé :
-            l’écran d’accueil, lui, compte les cartes réellement dues
-            aujourd’hui, qui sont plus ou moins nombreuses selon les jours.
-            Ces plafonds valent pour la journée entière, tous paquets réunis :
+            qui suivent. Les jours où il y a moins de révisions à faire, la
+            journée est simplement plus courte. Ces plafonds valent pour la journée entière, tous paquets réunis :
             l’application répartit les cartes entre les paquets en jeu. Un
             paquet avec un contrôle proche passe en plus, pour être prêt le
             jour J.

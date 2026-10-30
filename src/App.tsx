@@ -476,7 +476,7 @@ export default function App() {
     },
     [loaded, store],
   );
-  const [suivant, setSuivant] = useState<{ id: string; nom: string; cartes: number } | null>(null);
+  const [suivant, setSuivant] = useState<{ id: string; nom: string; cartes: number; meme?: boolean } | null>(null);
   /* CHANTIER 357 — les 5 mots du défi éclair, lus en arrière-plan. */
   const motsDefi = useDefi(store);
 
@@ -918,10 +918,12 @@ export default function App() {
               setSuivant(null);
               const ici = loaded.deck.id;
               void endSession().then(async () => {
-                const autres = store.decks.filter((d) => store.active.includes(d.id) && d.id !== ici);
-                const { summaries } = await loadSummaries(autres, store.common);
-                const r = summaries.filter((s) => s.due > 0).sort((x, y) => y.due - x.due)[0];
-                setSuivant(r ? { id: r.deck.id, nom: r.deck.name, cartes: Math.min(r.due, store.common.cardsPerSession) } : null);
+                /* 368 — d'abord le même paquet s'il lui reste des cartes (un passage fait 20 cartes au plus). */
+                const enJeu = store.decks.filter((d) => store.active.includes(d.id));
+                const { summaries } = await loadSummaries(enJeu, store.common);
+                const meme = summaries.find((s) => s.deck.id === ici && s.due > 0);
+                const r = meme ?? summaries.filter((s) => s.deck.id !== ici && s.due > 0).sort((x, y) => y.due - x.due)[0];
+                setSuivant(r ? { id: r.deck.id, nom: r.deck.name, cartes: Math.min(r.due, store.common.cardsPerSession), meme: !!meme } : null);
               });
               setView({ name: 'done', reviewed, bilan });
             }}

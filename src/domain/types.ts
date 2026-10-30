@@ -320,7 +320,8 @@ export type ModeReponse = 'tete' | 'ecrit' | 'oral';
 export const DEFAULT_SETTINGS: Settings = {
   updatedAt: 0,
   newPerDay: 10,
-  reviewsPerDay: 100,
+  /* 368 — 40 cartes par jour par défaut, dont 10 nouveaux mots (l'ancien 100 donnait 110 cartes). */
+  reviewsPerDay: 30,
   cardsPerSession: 50,
   speechRate: 0.85,
   autoSpeak: true,

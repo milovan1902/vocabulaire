@@ -19,7 +19,7 @@ export function BilanFin({
   dueDe?: (id: string) => number;
   jour: { valide: boolean; xp: number };
   cartesJour: number;
-  suivant: { id: string; nom: string; cartes: number } | null;
+  suivant: { id: string; nom: string; cartes: number; meme?: boolean } | null;
   onSuivant: (id: string) => void;
   onAujourdhui: () => void;
   onPaquet: () => void;
@@ -42,7 +42,8 @@ export function BilanFin({
           <span>de réussite</span>
         </div>
       </div>
-      <h2>Paquet terminé pour aujourd’hui</h2>
+      {/* 368 — s'il reste des cartes dans ce paquet, ce n'est qu'un passage. */}
+      <h2>{suivant?.meme ? 'Passage terminé' : 'Paquet terminé pour aujourd’hui'}</h2>
       <p className="bilan-paquet">{paquet}</p>
       <p className="bilan-resume">
         {n} carte{n > 1 ? 's' : ''} revue{n > 1 ? 's' : ''} {duree}
@@ -112,7 +113,9 @@ export function BilanFin({
         {suivant ? (
           <>
             <button className="btn" onClick={() => onSuivant(suivant.id)}>
-              Paquet suivant : {suivant.nom} ({suivant.cartes} carte{suivant.cartes > 1 ? 's' : ''})
+              {suivant.meme
+                ? `Continuer : ${suivant.cartes} carte${suivant.cartes > 1 ? 's' : ''}`
+                : `Paquet suivant : ${suivant.nom} (${suivant.cartes} carte${suivant.cartes > 1 ? 's' : ''})`}
             </button>
             <button className="btn ghost" onClick={onAujourdhui}>Revenir à aujourd’hui</button>
           </>

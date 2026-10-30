@@ -37,7 +37,7 @@ import { emptyProgress, review } from '../engine/scheduler';
 import { freshCounter, rollDay } from '../engine/session';
 import { avecControle, controleActif, plafonner } from '../engine/controle';
 /* CHANTIER 367 — les plafonds valent pour la journée entière. */
-import { avecQuotaJour, consommeJour } from '../engine/quota';
+import { CARTES_PAR_PASSAGE, avecQuotaJour, consommeJour } from '../engine/quota';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK, compterCarte, noterDefi, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
@@ -102,7 +102,9 @@ export function useStore(): Store {
   const [ready, setReady] = useState(false);
   const [decks, setDecks] = useState<Deck[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [common, setCommonState] = useState<Settings>(DEFAULT_SETTINGS);
+  const [commonBrut, setCommonState] = useState<Settings>(DEFAULT_SETTINGS);
+  /* CHANTIER 368 — le passage est fixé à 20 cartes, quel que soit l'ancien réglage. */
+  const common = useMemo<Settings>(() => ({ ...commonBrut, cardsPerSession: CARTES_PAR_PASSAGE }), [commonBrut]);
   const [overrides, setOverridesState] = useState<Record<DeckId, DeckOverride>>({});
   const [counters, setCounters] = useState<Record<DeckId, DailyCounter>>({});
   const [streak, setStreak] = useState<Streak>(EMPTY_STREAK);
@@ -258,7 +260,7 @@ export function useStore(): Store {
   const settingsFor = useCallback(
     (deckId: DeckId) => {
       const deck = decks.find((d) => d.id === deckId);
-      const s = effectiveSettings(common, overrides[deckId]);
+      const s = { ...effectiveSettings(common, overrides[deckId]), cardsPerSession: CARTES_PAR_PASSAGE };
       if (controleActif(deck)) return avecControle(s, deck);
       /* 367 — ce qui reste de la journée, tous paquets réunis (les paquets en contrôle à part). */
       const g = consommeJour(counters, (id) => !!controleActif(decks.find((d) => d.id === id)));
