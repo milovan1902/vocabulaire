@@ -732,7 +732,10 @@ export function Library({
           )}
         </button>
         <button className="lib-carte lib-porte" onClick={() => setTab('ajouter')}>
-          <span className="lib-carte-icone vert" aria-hidden="true">+</span>
+          {/* 366 — des paquets empilés, avec un « + ». */}
+          <span className="lib-carte-icone vert" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 3 3 8l9 5 9-5" /><path d="m3 13 9 5 4-2.2" /><path d="M19 13v6" /><path d="M16 16h6" /></svg>
+          </span>
           <span className="lib-carte-corps">
             <b>Ajouter un paquet</b>
             <span className="lib-carte-txt">Photo d’une liste, catalogue, ou à la main</span>

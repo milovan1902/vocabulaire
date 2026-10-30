@@ -85,3 +85,8 @@
 .lib-carte:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
 /* Les sous-écrans gardent aussi leur dernier élément au-dessus des onglets. */
 .lib-entete ~ :last-child { margin-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+/* CHANTIER 366 — « Ajouter un paquet » : la carte porte aussi la classe .lib-porte (repère de la visite guidée),
+   dont la grille à 2 colonnes décalait l'icône et le texte vers le centre. On rétablit la grille de la carte. */
+.lib-carte.lib-porte { grid-template-columns: 50px minmax(0, 1fr) auto; row-gap: 0; align-items: center; margin: 0; padding: 18px; }
+.lib-carte.lib-porte > span:not(.lib-x), .lib-carte.lib-porte > b:not(.lib-x) { grid-column: auto; grid-row: auto; }
