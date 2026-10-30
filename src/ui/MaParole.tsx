@@ -102,8 +102,15 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
     const moisMax = Math.sqrt(Math.max(...mois.map((x) => x.sec), 60));
 
     /* 2. Huit semaines. Une semaine sans au moins une minute parlée ne compte pas. */
+    /*
+     * 363 — chaque lundi est recalculé sur le calendrier, et non en retirant 7 × 24 h :
+     * le passage à l'heure d'hiver (25 octobre) décalait d'une heure tous les lundis
+     * d'avant, si bien qu'aucune semaine passée ne trouvait ses minutes.
+     */
+    const lundiCourant = new Date(lundi(maintenant));
     const semaines = Array.from({ length: 8 }, (_, i) => ({
-      debut: lundi(maintenant) - (7 - i) * 7 * J, sec: 0, fautes: 0, parle: 0,
+      debut: lundi(new Date(lundiCourant.getFullYear(), lundiCourant.getMonth(), lundiCourant.getDate() - (7 - i) * 7)),
+      sec: 0, fautes: 0, parle: 0,
     }));
     for (const l of L) {
       const w = lundi(new Date(l.finie_le));
