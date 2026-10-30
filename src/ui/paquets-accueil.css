@@ -1,0 +1,55 @@
+/* CHANTIER 364 — Paquets : l'accueil à portes et ses sous-écrans (maquette 364, A1 · A2 · A4). Couleurs de l'apparence. */
+.lib-charge { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 6px; font-size: 14px; color: var(--ink-soft); }
+.lib-charge b { font-size: 24px; font-weight: 600; color: var(--ink); }
+.lib-info {
+  margin-left: auto; align-self: center; flex: none; width: 30px; height: 30px; border-radius: 999px;
+  border: 1px solid var(--rule-strong); background: none; color: var(--ink-soft);
+  font: inherit; font-size: 14px; font-style: italic; font-weight: 600; cursor: pointer;
+}
+.lib-info[aria-expanded="true"] { border-color: var(--chalk); color: var(--chalk); }
+.lib-info-txt { margin: 0 0 10px; }
+
+.lib-porte {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; row-gap: 3px; align-items: start;
+  width: 100%; margin: 14px 0 0; padding: 14px 16px; text-align: left;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--chalk) 45%, transparent); border-radius: 18px;
+  font: inherit; cursor: pointer;
+}
+.lib-porte-icone {
+  grid-row: 1 / span 3; width: 44px; height: 44px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--chalk); background: color-mix(in srgb, var(--chalk) 14%, transparent);
+  font-size: 26px; font-weight: 300; line-height: 1;
+}
+.lib-porte-icone svg { width: 24px; height: 24px; }
+.lib-porte > b { grid-column: 2; font-family: var(--serif); font-weight: 400; font-size: 21px; line-height: 1.2; }
+.lib-porte > span:not(.lib-porte-icone) { grid-column: 2; font-size: 13.5px; line-height: 1.4; color: var(--ink-soft); text-wrap: pretty; }
+.lib-porte > em, .lib-choix > em {
+  font-style: normal; font-size: 11.5px; font-weight: 650; color: var(--on-chalk); background: var(--chalk);
+  border-radius: 999px; padding: 2px 9px;
+}
+.lib-porte > em { grid-column: 2; justify-self: start; margin-top: 4px; }
+.lib-porte.photo { margin-top: 6px; padding: 18px; border-color: color-mix(in srgb, var(--chalk) 65%, transparent); }
+.lib-porte.photo > b { font-size: 23px; }
+
+.lib-tuile, .lib-choix {
+  display: flex; align-items: center; gap: 14px; width: 100%; margin: 10px 0 0; padding: 13px 16px; text-align: left;
+  background: var(--panel); color: var(--ink); border: 1px solid var(--rule); border-radius: 14px;
+  font: inherit; cursor: pointer;
+}
+.lib-tuile > span:first-child, .lib-choix-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lib-tuile b, .lib-choix-txt b { font-size: 15.5px; font-weight: 600; }
+.lib-tuile small, .lib-choix-txt small { font-size: 12.5px; color: var(--ink-soft); }
+.lib-tuile .chev, .lib-choix .chev { flex: none; color: var(--grey); font-size: 20px; }
+.lib-choix-icone {
+  flex: none; width: 44px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+  color: var(--ink-soft); background: var(--rule);
+}
+.lib-choix-icone.vert { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.lib-choix-icone svg { width: 22px; height: 22px; }
+.lib-porte:focus-visible, .lib-tuile:focus-visible, .lib-choix:focus-visible, .lib-info:focus-visible, .lib-retour:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+.lib-entete { display: flex; align-items: center; gap: 6px; }
+.lib-entete .screen-title { margin: 0; }
+.lib-retour { flex: none; min-width: 44px; min-height: 44px; margin-left: -10px; background: none; border: none; color: var(--ink-soft); font-size: 28px; line-height: 1; cursor: pointer; }

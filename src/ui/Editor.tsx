@@ -64,7 +64,13 @@ export function Editor({
   const [name, setName] = useState('');
   /* 286 — la couleur du dos. */
   const [papier, setPapier] = useState<string>(PAPIER_DEFAUT);
-  const [saisie, setSaisie] = useState<'main' | 'photo'>('main');
+  /* CHANTIER 364 — « Photographier une liste » (Paquets › Ajouter) ouvre l'éditeur directement sur la photo. */
+  const [saisie, setSaisie] = useState<'main' | 'photo'>(() => {
+    try {
+      if (sessionStorage.getItem('vocab:editeur-photo')) { sessionStorage.removeItem('vocab:editeur-photo'); return 'photo'; }
+    } catch { /* rien */ }
+    return 'main';
+  });
   const [en, setEn] = useState('');
   const [fr, setFr] = useState('');
   const [mots, setMots] = useState<ParsedLine[]>([]);

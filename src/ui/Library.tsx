@@ -14,15 +14,12 @@ import { loadSummaries, type Charge, type DeckSummary } from './deckSummary';
 import { masteryLabel } from '../engine/mastery';
 import type { Auth } from './useAuth';
 import { RappelSauvegarde } from './RappelSauvegarde';
+/* CHANTIER 364 — l'accueil à portes et ses sous-écrans. */
+import './paquets-accueil.css';
 import { etiquetteControle, type DeckControle } from '../engine/controle';
 
-export type Tab = 'travail' | 'collection' | 'catalogue';
-
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'travail', label: 'Mon travail' },
-  { id: 'collection', label: 'Ma collection' },
-  { id: 'catalogue', label: 'Mon catalogue' },
-];
+/* CHANTIER 364 — « travail » est l'accueil ; « ajouter », « collection » et « catalogue » en sont les sous-écrans. */
+export type Tab = 'travail' | 'ajouter' | 'collection' | 'catalogue';
 
 /** Tranches du filtre de prix, en centimes. `null` = pas de filtre. */
 const TRANCHES: Array<{ cents: number; label: string }> = [
@@ -445,6 +442,10 @@ export function Library({
    * clique à côté sans le vouloir.
    */
   const [bulle, setBulle] = useState<string | null>(null);
+  /* 364 — l'explication de la charge, repliée derrière un « i ». */
+  const [infoCharge, setInfoCharge] = useState(false);
+  /* 364 — chaque sous-écran repart du haut. */
+  useEffect(() => { window.scrollTo(0, 0); }, [tab]);
 
   /*
    * La charge est calculée sur les seuls paquets en jeu : c'est la
@@ -632,9 +633,7 @@ export function Library({
           <p className="lead">
             {tvp('Aucun paquet en jeu. Mets-en un depuis ta collection pour commencer à travailler.', 'Aucun paquet en jeu. Mettez-en un depuis votre collection pour commencer à travailler.')}
           </p>
-          <button className="btn" onClick={() => setTab('collection')}>
-            Choisir un paquet
-          </button>
+          {portes(enPause)}
         </>
       );
     }
@@ -643,17 +642,18 @@ export function Library({
       <>
         {/* CHANTIER 154 — sans compte, rappeler que tout est sur ce téléphone. */}
         {!auth.session && <RappelSauvegarde />}
-        <div className="engage">
-          <p className="label">Ce à quoi je m’engage</p>
-          <div className="engage-n">
-            <b>~{engagement?.load ?? duJour}</b>
-            <span>cartes par jour<br />soit {engagement?.min ?? 1} min</span>
-          </div>
-          <p className="hint">
-            {rows.length} paquet{rows.length > 1 ? 's' : ''} en jeu,{' '}
-            {settings.newPerDay} nouveaux mots par jour.
-          </p>
+        {/* 364 — « Ce à quoi je m'engage », en une ligne ; l'explication derrière le « i ». */}
+        <div className="lib-charge">
+          <b>~{engagement?.load ?? duJour}</b>
+          <span>cartes par jour · {engagement?.min ?? 1} min</span>
+          <button className="lib-info" aria-expanded={infoCharge} aria-label="Ce que veut dire ce chiffre" onClick={() => setInfoCharge(!infoCharge)}>i</button>
         </div>
+        {infoCharge && (
+          <p className="hint lib-info-txt" role="note">
+            Ce à quoi {tvp('tu t’engages', 'vous vous engagez')} : la moyenne des cartes à revoir chaque jour, pour {rows.length} paquet{rows.length > 1 ? 's' : ''} en jeu
+            et {settings.newPerDay} nouveaux mots par jour. Un paquet en pause ne compte pas.
+          </p>
+        )}
 
         <p className="rayon-label on">
           En jeu <b className="rayon-n">{rows.length}</b>
@@ -681,9 +681,7 @@ export function Library({
                 </span>
               </button>
               {avancement(s)}
-              <button className="pausebtn" onClick={() => onSetActive(s.deck.id, false)}>
-                Pause
-              </button>
+              {/* 364 — la pause passe dans Ma collection (l'interrupteur) : l'accueil ne garde que le travail. */}
             </div>
           ))}
         </div>
@@ -694,43 +692,83 @@ export function Library({
           </button>
         )}
 
-        <button className="rowlink" onClick={() => setTab('collection')}>
-          <span>Mettre un paquet en jeu</span>
-          <span className="chev">›</span>
-        </button>
-        {enPause > 0 && (
-          <p className="hint">
-            {enPause} paquet{enPause > 1 ? 's' : ''} en pause, progression intacte.
-          </p>
-        )}
+        {portes(enPause)}
+
       </>
     );
   }
 
   /* ---------------- Ma collection ---------------- */
 
-  /** CHANTIER 286 — le bouton de la maquette : cadre pointillé, « + », mention Abonné.
-      336 — le premier est offert ; ensuite, une phrase neutre au lieu de l'éditeur. */
-  function boutonCreer(go: () => void) {
-    const bloque = persoPris && !sansLimite();
+  /* ---------------- CHANTIER 364 — les portes de l'accueil, et « Ajouter un paquet » ---------------- */
+
+  function portes(enPause: number) {
+    const total = installed.length;
     return (
       <>
-      <button
-        onClick={() => (bloque ? setMsgCreer(true) : go())}
-        style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 64, padding: 12, margin: '0 0 14px', borderRadius: 14, border: '1.5px dashed var(--chalk, currentColor)', background: 'color-mix(in srgb, var(--chalk, currentColor) 6%, transparent)', color: 'inherit', font: 'inherit', textAlign: 'left', cursor: 'pointer' }}
-      >
-        <span aria-hidden="true" style={{ flex: 'none', width: 40, height: 40, borderRadius: 12, border: '1.5px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', display: 'grid', placeItems: 'center', fontSize: 22, lineHeight: 1 }}>+</span>
-        <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <b style={{ fontSize: 14, fontWeight: 600 }}>Créer mon paquet de révision</b>
-          <small style={{ fontSize: 11.5, lineHeight: 1.4, color: 'var(--grey, currentColor)' }}>Vos mots à vous : la liste du prof, du manuel, du contrôle.</small>
-        </span>
-        <span style={{ flex: 'none', padding: '2px 7px', borderRadius: 999, border: '1px solid var(--chalk, currentColor)', color: 'var(--chalk, currentColor)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{sansLimite() ? 'Abonné' : persoPris ? 'Abonnés' : '1 offert'}</span>
-      </button>
-      {bloque && msgCreer && (
-        <p className="hint" role="status" style={{ margin: '-6px 0 14px' }}>
-          {tvp('Ton paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que tu veux.', 'Votre paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que vous voulez.')}
-        </p>
-      )}
+        <button className="lib-porte" onClick={() => setTab('ajouter')}>
+          <span className="lib-porte-icone" aria-hidden="true">+</span>
+          <b>Ajouter un paquet</b>
+          <span>Photographier une liste, choisir dans le catalogue, ou créer à la main.</span>
+        </button>
+        {total > 0 && (
+          <button className="lib-tuile" onClick={() => setTab('collection')}>
+            <span>
+              <b>Ma collection</b>
+              <small>{enPause > 0 ? `${enPause} en pause · ` : ''}{total} paquet{total > 1 ? 's' : ''} en tout</small>
+            </span>
+            <span className="chev" aria-hidden="true">›</span>
+          </button>
+        )}
+      </>
+    );
+  }
+
+  /** CHANTIER 286 / 336 — le premier paquet personnalisé est offert ; ensuite, une phrase neutre au lieu de l'éditeur. */
+  function vueAjouter() {
+    const bloque = persoPris && !sansLimite();
+    const badge = sansLimite() ? null : persoPris ? 'Abonnés' : '1 offert';
+    const creer = (photo: boolean) => {
+      if (!onCreer) return;
+      if (bloque) { setMsgCreer(true); return; }
+      /* L'éditeur s'ouvre directement sur la photo (lu par Editor.tsx). */
+      try { if (photo) sessionStorage.setItem('vocab:editeur-photo', '1'); } catch { /* rien */ }
+      onCreer();
+    };
+    return (
+      <>
+        {onCreer && (
+          <button className="lib-porte photo" onClick={() => creer(true)}>
+            <span className="lib-porte-icone" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></svg>
+            </span>
+            <b>Photographier une liste</b>
+            <span>{tvp('La liste de ton prof, en photo. L’appli en fait un paquet, prêt pour le contrôle.', 'Une liste de mots en photo : l’appli en fait un paquet, prêt pour votre échéance.')}</span>
+            {badge && <em>{badge}</em>}
+          </button>
+        )}
+        <button className="lib-choix" onClick={() => setTab('catalogue')}>
+          <span className="lib-choix-icone vert" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14" /><path d="M12 6v14" /><path d="M8 8v12" /><path d="M4 4v16" /></svg>
+          </span>
+          <span className="lib-choix-txt"><b>Le catalogue</b><small>Des paquets par classe et par thème</small></span>
+          <span className="chev" aria-hidden="true">›</span>
+        </button>
+        {onCreer && (
+          <button className="lib-choix" onClick={() => creer(false)}>
+            <span className="lib-choix-icone" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            </span>
+            <span className="lib-choix-txt"><b>Créer à la main</b><small>Taper ou coller une liste de mots</small></span>
+            {badge && <em>{badge}</em>}
+            <span className="chev" aria-hidden="true">›</span>
+          </button>
+        )}
+        {bloque && msgCreer && (
+          <p className="hint" role="status">
+            {tvp('Ton paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que tu veux.', 'Votre paquet personnalisé offert est déjà créé. Avec l’abonnement : autant que vous voulez.')}
+          </p>
+        )}
       </>
     );
   }
@@ -787,10 +825,9 @@ export function Library({
       return (
         <div className="empty">
           <p>{tvp('Ta collection est vide.', 'Votre collection est vide.')}</p>
-          <button className="btn ghost" onClick={() => setTab('catalogue')}>
-            Parcourir le catalogue
+          <button className="btn ghost" onClick={() => setTab('ajouter')}>
+            Ajouter un paquet
           </button>
-          {onCreer && boutonCreer(onCreer)}
         </div>
       );
     }
@@ -810,11 +847,7 @@ export function Library({
 
     return (
       <>
-        <p className="lead">
-          {tvp('Mets en jeu ceux sur lesquels tu travailles. Les autres attendent sans rien perdre.', 'Mettez en jeu ceux sur lesquels vous travaillez. Les autres attendent sans rien perdre.')}
-        </p>
-
-        {onCreer && boutonCreer(onCreer)}
+        {/* 364 — l'interrupteur de chaque ligne met en jeu ou en pause. */}
 
         {mine.length > 4 && (
           <button className="searchcue" onClick={onSearch}>
@@ -1131,33 +1164,31 @@ export function Library({
   }
 
   const titres: Record<Tab, string> = {
-    travail: 'Mon travail',
+    travail: 'Mes paquets',
+    ajouter: 'Ajouter un paquet',
     collection: 'Ma collection',
-    catalogue: 'Mon catalogue',
+    catalogue: 'Le catalogue',
   };
+  /* 364 — d'où revient le « ‹ » de chaque sous-écran. */
+  const retourDe: Record<Tab, Tab> = { travail: 'travail', ajouter: 'travail', collection: 'travail', catalogue: 'ajouter' };
 
   return (
     <>
-      <h2 className="screen-title">{titres[tab]}</h2>
-
-      <div className="tabs" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            role="tab"
-            aria-selected={tab === t.id}
-            className={tab === t.id ? 'on' : ''}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {tab === 'travail' ? (
+        <h2 className="screen-title">{titres[tab]}</h2>
+      ) : (
+        <div className="lib-entete">
+          <button className="lib-retour" aria-label="Retour" onClick={() => setTab(retourDe[tab])}>‹</button>
+          <h2 className="screen-title">{titres[tab]}</h2>
+        </div>
+      )}
 
       {charge === null ? (
         <p className="lead">Chargement…</p>
       ) : tab === 'travail' ? (
         vueTravail()
+      ) : tab === 'ajouter' ? (
+        vueAjouter()
       ) : tab === 'collection' ? (
         vueCollection()
       ) : (
