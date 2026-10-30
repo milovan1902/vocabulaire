@@ -137,7 +137,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
        * discute, une limite non. Et c'est la moitié de la facture de
        * sortie en moins.
        */
-      160,
+      /* 371 — une explication demande plus de place qu'une réplique. */
+      corps.fiche?.phrases?.length ? 420 : 160,
     );
   } catch (e) {
     /*

@@ -46,7 +46,9 @@
  * mise en situation. Les scènes inventées partent avec le niveau (classe,
  * cran, mots) et affichent leurs mots utiles.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+/* CHANTIER 371 — « Comprendre mes phrases ». */
+import { ChoixComprendre, nombreEnAttente, noteComprises, type PhraseAttente, type Tour as TourComprendre } from './Comprendre';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS, NIVEAU_ADULTE_LABELS, readNiveauAdulte } from '../domain/types';
 import { motsRecents, type MotRecent } from './motsRecents';
@@ -142,7 +144,7 @@ const CLASSES_VOIX: readonly string[] = ['4e', '3e', '2de', '1re', 'Tle'];
 type Etat = 'charge' | 'pret' | 'anonyme' | 'panne';
 /** CHANTIER 312 — les sous-onglets. Toujours « S'exercer » à l'ouverture (la visite guidée y compte). */
 /* CHANTIER 359 — plus de sous-onglets : un accueil à deux portes (Discuter, Jouer une scène), et trois sous-écrans. */
-type Onglet = 'accueil' | 'discuter' | 'scene' | 'conversations' | 'parametres';
+type Onglet = 'accueil' | 'discuter' | 'scene' | 'comprendre' | 'conversations' | 'parametres';
 
 export function Parler({
   decks, active, settings, onSettings, onReglages, onReprise, directDiscuter = false,
@@ -234,6 +236,11 @@ export function Parler({
   /** Le motif brut de la panne. Petit, monospace, sélectionnable. */
   const [pourquoi, setPourquoi] = useState<string | null>(null);
   const [enSeance, setEnSeance] = useState(false);
+  /* 371 — les phrases choisies, puis celles de la séance en cours ; l'échange, gardé avec elles. */
+  const [aComprendre, setAComprendre] = useState<PhraseAttente[]>([]);
+  const [seanceComprendre, setSeanceComprendre] = useState<PhraseAttente[] | null>(null);
+  const echange = useRef<TourComprendre[]>([]);
+  const onEchange = useCallback((m: TourComprendre[]) => { echange.current = m; }, []);
 
   const [exploitant, setExploitant] = useState(
     () => localStorage.getItem(CLE_EXPLOITANT) === '1',
@@ -301,12 +308,13 @@ export function Parler({
     grammaire: classe ? GRAMMAIRE[classe] : GRAMMAIRE['6e'],
     mots: mots.map((m) => ({ en: m.en, fr: m.fr })),
     /* 308 — en mise en situation, le titre part dans l'archive à la place des thèmes. */
-    themes: titreScene ? [`Mise en situation : ${titreScene}`] : choisis,
-    situation: titreScene && situation ? situation : undefined,
+    themes: seanceComprendre ? ['Comprendre mes phrases'] : titreScene ? [`Mise en situation : ${titreScene}`] : choisis,
+    situation: !seanceComprendre && titreScene && situation ? situation : undefined,
+    phrases: seanceComprendre ? seanceComprendre.map((p) => ({ en: p.en, fr: p.fr })) : undefined,
     deja,
     cran,
     adulte: adulte ?? undefined,
-  }), [classe, mots, choisis, deja, cran, titreScene, situation, adulte]);
+  }), [classe, mots, choisis, deja, cran, titreScene, situation, adulte, seanceComprendre]);
 
   /*
    * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
@@ -352,7 +360,11 @@ export function Parler({
         debit={vitesse / 100}
         budget={budget}
         exploitant={exploitant}
+        amorce={seanceComprendre ? tvp('Bonjour ! Explique-moi la première phrase, s’il te plaît.', 'Bonjour ! Expliquez-moi la première phrase, s’il vous plaît.') : undefined}
+        onEchange={onEchange}
         onFini={() => {
+          /* 371 — les phrases expliquées gardent l'échange, et quittent la liste d'attente. */
+          if (seanceComprendre) { noteComprises(seanceComprendre, echange.current); setSeanceComprendre(null); setAComprendre([]); }
           setEnSeance(false);
           void litBudget();
           /* 306 — la séance s'ajoute aux « déjà vues ». */
@@ -549,6 +561,34 @@ export function Parler({
     );
   }
 
+  /* ---------- CHANTIER 371 — Comprendre mes phrases ---------- */
+  if (onglet === 'comprendre') {
+    return (
+      <section className="parler parler-sous" aria-label="Comprendre mes phrases">
+        {entete('Comprendre mes phrases')}
+        <ChoixComprendre choix={aComprendre} onChoix={setAComprendre} />
+        <div className="parler-bas">
+          <button
+            className="btn parler-go"
+            disabled={etat !== 'pret' || !!budget?.fini || aComprendre.length === 0}
+            onClick={() => { mesure('parler'); setSeanceComprendre(aComprendre); setEnSeance(true); }}
+          >
+            Commencer{dispo}
+          </button>
+          <p className="parler-pied">
+            {etat === 'anonyme'
+              ? tvp('Connecte-toi pour parler.', 'Connectez-vous pour parler.')
+              : budget?.fini
+                ? finDit(budget)
+                : aComprendre.length
+                  ? `${aComprendre.length} phrase${aComprendre.length > 1 ? 's' : ''}, dans l’ordre choisi. L’IA explique en français, ${tvp('tu peux lui poser tes questions', 'vous pouvez lui poser vos questions')}.`
+                  : tvp('Choisis au moins une phrase.', 'Choisissez au moins une phrase.')}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   /* ---------- Mes conversations ---------- */
   if (onglet === 'conversations') {
     return (
@@ -639,6 +679,14 @@ export function Parler({
         <b>Jouer une scène</b>
         <span>L’IA joue un rôle — un agent, un serveur, un vendeur — avec un imprévu.</span>
         <em>Choisir une scène ›</em>
+      </button>
+
+      {/* CHANTIER 371 — la 3e porte : les phrases mises de côté pendant les révisions. */}
+      <button className="parler-porte comprendre" onClick={() => { setAComprendre([]); setOnglet('comprendre'); }}>
+        <span className="parler-porte-icone" aria-hidden="true">?</span>
+        <b>Comprendre mes phrases</b>
+        <span>{tvp('L’IA t’explique, en français, les phrases mises de côté. Tu peux lui poser tes questions.', 'L’IA vous explique, en français, les phrases mises de côté. Vous pouvez lui poser vos questions.')}</span>
+        <em>{nombreEnAttente() ? `${nombreEnAttente()} phrase${nombreEnAttente() > 1 ? 's' : ''} en attente ›` : 'Comment ça marche ›'}</em>
       </button>
 
       <div className="parler-tuiles2">

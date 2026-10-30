@@ -76,6 +76,8 @@ export interface Fiche {
   situation?: string;
   /** CHANTIER 317 — niveau d'un adulte (A1 à B2) ; absent pour un élève. */
   adulte?: string;
+  /** CHANTIER 371 — « Comprendre mes phrases » : jusqu'à 3 phrases, dans l'ordre choisi. */
+  phrases?: Array<{ en: string; fr: string }>;
 }
 
 /**

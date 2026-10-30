@@ -97,8 +97,12 @@ function horloge(s: number): string {
 type Mode = 'voix' | 'clavier';
 
 export function ParlerSeance({
-  fiche, debit, budget, exploitant, onFini, enJeu, onReprise, onCran,
+  fiche, debit, budget, exploitant, onFini, enJeu, onReprise, onCran, amorce, onEchange,
 }: {
+  /** CHANTIER 371 — le premier message, envoyé seul (« Comprendre mes phrases » : l'IA commence). */
+  amorce?: string;
+  /** CHANTIER 371 — l'échange, à chaque tour (gardé avec les phrases expliquées). */
+  onEchange?: (m: Array<{ role: 'user' | 'assistant'; content: string }>) => void;
   fiche: Fiche;
   /** CHANTIER 307 — le nouveau cran, à enregistrer avec le compte. */
   onCran: (n: number) => void;
@@ -194,6 +198,15 @@ export function ParlerSeance({
       setEnVol(false);
     }
   }, [enVol, messages, fiche, debit, ecart]);
+
+  /* 371 — l'amorce part une seule fois, dès l'ouverture. */
+  const amorcee = useRef(false);
+  useEffect(() => {
+    if (!amorce || amorcee.current) return;
+    amorcee.current = true;
+    void envoie(amorce);
+  }, [amorce, envoie]);
+  useEffect(() => { onEchange?.(messages); }, [messages, onEchange]);
 
   /** Appuyer : on coupe la voix, on ouvre le micro. */
   const parleTour = useCallback(() => {

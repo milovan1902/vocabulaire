@@ -16,6 +16,8 @@ import type { Grade, ModeReponse, Settings } from '../domain/types';
 /* CHANTIER 356 — la première note de chaque carte, pour le bilan de fin. */
 import type { BilanSession, NoteSession } from '../engine/bilan';
 import { compareEcrit, compareOral, estMot, noteContestation, type Verdict } from '../engine/reponse';
+/* CHANTIER 371 — « Je ne comprends pas » sur les phrases. */
+import { PastilleComprendre } from './Comprendre';
 import { ecoute, ecouteDisponible, tais, type Ecoute } from './ecoute';
 import type { SessionItem } from '../engine/session';
 import { previewIntervals } from '../engine/scheduler';
@@ -695,6 +697,10 @@ export function Study({
           </>
         )}
         </>}
+        {/* CHANTIER 371 — sur une phrase ou une expression retournée (jamais un mot seul). */}
+        {revealed && !revele && !estMot(current.card.en) && (
+          <PastilleComprendre id={current.card.id} en={current.card.en} fr={current.card.fr} />
+        )}
         {/* CHANTIER 271 — Cahier et Tableau : ce qui se pose sur la fiche ou le tableau pendant la note. */}
         {(style === 'cahier' || style === 'tableau') && frappe && <EffetsEcole key={frappe} style={style} frappe={frappe} />}
         {/* CHANTIER 272 — Lycée : rature, « peut mieux faire », coche verte, « TB » ; Borne arcade : GAME OVER, MISS, GOOD!, PERFECT! ; Néon : le trait de Facile. */}

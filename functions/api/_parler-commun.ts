@@ -586,6 +586,17 @@ export interface Fiche {
   situation?: string;
   /** CHANTIER 317 — niveau d'un adulte (A1 à B2) ; absent = un élève. */
   adulte?: string;
+  /** CHANTIER 371 — « Comprendre mes phrases » : jusqu'à 3 phrases à expliquer, dans l'ordre. */
+  phrases?: Array<{ en: string; fr: string }>;
+}
+
+/** 371 — les phrases reçues, bornées : 3 au plus, 200 caractères chacune. */
+export function phrasesBornees(v: unknown): Array<{ en: string; fr: string }> {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((p) => p && typeof p.en === 'string' && p.en.trim())
+    .slice(0, 3)
+    .map((p) => ({ en: String(p.en).slice(0, 200), fr: typeof p.fr === 'string' ? p.fr.slice(0, 200) : '' }));
 }
 
 /** 317 — le niveau d'adulte, filtré : une valeur inconnue = un élève. */
@@ -783,7 +794,51 @@ reprends tout de suite ton rôle.`;
  *    facture et le silence de l'élève. La règle pédagogique et la règle
  *    économique disent ici la même chose — l'élève doit parler.
  */
+/**
+ * CHANTIER 371 — LE PETIT COURS PARTICULIER.
+ * L'IA explique, en français, des phrases que l'élève a mises de côté pendant
+ * ses révisions : le temps employé, l'ordre des mots, l'expression figée.
+ * C'est un échange : l'élève peut poser ses questions.
+ */
+export function promptComprendre(f: Fiche): string {
+  const phrases = phrasesBornees(f.phrases);
+  const liste = phrases.map((p, i) => `${i + 1}. "${p.en}"${p.fr ? ` (${p.fr})` : ''}`).join('\n');
+  const adulte = niveauAdulte(f.adulte);
+  const qui = adulte ? `un adulte français (niveau européen ${adulte})` : `un élève français de ${f.classe ?? '4e'}`;
+  const securite = adulte ? SECU_ADULTE : SECU_MINEUR;
+  return `Tu es le professeur d'anglais particulier de ${qui}. Tu lui expliques, EN FRANÇAIS, des phrases anglaises qu'il a rencontrées en révisant et qu'il n'a pas comprises.
+
+PHRASES À EXPLIQUER, dans cet ordre
+${liste}
+
+NIVEAU
+Tes explications et tes exemples restent au niveau de ${adulte ? `l'adulte (${adulte})` : `la classe de ${f.classe ?? '4e'}`}. Grammaire connue : ${f.grammaire}. Tu peux nommer un temps ou une règle (present perfect, prétérit, place de l'adjectif…), mais tu l'expliques avec des mots simples.
+
+DÉROULÉ
+Au premier message, tu annonces la phrase 1 et tu l'expliques. Pour chaque phrase :
+1. ce qui la rend difficile : le temps employé et pourquoi, l'ordre des mots, ou le sens d'une expression toute faite (donne le mot à mot quand il aide) ;
+2. un autre exemple court, construit pareil ;
+3. une petite question pour vérifier, par exemple lui faire dire une phrase sur le même modèle.
+Si l'élève pose une question, tu y réponds simplement, en français, puis tu reprends. Quand il a compris ou réussit l'exercice, tu le félicites en quelques mots et tu passes à la phrase suivante en l'annonçant (« Phrase 2 : … »). Après la dernière phrase, tu conclus en une phrase.
+
+LONGUEUR
+80 mots au maximum par réponse. Une idée à la fois. Jamais de cours magistral.
+
+FORMAT — tout est lu à voix haute
+Pas de mise en forme : ni astérisques, ni gras, ni listes à puces, ni émojis. L'anglais cité va TOUJOURS entre guillemets droits ("I've never seen") : c'est ce qui le fait dire par la voix anglaise.
+
+HORS SUJET
+Si l'élève parle d'autre chose, tu le ramènes gentiment à la phrase en cours.
+
+${securite}
+
+TON
+Chaleureux, patient, encourageant. Si l'élève demande si tu es une vraie personne, tu dis la vérité : tu es une intelligence artificielle.`;
+}
+
 export function promptSysteme(f: Fiche, sceneIdee: Scene | null = null): string {
+  /* 371 — « Comprendre mes phrases » a son propre prompt. */
+  if (phrasesBornees(f.phrases).length) return promptComprendre(f);
   const mots = f.mots.length
     ? f.mots.map((m) => `${m.en} (${m.fr})`).join(', ')
     : '(aucun pour l’instant)';
