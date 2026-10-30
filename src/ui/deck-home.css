@@ -1,0 +1,12 @@
+/* CHANTIER 369 — l'écran d'un paquet simplifié (maquette 369). Couleurs de l'apparence. */
+.deck-ctrl { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0 10px; font-size: 14px; font-weight: 600; color: var(--chalk); }
+.deck-ctrl svg { width: 16px; height: 16px; flex: none; }
+.btn.deck-details { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.deck-details svg { width: 18px; height: 18px; flex: none; }
+.btn.ghost.danger.deck-effacer { border-color: transparent; background: none; font-size: 14px; min-height: 46px; }
+.deck-details-tete { display: flex; align-items: center; gap: 6px; margin: 4px 0 14px; }
+.deck-details-tete > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.deck-details-tete b { font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1.2; color: var(--ink); overflow-wrap: anywhere; }
+.deck-details-tete small { font-size: 13px; color: var(--grey); }
+.deck-retour { flex: none; min-width: 44px; min-height: 44px; margin-left: -10px; background: none; border: none; color: var(--ink-soft); font-size: 28px; line-height: 1; cursor: pointer; }
+.deck-retour:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }

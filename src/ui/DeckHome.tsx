@@ -12,6 +12,8 @@ import { repository } from '../data/repository';
 import { paletteFor, Slider, Toggle } from './components';
 import { clearRemoteProgress } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
+/* CHANTIER 369 — l'écran du paquet simplifié. */
+import './deck-home.css';
 import { dateLocale, etiquetteControle, isoLocal, jourPlus, joursAvant, motsFragiles, ramenerAuControle, resteControle, type DeckControle } from '../engine/controle';
 
 const jourLong = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -245,6 +247,8 @@ export function DeckHome({
   const ctrl = etiquette ? (deck as DeckControle).controle ?? null : null;
   const [dateCtrl, setDateCtrl] = useState(ctrl ?? isoLocal(jourPlus(7)));
   const [ctrlEnCours, setCtrlEnCours] = useState(false);
+  /* CHANTIER 369 — l'écran « Détails et paramètres » du paquet. */
+  const [details, setDetails] = useState(false);
   const resteCtrl = joursAvant(dateCtrl);
   const dateCtrlOk = resteCtrl >= 1 && resteCtrl <= 90;
   /* CHANTIER 291 — le bilan : la veille et le jour J, la liste des mots fragiles. */
@@ -307,263 +311,280 @@ export function DeckHome({
 
   return (
     <>
-      {/*
-       * Le recto de la carte que l'on vient de retourner depuis la
-       * bibliothèque. Sans lui, le retournement promettrait une face qui
-       * n'existe pas. L'animation d'entrée reprend l'axe et la durée de
-       * l'animation de sortie de la vignette : les deux moitiés se lisent
-       * comme un seul geste.
-       */}
-      <div className="deckface" style={{ ['--accent' as string]: paletteFor(deck.id).ink }}>
-        <div className="face">
-          <span className="corner">{cards.length}</span>
-          <b>{deck.name}</b>
-          <span className="sub">
-            {stats.dueAvailable + stats.newAvailable > 0
-              ? `${stats.dueAvailable + stats.newAvailable} à voir aujourd’hui`
-              : 'rien à réviser aujourd’hui'}
-          </span>
-          <span className="suit" />
-        </div>
-      </div>
-
-      <div className="stats">
-        <div className="stat"><b>{stats.newAvailable}</b><span>à découvrir</span></div>
-        <div className="stat"><b>{stats.dueAvailable}</b><span>à réviser</span></div>
-        <div className="stat"><b>{stats.resting}</b><span>en mémoire</span></div>
-      </div>
-
-      {/*
-        * CHANTIER 180 — les sous-catégories se replient, comme « Réglages »
-        * juste en dessous : la liste ne s'ouvre qu'au doigt. Le résumé dit
-        * combien sont retenues, pour ne pas avoir à ouvrir pour vérifier.
-        */}
-      {themes.length > 1 && (
-        <details className="panelbox souscat">
-          <summary>
-            Voir les sous-catégories
-            <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>
-              {selectedThemes.filter((t) => themes.includes(t)).length} / {themes.length}
-            </span>
-          </summary>
-        <div className="rows">
-          {themes.map((t) => {
-            const on = selectedThemes.includes(t);
-            return (
-              <button key={t} className={`row ${on ? 'on' : 'off'}`} onClick={() => void toggleTheme(t)}>
-                <span className="tick">{on ? '✓' : ''}</span>
-                <span style={{ flex: 1 }}>{t}</span>
-                <span className="n">{cards.filter((c) => c.theme === t).length}</span>
-              </button>
-            );
-          })}
-        </div>
-        </details>
-      )}
-
-      {!deck.builtin && (
-        <details className="panelbox" open={!!ctrl}>
-          <summary>
-            Contrôle
-            <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>{etiquette ?? 'aucun'}</span>
-          </summary>
-          <p className="hint">
-            {ctrl
-              ? `Prévu ${jourLong(dateLocale(ctrl))}. Les révisions de ce paquet sont resserrées jusque-là, et tout le paquet revient la veille.`
-              : tvp('Aucun contrôle prévu. Ajoute une date : l’appli resserre les révisions pour que les mots soient sus le jour J.', 'Aucun contrôle prévu. Ajoutez une date : l’appli resserre les révisions pour que les mots soient sus le jour J.')}
-          </p>
-          {bilan && (
-            <div className="bilan">
-              <b>{fragiles.length === 0 ? 'Aucun mot fragile' : `${fragiles.length} mot${fragiles.length > 1 ? 's' : ''} fragile${fragiles.length > 1 ? 's' : ''}`}</b>
-              <p className="hint" style={{ margin: '4px 0 8px' }}>
-                {fragiles.length === 0
-                  ? tvp('À ta dernière révision, tu as su tous les mots déjà vus.', 'À votre dernière révision, vous avez su tous les mots déjà vus.')
-                  : tvp('Notés « À revoir » ou « Difficile » à ta dernière révision. Relis-les avant le contrôle.', 'Notés « À revoir » ou « Difficile » à votre dernière révision. Relisez-les avant le contrôle.')}
-              </p>
-              {fragiles.length > 0 && (
-                <div className="rows">
-                  {fragiles.map((c) => (
-                    <div key={c.id} className="row">
-                      <span style={{ flex: 1 }}>{c.en}</span>
-                      <span className="n">{c.fr}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {/* CHANTIER 369 — l'écran du paquet : la carte, ses chiffres et 3 boutons. Le reste est derrière « Détails et paramètres ». */}
+      {!details ? (
+        <>
+          {/*
+           * Le recto de la carte que l'on vient de retourner depuis la
+           * bibliothèque. Sans lui, le retournement promettrait une face qui
+           * n'existe pas. L'animation d'entrée reprend l'axe et la durée de
+           * l'animation de sortie de la vignette : les deux moitiés se lisent
+           * comme un seul geste.
+           */}
+          <div className="deckface" style={{ ['--accent' as string]: paletteFor(deck.id).ink }}>
+            <div className="face">
+              <span className="corner">{cards.length}</span>
+              <b>{deck.name}</b>
+              <span className="sub">
+                {stats.dueAvailable + stats.newAvailable > 0
+                  ? `${stats.dueAvailable + stats.newAvailable} à voir aujourd’hui`
+                  : 'rien à réviser aujourd’hui'}
+              </span>
+              <span className="suit" />
             </div>
-          )}
-          <div className="field">
-            <label htmlFor="dh-controle">{ctrl ? 'Nouvelle date' : 'Date du contrôle'}</label>
-            <input
-              id="dh-controle" type="date" value={dateCtrl}
-              min={isoLocal(jourPlus(1))} max={isoLocal(jourPlus(90))}
-              onChange={(e) => { if (e.target.value) setDateCtrl(e.target.value); }}
-            />
           </div>
-          {!dateCtrlOk && <p className="error">{tvp('Choisis une date entre demain et dans 3 mois.', 'Choisissez une date entre demain et dans 3 mois.')}</p>}
-          <button className="btn" disabled={!dateCtrlOk || dateCtrl === ctrl || ctrlEnCours} onClick={() => void enregistreControle(dateCtrl)}>
-            {ctrl ? 'Changer la date' : 'Ajouter ce contrôle'}
-          </button>
-          {ctrl && (
-            <button className="btn ghost" disabled={ctrlEnCours} onClick={async () => { if (await demande({ titre: 'Retirer le contrôle ?', texte: 'Le paquet reprend le rythme normal.', agir: 'Retirer le contrôle' })) void enregistreControle(null); }}>
-              Retirer le contrôle
+
+          <div className="stats">
+            <div className="stat"><b>{stats.newAvailable}</b><span>à découvrir</span></div>
+            <div className="stat"><b>{stats.dueAvailable}</b><span>à réviser</span></div>
+            <div className="stat"><b>{stats.resting}</b><span>en mémoire</span></div>
+          </div>
+          {etiquette && (
+            <p className="deck-ctrl">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+              {etiquette}
+            </p>
+          )}
+          {/* 337 — information neutre, sans incitation (politique Familles). */}
+          {verrouille ? (
+            <div className="goal" role="status">
+              <b>Inclus dans l’abonnement.</b>
+              <p>
+                {tvp('Tu peux parcourir ses mots. La révision de ce paquet est réservée aux abonnés ; ton paquet offert t’attend dans le catalogue.', 'Vous pouvez parcourir ses mots. La révision de ce paquet est réservée aux abonnés ; votre paquet offert vous attend dans le catalogue.')}
+              </p>
+            </div>
+          ) : available > 0 ? (
+            <button className="btn" onClick={() => onStart(false)}>
+              Réviser {Math.min(available, settings.cardsPerSession)} cartes
+            </button>
+          ) : stats.goalReached ? (
+            <>
+              <div className="goal">
+                <b>Objectif du jour atteint.</b>
+                <p>
+                  Il reste {beyond} carte{beyond > 1 ? 's' : ''} {tvp('si tu veux continuer.', 'si vous voulez continuer.')}
+                  Sache seulement que chaque carte prise en avance revient plus tard :
+                  en faire davantage aujourd’hui, c’est plus de révisions demain
+                  et les jours suivants.
+                </p>
+              </div>
+              <button className="btn ghost" onClick={() => onStart(true)}>
+                Continuer quand même ({Math.min(beyond, settings.cardsPerSession)} cartes)
+              </button>
+            </>
+          ) : (
+            <button className="btn" disabled>
+              Rien à réviser aujourd’hui
             </button>
           )}
-        </details>
-      )}
-
-      <MotsDuPaquet
-        key={deck.id}
-        deckId={deck.id} cards={cards} progress={progress}
-        modifiable={!deck.builtin} onReload={onReload}
-      />
-
-      <details className="panelbox">
-        <summary>Réglages</summary>
-        <div className="setting scope">
-          <Toggle
-            label="Réglages propres à ce paquet"
-            checked={particulier}
-            onChange={(on) => {
-              // En activant, on part des valeurs générales : rien ne change
-              // visuellement, mais les modifications suivantes restent ici.
-              void onOverrides(on ? { ...general, updatedAt: Date.now() } : null);
-            }}
-          />
-          <p className="hint" style={{ margin: '7px 0 0' }}>
-            {particulier
-              ? 'Ce paquet a ses propres réglages. Les modifications ci-dessous ne touchent que lui.'
-              : 'Ce paquet suit les réglages généraux. Les modifications ci-dessous s’appliquent à tous les paquets.'}
-          </p>
-        </div>
-        <Slider
-          label="Nouveaux mots par jour"
-          hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
-          min={0} max={20} step={1} value={settings.newPerDay}
-          onChange={(v) => change({ newPerDay: v })}
-        />
-        <Slider
-          label="Révisions maximum par jour"
-          hint="Plafond des mots déjà vus. Le surplus est reporté au lendemain."
-          min={20} max={100} step={5} value={settings.reviewsPerDay}
-          onChange={(v) => change({ reviewsPerDay: v })}
-        />
-        <Slider
-          label="Cartes par session"
-          hint="Pour découper la journée en plusieurs passages courts."
-          min={10} max={100} step={5} value={settings.cardsPerSession}
-          onChange={(v) => change({ cardsPerSession: v })}
-        />
-        <Slider
-          label="Vitesse de la voix"
-          min={0.6} max={1.1} step={0.05} value={settings.speechRate}
-          format={(v) => v.toFixed(2).replace('.', ',')}
-          onChange={(v) => change({ speechRate: v })}
-        />
-        <Slider
-          label="Marge verticale du texte sur le visuel"
-          hint="À ajuster si le cadre du visuel est plus épais ou plus fin."
-          min={5} max={30} step={1} value={settings.panelInsetY}
-          format={(v) => `${v} %`}
-          onChange={(v) => change({ panelInsetY: v })}
-        />
-        <Slider
-          label="Marge horizontale du texte"
-          min={5} max={30} step={1} value={settings.panelInsetX}
-          format={(v) => `${v} %`}
-          onChange={(v) => change({ panelInsetX: v })}
-        />
-        <div className="setting" style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-          <Toggle
-            label="Prononcer automatiquement à la réponse"
-            checked={settings.autoSpeak}
-            onChange={(v) => change({ autoSpeak: v })}
-          />
-          <Toggle
-            label="Sens inverse : anglais → français"
-            checked={settings.reversed}
-            onChange={(v) => change({ reversed: v })}
-          />
-        </div>
-      </details>
-
-      {/* 337 — information neutre, sans incitation (politique Familles). */}
-      {verrouille ? (
-        <div className="goal" role="status">
-          <b>Inclus dans l’abonnement.</b>
-          <p>
-            {tvp('Tu peux parcourir ses mots. La révision de ce paquet est réservée aux abonnés ; ton paquet offert t’attend dans le catalogue.', 'Vous pouvez parcourir ses mots. La révision de ce paquet est réservée aux abonnés ; votre paquet offert vous attend dans le catalogue.')}
-          </p>
-        </div>
-      ) : available > 0 ? (
-        <button className="btn" onClick={() => onStart(false)}>
-          Réviser {Math.min(available, settings.cardsPerSession)} cartes
-        </button>
-      ) : stats.goalReached ? (
-        <>
-          <div className="goal">
-            <b>Objectif du jour atteint.</b>
-            <p>
-              Il reste {beyond} carte{beyond > 1 ? 's' : ''} {tvp('si tu veux continuer.', 'si vous voulez continuer.')}
-              Sache seulement que chaque carte prise en avance revient plus tard :
-              en faire davantage aujourd’hui, c’est plus de révisions demain
-              et les jours suivants.
-            </p>
-          </div>
-          <button className="btn ghost" onClick={() => onStart(true)}>
-            Continuer quand même ({Math.min(beyond, settings.cardsPerSession)} cartes)
+          <button className="btn ghost deck-details" onClick={() => { setDetails(true); window.scrollTo(0, 0); }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg>
+            Détails et paramètres
+          </button>
+          <button className="btn ghost danger deck-effacer" onClick={async () => {
+            if (!(await demande({
+              titre: `Effacer la progression de « ${deck.name} » ?`,
+              texte: userId
+                ? tvp('Elle sera effacée sur tous tes appareils, pas seulement celui-ci.', 'Elle sera effacée sur tous vos appareils, pas seulement celui-ci.')
+                : 'Les mots repartiront comme neufs.',
+              agir: 'Effacer la progression',
+              ton: 'danger',
+            }))) return;
+            // L'ordre compte : si le serveur refuse, on ne veut pas avoir déjà
+            // effacé en local une progression qu'il rapatrierait ensuite.
+            if (userId) {
+              try {
+                await clearRemoteProgress(userId, deck.id);
+              } catch (e) {
+                informe(
+                  'Effacement impossible sur le serveur. ' + phraseErreur(e, 'effacement-progression') +
+                  tvp(' Rien n’a été modifié. Réessaie une fois connecté.', ' Rien n’a été modifié. Réessayez une fois connecté.'),
+                  true,
+                );
+                return;
+              }
+            }
+            await repository.saveProgress(deck.id, {});
+            onReload();
+          }}>
+            Effacer la progression de ce paquet
           </button>
         </>
       ) : (
-        <button className="btn" disabled>
-          Rien à réviser aujourd’hui
-        </button>
-      )}
+        <>
+          <div className="deck-details-tete">
+            <button className="deck-retour" aria-label="Retour au paquet" onClick={() => { setDetails(false); window.scrollTo(0, 0); }}>‹</button>
+            <span><b>{deck.name}</b><small>Détails et paramètres</small></span>
+          </div>
+          {/*
+            * CHANTIER 180 — les sous-catégories se replient, comme « Réglages »
+            * juste en dessous : la liste ne s'ouvre qu'au doigt. Le résumé dit
+            * combien sont retenues, pour ne pas avoir à ouvrir pour vérifier.
+            */}
+          {themes.length > 1 && (
+            <details className="panelbox souscat">
+              <summary>
+                Voir les sous-catégories
+                <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>
+                  {selectedThemes.filter((t) => themes.includes(t)).length} / {themes.length}
+                </span>
+              </summary>
+            <div className="rows">
+              {themes.map((t) => {
+                const on = selectedThemes.includes(t);
+                return (
+                  <button key={t} className={`row ${on ? 'on' : 'off'}`} onClick={() => void toggleTheme(t)}>
+                    <span className="tick">{on ? '✓' : ''}</span>
+                    <span style={{ flex: 1 }}>{t}</span>
+                    <span className="n">{cards.filter((c) => c.theme === t).length}</span>
+                  </button>
+                );
+              })}
+            </div>
+            </details>
+          )}
 
-      {!verrouille && <button className="btn ghost" onClick={onAddCards}>Ajouter des mots à ce paquet</button>}
+          {!deck.builtin && (
+            <details className="panelbox" open={!!ctrl}>
+              <summary>
+                Contrôle
+                <span className="n" style={{ marginLeft: 8, fontWeight: 400, opacity: 0.75 }}>{etiquette ?? 'aucun'}</span>
+              </summary>
+              <p className="hint">
+                {ctrl
+                  ? `Prévu ${jourLong(dateLocale(ctrl))}. Les révisions de ce paquet sont resserrées jusque-là, et tout le paquet revient la veille.`
+                  : tvp('Aucun contrôle prévu. Ajoute une date : l’appli resserre les révisions pour que les mots soient sus le jour J.', 'Aucun contrôle prévu. Ajoutez une date : l’appli resserre les révisions pour que les mots soient sus le jour J.')}
+              </p>
+              {bilan && (
+                <div className="bilan">
+                  <b>{fragiles.length === 0 ? 'Aucun mot fragile' : `${fragiles.length} mot${fragiles.length > 1 ? 's' : ''} fragile${fragiles.length > 1 ? 's' : ''}`}</b>
+                  <p className="hint" style={{ margin: '4px 0 8px' }}>
+                    {fragiles.length === 0
+                      ? tvp('À ta dernière révision, tu as su tous les mots déjà vus.', 'À votre dernière révision, vous avez su tous les mots déjà vus.')
+                      : tvp('Notés « À revoir » ou « Difficile » à ta dernière révision. Relis-les avant le contrôle.', 'Notés « À revoir » ou « Difficile » à votre dernière révision. Relisez-les avant le contrôle.')}
+                  </p>
+                  {fragiles.length > 0 && (
+                    <div className="rows">
+                      {fragiles.map((c) => (
+                        <div key={c.id} className="row">
+                          <span style={{ flex: 1 }}>{c.en}</span>
+                          <span className="n">{c.fr}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="field">
+                <label htmlFor="dh-controle">{ctrl ? 'Nouvelle date' : 'Date du contrôle'}</label>
+                <input
+                  id="dh-controle" type="date" value={dateCtrl}
+                  min={isoLocal(jourPlus(1))} max={isoLocal(jourPlus(90))}
+                  onChange={(e) => { if (e.target.value) setDateCtrl(e.target.value); }}
+                />
+              </div>
+              {!dateCtrlOk && <p className="error">{tvp('Choisis une date entre demain et dans 3 mois.', 'Choisissez une date entre demain et dans 3 mois.')}</p>}
+              <button className="btn" disabled={!dateCtrlOk || dateCtrl === ctrl || ctrlEnCours} onClick={() => void enregistreControle(dateCtrl)}>
+                {ctrl ? 'Changer la date' : 'Ajouter ce contrôle'}
+              </button>
+              {ctrl && (
+                <button className="btn ghost" disabled={ctrlEnCours} onClick={async () => { if (await demande({ titre: 'Retirer le contrôle ?', texte: 'Le paquet reprend le rythme normal.', agir: 'Retirer le contrôle' })) void enregistreControle(null); }}>
+                  Retirer le contrôle
+                </button>
+              )}
+            </details>
+          )}
 
-      <button className="btn ghost danger" onClick={async () => {
-        if (!(await demande({
-          titre: `Effacer la progression de « ${deck.name} » ?`,
-          texte: userId
-            ? tvp('Elle sera effacée sur tous tes appareils, pas seulement celui-ci.', 'Elle sera effacée sur tous vos appareils, pas seulement celui-ci.')
-            : 'Les mots repartiront comme neufs.',
-          agir: 'Effacer la progression',
-          ton: 'danger',
-        }))) return;
-        // L'ordre compte : si le serveur refuse, on ne veut pas avoir déjà
-        // effacé en local une progression qu'il rapatrierait ensuite.
-        if (userId) {
-          try {
-            await clearRemoteProgress(userId, deck.id);
-          } catch (e) {
-            informe(
-              'Effacement impossible sur le serveur. ' + phraseErreur(e, 'effacement-progression') +
-              tvp(' Rien n’a été modifié. Réessaie une fois connecté.', ' Rien n’a été modifié. Réessayez une fois connecté.'),
-              true,
-            );
-            return;
-          }
-        }
-        await repository.saveProgress(deck.id, {});
-        onReload();
-      }}>
-        Effacer la progression de ce paquet
-      </button>
+          <MotsDuPaquet
+            key={deck.id}
+            deckId={deck.id} cards={cards} progress={progress}
+            modifiable={!deck.builtin} onReload={onReload}
+          />
 
-      {!deck.builtin && (
-        <button className="btn ghost danger" onClick={async () => {
-          if (!(await demande({
-            titre: `Supprimer « ${deck.name} » ?`,
-            texte: 'Ses mots et leur progression seront effacés. On ne pourra pas les récupérer.',
-            agir: 'Supprimer définitivement',
-            ton: 'danger',
-          }))) return;
-          await repository.deleteDeck(deck.id);
-          onBackToLibrary();
-        }}>
-          Supprimer ce paquet
-        </button>
+          <details className="panelbox">
+            <summary>Réglages</summary>
+            <div className="setting scope">
+              <Toggle
+                label="Réglages propres à ce paquet"
+                checked={particulier}
+                onChange={(on) => {
+                  // En activant, on part des valeurs générales : rien ne change
+                  // visuellement, mais les modifications suivantes restent ici.
+                  void onOverrides(on ? { ...general, updatedAt: Date.now() } : null);
+                }}
+              />
+              <p className="hint" style={{ margin: '7px 0 0' }}>
+                {particulier
+                  ? 'Ce paquet a ses propres réglages. Les modifications ci-dessous ne touchent que lui.'
+                  : 'Ce paquet suit les réglages généraux. Les modifications ci-dessous s’appliquent à tous les paquets.'}
+              </p>
+            </div>
+            <Slider
+              label="Nouveaux mots par jour"
+              hint="Chaque nouveau mot génère environ 5 révisions dans les semaines qui suivent."
+              min={0} max={20} step={1} value={settings.newPerDay}
+              onChange={(v) => change({ newPerDay: v })}
+            />
+            <Slider
+              label="Révisions maximum par jour"
+              hint="Plafond des mots déjà vus. Le surplus est reporté au lendemain."
+              min={20} max={100} step={5} value={settings.reviewsPerDay}
+              onChange={(v) => change({ reviewsPerDay: v })}
+            />
+            <Slider
+              label="Cartes par session"
+              hint="Pour découper la journée en plusieurs passages courts."
+              min={10} max={100} step={5} value={settings.cardsPerSession}
+              onChange={(v) => change({ cardsPerSession: v })}
+            />
+            <Slider
+              label="Vitesse de la voix"
+              min={0.6} max={1.1} step={0.05} value={settings.speechRate}
+              format={(v) => v.toFixed(2).replace('.', ',')}
+              onChange={(v) => change({ speechRate: v })}
+            />
+            <Slider
+              label="Marge verticale du texte sur le visuel"
+              hint="À ajuster si le cadre du visuel est plus épais ou plus fin."
+              min={5} max={30} step={1} value={settings.panelInsetY}
+              format={(v) => `${v} %`}
+              onChange={(v) => change({ panelInsetY: v })}
+            />
+            <Slider
+              label="Marge horizontale du texte"
+              min={5} max={30} step={1} value={settings.panelInsetX}
+              format={(v) => `${v} %`}
+              onChange={(v) => change({ panelInsetX: v })}
+            />
+            <div className="setting" style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+              <Toggle
+                label="Prononcer automatiquement à la réponse"
+                checked={settings.autoSpeak}
+                onChange={(v) => change({ autoSpeak: v })}
+              />
+              <Toggle
+                label="Sens inverse : anglais → français"
+                checked={settings.reversed}
+                onChange={(v) => change({ reversed: v })}
+              />
+            </div>
+          </details>
+          {!verrouille && <button className="btn ghost" onClick={onAddCards}>Ajouter des mots</button>}
+          {!deck.builtin && (
+            <button className="btn ghost danger" onClick={async () => {
+              if (!(await demande({
+                titre: `Supprimer « ${deck.name} » ?`,
+                texte: 'Ses mots et leur progression seront effacés. On ne pourra pas les récupérer.',
+                agir: 'Supprimer définitivement',
+                ton: 'danger',
+              }))) return;
+              await repository.deleteDeck(deck.id);
+              onBackToLibrary();
+            }}>
+              Supprimer ce paquet
+            </button>
+          )}
+        </>
       )}
     </>
   );
