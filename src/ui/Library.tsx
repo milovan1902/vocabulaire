@@ -643,15 +643,18 @@ export function Library({
         {/* CHANTIER 154 — sans compte, rappeler que tout est sur ce téléphone. */}
         {!auth.session && <RappelSauvegarde />}
         {/* 364 — « Ce à quoi je m'engage », en une ligne ; l'explication derrière le « i ». */}
+        {/* 367 — un seul chiffre : ce qui reste aujourd'hui, sous le plafond de la journée. */}
         <div className="lib-charge">
-          <b>~{engagement?.load ?? duJour}</b>
-          <span>cartes par jour · {engagement?.min ?? 1} min</span>
+          <b>{duJour}</b>
+          <span>cartes aujourd’hui · au plus {charge?.jour.plafond ?? 0} par jour</span>
           <button className="lib-info" aria-expanded={infoCharge} aria-label="Ce que veut dire ce chiffre" onClick={() => setInfoCharge(!infoCharge)}>i</button>
         </div>
         {infoCharge && (
           <p className="hint lib-info-txt" role="note">
-            Ce à quoi {tvp('tu t’engages', 'vous vous engagez')} : la moyenne des cartes à revoir chaque jour, pour {rows.length} paquet{rows.length > 1 ? 's' : ''} en jeu
-            et {settings.newPerDay} nouveaux mots par jour. Un paquet en pause ne compte pas.
+            {tvp('Tes réglages', 'Vos réglages')} valent pour la journée entière, tous paquets réunis : {settings.newPerDay} nouveaux mots
+            et {settings.reviewsPerDay} révisions au plus.
+            {charge?.jour.controle ? ` Les paquets avec un contrôle proche passent en plus (${charge.jour.controle} cartes), pour être prêts le jour J.` : ''}
+            {' '}Sur la durée : environ {engagement?.load ?? duJour} cartes par jour, {engagement?.min ?? 1} min. Un paquet en pause ne compte pas.
           </p>
         )}
 
@@ -723,7 +726,7 @@ export function Library({
           <span className="lib-carte-txt">
             {rows.length === 0
               ? tvp('Aucun paquet en jeu pour l’instant.', 'Aucun paquet en jeu pour l’instant.')
-              : `${rows.length} paquet${rows.length > 1 ? 's' : ''} · ~${engagement?.load ?? duJour} cartes par jour, ${engagement?.min ?? 1} min`}
+              : `${rows.length} paquet${rows.length > 1 ? 's' : ''} · ${charge?.jour.plafond ?? 0} cartes par jour au plus${charge?.jour.controle ? ` · +${charge.jour.controle} pour un contrôle` : ''}`}
           </span>
           {rows.length > 0 && (
             <span className="lib-carte-dos" aria-hidden="true">

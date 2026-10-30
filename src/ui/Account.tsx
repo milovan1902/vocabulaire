@@ -593,8 +593,10 @@ export function Account({
             qui suivent. Le nombre annoncé ici est celui du rythme installé :
             l’écran d’accueil, lui, compte les cartes réellement dues
             aujourd’hui, qui sont plus ou moins nombreuses selon les jours.
-            Ces réglages valent pour tous les paquets, sauf ceux qui ont les
-            leurs — un paquet se particularise depuis son propre écran.
+            Ces plafonds valent pour la journée entière, tous paquets réunis :
+            l’application répartit les cartes entre les paquets en jeu. Un
+            paquet avec un contrôle proche passe en plus, pour être prêt le
+            jour J.
           </p>
         </Tiroir>
       )}

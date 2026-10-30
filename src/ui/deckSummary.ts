@@ -29,6 +29,9 @@ import { imageFor } from './deckImages';
 import { isDue, isNew } from '../engine/scheduler';
 import { deckMastery, type DeckMastery } from '../engine/mastery';
 import { minutesPour } from '../engine/tempo';
+/* CHANTIER 367 — le compte du jour suit les plafonds de la journée entière. */
+import { consommeJour, partager, type Ligne } from '../engine/quota';
+import { controleActif } from '../engine/controle';
 
 export interface DeckSummary {
   deck: Deck;
@@ -71,6 +74,8 @@ export interface Charge {
   steadyLoad: number;
   /** Minutes correspondantes, à vingt secondes la carte. */
   steadyMinutes: number;
+  /** CHANTIER 367 — aujourd'hui : cartes encore à faire (contrôles compris), le plafond de la journée, la part des contrôles. */
+  jour: { total: number; plafond: number; controle: number };
 }
 
 const JOUR = 86_400_000;
@@ -78,6 +83,13 @@ const JOUR = 86_400_000;
 export async function loadSummaries(decks: Deck[], settings: Settings): Promise<Charge> {
   const now = Date.now();
   const cap = settings.newPerDay + settings.reviewsPerDay;
+  /* 367 — compteurs du jour et paquets en jeu, pour partager la journée. */
+  const [compteurs, actifsLus] = await Promise.all([
+    repository.getCounters().catch(() => ({})),
+    repository.getActive().catch(() => null),
+  ]);
+  const actifs = new Set(actifsLus ?? decks.map((x) => x.id));
+  const bruts: Array<Ligne & { i: number; controle: boolean }> = [];
 
   // Fin de la journée courante : tout ce qui tombe avant est « aujourd'hui ».
   const finDuJour = new Date();
@@ -111,10 +123,12 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
 
     let due = 0;
     let dorment = 0;
+    let nouveaux = 0;
     for (const c of jouees) {
       const p: Progress | undefined = progress[c.id];
       if (!p || isNew(p) || isDue(p, now)) {
         due++;
+        if (!p || isNew(p)) nouveaux++;
         dueByDay[0]++;
       } else {
         dorment++;
@@ -137,6 +151,7 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
       savedThemes?.length ? retenus : null,
     );
 
+    if (actifs.has(deck.id)) bruts.push({ i: summaries.length, id: deck.id, nouveaux, revisions: due - nouveaux, controle: controleActif(deck) });
     summaries.push({
       deck,
       total: cards.length,
@@ -157,6 +172,24 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
    * sont terminés continuait d'ajouter les nouveaux mots du jour au régime
    * établi, à cause des thèmes écartés qu'on ne verra pas.
    */
+  /*
+   * 367 — le compte du jour : les paquets en contrôle comptent tout ce qui est dû ;
+   * les autres se partagent ce qui reste de la journée.
+   */
+  const g = consommeJour(compteurs as Record<string, import('../domain/types').DailyCounter>, (id) => bruts.find((b) => b.id === id)?.controle ?? false);
+  let controle = 0;
+  for (const b of bruts.filter((x) => x.controle)) {
+    const v = Math.min(b.nouveaux + b.revisions, 1000);
+    summaries[b.i].due = v;
+    controle += v;
+  }
+  const parts = partager(bruts.filter((x) => !x.controle), { n: settings.newPerDay - g.n, r: settings.reviewsPerDay - g.r });
+  let duJour = controle;
+  for (const [id, v] of parts) {
+    const b = bruts.find((x) => x.id === id);
+    if (b) { summaries[b.i].due = v; duJour += v; }
+  }
+
   const resteADecouvrir = summaries.some((s) => s.enJeu > s.resting);
   const steadyLoad = Math.round(
     revisionsParJour + (resteADecouvrir ? settings.newPerDay : 0),
@@ -168,5 +201,6 @@ export async function loadSummaries(decks: Deck[], settings: Settings): Promise<
     resting,
     steadyLoad,
     steadyMinutes: minutesPour(steadyLoad),
+    jour: { total: duJour, plafond: cap, controle },
   };
 }

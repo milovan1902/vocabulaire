@@ -36,6 +36,8 @@ import { SEED_DECKS, materialize } from '../data/seed';
 import { emptyProgress, review } from '../engine/scheduler';
 import { freshCounter, rollDay } from '../engine/session';
 import { avecControle, controleActif, plafonner } from '../engine/controle';
+/* CHANTIER 367 — les plafonds valent pour la journée entière. */
+import { avecQuotaJour, consommeJour } from '../engine/quota';
 import type { Streak } from '../engine/streak';
 import { EMPTY_STREAK, compterCarte, noterDefi, record as recordDay } from '../engine/streak';
 import { imageFor } from './deckImages';
@@ -254,11 +256,15 @@ export function useStore(): Store {
 
   /* CHANTIER 285 — un paquet en mode contrôle n'est pas borné par les quotas du jour. */
   const settingsFor = useCallback(
-    (deckId: DeckId) => avecControle(
-      effectiveSettings(common, overrides[deckId]),
-      decks.find((d) => d.id === deckId),
-    ),
-    [common, overrides, decks],
+    (deckId: DeckId) => {
+      const deck = decks.find((d) => d.id === deckId);
+      const s = effectiveSettings(common, overrides[deckId]);
+      if (controleActif(deck)) return avecControle(s, deck);
+      /* 367 — ce qui reste de la journée, tous paquets réunis (les paquets en contrôle à part). */
+      const g = consommeJour(counters, (id) => controleActif(decks.find((d) => d.id === id)));
+      return avecQuotaJour(s, common, counters[deckId] ?? freshCounter(), g);
+    },
+    [common, overrides, decks, counters],
   );
 
   const counterFor = useCallback(
