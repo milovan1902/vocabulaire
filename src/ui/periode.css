@@ -1,0 +1,28 @@
+/*
+ * CHANTIER 377 — début et fin d'année.
+ * L'étiquette reprend l'encre du thème : elle se lit sur tous les fonds.
+ */
+.periode-tag {
+  font-weight: 600;
+  color: var(--ink-soft, currentColor);
+}
+.periode-tag.fin { font-style: italic; }
+
+.periode-sec h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.periode-maintenant {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+.periode-suite { margin-top: 4px; }

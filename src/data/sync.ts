@@ -15,7 +15,7 @@ import { repository } from './repository';
 import type {
   Card, Category, DailyCounter, DailyCounters, Deck, DeckOverride, Level, Progress, Settings,
 } from '../domain/types';
-import { readClasse } from '../domain/types';
+import { readClasse, readPeriode } from '../domain/types';
 import { todayKey } from '../engine/session';
 import type { Streak } from '../engine/streak';
 import { mergeStreak } from '../engine/streak';
@@ -86,7 +86,7 @@ export async function pullCatalog(): Promise<number> {
 
   const { data: rows, error } = await supabase
     .from('decks')
-    .select('id, name, description, price_cents, card_count, position, category_id, level, grade_from')
+    .select('id, name, description, price_cents, card_count, position, category_id, level, grade_from, periode')
     .order('position');
   if (error) throw error;
   if (!rows?.length) return 0;
@@ -142,6 +142,8 @@ export async function pullCatalog(): Promise<number> {
       sansCategorie: (row as Record<string, unknown>).grade_from === 'SC',
       /* 318 — les paquets pour adultes. */
       pourAdultes: (row as Record<string, unknown>).grade_from === 'AD',
+      /* 377 — début ou fin d'année. Lu à chaque synchro : un champ oublié ici serait effacé (voir 30 et 101). */
+      periode: readPeriode((row as Record<string, unknown>).periode),
       builtin: true,
       priceCents: row.price_cents ?? 0,
       hasImage: existing?.hasImage ?? false,

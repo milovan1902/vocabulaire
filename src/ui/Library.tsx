@@ -2,11 +2,13 @@
 /* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
 import { tvp } from './ton';
 import { useEffect, useMemo, useState } from 'react';
-import type { Category, Classe, Deck, Level, Settings } from '../domain/types';
+import type { Category, Classe, Deck, Level, Periode, Settings } from '../domain/types';
 import {
-  CLASSES, CLASSES_PROPOSEES, CLASSE_LABELS, LEVEL_LABELS,
-  classeConvient, niveauDit, priceLabel,
+  CLASSES, CLASSES_PROPOSEES, CLASSE_LABELS, LEVEL_LABELS, PERIODE_LABELS,
+  classeConvient, niveauDit, periodeDuJour, priceLabel,
 } from '../domain/types';
+/* CHANTIER 377 — début et fin d'année. */
+import './periode.css';
 /* 336 — l'offre gratuite : paquets offerts, paquet personnalisé offert. */
 import { PAQUETS_OFFERTS, persoOffertPris, reserveAbonnes, sansLimite } from '../data/offre';
 import { DeckVign } from './components';
@@ -108,6 +110,17 @@ function socleDe(lot: DeckSummary[], f: Filtres): DeckSummary[] {
     (!!s.deck.classeFrom && f.consult.includes(s.deck.classeFrom))
     || (f.sc && !!s.deck.sansCategorie)
     || (f.ad && !!s.deck.pourAdultes));
+}
+
+/** 377 — « Début d’année » ou « Fin d’année », pour la petite ligne sous le nom. */
+function etiquettePeriode(d: Deck) {
+  if (!d.periode) return null;
+  return (
+    <>
+      <span className={`periode-tag ${d.periode}`}>{PERIODE_LABELS[d.periode]}</span>
+      {' · '}
+    </>
+  );
 }
 
 /** CHANTIER 108 — la pastille : la classe plancher, ou « SC ». */
@@ -675,6 +688,7 @@ export function Library({
                 <span className="workrow-txt">
                   <b>{s.deck.name}</b>
                   <small>
+                    {etiquettePeriode(s.deck)}
                     {etiquetteControle(s.deck) && <>{etiquetteControle(s.deck)}{' · '}</>}
                     {s.themesSelected < s.themesTotal
                       ? `${s.themesSelected} thèmes sur ${s.themesTotal}`
@@ -827,6 +841,7 @@ export function Library({
           <span className="switchrow-txt">
             <b>{s.deck.name}</b>
             <small>
+              {etiquettePeriode(s.deck)}
               {etiquetteControle(s.deck) && <>{etiquetteControle(s.deck)}{' · '}</>}
               {s.resting > 0
                 ? `${s.resting} mots en mémoire`
@@ -940,7 +955,7 @@ export function Library({
   /* ---------------- Mon catalogue ---------------- */
 
   /** Une ligne du catalogue. `plusTard` grise la ligne sans la rendre illisible. */
-  function ligneCatalogue(s: DeckSummary, plusTard = false) {
+  function ligneCatalogue(s: DeckSummary, plusTard = false, avecPeriode = true) {
     const aMoi = installed.includes(s.deck.id);
     const gratuit = !s.deck.priceCents;
     const n = niveau(s.deck.level);
@@ -969,6 +984,7 @@ export function Library({
           <span className="catrow-txt">
             <b>{s.deck.name}</b>
             <small>
+              {avecPeriode && etiquettePeriode(s.deck)}
               {mots} mots
               {n ? ` · ${n}` : ''}
             </small>
@@ -1040,12 +1056,28 @@ export function Library({
       ? []
       : filtres.filter((s) => !classeConvient(s.deck.classeFrom, maClasse));
 
+    /*
+     * CHANTIER 377 — LES PAQUETS DE MA CLASSE, PAR MOITIÉ D'ANNÉE.
+     * Les paquets dont le plancher est exactement ma classe, et qui portent
+     * une moitié, passent en tête en deux groupes. La moitié en cours vient
+     * d'abord, marquée « En ce moment » (septembre-janvier : début ;
+     * février-août : fin). Le reste garde le rangement par rayon.
+     * En consultation, pas de groupes : l'étiquette sur chaque ligne suffit.
+     */
+    const maintenant = periodeDuJour();
+    const ordre: Periode[] = maintenant === 'debut' ? ['debut', 'fin'] : ['fin', 'debut'];
+    const deMaClasse = (s: DeckSummary) => !enConsultation && !!maClasse && s.deck.classeFrom === maClasse && !!s.deck.periode;
+    const moities = ordre
+      .map((p) => ({ p, items: pourMoi.filter((s) => deMaClasse(s) && s.deck.periode === p) }))
+      .filter((m) => m.items.length > 0);
+    const autresPourMoi = pourMoi.filter((s) => !deMaClasse(s));
+
     const groupes: Array<{ category: Category | null; items: DeckSummary[] }> = [];
     for (const category of [...categories].sort((a, b) => a.position - b.position)) {
-      const items = pourMoi.filter((s) => s.deck.categoryId === category.id);
+      const items = autresPourMoi.filter((s) => s.deck.categoryId === category.id);
       if (items.length) groupes.push({ category, items });
     }
-    const orphelins = pourMoi.filter(
+    const orphelins = autresPourMoi.filter(
       (s) => !s.deck.categoryId || !categories.some((c) => c.id === s.deck.categoryId),
     );
     if (orphelins.length) groupes.push({ category: null, items: orphelins });
@@ -1142,6 +1174,21 @@ export function Library({
 
         {pourMoi.length === 0 && plusTard.length === 0 && (
           <p className="hint">Aucun paquet ne correspond à ce filtre.</p>
+        )}
+
+        {moities.map(({ p, items }) => (
+          <section key={`moitie-${p}`} className="rayon periode-sec">
+            <h2>
+              {maClasse ? CLASSE_LABELS[maClasse] : ''} · {PERIODE_LABELS[p]}
+              <b className="rayon-n">{items.length}</b>
+              {p === maintenant && <em className="periode-maintenant">En ce moment</em>}
+            </h2>
+            <div className="catlist">{items.map((s) => ligneCatalogue(s, false, false))}</div>
+          </section>
+        ))}
+
+        {moities.length > 0 && groupes.length > 0 && (
+          <p className="hint periode-suite">{tvp('Et aussi, pour réviser ou compléter :', 'Et aussi, pour réviser ou compléter :')}</p>
         )}
 
         {groupes.map(({ category, items }) => (

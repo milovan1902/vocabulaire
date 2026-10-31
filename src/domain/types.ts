@@ -161,6 +161,21 @@ export function readClasse(v: unknown): Classe | null {
   return (CLASSES as readonly string[]).includes(v as string) ? (v as Classe) : null;
 }
 
+/* CHANTIER 377 — début ou fin d'année scolaire. */
+export type Periode = 'debut' | 'fin';
+
+export const PERIODE_LABELS: Record<Periode, string> = { debut: 'Début d’année', fin: 'Fin d’année' };
+
+export function readPeriode(v: unknown): Periode | null {
+  return v === 'debut' || v === 'fin' ? v : null;
+}
+
+/** La moitié de l'année en cours : septembre à janvier = début, février à août = fin. */
+export function periodeDuJour(d = new Date()): Periode {
+  const m = d.getMonth();
+  return m >= 8 || m === 0 ? 'debut' : 'fin';
+}
+
 export interface Deck {
   id: DeckId;
   name: string;
@@ -188,6 +203,12 @@ export interface Deck {
    * pastille « AD » ; réservé aux abonnés (inclus dans l'abonnement).
    */
   pourAdultes?: boolean;
+  /**
+   * CHANTIER 377 — la moitié de l'année scolaire où le paquet se travaille.
+   * Colonne Supabase `periode`. Absent = pas de moitié (paquet thématique,
+   * adulte, personnalisé).
+   */
+  periode?: Periode | null;
   /** Un paquet fourni avec l'application ne peut pas être supprimé. */
   builtin: boolean;
   /**
