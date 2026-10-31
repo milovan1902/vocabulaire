@@ -55,7 +55,10 @@ function useVersion() {
 }
 
 /** L'échange gardé, en surimpression. */
-function Explication({ c, onFermer }: { c: Comprise; onFermer: () => void }) {
+function Explication({ id, c, onFermer }: { id: string; c: Comprise; onFermer: () => void }) {
+  useVersion();
+  /* CHANTIER 373 — on peut remettre la phrase dans la liste pour en rediscuter ; l'explication gardée reste. */
+  const remise = enAttente().some((p) => p.id === id);
   return (
     <div className="cpr-fond" onClick={(e) => { e.stopPropagation(); if (e.target === e.currentTarget) onFermer(); }}>
       <div className="cpr-feuille" role="dialog" aria-modal="true" aria-label="L’explication de cette phrase">
@@ -67,6 +70,17 @@ function Explication({ c, onFermer }: { c: Comprise; onFermer: () => void }) {
         <div className="cpr-fil">
           {c.echange.map((t, i) => <p key={i} className={t.role === 'user' ? 'moi' : 'ia'}>{t.content}</p>)}
         </div>
+        <button
+          className={`btn ghost cpr-remettre${remise ? ' on' : ''}`}
+          aria-pressed={remise}
+          onClick={() => {
+            if (remise) retireAttente(id);
+            else ecris(ATTENTE, [...enAttente(), { id, en: c.en, fr: c.fr, ajoute: Date.now() }]);
+          }}
+        >
+          {remise ? '✓ Remise dans ma liste · annuler' : 'Remettre dans ma liste pour en rediscuter'}
+        </button>
+        {remise && <p className="hint cpr-remettre-note">{tvp('Tu la retrouveras dans Parler › Comprendre mes phrases.', 'Vous la retrouverez dans Parler › Comprendre mes phrases.')}</p>}
       </div>
     </div>
   );
@@ -84,7 +98,7 @@ export function PastilleComprendre({ id, en, fr }: { id: string; en: string; fr:
         <button className="cpr-pastille vue" onClick={(e) => { e.stopPropagation(); setOuverte(true); }}>
           <i aria-hidden="true">?</i>Revoir l’explication
         </button>
-        {ouverte && <Explication c={deja} onFermer={() => setOuverte(false)} />}
+        {ouverte && <Explication id={id} c={deja} onFermer={() => setOuverte(false)} />}
       </>
     );
   }

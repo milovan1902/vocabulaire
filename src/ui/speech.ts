@@ -236,6 +236,12 @@ const MOTS_FR = new Set([
   'est', 'sont', 'était', 'sera', 'fait', 'dit', 'dire', 'faut',
   'petite', 'précision', 'mot', 'phrase', 'passé', 'présent', 'futur',
   'on dit', 'parce', 'quand', 'comme', 'tout', 'toute', 'ici', 'encore',
+  /* 373 — les mots courants des explications, souvent sans accent. */
+  'de', 'jamais', 'rien', 'vu', "j'ai", "n'ai", "c'est", "qu'il", "qu'on", "d'un", "d'une", "l'on",
+  /* Écartés : les mots qui existent aussi en anglais (as, super, question, ton, bravo…). */
+  'ai', 'suis', 'sommes', 'avoir', 'etre', 'veut', 'veux', 'peux', 'peut', 'mon', 'ma', 'mes',
+  'ta', 'tes', 'sa', 'ses', 'leur', 'oui', 'merci', 'bonjour', 'pourquoi', 'comment',
+  'exemple', 'aussi', 'toujours', 'parle', 'ca', 'voila', 'alors',
 ]);
 
 const MOTS_EN = new Set([
@@ -249,7 +255,7 @@ const MOTS_EN = new Set([
 
 function estFrancais(passage: string): boolean {
   if (ACCENTS.test(passage)) return true;
-  const mots = passage.toLowerCase().match(/[a-zà-ÿ']+/g) ?? [];
+  const mots = passage.toLowerCase().replace(/[’]/g, "'").match(/[a-zà-ÿ']+/g) ?? [];
   let fr = 0;
   let en = 0;
   for (const m of mots) {
@@ -285,10 +291,16 @@ const CITATION = /["“«]\s*([^"”»]+?)\s*["”»]/g;
  */
 function langueCitation(c: string): Passage['langue'] {
   if (ACCENTS.test(c)) return 'fr-FR';
-  const mots = c.toLowerCase().match(/[a-zà-ÿ']+/g) ?? [];
+  /* 373 — on compare les mots français et anglais de la citation, au lieu d'exiger
+     une majorité de mots français : « Je n'ai jamais vu ca » partait en anglais. */
+  const mots = c.toLowerCase().replace(/[’]/g, "'").match(/[a-zà-ÿ']+/g) ?? [];
   let fr = 0;
-  for (const m of mots) if (MOTS_FR.has(m) && !MOTS_EN.has(m)) fr += 1;
-  return fr > mots.length / 2 ? 'fr-FR' : 'en-US';
+  let en = 0;
+  for (const m of mots) {
+    if (MOTS_FR.has(m) && !MOTS_EN.has(m)) fr += 1;
+    if (MOTS_EN.has(m) && !MOTS_FR.has(m)) en += 1;
+  }
+  return fr > en ? 'fr-FR' : 'en-US';
 }
 
 /** Découpe en phrases, en gardant la ponctuation avec la phrase. */

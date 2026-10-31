@@ -39,3 +39,7 @@
 .parler-porte.comprendre { border-color: color-mix(in srgb, #b9a8f0 60%, transparent); }
 .parler-porte.comprendre .parler-porte-icone { color: #b9a8f0; background: color-mix(in srgb, #b9a8f0 16%, transparent); font-size: 22px; font-weight: 700; }
 .parler-porte.comprendre em { color: #b9a8f0; }
+/* 373 — remettre une phrase expliquée dans la liste. */
+.cpr-remettre { width: 100%; margin-top: 16px; }
+.cpr-remettre.on { border-color: var(--good); color: var(--good); }
+.cpr-remettre-note { margin: 8px 0 0; text-align: center; }
