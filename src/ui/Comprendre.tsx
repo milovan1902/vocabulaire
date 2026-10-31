@@ -106,13 +106,15 @@ export function PastilleComprendre({ id, en, fr }: { id: string; en: string; fr:
     <button
       className={`cpr-pastille${attente ? ' on' : ''}`}
       aria-pressed={attente}
+      aria-label={attente ? 'Mise de côté. Toucher pour annuler.' : undefined}
       onClick={(e) => {
         e.stopPropagation();
+        /* CHANTIER 380 — un second toucher annule la mise de côté (appui par erreur). */
         if (attente) retireAttente(id);
         else ecris(ATTENTE, [...enAttente(), { id, en, fr, ajoute: Date.now() }]);
       }}
     >
-      {attente ? <>✓ Mise de côté</> : <><i aria-hidden="true">?</i>Je ne comprends pas</>}
+      {attente ? <>✓ Mise de côté<span className="cpr-annuler">annuler</span></> : <><i aria-hidden="true">?</i>Je ne comprends pas</>}
     </button>
   );
 }
