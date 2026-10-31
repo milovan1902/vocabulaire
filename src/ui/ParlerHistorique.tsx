@@ -37,6 +37,22 @@ import {
 import { ReprendreMots } from './ReprendreMots';
 import { nettoie } from './speech';
 import { detailExploitant } from '../data/messageErreur';
+import './histo-type.css';
+
+/*
+ * CHANTIER 375 — la couleur du genre de séance : orange pour Discuter,
+ * vert pour une scène, violet pour Comprendre mes phrases. La couleur
+ * n'est jamais seule : l'étiquette dit aussi le genre en toutes lettres.
+ */
+type Genre = 'discussion' | 'scene' | 'comprendre';
+const NOM_GENRE: Record<Genre, string> = {
+  discussion: 'Discussion', scene: 'Mise en scène', comprendre: 'Comprendre mes phrases',
+};
+function genre(s: SeanceGardee): Genre {
+  if (s.themes.includes('Comprendre mes phrases')) return 'comprendre';
+  if (s.themes.some((t) => t.startsWith('Mise en situation'))) return 'scene';
+  return 'discussion';
+}
 
 type Etat = 'charge' | 'pret' | 'panne';
 
@@ -87,6 +103,7 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
           ← Toutes mes conversations
         </button>
 
+        <span className={`hg-etiquette hg-${genre(ouverte)}`}>{NOM_GENRE[genre(ouverte)]}</span>
         <h2 className="screen-title">{quand(ouverte.finieLe)}</h2>
         <p className="seance-meta">
           {duree(ouverte.secondes)} · {ouverte.repliques} répliques
@@ -189,7 +206,8 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
       ) : (
         <div className="histo-liste">
           {seances.map((s) => (
-            <button key={s.id} className="histo-ligne" onClick={() => setOuverte(s)}>
+            <button key={s.id} className={`histo-ligne hg-${genre(s)}`} onClick={() => setOuverte(s)}>
+              <span className="hg-etiquette">{NOM_GENRE[genre(s)]}</span>
               <span className="histo-date">{quand(s.finieLe)}</span>
               <span className="histo-meta">
                 {duree(s.secondes)} · {s.repliques} répliques

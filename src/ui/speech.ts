@@ -166,19 +166,47 @@ export function surVoix(f: () => void): () => void {
   return () => speechSynthesis.removeEventListener('voiceschanged', f);
 }
 
-/** Fait entendre une voix, pour choisir. */
-export function essaieVoix(l: LangueVoix, uri: string | null, rate = 1): void {
+/*
+ * CHANTIER 375 — « QUELLE QUE SOIT LA VOIX, J'ENTENDS LA MÊME ».
+ *   Deux causes :
+ *   - Chrome Android ignore la voix imposée quand la langue de l'énoncé
+ *     (« en-US ») n'est pas exactement celle de la voix (« en-GB »,
+ *     « en_US »…) : il reprend la voix par défaut du téléphone. La langue
+ *     de l'énoncé suit maintenant celle de la voix (`poseVoix`).
+ *   - L'essai passait par les filets du 249 : une voix pas encore
+ *     téléchargée, ou lente à démarrer, était aussitôt redite avec la voix
+ *     par défaut. On entendait donc toujours la même. L'essai n'a plus de
+ *     secours : on entend CETTE voix, ou l'écran dit qu'elle ne répond pas.
+ */
+function poseVoix(u: SpeechSynthesisUtterance, v: SpeechSynthesisVoice): void {
+  u.voice = v;
+  if (v.lang) u.lang = v.lang.replace('_', '-');
+}
+
+/** Délai laissé à une voix essayée pour démarrer (une voix réseau peut être lente). */
+const ESSAI_MAX = 5000;
+
+/** Fait entendre une voix, pour choisir. `onEchec` : la voix n'a rien dit. */
+export function essaieVoix(l: LangueVoix, uri: string | null, rate = 1, onEchec?: () => void): void {
   if (typeof speechSynthesis === 'undefined') return;
   const texte = l === 'fr'
     ? 'Bonjour ! Voici la voix qui t’expliquera les phrases en français.'
     : 'Hello! This is the voice you will hear in English.';
   try {
     const coupee = coupe();
-    const u = enonce(texte, EXACT[l], rate);
-    const v = uri ? voices().find((x) => x.voiceURI === uri) : undefined;
-    if (v) u.voice = v;
-    envoie([u], coupee);
-  } catch { /* rien */ }
+    const u = enonce(texte, EXACT[l], rate, false, false);
+    const v = uri ? voices().find((x) => x.voiceURI === uri) : voix(l, EXACT[l]);
+    if (v) poseVoix(u, v);
+    else if (uri) { onEchec?.(); return; }
+    let parti = false;
+    u.addEventListener('start', () => { parti = true; });
+    u.addEventListener('error', (e) => {
+      if (!parti && e.error !== 'interrupted' && e.error !== 'canceled') onEchec?.();
+    });
+    envoie([u], coupee, false);
+    /* Toujours en file sans avoir démarré : la voix ne répond pas. Un essai suivant l'aura coupée (et retirée). */
+    window.setTimeout(() => { if (!parti && enCours.has(u)) onEchec?.(); }, ESSAI_MAX);
+  } catch { onEchec?.(); }
 }
 
 /** La voix choisie si elle existe encore, sinon la meilleure voix disponible pour une langue. */
@@ -210,12 +238,12 @@ const APRES_COUPURE = 120;
 /** Un énoncé qui n'a pas démarré après ce délai est redit avec la voix par défaut. */
 const DEMARRAGE_MAX = 1500;
 
-function enonce(texte: string, langue: string, rate: number, voixImposee = true): SpeechSynthesisUtterance {
+function enonce(texte: string, langue: string, rate: number, voixImposee = true, secours = true): SpeechSynthesisUtterance {
   const u = new SpeechSynthesisUtterance(texte);
   u.lang = langue;
   u.rate = rate;
   const v = voixImposee ? (langue === 'fr-FR' ? voix('fr', 'fr-FR') : voix('en', 'en-US')) : undefined;
-  if (v) u.voice = v;
+  if (v) poseVoix(u, v);
   let demarre = false;
   const fini = () => { enCours.delete(u); };
   u.onstart = () => { demarre = true; };
@@ -223,7 +251,7 @@ function enonce(texte: string, langue: string, rate: number, voixImposee = true)
   u.onerror = (e) => {
     fini();
     /* La voix choisie a échoué avant de dire quoi que ce soit : on redit avec celle du téléphone. */
-    if (!demarre && v && e.error !== 'interrupted' && e.error !== 'canceled') {
+    if (secours && !demarre && v && e.error !== 'interrupted' && e.error !== 'canceled') {
       try { speechSynthesis.speak(enonce(texte, langue, rate, false)); } catch { /* rien */ }
     }
   };
@@ -239,7 +267,7 @@ function coupe(): boolean {
 }
 
 /** Envoie les énoncés au moteur, en laissant souffler Chrome Android après une coupure. */
-function envoie(liste: SpeechSynthesisUtterance[], apresCoupure: boolean): void {
+function envoie(liste: SpeechSynthesisUtterance[], apresCoupure: boolean, secours = true): void {
   const go = () => {
     try { speechSynthesis.resume(); } catch { /* rien */ }
     for (const u of liste) speechSynthesis.speak(u);
@@ -250,7 +278,7 @@ function envoie(liste: SpeechSynthesisUtterance[], apresCoupure: boolean): void 
     premier.addEventListener('start', () => { parti = true; });
     premier.addEventListener('error', () => { parti = true; });
     window.setTimeout(() => {
-      if (parti || !premier.voice) return;
+      if (parti || !premier.voice || !secours) return;
       try {
         speechSynthesis.cancel();
         window.setTimeout(() => {

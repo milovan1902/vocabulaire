@@ -1,0 +1,43 @@
+/*
+ * CHANTIER 375 — Mes conversations : la couleur du genre de séance.
+ * Orange : Discuter. Vert : Jouer une scène. Violet : Comprendre mes phrases.
+ * Le texte de l'étiquette est mêlé à l'encre du thème : plus sombre sur
+ * un thème clair, plus clair sur un thème sombre, lisible partout.
+ */
+.hg-discussion { --hg: #e8822a; }
+.hg-scene { --hg: #2fa866; }
+.hg-comprendre { --hg: #8f5fd6; }
+
+.histo-ligne.hg-discussion,
+.histo-ligne.hg-scene,
+.histo-ligne.hg-comprendre {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: left;
+  border-left: 4px solid var(--hg);
+}
+
+.hg-etiquette {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: color-mix(in oklch, var(--hg, currentColor) 70%, var(--ink, currentColor));
+}
+.hg-etiquette::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hg, currentColor);
+}
+/* Dans la conversation ouverte, l'étiquette coiffe la date. */
+.hg-etiquette:not(.histo-ligne *) { margin-bottom: 2px; }
+
+.voix-muette { color: var(--bad, currentColor); margin-top: 6px; }

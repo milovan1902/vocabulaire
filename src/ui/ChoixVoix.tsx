@@ -23,11 +23,14 @@ function Ligne({ l, titre, debit }: { l: LangueVoix; titre: string; debit: numbe
   const [choix, setChoix] = useState<string>(() => voixChoisie(l) ?? '');
   useEffect(() => surVoix(() => setListe(listeVoix(l))), [l]);
   const existe = !choix || liste.some((v) => v.uri === choix);
+  /* 375 — la voix essayée n'a rien dit : on le dit, au lieu de laisser croire qu'elle sonne comme les autres. */
+  const [muette, setMuette] = useState(false);
+  const essaie = (uri: string | null) => { setMuette(false); essaieVoix(l, uri, debit, () => setMuette(true)); };
   return (
     <div className="parler-carte">
       <div className="parler-tete">
         <p className="parler-kicker">{titre}</p>
-        <button className="parler-lien" onClick={() => essaieVoix(l, choix || null, debit)}>Écouter ›</button>
+        <button className="parler-lien" onClick={() => essaie(choix || null)}>Écouter ›</button>
       </div>
       {liste.length === 0 ? (
         <p className="hint">Aucune voix trouvée sur ce téléphone pour cette langue.</p>
@@ -40,12 +43,18 @@ function Ligne({ l, titre, debit }: { l: LangueVoix; titre: string; debit: numbe
             const uri = e.target.value || null;
             setChoix(uri ?? '');
             choisisVoix(l, uri);
-            essaieVoix(l, uri, debit);
+            essaie(uri);
           }}
         >
           <option value="">Automatique (la plus naturelle)</option>
           {liste.map((v, i) => <option key={v.uri} value={v.uri}>{libelle(v, i)}</option>)}
         </select>
+      )}
+      {muette && (
+        <p className="hint voix-muette" role="status">
+          Cette voix ne répond pas sur ce téléphone : elle n’est sans doute pas téléchargée. Tant qu’elle ne l’est pas,
+          l’application prendra la voix par défaut.
+        </p>
       )}
     </div>
   );
