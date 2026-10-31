@@ -1,14 +1,15 @@
 /* CHANTIER 371 — « Je ne comprends pas » et « Comprendre mes phrases ». Couleurs de l'apparence. */
+/* 372 — la pastille vit au-dessus des notes, centrée, sur un fond plein : lisible sur toutes les apparences. */
+.cpr-place { position: relative; z-index: 4; display: flex; justify-content: center; margin: 4px 0 10px; }
 .cpr-pastille {
-  position: absolute; top: 12px; right: 12px; z-index: 3;
-  display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 11px;
-  border-radius: 999px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
-  background: color-mix(in srgb, var(--paper, #fff) 70%, transparent); color: inherit; opacity: 0.85;
-  font: inherit; font-size: 12.5px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--rule-strong);
+  background: var(--panel); color: var(--ink);
+  font: inherit; font-size: 13.5px; font-weight: 550; cursor: pointer;
 }
 .cpr-pastille i { width: 18px; height: 18px; border-radius: 999px; border: 1.5px solid currentColor; display: inline-flex; align-items: center; justify-content: center; font-style: normal; font-size: 11px; font-weight: 700; }
 .cpr-pastille.on { opacity: 1; background: var(--good); color: var(--on-chalk, #0f1a2f); border-color: transparent; font-weight: 650; }
-.cpr-pastille.vue { opacity: 1; border-color: color-mix(in srgb, var(--chalk) 60%, transparent); }
+.cpr-pastille.vue { border-color: color-mix(in srgb, var(--chalk) 60%, transparent); }
 .cpr-pastille:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
 
 .cpr-fond { position: fixed; inset: 0; z-index: 170; background: rgba(5, 10, 20, 0.62); display: flex; align-items: flex-end; justify-content: center; }

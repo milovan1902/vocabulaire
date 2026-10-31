@@ -291,26 +291,6 @@ function langueCitation(c: string): Passage['langue'] {
   return fr > mots.length / 2 ? 'fr-FR' : 'en-US';
 }
 
-/**
- * Coupe une phrase française autour de ses citations. Les guillemets
- * eux-mêmes ne sont pas prononcés.
- */
-function autourDesCitations(p: string): Passage[] {
-  const out: Passage[] = [];
-  let dernier = 0;
-  let m: RegExpExecArray | null;
-  CITATION.lastIndex = 0;
-  while ((m = CITATION.exec(p))) {
-    const avant = p.slice(dernier, m.index).trim();
-    if (prononcable(avant)) out.push({ texte: avant, langue: 'fr-FR' });
-    out.push({ texte: m[1], langue: langueCitation(m[1]) });
-    dernier = m.index + m[0].length;
-  }
-  const fin = p.slice(dernier).trim();
-  if (prononcable(fin)) out.push({ texte: fin, langue: 'fr-FR' });
-  return out.length ? out : [{ texte: p, langue: 'fr-FR' }];
-}
-
 /** Découpe en phrases, en gardant la ponctuation avec la phrase. */
 function phrases(texte: string): string[] {
   return (texte.match(/[^.!?…]+[.!?…]*\s*/g) ?? [texte])
@@ -324,22 +304,84 @@ export interface Passage {
 }
 
 /**
+ * CHANTIER 372 — ce que la voix ne doit pas lire : guillemets orphelins,
+ * flèches, signes (+, /, =), parenthèses, tirets. Sans ça, la voix
+ * française disait « guillemet », « barre oblique », « plus »…
+ */
+function pourLaVoix(t: string): string {
+  return t
+    .replace(/\s*(?:->|=>|→|⇒)\s*/g, ', ')
+    .replace(/\s+=\s+/g, ', ')
+    .replace(/(\p{L})\s*\+\s*(\p{L})/gu, '$1 et $2')
+    .replace(/(\p{L})\s*\/\s*(\p{L})/gu, '$1 ou $2')
+    .replace(/\s[-–—]\s/g, ', ')
+    .replace(/[()[\]{}]/g, ', ')
+    .replace(/["“”«»]/g, ' ')
+    .replace(/(\D)\s*[:;]\s*/g, '$1, ')
+    .replace(/\s*,(\s*,)+/g, ',')
+    .replace(/^\s*,\s*|\s*,\s*$/g, '')
+    .replace(/\s+([,.!?])/g, '$1')
+    .replace(/,([.!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+/** 372 — dans une réplique française, une phrase libre ne passe en anglais que si elle l'est nettement. */
+function nettementAnglais(passage: string): boolean {
+  if (ACCENTS.test(passage)) return false;
+  const mots = passage.toLowerCase().match(/[a-zà-ÿ']+/g) ?? [];
+  let fr = 0;
+  let en = 0;
+  for (const m of mots) {
+    if (MOTS_FR.has(m)) fr += 1;
+    if (MOTS_EN.has(m)) en += 1;
+  }
+  return en >= 2 && en > fr * 2;
+}
+
+/**
  * Le découpage, exporté pour être lisible et testable ailleurs.
  * Les phrases voisines de même langue sont recollées : une voix qui
  * repart à chaque point hache la réplique.
+ *
+ * CHANTIER 372 — les citations sont prises sur TOUTE la réplique, avant de
+ * couper en phrases : « "I've never seen anything like it." » garde son point
+ * sans casser la citation (avant, le point coupait la citation en deux, le
+ * guillemet restant était lu, et le reste partait dans la mauvaise voix).
+ * Puis la langue dominante du texte libre tranche les phrases ambiguës :
+ * dans une explication en français, « Par exemple, … » reste en français.
  */
 export function passages(texte: string): Passage[] {
   const out: Passage[] = [];
   const pousse = ({ texte: t, langue }: Passage) => {
     if (!prononcable(t)) return;
     const dernier = out[out.length - 1];
-    if (dernier && dernier.langue === langue) dernier.texte += ` ${t}`;
+    if (dernier && dernier.langue === langue) dernier.texte = `${dernier.texte} ${t}`.replace(/\s+([,.!?;:])/g, '$1');
     else out.push({ texte: t, langue });
   };
-  for (const p of phrases(nettoie(texte))) {
-    if (!estFrancais(p)) { pousse({ texte: p, langue: 'en-US' }); continue; }
-    /* Une phrase française peut citer de l'anglais : on la découpe. */
-    for (const x of autourDesCitations(p)) pousse(x);
+  const propre = nettoie(texte);
+  const morceaux: Array<{ t: string; citation: boolean }> = [];
+  let dernier = 0;
+  let m: RegExpExecArray | null;
+  CITATION.lastIndex = 0;
+  while ((m = CITATION.exec(propre))) {
+    morceaux.push({ t: propre.slice(dernier, m.index), citation: false });
+    morceaux.push({ t: m[1], citation: true });
+    dernier = m.index + m[0].length;
+  }
+  morceaux.push({ t: propre.slice(dernier), citation: false });
+  const libre = morceaux.filter((x) => !x.citation).map((x) => x.t).join(' ');
+  const enFrancais = estFrancais(libre);
+  for (const x of morceaux) {
+    if (x.citation) {
+      const langue = langueCitation(x.t);
+      pousse({ texte: langue === 'fr-FR' ? pourLaVoix(x.t) : x.t.replace(/["“”«»]/g, ''), langue });
+      continue;
+    }
+    for (const p of phrases(x.t)) {
+      const langue = estFrancais(p) ? 'fr-FR' : enFrancais && !nettementAnglais(p) ? 'fr-FR' : 'en-US';
+      pousse({ texte: langue === 'fr-FR' ? pourLaVoix(p) : p.replace(/["“”«»]/g, ''), langue });
+    }
   }
   return out;
 }

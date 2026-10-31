@@ -697,10 +697,6 @@ export function Study({
           </>
         )}
         </>}
-        {/* CHANTIER 371 — sur une phrase ou une expression retournée (jamais un mot seul). */}
-        {revealed && !revele && !estMot(current.card.en) && (
-          <PastilleComprendre id={current.card.id} en={current.card.en} fr={current.card.fr} />
-        )}
         {/* CHANTIER 271 — Cahier et Tableau : ce qui se pose sur la fiche ou le tableau pendant la note. */}
         {(style === 'cahier' || style === 'tableau') && frappe && <EffetsEcole key={frappe} style={style} frappe={frappe} />}
         {/* CHANTIER 272 — Lycée : rature, « peut mieux faire », coche verte, « TB » ; Borne arcade : GAME OVER, MISS, GOOD!, PERFECT! ; Néon : le trait de Facile. */}
@@ -1429,6 +1425,13 @@ export function Study({
               {verdict.conteste && <small>{tvp('Comptée juste · choisis ta note.', 'Comptée juste · choisissez votre note.')}</small>}
             </>}
           </p>
+        )}
+        {/* CHANTIER 371/372 — sur une phrase ou une expression retournée (jamais un mot seul).
+            372 — au-dessus des notes, dans le flux : posée sur la carte, certaines apparences la cachaient. */}
+        {revealed && !revele && !estMot(current.card.en) && (
+          <div className="cpr-place">
+            <PastilleComprendre id={current.card.id} en={current.card.en} fr={current.card.fr} />
+          </div>
         )}
         <div
           className="grades"
