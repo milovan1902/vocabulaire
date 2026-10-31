@@ -1,6 +1,14 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 379 — QUATRE FAMILLES (maquette 379, 1a).
+ * Huit lignes de même poids, c'était trop. L'écran d'entrée montre une
+ * ligne de profil et quatre tuiles : Moi, Mes révisions, Apparence et son,
+ * Aide. Une tuile ouvre sa famille (les mêmes lignes qu'avant, valeur à
+ * droite) ; une ligne ouvre son tiroir, comme avant. Un toucher de plus,
+ * mais rien ne disparaît. La voix (vitesse, prononciation automatique)
+ * quitte « Révision » pour « Apparence et son ».
+ *
  * CHANTIER 268 — le tiroir « Apparence » devient la boutique (Boutique.tsx).
  *
  * CHANTIER 167 — « Aide » rejoint la liste : une septième ligne, un
@@ -69,6 +77,7 @@
  * atteint par les onglets.
  */
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { Classe, ModeReponse, Settings } from '../domain/types';
 
 /* CHANTIER 302 — les trois façons de répondre. */
@@ -105,6 +114,19 @@ import { estCreateur } from '../data/createur';
 /* CHANTIER 325 — élève ou adulte (le ton suit), et la bulle Abonnement. */
 import { EVT_PROFIL, estAdulte, poseProfil, tv } from './ton';
 import { Abonnement } from './Abonnement';
+/* CHANTIER 379 — les tuiles des familles. */
+import './reglages-familles.css';
+
+type Famille = null | 'moi' | 'revisions' | 'apparence';
+
+/** 379 — les icônes des tuiles (Lucide). */
+const ICONES: Record<'moi' | 'revisions' | 'apparence' | 'aide', ReactNode> = {
+  moi: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>,
+  revisions: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></svg>,
+  apparence: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="1.5" /><circle cx="17.5" cy="10.5" r="1.5" /><circle cx="8.5" cy="7.5" r="1.5" /><circle cx="6.5" cy="12.5" r="1.5" /><path d="M12 2a10 10 0 0 0 0 20c1 0 2-.8 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A5.6 5.6 0 0 0 22 10c0-4.4-4.5-8-10-8Z" /></svg>,
+  aide: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>,
+};
+const NOM_FAMILLE: Record<Exclude<Famille, null>, string> = { moi: 'Moi', revisions: 'Mes révisions', apparence: 'Apparence et son' };
 
 /**
  * Un curseur de la charge de travail : nom, rail, valeur, sur une
@@ -173,7 +195,7 @@ function tempsDit(s: Settings): string {
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide';
+type Tiroirs = null | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide' | 'voix';
 
 
 export function Account({
@@ -199,6 +221,10 @@ export function Account({
       return t === 'classe' ? 'classe' : null;
     } catch { return null; }
   });
+  /* 379 — la famille ouverte. Un tiroir demandé d'ailleurs (« classe ») ouvre aussi sa famille. */
+  const [famille, setFamille] = useState<Famille>(() => (tiroir === 'classe' ? 'moi' : null));
+  /** Le chevron d'un tiroir ramène à sa famille ; « Aide » ramène à l'écran d'entrée. */
+  const retourTiroir = famille ? NOM_FAMILLE[famille] : 'Réglages';
   const [theme, setThemeLocal] = useState<Theme>(themeChoisi());
   const xp = xpTotal(streak);
 
@@ -270,6 +296,7 @@ export function Account({
     rappel: settings.reminderAt ? settings.reminderAt.replace(':', ' h ') : 'Désactivé',
     charge: `${settings.newPerDay} mots/j`,
     revision: settings.reversed ? 'EN → FR' : 'FR → EN',
+    voix: `${settings.speechRate.toFixed(2).replace('.', ',')}${settings.autoSpeak ? ' · auto' : ''}`,
   };
 
   async function activerRappel(actif: boolean) {
@@ -323,78 +350,123 @@ export function Account({
   return (
     <>
       {/* CHANTIER 186 — un sous-menu ouvert prend la place de la liste. */}
-      {!tiroir && (<>
+      {/* CHANTIER 379 — l'écran d'entrée : une ligne de profil, quatre tuiles. */}
+      {!tiroir && !famille && (<>
       <h2 className="screen-title">Réglages</h2>
 
-      <div className="reglist">
-        <Ligne
-          icone="/ico-connexion.png"
-          titre="Connexion"
-          sous="Compte et sauvegardes."
-          valeur={valeurs.connexion}
-          onClick={() => setTiroir('connexion')}
-        />
-        <Ligne
-          icone="/btn-classe.png"
-          titre="Mon profil"
-          sous={tv(a, 'Élève ou adulte, et ton niveau.', 'Élève ou adulte, et votre niveau.')}
-          valeur={valeurs.classe}
-          onClick={() => { setVueProfil(estAdulte(settings) ? 'adulte' : 'eleve'); setTiroir('classe'); }}
-        />
-        {/* 345 — l'icône de l'abonnement : couronne, diplôme et coupe. */}
-        <Ligne
-          icone="/ico-abonnement.png"
-          titre="Abonnement"
-          sous={a ? 'Ce qui est gratuit, ce qu’il ajoute.' : 'Ce qui est gratuit, et le mot aux parents.'}
-          valeur={valeurs.abonnement}
-          onClick={() => setTiroir('abonnement')}
-        />
-        <Ligne
-          icone="/ico-apparence.png"
-          titre="Apparence"
-          sous={tv(a, 'Gagne des crédits, choisis ton style.', 'Gagnez des crédits, choisissez votre style.')}
-          valeur={valeurs.apparence}
-          onClick={() => setTiroir('apparence')}
-        />
-        <Ligne
-          icone="/ico-rappel.png"
-          titre="Rappel quotidien"
-          sous="Si la journée n’est pas faite."
-          valeur={valeurs.rappel}
-          onClick={() => setTiroir('rappel')}
-        />
-        <Ligne
-          icone="/ico-charge.png"
-          titre="Charge de travail"
-          sous="Nouveaux mots et révisions par jour."
-          valeur={valeurs.charge}
-          onClick={() => setTiroir('charge')}
-        />
-        <Ligne
-          icone="/ico-revision.png"
-          titre="Révision"
-          sous="Voix, sens des cartes, prononciation."
-          valeur={valeurs.revision}
-          onClick={() => setTiroir('revision')}
-        />
-        {/* CHANTIER 185 — « Mes XP » déménage dans « Mes progrès ». */}
-        {/*
-          * CHANTIER 167 — « Aide » devient une ligne comme les autres. Les
-          * trois boutons qui traînaient sous la liste passent dans son
-          * tiroir : même geste pour tous les réglages, quel que soit le thème.
-          */}
-        <Ligne
-          icone="/ico-aide.png"
-          titre="Aide"
-          sous="Premiers pas, accueil, confidentialité."
-          valeur=""
-          onClick={() => setTiroir('aide')}
-        />
+      <button className="regprofil" onClick={() => setFamille('moi')}>
+        <span className="regprofil-rond" aria-hidden="true">{(auth.email ?? '?').slice(0, 1).toUpperCase()}</span>
+        <span className="regprofil-txt">
+          <b>{classeDite}</b>
+          <small>{valeurs.connexion} · {a ? 'Votre compte' : 'Ton compte'}</small>
+        </span>
+        <i aria-hidden="true">›</i>
+      </button>
+
+      <div className="regtuiles">
+        <button className="regtuile moi" onClick={() => setFamille('moi')}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.moi}</span>
+          <b>Moi</b>
+          <small>Profil, compte, abonnement</small>
+        </button>
+        <button className="regtuile revisions" onClick={() => setFamille('revisions')}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.revisions}</span>
+          <b>Mes révisions</b>
+          <small>{settings.newPerDay + settings.reviewsPerDay} cartes/j · {settings.reminderAt ? `rappel ${valeurs.rappel}` : 'sans rappel'}</small>
+        </button>
+        <button className="regtuile apparence" onClick={() => setFamille('apparence')}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.apparence}</span>
+          <b>Apparence et son</b>
+          <small>Thème, texte, voix</small>
+        </button>
+        <button className="regtuile aide" onClick={() => { setFamille(null); setTiroir('aide'); }}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.aide}</span>
+          <b>Aide</b>
+          <small>Premiers pas, confidentialité</small>
+        </button>
       </div>
       </>)}
 
+      {!tiroir && famille === 'moi' && (
+        <Tiroir titre="Moi" retour="Réglages" onFermer={() => setFamille(null)}>
+          <div className="reglist">
+            <Ligne
+              icone="/btn-classe.png"
+              titre="Mon profil"
+              sous={tv(a, 'Élève ou adulte, et ton niveau.', 'Élève ou adulte, et votre niveau.')}
+              valeur={valeurs.classe}
+              onClick={() => { setVueProfil(estAdulte(settings) ? 'adulte' : 'eleve'); setTiroir('classe'); }}
+            />
+            <Ligne
+              icone="/ico-connexion.png"
+              titre="Connexion"
+              sous="Compte et sauvegardes."
+              valeur={valeurs.connexion}
+              onClick={() => setTiroir('connexion')}
+            />
+            {/* 345 — l'icône de l'abonnement : couronne, diplôme et coupe. */}
+            <Ligne
+              icone="/ico-abonnement.png"
+              titre="Abonnement"
+              sous={a ? 'Ce qui est gratuit, ce qu’il ajoute.' : 'Ce qui est gratuit, et le mot aux parents.'}
+              valeur={valeurs.abonnement}
+              onClick={() => setTiroir('abonnement')}
+            />
+          </div>
+        </Tiroir>
+      )}
+
+      {!tiroir && famille === 'revisions' && (
+        <Tiroir titre="Mes révisions" retour="Réglages" onFermer={() => setFamille(null)}>
+          <div className="reglist">
+            <Ligne
+              icone="/ico-charge.png"
+              titre="Charge de travail"
+              sous="Cartes et nouveaux mots par jour."
+              valeur={valeurs.charge}
+              onClick={() => setTiroir('charge')}
+            />
+            <Ligne
+              icone="/ico-rappel.png"
+              titre="Rappel quotidien"
+              sous="Si la journée n’est pas faite."
+              valeur={valeurs.rappel}
+              onClick={() => setTiroir('rappel')}
+            />
+            <Ligne
+              icone="/ico-revision.png"
+              titre="Cartes et réponses"
+              sous="Sens des cartes, façon de répondre."
+              valeur={valeurs.revision}
+              onClick={() => setTiroir('revision')}
+            />
+          </div>
+        </Tiroir>
+      )}
+
+      {!tiroir && famille === 'apparence' && (
+        <Tiroir titre="Apparence et son" retour="Réglages" onFermer={() => setFamille(null)}>
+          <div className="reglist">
+            <Ligne
+              icone="/ico-apparence.png"
+              titre="Thème et texte"
+              sous={tv(a, 'Taille du texte, et ton style.', 'Taille du texte, et votre style.')}
+              valeur={valeurs.apparence}
+              onClick={() => setTiroir('apparence')}
+            />
+            <Ligne
+              icone="/ico-revision.png"
+              titre="Voix"
+              sous="Vitesse, prononciation automatique."
+              valeur={valeurs.voix}
+              onClick={() => setTiroir('voix')}
+            />
+          </div>
+        </Tiroir>
+      )}
+
       {tiroir === 'aide' && (
-        <Tiroir titre="Aide" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Aide" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           {/* CHANTIER 293 — réservé au compte administrateur (data/createur.ts). */}
           {estCreateur() && (
             <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
@@ -427,7 +499,7 @@ export function Account({
       )}
 
       {tiroir === 'connexion' && (
-        <Tiroir titre="Connexion" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Connexion" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           <AccountPanel auth={auth} />
           <p className="hint" style={{ marginTop: 14 }}>
             {tv(a,
@@ -450,7 +522,7 @@ export function Account({
       )}
 
       {tiroir === 'classe' && (
-        <Tiroir titre="Mon profil" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Mon profil" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           {/* CHANTIER 325 — élève ou adulte d'abord ; la classe ou le niveau ensuite. */}
           <div className="heures" role="group" aria-label="Profil">
             <button
@@ -501,13 +573,13 @@ export function Account({
 
       {/* CHANTIER 325 — ce qui est gratuit, ce que l'abonnement ajoutera, le mot aux parents. */}
       {tiroir === 'abonnement' && (
-        <Tiroir titre="Abonnement" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Abonnement" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           <Abonnement adulte={a} />
         </Tiroir>
       )}
 
       {tiroir === 'apparence' && (
-        <Tiroir titre="Apparence" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Apparence" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           {/* CHANTIER 350 — la taille du texte, avant les apparences. */}
           <div className="setting">
             <p style={{ margin: '0 0 8px', fontWeight: 600 }}>Taille du texte</p>
@@ -530,7 +602,7 @@ export function Account({
       )}
 
       {tiroir === 'rappel' && (
-        <Tiroir titre="Rappel quotidien" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Rappel quotidien" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           <div className="setting">
             <Toggle
               label="Me rappeler de réviser"
@@ -562,7 +634,7 @@ export function Account({
       )}
 
       {tiroir === 'charge' && (
-        <Tiroir titre="Charge de travail" retour="Réglages" onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Charge de travail" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           {/* La journée réglée, dite en une phrase : on voit ce qu'on
               fabrique avant de toucher aux curseurs. */}
           {/* CHANTIER 368 — deux chiffres : les cartes de la journée, dont les nouveaux mots.
@@ -606,19 +678,8 @@ export function Account({
       )}
 
       {tiroir === 'revision' && (
-        <Tiroir titre="Révision" retour="Réglages" onFermer={() => setTiroir(null)}>
-          <Slider
-            label="Vitesse de la voix"
-            min={0.6} max={1.1} step={0.05} value={settings.speechRate}
-            format={(v) => v.toFixed(2).replace('.', ',')}
-            onChange={(v) => onSettings({ ...settings, speechRate: v })}
-          />
+        <Tiroir titre="Cartes et réponses" retour={retourTiroir} onFermer={() => setTiroir(null)}>
           <div className="setting" style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-            <Toggle
-              label="Prononcer automatiquement à la réponse"
-              checked={settings.autoSpeak}
-              onChange={(v) => onSettings({ ...settings, autoSpeak: v })}
-            />
             <Toggle
               label="Sens inverse : anglais → français"
               checked={settings.reversed}
@@ -645,6 +706,28 @@ export function Account({
               et « the », « a », « to » ne comptent pas ; une petite faute passe.
             </p>
           </div>
+        </Tiroir>
+      )}
+
+      {/* CHANTIER 379 — la voix, sortie de « Révision ». */}
+      {tiroir === 'voix' && (
+        <Tiroir titre="Voix" retour={retourTiroir} onFermer={() => setTiroir(null)}>
+          <Slider
+            label="Vitesse de la voix"
+            min={0.6} max={1.1} step={0.05} value={settings.speechRate}
+            format={(v) => v.toFixed(2).replace('.', ',')}
+            onChange={(v) => onSettings({ ...settings, speechRate: v })}
+          />
+          <div className="setting">
+            <Toggle
+              label="Prononcer automatiquement à la réponse"
+              checked={settings.autoSpeak}
+              onChange={(v) => onSettings({ ...settings, autoSpeak: v })}
+            />
+          </div>
+          <p className="hint">
+            {tv(a, 'Le choix de la voix anglaise et de la voix française se fait dans Parler › Paramètres.', 'Le choix de la voix anglaise et de la voix française se fait dans Parler › Paramètres.')}
+          </p>
         </Tiroir>
       )}
     </>

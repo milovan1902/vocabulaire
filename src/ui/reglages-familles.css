@@ -1,0 +1,87 @@
+/*
+ * CHANTIER 379 — Réglages en quatre familles (maquette 379, 1a).
+ * Couleurs de famille mêlées à l'encre du thème : lisibles sur fond clair
+ * comme sur fond sombre.
+ */
+.regprofil {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.regprofil:active { border-color: var(--rule-strong); }
+.regprofil-rond {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: color-mix(in srgb, #f2b705 16%, transparent);
+  color: color-mix(in oklch, #f2b705 75%, var(--ink));
+}
+.regprofil-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.regprofil-txt b { font-size: 1rem; }
+.regprofil-txt small { font-size: 0.82rem; color: var(--ink-soft); }
+.regprofil i { font-style: normal; font-size: 1.3rem; color: var(--ink-soft); }
+
+.regtuiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.regtuile {
+  --fam: #8d97ad;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 150px;
+  padding: 16px 14px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--fam) 50%, transparent);
+  background: var(--panel);
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.regtuile:active { background: var(--panel-hi, var(--panel)); }
+.regtuile.moi { --fam: #f2b705; }
+.regtuile.revisions { --fam: #4fbf95; }
+.regtuile.apparence { --fam: #9b7be0; }
+.regtuile-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--fam) 15%, transparent);
+  color: color-mix(in oklch, var(--fam) 75%, var(--ink));
+}
+.regtuile-icone svg { width: 21px; height: 21px; }
+.regtuile b {
+  font-family: var(--font-titre, Newsreader, Georgia, serif);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+.regtuile small { font-size: 0.8rem; line-height: 1.35; color: var(--ink-soft); }
+
+/* Taille de texte « Grand » : une tuile par ligne si la place manque. */
+@media (max-width: 330px) {
+  .regtuiles { grid-template-columns: minmax(0, 1fr); }
+  .regtuile { min-height: 0; }
+}
