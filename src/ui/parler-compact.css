@@ -1,0 +1,28 @@
+/* CHANTIER 374 — l'accueil de Parler sur un seul écran : les 3 portes en lignes compactes,
+   puis Mes conversations et Paramètres. Seul l'accueil est concerné (.parler-compact). */
+.parler-compact .screen-title { margin-bottom: 6px; }
+.parler-compact .parler-porte {
+  grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 12px; row-gap: 1px; align-items: center;
+  padding: 10px 14px; margin-top: 8px; border-radius: 16px;
+}
+.parler-compact .parler-porte-icone { grid-row: 1 / span 2; width: 40px; height: 40px; border-radius: 12px; }
+.parler-compact .parler-porte-icone svg { width: 21px; height: 21px; }
+.parler-compact .parler-porte > b { grid-column: 2; font-size: 19px; line-height: 1.2; }
+.parler-compact .parler-porte > span:not(.parler-porte-icone) {
+  grid-column: 2; font-size: 12.5px; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.parler-compact .parler-porte > em { grid-column: 3; grid-row: 1 / span 2; margin: 0; font-size: 12px; white-space: nowrap; }
+.parler-compact .parler-tuiles2 { margin-top: 10px; }
+.parler-compact .parler-tuiles2 button { padding-top: 10px; padding-bottom: 10px; }
+.parler-compact .parler-ia { margin-top: 8px; font-size: 12px; }
+
+.parler-compact .parler-porte > em { font-size: 20px; font-weight: 400; color: var(--grey); display: flex; align-items: center; gap: 8px; }
+.parler-compact .parler-badge { font-size: 12px; font-weight: 700; color: var(--on-chalk); background: #b9a8f0; border-radius: 999px; padding: 2px 8px; }
+
+/* 374 — le choix des voix (Paramètres). */
+.parler-voix {
+  width: 100%; min-height: 44px; margin-top: 6px; padding: 0 12px; border-radius: 12px;
+  border: 1px solid var(--rule-strong); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px;
+}
+.parler-voix:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }

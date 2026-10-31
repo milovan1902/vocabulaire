@@ -48,6 +48,9 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 /* CHANTIER 371 — « Comprendre mes phrases ». */
+/* CHANTIER 374 — le choix des voix, et l'accueil sur un seul écran. */
+import { ChoixVoix } from './ChoixVoix';
+import './parler-compact.css';
 import { ChoixComprendre, nombreEnAttente, noteComprises, type PhraseAttente, type Tour as TourComprendre } from './Comprendre';
 import type { Classe, Deck, Settings } from '../domain/types';
 import { CLASSE_LABELS, NIVEAU_ADULTE_LABELS, readNiveauAdulte } from '../domain/types';
@@ -650,6 +653,8 @@ export function Parler({
           </p>
         </div>
 
+        <ChoixVoix debit={vitesse / 100} />
+
         <p className="hint parler-pied">
           <button className="parler-note" onClick={tape}>Temps de parole remis à zéro à minuit</button>
         </p>
@@ -659,7 +664,7 @@ export function Parler({
 
   /* ---------- L'accueil : deux grandes portes ---------- */
   return (
-    <section className="parler" aria-label="Parler anglais">
+    <section className="parler parler-compact" aria-label="Parler anglais">
       <h2 className="screen-title">Parler anglais</h2>
       {budgetBloc}
 
@@ -669,7 +674,7 @@ export function Parler({
         </span>
         <b>Discuter</b>
         <span>{tvp('Tu choisis tes sujets. L’IA discute avec toi et glisse tes mots de la semaine.', 'Vous choisissez vos sujets. L’IA discute avec vous et glisse vos mots de la semaine.')}</span>
-        <em>Choisir {tvp('mes', 'mes')} sujets ›</em>
+        <em aria-hidden="true">›</em>
       </button>
 
       <button className="parler-porte scene" onClick={() => { setMode('scene'); setOnglet('scene'); }}>
@@ -678,7 +683,7 @@ export function Parler({
         </span>
         <b>Jouer une scène</b>
         <span>L’IA joue un rôle — un agent, un serveur, un vendeur — avec un imprévu.</span>
-        <em>Choisir une scène ›</em>
+        <em aria-hidden="true">›</em>
       </button>
 
       {/* CHANTIER 371 — la 3e porte : les phrases mises de côté pendant les révisions. */}
@@ -686,7 +691,8 @@ export function Parler({
         <span className="parler-porte-icone" aria-hidden="true">?</span>
         <b>Comprendre mes phrases</b>
         <span>{tvp('L’IA t’explique, en français, les phrases mises de côté. Tu peux lui poser tes questions.', 'L’IA vous explique, en français, les phrases mises de côté. Vous pouvez lui poser vos questions.')}</span>
-        <em>{nombreEnAttente() ? `${nombreEnAttente()} phrase${nombreEnAttente() > 1 ? 's' : ''} en attente ›` : 'Comment ça marche ›'}</em>
+        {/* 374 — en ligne compacte : le nombre en attente, puis la flèche. */}
+        <em>{nombreEnAttente() ? <span className="parler-badge" aria-label={`${nombreEnAttente()} en attente`}>{nombreEnAttente()}</span> : null} ›</em>
       </button>
 
       <div className="parler-tuiles2">

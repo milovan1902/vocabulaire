@@ -127,8 +127,68 @@ function rang(v: SpeechSynthesisVoice, exact: string): number {
   return r;
 }
 
-/** La meilleure voix disponible pour une langue. */
+/*
+ * CHANTIER 374 — LA VOIX CHOISIE (Parler › Paramètres).
+ * Chacun peut garder la voix française et la voix anglaise qu'il préfère
+ * parmi celles du téléphone. Réglage de l'appareil : les voix varient d'un
+ * téléphone à l'autre. Sans choix, ou si la voix a disparu, la meilleure
+ * voix est prise d'office, comme avant.
+ */
+export type LangueVoix = 'fr' | 'en';
+const CLE_VOIX: Record<LangueVoix, string> = { fr: 'vocab:voix-fr', en: 'vocab:voix-en' };
+const EXACT: Record<LangueVoix, string> = { fr: 'fr-FR', en: 'en-US' };
+
+export function voixChoisie(l: LangueVoix): string | null {
+  try { return localStorage.getItem(CLE_VOIX[l]); } catch { return null; }
+}
+
+export function choisisVoix(l: LangueVoix, uri: string | null): void {
+  try {
+    if (uri) localStorage.setItem(CLE_VOIX[l], uri);
+    else localStorage.removeItem(CLE_VOIX[l]);
+  } catch { /* rien */ }
+}
+
+export interface VoixDispo { uri: string; nom: string; langue: string }
+
+/** Les voix du téléphone pour une langue, les plus naturelles d'abord. */
+export function listeVoix(l: LangueVoix): VoixDispo[] {
+  return voices()
+    .filter((v) => v.lang?.replace('_', '-').toLowerCase().startsWith(l))
+    .sort((a, b) => rang(b, EXACT[l]) - rang(a, EXACT[l]))
+    .map((v) => ({ uri: v.voiceURI, nom: v.name, langue: v.lang.replace('_', '-') }));
+}
+
+/** Prévient quand la liste des voix arrive (elle est asynchrone sur Chrome). */
+export function surVoix(f: () => void): () => void {
+  if (typeof speechSynthesis === 'undefined') return () => undefined;
+  speechSynthesis.addEventListener('voiceschanged', f);
+  return () => speechSynthesis.removeEventListener('voiceschanged', f);
+}
+
+/** Fait entendre une voix, pour choisir. */
+export function essaieVoix(l: LangueVoix, uri: string | null, rate = 1): void {
+  if (typeof speechSynthesis === 'undefined') return;
+  const texte = l === 'fr'
+    ? 'Bonjour ! Voici la voix qui t’expliquera les phrases en français.'
+    : 'Hello! This is the voice you will hear in English.';
+  try {
+    const coupee = coupe();
+    const u = enonce(texte, EXACT[l], rate);
+    const v = uri ? voices().find((x) => x.voiceURI === uri) : undefined;
+    if (v) u.voice = v;
+    envoie([u], coupee);
+  } catch { /* rien */ }
+}
+
+/** La voix choisie si elle existe encore, sinon la meilleure voix disponible pour une langue. */
 function voix(prefixe: string, exact: string): SpeechSynthesisVoice | undefined {
+  const l = prefixe === 'fr' ? 'fr' : prefixe === 'en' ? 'en' : null;
+  const uri = l ? voixChoisie(l) : null;
+  if (uri) {
+    const v = voices().find((x) => x.voiceURI === uri);
+    if (v) return v;
+  }
   return voices()
     .filter((v) => v.lang?.replace('_', '-').toLowerCase().startsWith(prefixe))
     .sort((a, b) => rang(b, exact) - rang(a, exact))[0];
