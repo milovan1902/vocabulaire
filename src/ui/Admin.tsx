@@ -345,7 +345,7 @@ function Tableau({ d }: { d: Donnees }) {
               <span>{nb(d.nAbonnes)}</span><span>{nb(div(der.secondes_ab / 60, d.nAbonnes), 1)}</span><span>{eur(div(der.centimes_ab / 100, d.nAbonnes))}</span>
             </div>
             <div className="adm-ligne">
-              <span>Gratuit · 5 min/sem.<small>total {eur((der.centimes - der.centimes_ab) / 100)} · comptes actifs</small></span>
+              <span>Gratuit · 10 min offertes<small>total {eur((der.centimes - der.centimes_ab) / 100)} · comptes actifs</small></span>
               <span>{nb(gratuits)}</span><span>{nb(div((der.secondes - der.secondes_ab) / 60, gratuits), 1)}</span><span>{eur(div((der.centimes - der.centimes_ab) / 100, gratuits))}</span>
             </div>
           </div>

@@ -49,16 +49,16 @@ export interface Budget {
 
 /** CHANTIER 144 — « aujourd'hui » ou « cette semaine », selon la formule. */
 export function quandDit(b?: Budget | null): string {
-  if (b?.periode === 'offert') return 'pour ta conversation offerte';
+  /* 381 — 10 minutes offertes, à partager entre plusieurs séances. */
+  if (b?.periode === 'offert') return 'sur tes 10 offertes';
   return b?.periode === 'semaine' ? 'cette semaine' : 'aujourd’hui';
 }
 
 /** CHANTIER 144 — la phrase affichée quand on ne peut plus parler. */
 export function finDit(b?: Budget | null): string {
   if (b?.pause) return 'Parler fait une pause jusqu’au 1er du mois prochain. Tes cartes restent disponibles.';
-  if (b?.periode === 'semaine') return 'Tes 5 minutes de la semaine sont utilisées. Elles reviennent lundi.';
   /* 335 — information neutre, sans incitation (politique Familles). */
-  if (b?.periode === 'offert') return 'Ta conversation offerte est faite. Avec l’abonnement : 10 minutes par jour.';
+  if (b?.periode === 'offert') return 'Tes 10 minutes offertes sont utilisées. Avec l’abonnement : 10 minutes par jour.';
   return 'Ton temps de parole est fini pour aujourd’hui. Il revient à minuit.';
 }
 

@@ -85,3 +85,7 @@
   .regtuiles { grid-template-columns: minmax(0, 1fr); }
   .regtuile { min-height: 0; }
 }
+
+/* CHANTIER 381 — un peu d'air sous le titre « Réglages » et sous celui de chaque sous-réglage. */
+.regprofil { margin-top: 16px; }
+.page-tiroir > .screen-title { margin-bottom: 16px; }
