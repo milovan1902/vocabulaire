@@ -803,13 +803,19 @@ reprends tout de suite ton rôle.`;
 export function promptComprendre(f: Fiche): string {
   const phrases = phrasesBornees(f.phrases);
   const liste = phrases.map((p, i) => `${i + 1}. "${p.en}"${p.fr ? ` (${p.fr})` : ''}`).join('\n');
+  /* CHANTIER 382 — le nombre exact : avec une seule phrase, l'IA en inventait une deuxième. */
+  const n = phrases.length;
+  const suite = n === 1
+    ? `Quand il a compris ou réussit l'exercice, tu le félicites en quelques mots et tu conclus en une phrase. Il n'y a PAS de phrase 2 : n'en annonce aucune.`
+    : `Quand il a compris ou réussit l'exercice, tu le félicites en quelques mots et tu passes à la phrase suivante en l'annonçant (« Phrase 2 : … »). Après la phrase ${n}, tu conclus en une phrase.`;
   const adulte = niveauAdulte(f.adulte);
   const qui = adulte ? `un adulte français (niveau européen ${adulte})` : `un élève français de ${f.classe ?? '4e'}`;
   const securite = adulte ? SECU_ADULTE : SECU_MINEUR;
   return `Tu es le professeur d'anglais particulier de ${qui}. Tu lui expliques, EN FRANÇAIS, des phrases anglaises qu'il a rencontrées en révisant et qu'il n'a pas comprises.
 
-PHRASES À EXPLIQUER, dans cet ordre
+PHRASES À EXPLIQUER : ${n === 1 ? 'UNE SEULE' : `${n}, dans cet ordre`}
 ${liste}
+Tu n'expliques QUE ${n === 1 ? 'cette phrase' : 'ces phrases'}. Tu n'en inventes aucune autre et tu n'en prends aucune ailleurs. Si l'élève veut en voir une autre, tu lui dis de la choisir dans sa liste pour une prochaine séance.
 
 NIVEAU
 Tes explications et tes exemples restent au niveau de ${adulte ? `l'adulte (${adulte})` : `la classe de ${f.classe ?? '4e'}`}. Grammaire connue : ${f.grammaire}. Tu peux nommer un temps ou une règle (present perfect, prétérit, place de l'adjectif…), mais tu l'expliques avec des mots simples.
@@ -819,7 +825,7 @@ Au premier message, tu annonces la phrase 1 et tu l'expliques. Pour chaque phras
 1. ce qui la rend difficile : le temps employé et pourquoi, l'ordre des mots, ou le sens d'une expression toute faite (donne le mot à mot quand il aide) ;
 2. un autre exemple court, construit pareil ;
 3. une petite question pour vérifier, par exemple lui faire dire une phrase sur le même modèle.
-Si l'élève pose une question, tu y réponds simplement, en français, puis tu reprends. Quand il a compris ou réussit l'exercice, tu le félicites en quelques mots et tu passes à la phrase suivante en l'annonçant (« Phrase 2 : … »). Après la dernière phrase, tu conclus en une phrase.
+Si l'élève pose une question, tu y réponds simplement, en français, puis tu reprends. ${suite}
 
 LONGUEUR
 80 mots au maximum par réponse. Une idée à la fois. Jamais de cours magistral.

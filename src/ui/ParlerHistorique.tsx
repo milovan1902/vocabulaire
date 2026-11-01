@@ -30,7 +30,7 @@
  */
 /* CHANTIER 359 — le tu et le vous. */
 import { tvp } from './ton';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   duree, mesSeances, oublieSeance, quand, type SeanceGardee,
 } from '../data/parler';
@@ -56,6 +56,59 @@ function genre(s: SeanceGardee): Genre {
 
 type Etat = 'charge' | 'pret' | 'panne';
 
+/*
+ * CHANTIER 382 — CHERCHER DANS SES CONVERSATIONS.
+ * Les transcriptions sont déjà lues avec la liste : la recherche se fait sur
+ * l'appareil, sans appel. Ni majuscules ni accents ne comptent (« ete » trouve
+ * « été »), les apostrophes courbes valent les droites.
+ */
+const plie = (c: string) => c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[’‘]/g, "'");
+/** Le texte plié, et pour chaque caractère plié sa position dans l'original. */
+function pliage(t: string): { p: string; pos: number[] } {
+  let p = '';
+  const pos: number[] = [];
+  for (let i = 0; i < t.length; i++) { const c = plie(t[i]); p += c; for (let k = 0; k < c.length; k++) pos.push(i); }
+  return { p, pos };
+}
+function plages(t: string, q: string): Array<[number, number]> {
+  if (!q) return [];
+  const { p, pos } = pliage(t);
+  const r: Array<[number, number]> = [];
+  for (let i = p.indexOf(q); i >= 0; i = p.indexOf(q, i + q.length)) r.push([pos[i], pos[i + q.length - 1] + 1]);
+  return r;
+}
+/** Le texte, ses passages trouvés surlignés. */
+function surligne(t: string, q: string): ReactNode {
+  const r = plages(t, q);
+  if (!r.length) return t;
+  const out: ReactNode[] = [];
+  let d = 0;
+  r.forEach(([a, b], i) => { out.push(t.slice(d, a), <mark key={i} className="histo-trouve">{t.slice(a, b)}</mark>); d = b; });
+  out.push(t.slice(d));
+  return out;
+}
+/** Tout ce qu'une séance contient de cherchable. */
+function textes(s: SeanceGardee): string[] {
+  return [
+    ...s.transcription.map((t) => (t.role === 'user' ? t.content : nettoie(t.content))),
+    ...s.corrections.flatMap((c) => [c.dit, c.juste, c.pourquoi]),
+    ...s.mots.flatMap((m) => [m.en, m.fr]),
+    ...s.themes,
+  ].filter((x): x is string => typeof x === 'string' && x.length > 0);
+}
+/** Le premier passage trouvé, avec un peu de contexte autour. */
+function extrait(s: SeanceGardee, q: string): string | null {
+  for (const t of textes(s)) {
+    const r = plages(t, q);
+    if (!r.length) continue;
+    const [a, b] = r[0];
+    const debut = Math.max(0, a - 40);
+    const fin = Math.min(t.length, b + 50);
+    return (debut > 0 ? '… ' : '') + t.slice(debut, fin).trim() + (fin < t.length ? ' …' : '');
+  }
+  return null;
+}
+
 export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }: {
   onRetour?: () => void;
   enJeu: string[];
@@ -73,6 +126,12 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
   const [ouverte, setOuverte] = useState<SeanceGardee | null>(null);
   const [aEffacer, setAEffacer] = useState<number | null>(null);
   const [pourquoi, setPourquoi] = useState<string | null>(null);
+  const [cherche, setCherche] = useState('');
+  const q = plie(cherche.trim());
+  const trouvees = useMemo(
+    () => (q ? seances.flatMap((s) => { const e = extrait(s, q); return e ? [{ s, e }] : []; }) : seances.map((s) => ({ s, e: null as string | null }))),
+    [seances, q],
+  );
 
   const lit = useCallback(async () => {
     setEtat('charge');
@@ -117,9 +176,9 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
           ) : (
             ouverte.corrections.map((c, i) => (
               <div key={i} className={i ? 'seance-corr' : 'seance-corr premiere'}>
-                <p className="seance-faux">{c.dit}</p>
-                <p className="seance-juste">{c.juste}</p>
-                <p className="seance-pourquoi">{c.pourquoi}</p>
+                <p className="seance-faux">{surligne(c.dit, q)}</p>
+                <p className="seance-juste">{surligne(c.juste, q)}</p>
+                <p className="seance-pourquoi">{surligne(c.pourquoi, q)}</p>
               </div>
             ))
           )}
@@ -146,7 +205,7 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
                   key={i}
                   className={t.role === 'user' ? 'seance-bulle moi' : 'seance-bulle lui'}
                 >
-                  {t.role === 'user' ? t.content : nettoie(t.content)}
+                  {surligne(t.role === 'user' ? t.content : nettoie(t.content), q)}
                 </p>
               ))}
             </div>
@@ -204,8 +263,31 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
           </p>
         </div>
       ) : (
+        <>
+        <div className="histo-cherche">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+          <input
+            type="search"
+            value={cherche}
+            onChange={(e) => setCherche(e.target.value)}
+            placeholder={tvp('Chercher un mot, une expression…', 'Chercher un mot, une expression…')}
+            aria-label={tvp('Chercher dans tes conversations', 'Chercher dans vos conversations')}
+            enterKeyHint="search"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+          {cherche && <button className="histo-cherche-vide" aria-label="Effacer la recherche" onClick={() => setCherche('')}>✕</button>}
+        </div>
+        {q && (
+          <p className="histo-cherche-compte" aria-live="polite">
+            {trouvees.length === 0
+              ? tvp('Aucune conversation ne contient ce mot.', 'Aucune conversation ne contient ce mot.')
+              : `${trouvees.length} conversation${trouvees.length > 1 ? 's' : ''}`}
+          </p>
+        )}
         <div className="histo-liste">
-          {seances.map((s) => (
+          {trouvees.map(({ s, e }) => (
             <button key={s.id} className={`histo-ligne hg-${genre(s)}`} onClick={() => setOuverte(s)}>
               <span className="hg-etiquette">{NOM_GENRE[genre(s)]}</span>
               <span className="histo-date">{quand(s.finieLe)}</span>
@@ -213,9 +295,11 @@ export function ParlerHistorique({ onRetour, enJeu, onReprise, integre = false }
                 {duree(s.secondes)} · {s.repliques} répliques
                 {s.corrections.length > 0 && ` · ${s.corrections.length} correction${s.corrections.length > 1 ? 's' : ''}`}
               </span>
+              {e && <span className="histo-extrait">{surligne(e, q)}</span>}
             </button>
           ))}
         </div>
+        </>
       )}
     </Racine>
   );
