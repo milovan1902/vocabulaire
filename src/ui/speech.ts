@@ -187,7 +187,8 @@ function poseVoix(u: SpeechSynthesisUtterance, v: SpeechSynthesisVoice): void {
 const ESSAI_MAX = 5000;
 
 /** Fait entendre une voix, pour choisir. `onEchec` : la voix n'a rien dit. */
-export function essaieVoix(l: LangueVoix, uri: string | null, rate = 1, onEchec?: () => void): void {
+/** 383 — `onDepart` : la voix vient de commencer à parler (fin de la roue d'attente). */
+export function essaieVoix(l: LangueVoix, uri: string | null, rate = 1, onEchec?: () => void, onDepart?: () => void): void {
   if (typeof speechSynthesis === 'undefined') return;
   const texte = l === 'fr'
     ? 'Bonjour ! Voici la voix qui t’expliquera les phrases en français.'
@@ -199,7 +200,7 @@ export function essaieVoix(l: LangueVoix, uri: string | null, rate = 1, onEchec?
     if (v) poseVoix(u, v);
     else if (uri) { onEchec?.(); return; }
     let parti = false;
-    u.addEventListener('start', () => { parti = true; });
+    u.addEventListener('start', () => { parti = true; onDepart?.(); });
     u.addEventListener('error', (e) => {
       if (!parti && e.error !== 'interrupted' && e.error !== 'canceled') onEchec?.();
     });

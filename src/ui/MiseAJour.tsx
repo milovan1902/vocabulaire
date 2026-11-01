@@ -5,10 +5,13 @@
  */
 import { useState, useSyncExternalStore } from 'react';
 import { abonneMiseAJour, appliqueMiseAJour, miseAJourPrete } from '../data/miseAJour';
+import './attente.css';
 
 export function MiseAJour() {
   const prete = useSyncExternalStore(abonneMiseAJour, miseAJourPrete);
   const [cache, setCache] = useState(false);
+  /* CHANTIER 383 — après « Recharger », la roue tourne jusqu'au redémarrage. */
+  const [enCours, setEnCours] = useState(false);
   if (!prete || cache) return null;
 
   return (
@@ -30,14 +33,33 @@ export function MiseAJour() {
         boxShadow: '0 6px 20px rgba(0,0,0,.25)',
       }}
     >
-      <span style={{ flex: 1, fontWeight: 600 }}>Nouvelle version disponible</span>
-      <button className="btn" onClick={appliqueMiseAJour}>Recharger</button>
-      <button
-        onClick={() => setCache(true)}
-        style={{ background: 'none', border: 'none', color: '#fff', opacity: 0.8, padding: 8 }}
-      >
-        Plus tard
-      </button>
+      {enCours ? (
+        <>
+          <i className="roue" aria-hidden="true" style={{ width: 20, height: 20 }} />
+          <span style={{ flex: 1, fontWeight: 600 }}>Mise à jour en cours…</span>
+        </>
+      ) : (
+        <>
+          <span style={{ flex: 1, fontWeight: 600 }}>Nouvelle version disponible</span>
+          <button
+            className="btn"
+            onClick={() => {
+              setEnCours(true);
+              appliqueMiseAJour();
+              /* Filet : si rien ne s'est passé au bout de 10 s, on recharge la page. */
+              window.setTimeout(() => location.reload(), 10000);
+            }}
+          >
+            Recharger
+          </button>
+          <button
+            onClick={() => setCache(true)}
+            style={{ background: 'none', border: 'none', color: '#fff', opacity: 0.8, padding: 8 }}
+          >
+            Plus tard
+          </button>
+        </>
+      )}
     </div>
   );
 }

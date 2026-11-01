@@ -29,6 +29,8 @@ interface Ligne {
   finie_le: string;
   secondes: number | null;
   repliques: number | null;
+  /** 383 — pour écarter « Comprendre mes phrases » de l'aisance. */
+  themes?: string[] | null;
   corrections: Correction[] | null;
 }
 
@@ -62,7 +64,7 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
       if (!s.session) { if (vivant) setLignes([]); return; }
       const { data, error } = await supabase
         .from('parler_seance')
-        .select('finie_le,secondes,repliques,corrections')
+        .select('finie_le,secondes,repliques,corrections,themes')
         .order('finie_le', { ascending: true })
         .limit(1000);
       if (!vivant) return;
@@ -151,10 +153,17 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
       const rep = xs.reduce((s, l) => s + (l.repliques ?? 0), 0);
       return sec > 0 ? (rep * 60) / sec : 0;
     };
-    const aisanceDebut = rythme(L.slice(0, 3));
-    const aisance = rythme(L.slice(-3));
+    /*
+     * CHANTIER 383 — l'aisance ne compte que Discuter et les mises en scène.
+     * Dans « Comprendre mes phrases », on écoute surtout l'IA expliquer :
+     * peu de répliques par minute, et la moyenne s'effondrait sans raison.
+     */
+    const AL = L.filter((l) => !(l.themes ?? []).includes('Comprendre mes phrases'));
+    const aisanceDebut = rythme(AL.slice(0, 3));
+    const aisance = rythme(AL.slice(-3));
+    const nAisance = AL.length;
 
-    return { n: L.length, mois, moisMax, semaines, points, recurrentes, aisanceDebut, aisance };
+    return { n: L.length, mois, moisMax, semaines, points, recurrentes, aisanceDebut, aisance, nAisance };
   }, [lignes, parJour]);
 
   const entete = (
@@ -291,7 +300,7 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
         </div>
       )}
 
-      {assez && (
+      {assez && st.nAisance >= 3 && (
         <div className="parole-carte">
           <p className="parole-kicker">4 · Aisance</p>
           <p className="parole-chiffre">
@@ -304,7 +313,7 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
             <i className="now" style={{ left: pos(st.aisance) }} />
           </div>
           <p className="parole-note">
-            Au début : {virgule(st.aisanceDebut)}. {tvp('Plus tu réponds vite', 'Plus vous répondez vite')}, plus l’échange ressemble à une vraie conversation.
+            Au début : {virgule(st.aisanceDebut)}. {tvp('Plus tu réponds vite', 'Plus vous répondez vite')}, plus l’échange ressemble à une vraie conversation. Compté sur Discuter et les mises en scène.
           </p>
         </div>
       )}

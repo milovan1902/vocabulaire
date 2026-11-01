@@ -1,0 +1,26 @@
+/*
+ * CHANTIER 383 — la roue d'attente : mise à jour de l'application, chargement d'une voix.
+ * Elle prend la couleur du texte autour (blanc sur le bandeau, encre ailleurs).
+ */
+.roue {
+  flex: none;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: roue-tourne 0.8s linear infinite;
+}
+@keyframes roue-tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .roue { animation: roue-pulse 1.4s ease-in-out infinite; border-right-color: currentColor; }
+  @keyframes roue-pulse { 50% { opacity: 0.35; } }
+}
+.attente-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import './attente.css';
 import { choisisVoix, essaieVoix, listeVoix, surVoix, voixChoisie, type LangueVoix, type VoixDispo } from './speech';
 
 /*
@@ -25,12 +26,24 @@ function Ligne({ l, titre, debit }: { l: LangueVoix; titre: string; debit: numbe
   const existe = !choix || liste.some((v) => v.uri === choix);
   /* 375 — la voix essayée n'a rien dit : on le dit, au lieu de laisser croire qu'elle sonne comme les autres. */
   const [muette, setMuette] = useState(false);
-  const essaie = (uri: string | null) => { setMuette(false); essaieVoix(l, uri, debit, () => setMuette(true)); };
+  /* 383 — la roue tourne entre le choix et le premier son : on voit que la voix se charge. */
+  const [charge, setCharge] = useState(false);
+  const essai = useRef(0);
+  const essaie = (uri: string | null) => {
+    const n = ++essai.current;
+    const fini = () => { if (essai.current === n) setCharge(false); };
+    setMuette(false);
+    setCharge(true);
+    essaieVoix(l, uri, debit, () => { fini(); if (essai.current === n) setMuette(true); }, fini);
+    window.setTimeout(fini, 6000);
+  };
   return (
     <div className="parler-carte">
       <div className="parler-tete">
         <p className="parler-kicker">{titre}</p>
-        <button className="parler-lien" onClick={() => essaie(choix || null)}>Écouter ›</button>
+        {charge
+          ? <span className="attente-txt" role="status"><i className="roue" aria-hidden="true" />Chargement de la voix…</span>
+          : <button className="parler-lien" onClick={() => essaie(choix || null)}>Écouter ›</button>}
       </div>
       {liste.length === 0 ? (
         <p className="hint">Aucune voix trouvée sur ce téléphone pour cette langue.</p>
