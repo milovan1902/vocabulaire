@@ -340,6 +340,9 @@ const MOTS_EN = new Set([
   'my', 'me', 'we', 'they', 'he', 'she', 'his', 'her', 'their',
   'to', 'of', 'in', 'on', 'at', 'so', 'but', 'not', 'very', 'really',
   'tell', 'know', 'think', 'want', 'good', 'nice', 'yesterday', 'today',
+  /* 395 — les mots des questions courtes (« Was it white or more yellow? »). */
+  'it', 'or', 'more', 'when', 'where', 'why', 'how', 'which', 'who', 'there',
+  'look', 'looked', 'see', 'saw', 'go', 'went', 'any', 'some', 'it\'s', "don't", "didn't",
 ]);
 
 function estFrancais(passage: string): boolean {
@@ -357,9 +360,12 @@ function estFrancais(passage: string): boolean {
 /**
  * Retire la mise en forme que le modèle glisse parfois : gras, italique,
  * code, titres, puces. Exporté : l'écran l'emploie aussi pour l'affichage.
+ * CHANTIER 395 — et les étiquettes « Question: », « Correction: »… qui
+ * rendaient la conversation peu naturelle (à l'écran comme à la voix).
  */
 export function nettoie(texte: string): string {
   return texte
+    .replace(/(^|[.!?…]\s+|\n\s*)(?:question|correction|answer|réponse|reponse)\s*:\s*/gi, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
     .replace(/(^|[\s(«"“])\*([^*\n]+)\*(?=[\s).,!?;:»"”]|$)/g, '$1$2')
@@ -427,17 +433,21 @@ function pourLaVoix(t: string): string {
     .trim();
 }
 
-/** 372 — dans une réplique française, une phrase libre ne passe en anglais que si elle l'est nettement. */
+/**
+ * 372 — dans une réplique française, une phrase libre ne passe en anglais que si elle l'est nettement.
+ * 395 — ou si elle n'a AUCUN mot français et au moins un mot anglais : « Was it white or
+ * more yellow? » partait dans la voix française parce que la réplique commençait en français.
+ */
 function nettementAnglais(passage: string): boolean {
   if (ACCENTS.test(passage)) return false;
-  const mots = passage.toLowerCase().match(/[a-zà-ÿ']+/g) ?? [];
+  const mots = passage.toLowerCase().replace(/[’]/g, "'").match(/[a-zà-ÿ']+/g) ?? [];
   let fr = 0;
   let en = 0;
   for (const m of mots) {
-    if (MOTS_FR.has(m)) fr += 1;
+    if (MOTS_FR.has(m) && !MOTS_EN.has(m)) fr += 1;
     if (MOTS_EN.has(m)) en += 1;
   }
-  return en >= 2 && en > fr * 2;
+  return (fr === 0 && en >= 1) || (en >= 2 && en > fr * 2);
 }
 
 /**
