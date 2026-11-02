@@ -214,7 +214,12 @@ function MotsDuPaquet({ deckId, cards, progress, modifiable, onReload }: {
 export function DeckHome({
   loaded, settings, overrides, counter, userId, general,
   onGeneral, onOverrides, onStart, onAddCards, onReload, onBackToLibrary, verrouille = false,
+  enJeu = false, onSetActive,
 }: {
+  /** CHANTIER 391 — le paquet est-il en jeu ? */
+  enJeu?: boolean;
+  /** CHANTIER 391 — mettre en jeu ou en pause. Absent = paquet hors collection. */
+  onSetActive?: (on: boolean) => void;
   /** CHANTIER 337 — paquet réservé aux abonnés, pas dans la collection : on le parcourt, on ne le révise pas. */
   verrouille?: boolean;
   loaded: LoadedDeck;
@@ -416,6 +421,17 @@ export function DeckHome({
             <button className="deck-retour" aria-label="Retour au paquet" onClick={() => { setDetails(false); window.scrollTo(0, 0); }}>‹</button>
             <span><b>{deck.name}</b><small>Détails et paramètres</small></span>
           </div>
+          {/* CHANTIER 391 — mettre le paquet en pause sans repasser par Paquets. */}
+          {onSetActive && (
+            <div className="setting deck-pause">
+              <Toggle label="Paquet en jeu" checked={enJeu} onChange={(on) => onSetActive(on)} />
+              <p className="hint" style={{ margin: '7px 0 0' }}>
+                {enJeu
+                  ? tvp('Ses cartes comptent dans ta journée. En pause, il ne propose plus rien et ta progression est gardée.', 'Ses cartes comptent dans votre journée. En pause, il ne propose plus rien et votre progression est gardée.')
+                  : tvp('En pause : il ne propose plus de cartes. Ta progression est gardée, tu le remets en jeu quand tu veux.', 'En pause : il ne propose plus de cartes. Votre progression est gardée, vous le remettez en jeu quand vous voulez.')}
+              </p>
+            </div>
+          )}
           {/*
             * CHANTIER 180 — les sous-catégories se replient, comme « Réglages »
             * juste en dessous : la liste ne s'ouvre qu'au doigt. Le résumé dit

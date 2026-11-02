@@ -21,6 +21,8 @@ export const MOTS_DUEL = 5;
 export const SECONDES_DUEL = 20;
 export const DUELS_PAR_JOUR = 3;
 export const EVT_DUELS = 'vocab:duels';
+/** CHANTIER 391 — le nombre de défis à relever, pour la pastille de l'onglet. */
+export const EVT_RECUS = 'vocab:defis-recus';
 
 export interface MotDuel { fr: string; en: string }
 export interface Coup { ok: boolean; ms: number }
@@ -85,6 +87,7 @@ export async function listeDuels(): Promise<Duel[]> {
   if (Object.keys(parJour).length) window.dispatchEvent(new CustomEvent(EVT_DUELS, { detail: parJour }));
   /* La tuile « Mes amis » annonce les défis à relever. */
   const recus = liste.filter((d) => !d.deMoi && !d.joue && d.jour === today).length;
+  window.dispatchEvent(new CustomEvent(EVT_RECUS, { detail: recus }));
   if (recus) {
     try { localStorage.setItem('vocab:amis-resume', `${recus} défi${recus > 1 ? 's' : ''} reçu${recus > 1 ? 's' : ''}`); } catch { /* rien */ }
   }
@@ -127,7 +130,9 @@ function melanger<T>(t: T[]): T[] {
 /**
  * 5 mots neufs pour un défi : des mots acquis, hors défi éclair du jour et
  * hors défis déjà envoyés aujourd'hui. Un débutant qui n'en a pas assez
- * complète avec ses mots les mieux notés. [] = pas assez de mots.
+ * complète avec ses mots les mieux notés.
+ * CHANTIER 391 — puis, s'il n'a encore rien révisé, avec des mots au hasard
+ * de ses paquets en jeu. [] = aucun paquet en jeu.
  */
 export async function tirerMotsDuel(dejaPoses: MotDuel[]): Promise<MotDuel[]> {
   const exclus = new Set(dejaPoses.map((m) => m.en.trim().toLowerCase()));
@@ -140,7 +145,9 @@ export async function tirerMotsDuel(dejaPoses: MotDuel[]): Promise<MotDuel[]> {
   const fin = finDuJour();
   const acquis: Card[] = [];
   const autres: Array<{ card: Card; p: Progress }> = [];
+  const neufs: Card[] = [];
   const vus = new Set<string>();
+  const enJeu = new Set((await repository.getActive()) ?? []);
   for (const id of (await repository.getInstalled()) ?? []) {
     try {
       const [cards, progress] = await Promise.all([repository.getCards(id), repository.getProgress(id)]);
@@ -149,7 +156,10 @@ export async function tirerMotsDuel(dejaPoses: MotDuel[]): Promise<MotDuel[]> {
         if (!card.fr || !estMot(card.en) || exclus.has(cle) || vus.has(cle)) continue;
         if (eclair.some((m) => m.d === id && m.c === card.id)) continue;
         const p = progress[card.id];
-        if (!p || p.reps < 1) continue;
+        if (!p || p.reps < 1) {
+          if (enJeu.has(id)) { vus.add(cle); neufs.push(card); }
+          continue;
+        }
         vus.add(cle);
         if (estAcquis(p, fin)) acquis.push(card);
         else autres.push({ card, p });
@@ -164,6 +174,9 @@ export async function tirerMotsDuel(dejaPoses: MotDuel[]): Promise<MotDuel[]> {
       .slice(0, MOTS_DUEL - choisis.length)
       .map((x) => x.card);
     choisis = melanger([...choisis, ...meilleurs]);
+  }
+  if (choisis.length < MOTS_DUEL) {
+    choisis = melanger([...choisis, ...melanger(neufs).slice(0, MOTS_DUEL - choisis.length)]);
   }
   if (choisis.length < MOTS_DUEL) return [];
   return choisis.map((c) => ({ fr: c.fr, en: c.en }));

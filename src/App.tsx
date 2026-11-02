@@ -33,6 +33,8 @@ import { cartesDuJour, gainDuJour } from './engine/xp';
 /* CHANTIER 357 — le défi éclair. */
 import { Defi } from './ui/Defi';
 import { useDefi } from './ui/useDefi';
+/* CHANTIER 391 — la pastille des défis reçus. */
+import { useDefisRecus } from './ui/useDefisRecus';
 import { MOTS_DEFI, type MotDefi } from './engine/defi';
 import { lisTaille } from './data/tailleTexte';
 import type { Streak } from './engine/streak';
@@ -479,6 +481,8 @@ export default function App() {
   const [suivant, setSuivant] = useState<{ id: string; nom: string; cartes: number; meme?: boolean } | null>(null);
   /* CHANTIER 357 — les 5 mots du défi éclair, lus en arrière-plan. */
   const motsDefi = useDefi(store);
+  /* CHANTIER 391 — les défis d'amis à relever, en pastille sur « Mes progrès ». */
+  const defisRecus = useDefisRecus(!!auth.session);
 
   const handleGrade = useCallback(
     async (item: SessionItem, grade: Grade) => {
@@ -895,6 +899,9 @@ export default function App() {
               startSession(loaded, ignoreGoal);
             }}
             onAddCards={() => setView({ name: 'editor', mode: 'append' })}
+            /* 391 — en jeu ou en pause, depuis Détails et paramètres (paquets de la collection). */
+            enJeu={store.active.includes(loaded.deck.id)}
+            onSetActive={store.installed.includes(loaded.deck.id) ? (on) => { void store.setActive(loaded.deck.id, on); } : undefined}
             onReload={() => void reload()}
             onBackToLibrary={() => void backToLibrary()}
           />
@@ -998,6 +1005,9 @@ export default function App() {
             >
               <Icone />
               <span>{label}</span>
+              {name === 'progress' && defisRecus > 0 && (
+                <em className="tab-pastille" aria-label={`${defisRecus} défi${defisRecus > 1 ? 's' : ''} à relever`}>{defisRecus}</em>
+              )}
             </button>
           ))}
         </nav>
