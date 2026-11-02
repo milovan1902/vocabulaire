@@ -1,6 +1,9 @@
 /**
  * Onglet « Réglages » : six lignes, six tiroirs.
  *
+ * CHANTIER 387 — « Aide » devient « Aide et info » et accueille
+ * « Pourquoi ça marche », venu de Mes progrès.
+ *
  * CHANTIER 379 — QUATRE FAMILLES (maquette 379, 1a).
  * Huit lignes de même poids, c'était trop. L'écran d'entrée montre une
  * ligne de profil et quatre tuiles : Moi, Mes révisions, Apparence et son,
@@ -114,6 +117,8 @@ import { estCreateur } from '../data/createur';
 /* CHANTIER 325 — élève ou adulte (le ton suit), et la bulle Abonnement. */
 import { EVT_PROFIL, estAdulte, poseProfil, tv } from './ton';
 import { Abonnement } from './Abonnement';
+/* CHANTIER 387 — « Pourquoi ça marche » quitte Mes progrès pour Aide et info. */
+import { Pourquoi } from './Pourquoi';
 /* CHANTIER 379 — les tuiles des familles. */
 import './reglages-familles.css';
 
@@ -195,7 +200,7 @@ function tempsDit(s: Settings): string {
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'prenom' | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide' | 'voix';
+type Tiroirs = null | 'prenom' | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide' | 'voix' | 'pourquoi';
 
 
 export function Account({
@@ -393,8 +398,8 @@ export function Account({
         </button>
         <button className="regtuile aide" onClick={() => { setFamille(null); setTiroir('aide'); }}>
           <span className="regtuile-icone" aria-hidden="true">{ICONES.aide}</span>
-          <b>Aide</b>
-          <small>Premiers pas, confidentialité</small>
+          <b>Aide et info</b>
+          <small>Premiers pas, pourquoi ça marche</small>
         </button>
       </div>
       </>)}
@@ -486,7 +491,11 @@ export function Account({
       )}
 
       {tiroir === 'aide' && (
-        <Tiroir titre="Aide" retour={retourTiroir} onFermer={() => setTiroir(null)}>
+        <Tiroir titre="Aide et info" retour={retourTiroir} onFermer={() => setTiroir(null)}>
+          {/* 387 — l'explication de la méthode, venue de Mes progrès. */}
+          <button className="btn ghost" onClick={() => setTiroir('pourquoi')}>
+            Pourquoi ça marche
+          </button>
           {/* CHANTIER 293 — réservé au compte administrateur (data/createur.ts). */}
           {estCreateur() && (
             <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
@@ -515,6 +524,13 @@ export function Account({
               « Aujourd’hui ». Rien n’est mesuré pendant la relecture.
             </p>
           )}
+        </Tiroir>
+      )}
+
+      {/* CHANTIER 387 — Pourquoi ça marche : le chevron ramène à Aide et info. */}
+      {tiroir === 'pourquoi' && (
+        <Tiroir titre="Pourquoi ça marche" retour="Aide et info" onFermer={() => setTiroir('aide')}>
+          <Pourquoi adulte={a} />
         </Tiroir>
       )}
 

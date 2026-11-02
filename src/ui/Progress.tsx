@@ -1,6 +1,13 @@
 /**
- * Onglet « Mes progrès » : un encart, deux lignes, deux écrans, un
- * tiroir.
+ * Onglet « Mes progrès ».
+ *
+ * CHANTIER 387 — UN BANDEAU, QUATRE TUILES (maquette 387, 1a).
+ * Même forme que les Réglages (379). En haut, les trois chiffres qu'on
+ * vient chercher : les mots acquis (touche = Mes mots), la série
+ * (touche = Mon calendrier), les XP (touche = Mes XP). Dessous, quatre
+ * tuiles : Calendrier, Oral, Mes paquets, Mes amis. « Pourquoi ça
+ * marche » part dans Réglages › Aide et info. « Mes amis » a sa propre
+ * icône (deux personnes, bleu) : la silhouette seule reste à « Moi ».
  *
  * CHANTIER 64 — « MON CALENDRIER » DEVIENT UN ÉCRAN
  *
@@ -44,18 +51,29 @@ import {
 import { Anneau, MesMots } from './MesMots';
 import { MonCalendrier } from './MonCalendrier';
 import { MaParole } from './MaParole';
-import { Ligne, Tiroir } from './tiroir';
+import { Tiroir } from './tiroir';
 import { MesXp } from './MesXp';
 import { xpTotal } from '../engine/xp';
-/* CHANTIER 325 — « Pourquoi ça marche » : la boucle d'apprentissage. */
-import { Pourquoi } from './Pourquoi';
-import { estAdulte } from './ton';
+/* CHANTIER 387 — le bandeau et les tuiles. */
+import './reglages-familles.css';
+import './progres-bandeau.css';
 /* CHANTIER 386 — les amis. */
 import { Amis } from './Amis';
 import { publieAmis, resumeAmis } from '../data/amis';
 import { nettoiePrenom } from '../domain/types';
 
 const nb = (n: number) => n.toLocaleString('fr-FR');
+
+/** 387 — les icônes du bandeau et des tuiles (Lucide), comme les Réglages. */
+const sv = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+const ICONES = {
+  serie: <svg {...sv}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>,
+  xp: <svg {...sv}><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>,
+  calendrier: <svg {...sv}><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
+  oral: <svg {...sv}><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" /></svg>,
+  paquets: <svg {...sv}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>,
+  amis: <svg {...sv}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+};
 
 /** Quel écran de détail est ouvert, à la place de la table des matières. */
 type Sous = null | 'mots' | 'calendrier' | 'parole';
@@ -92,7 +110,6 @@ export function Progress({
   const [tiroirOuvert, setTiroirOuvert] = useState(false);
   /* CHANTIER 185 — « Mes XP », venu des Réglages. */
   const [xpOuvert, setXpOuvert] = useState(ouvrir === 'xp');
-  const [pourquoi, setPourquoi] = useState(false);
   /* 386 — « Mes amis ». */
   const [amisOuvert, setAmisOuvert] = useState(false);
 
@@ -143,85 +160,56 @@ export function Progress({
   return (
     <>
       {/* CHANTIER 186 — « Mes paquets » et « Mes XP » prennent la place de la liste. */}
-      {!xpOuvert && !tiroirOuvert && !pourquoi && !amisOuvert && (<>
+      {!xpOuvert && !tiroirOuvert && !amisOuvert && (<>
       <h2 className="screen-title">Mes progrès</h2>
 
-      <div className="reglist">
-        {/* L'encart des mots garde son nombre à l'écran : c'est la
-            réponse qu'on venait chercher. Il compte TOUT ce qu'on
-            possède — l'écran sépare ensuite les deux périmètres. */}
-        <button className="progmots" onClick={() => setSous('mots')}>
-          <img src="/ico-mots.png" alt="" width={40} height={40} />
-          <span>
-            <span className="progmots-nom">Mes mots</span>
-            <span className="progmots-ligne">
-              <b>{nb(tout.acquis)}</b>
-              <small>acquis</small>
-            </span>
-            <small>
-              sur {nb(tout.mots)} mots au total
-              {' · '}{nb(tout.enCours)} en cours
-            </small>
+      {/* 387 — le bandeau : les trois chiffres, chacun ouvre son détail. */}
+      <div className="progbandeau">
+        <button className="progbandeau-mots" onClick={() => setSous('mots')}>
+          <Anneau percent={tout.percent} taille={62} />
+          <span className="progbandeau-txt">
+            <small>Mes mots</small>
+            <b>{nb(tout.acquis)} <em>acquis</em></b>
+            <small>sur {nb(tout.mots)} · {nb(tout.enCours)} en cours</small>
           </span>
-          <Anneau percent={tout.percent} taille={58} />
           <i aria-hidden="true">›</i>
         </button>
+        <div className="progchips">
+          <button className="progchip" onClick={() => setSous('calendrier')}>
+            <span aria-hidden="true">{ICONES.serie}</span>
+            <span><b>{serieDite}</b><small>{serieJours === 0 ? 'Mon calendrier' : 'de série'}</small></span>
+          </button>
+          <button className="progchip" onClick={() => setXpOuvert(true)}>
+            <span aria-hidden="true">{ICONES.xp}</span>
+            <span><b>{xpTotal(streak).toLocaleString('fr-FR')} XP</b><small>Mes XP</small></span>
+          </button>
+        </div>
+      </div>
 
-        <Ligne
-          icone="/ico-calendrier.png"
-          titre="Mon calendrier"
-          sous="La série, et les jours travaillés."
-          valeur={serieDite}
-          onClick={() => setSous('calendrier')}
-        />
-        <Ligne
-          icone="/tab-parler.png"
-          titre="Oral"
-          sous="Temps de parole, fautes, aisance."
-          valeur=""
-          onClick={() => setSous('parole')}
-        />
-        {/* Même icône que l'onglet « Paquets » : c'est la même chose
-            qu'on désigne, et deux dessins pour un objet se paieraient. */}
-        <Ligne
-          icone="/tab-paquets.png"
-          titre="Mes paquets"
-          sous="Où en est chacun, paquet par paquet."
-          valeur={paquetsDits}
-          onClick={() => setTiroirOuvert(true)}
-        />
-        {/* CHANTIER 185 — les XP : évolution, règles, apparences à gagner. */}
-        <Ligne
-          icone="/ico-xp.png"
-          titre="Mes XP"
-          sous="Évolution, règles et bonus."
-          valeur={`${xpTotal(streak).toLocaleString('fr-FR')} XP`}
-          onClick={() => setXpOuvert(true)}
-        />
-        {/* CHANTIER 386 — les amis : code ami, demandes, classement de la semaine. */}
-        <Ligne
-          icone="/btn-classe.png"
-          titre="Mes amis"
-          sous="Code ami et classement de la semaine."
-          valeur={resumeAmis()}
-          onClick={() => setAmisOuvert(true)}
-        />
-        {/* CHANTIER 325 — même icône que l'Aide des Réglages : c'est une explication. */}
-        <Ligne
-          icone="/ico-aide.png"
-          titre="Pourquoi ça marche"
-          sous="La boucle qui fait retenir."
-          valeur=""
-          onClick={() => setPourquoi(true)}
-        />
+      <div className="regtuiles progtuiles">
+        <button className="regtuile calendrier" onClick={() => setSous('calendrier')}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.calendrier}</span>
+          <b>Calendrier</b>
+          <small>Jours travaillés</small>
+        </button>
+        <button className="regtuile oral" onClick={() => setSous('parole')}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.oral}</span>
+          <b>Oral</b>
+          <small>Parole, fautes, aisance</small>
+        </button>
+        <button className="regtuile paquets" onClick={() => setTiroirOuvert(true)}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.paquets}</span>
+          <b>Mes paquets</b>
+          <small>{paquetsDits}</small>
+        </button>
+        {/* 387 — deux personnes : « Mes amis » ne partage plus l'icône de « Moi ». */}
+        <button className="regtuile amis" onClick={() => setAmisOuvert(true)}>
+          <span className="regtuile-icone" aria-hidden="true">{ICONES.amis}</span>
+          <b>Mes amis</b>
+          <small>{resumeAmis() || 'Code ami, classement'}</small>
+        </button>
       </div>
       </>)}
-
-      {pourquoi && (
-        <Tiroir titre="Pourquoi ça marche" retour="Mes progrès" onFermer={() => setPourquoi(false)}>
-          <Pourquoi adulte={estAdulte(settings)} />
-        </Tiroir>
-      )}
 
       {amisOuvert && (
         <Tiroir titre="Mes amis" retour="Mes progrès" onFermer={() => setAmisOuvert(false)}>

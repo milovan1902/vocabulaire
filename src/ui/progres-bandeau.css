@@ -1,0 +1,71 @@
+/*
+ * CHANTIER 387 — Mes progrès : le bandeau de chiffres et les quatre tuiles
+ * (maquette 387, 1a). Les tuiles reprennent .regtuile (reglages-familles.css).
+ */
+.progbandeau {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 16px 0 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, #4fbf95 50%, transparent);
+  background: var(--panel);
+}
+.progbandeau-mots {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.progbandeau-mots > :first-child { flex: none; }
+.progbandeau-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.progbandeau-txt small { font-size: 0.8rem; color: var(--ink-soft); }
+.progbandeau-txt b {
+  font-family: var(--font-titre, Newsreader, Georgia, serif);
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.progbandeau-txt b em { font-family: inherit; font-style: normal; font-size: 0.85rem; color: var(--ink-soft); }
+.progbandeau-mots i { flex: none; font-style: normal; font-size: 1.3rem; color: var(--ink-soft); }
+
+.progchips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.progchip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, #f2b705 12%, transparent);
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.progchip:active { background: color-mix(in srgb, #f2b705 22%, transparent); }
+.progchip > span:first-child { flex: none; display: flex; color: color-mix(in oklch, #f2b705 75%, var(--ink)); }
+.progchip svg { width: 20px; height: 20px; }
+.progchip > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.progchip b { font-size: 1rem; font-variant-numeric: tabular-nums; }
+.progchip small { font-size: 0.75rem; color: var(--ink-soft); }
+.progbandeau-mots:focus-visible, .progchip:focus-visible { outline: 2px solid #f2b705; outline-offset: 2px; }
+
+.progtuiles .regtuile { min-height: 118px; gap: 8px; padding: 14px; }
+.regtuile.calendrier { --fam: #f2b705; }
+.regtuile.oral { --fam: #f08a5d; }
+.regtuile.paquets { --fam: #4fbf95; }
+.regtuile.amis { --fam: #6fb3f2; }
+
+@media (max-width: 330px) {
+  .progchips { grid-template-columns: minmax(0, 1fr); }
+}
