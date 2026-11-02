@@ -14,7 +14,7 @@
  *
  * CHANTIER 390 — les défis entre amis (maquette 390) : « Défier » sur la
  * ligne d'un ami, les défis du jour en tête de liste, le jeu en plein
- * écran (Duel.tsx). Règles et XP : supabase/390-duels.sql.
+ * écran (Duel.tsx). Règles et XP : supabase/390-duels.sql, barème 393.
  *
  * Classement : les XP gagnés depuis lundi. Il repart à zéro chaque semaine,
  * pour qu'un nouveau venu puisse y figurer.
@@ -478,8 +478,8 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
         {!seul && (
           <p className="hint">
             {tv(a,
-              'Défier : 5 mots que tu connais, 20 s par mot. Gagner rapporte 20 XP (40 contre une classe au-dessus), un nul 10, perdre 5. 3 défis par jour. Tes révisions ne changent pas.',
-              'Défier : 5 mots que vous connaissez, 20 s par mot. Gagner rapporte 20 XP (40 contre une classe au-dessus), un nul 10, perdre 5. 3 défis par jour. Vos révisions ne changent pas.')}
+              'Défier : 5 mots que tu connais, 20 s par mot. Gagner rapporte 5 XP (10 contre une classe au-dessus), un nul ou une défaite 2, et lancer un défi relevé 2 de plus. 3 défis envoyés et 3 relevés par jour. Tes révisions ne changent pas.',
+              'Défier : 5 mots que vous connaissez, 20 s par mot. Gagner rapporte 5 XP (10 contre une classe au-dessus), un nul ou une défaite 2, et lancer un défi relevé 2 de plus. 3 défis envoyés et 3 relevés par jour. Vos révisions ne changent pas.')}
           </p>
         )}
       </section>

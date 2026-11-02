@@ -11,6 +11,9 @@
  * défi ne change jamais les révisions.
  *
  * Tout s'affiche en plein écran, par-dessus la barre d'onglets.
+ *
+ * CHANTIER 393 — nouveau barème : gagnant 5 (10 contre une classe
+ * au-dessus), nul 2, perdant 2, +2 pour celui qui a lancé.
  */
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -71,7 +74,7 @@ export function DuelRecu({ duel, moi, maClasse, adulte, restants, onJouer, onPlu
       {x2 && (
         <div className="duel-bonus">
           <b>×2</b>
-          <span>{duel.prenom} est en classe au-dessus : <strong>40 XP</strong> {tv(adulte, 'si tu gagnes', 'si vous gagnez')}.</span>
+          <span>{duel.prenom} est en classe au-dessus : <strong>10 XP</strong> {tv(adulte, 'si tu gagnes', 'si vous gagnez')}.</span>
         </div>
       )}
       <div className="duel-regles">
@@ -257,7 +260,7 @@ export function DuelResultat({ duel, moi, adulte, peutRevanche, onRevanche, onRe
     ? tv(adulte, 'Pas d’XP : tu as déjà 3 défis payés aujourd’hui.', 'Pas d’XP : vous avez déjà 3 défis payés aujourd’hui.')
     : [
       r === 'gagne' ? (x2 ? 'gagnant ×2 · classe au-dessus' : 'victoire') : r === 'nul' ? 'match nul' : 'pour avoir joué',
-      duel.deMoi ? '+5 défi relevé' : '',
+      duel.deMoi ? '+2 défi relevé' : '',
     ].filter(Boolean).join(' · ');
   const premier = { nom: r === 'perdu' ? duel.prenom : moi, s: r === 'perdu' ? sb : sa, t: r === 'perdu' ? tb : ta, moi: r !== 'perdu' };
   const second = { nom: r === 'perdu' ? moi : duel.prenom, s: r === 'perdu' ? sa : sb, t: r === 'perdu' ? ta : tb, moi: r === 'perdu' };
@@ -302,7 +305,7 @@ export function DuelEnvoye({ prenom, coups, adulte, onRetour }: { prenom: string
         <b>{scoreDe(coups)}/{MOTS_DUEL} <span>en {tempsDit(tempsDe(coups))}</span></b>
       </div>
       <p className="defi-note">
-        {prenom} {tv(adulte, 'a jusqu’à minuit pour le relever. Tes XP arrivent dès qu’il est joué : +5 pour le défi relevé, plus la victoire ou la participation.', 'a jusqu’à minuit pour le relever. Vos XP arrivent dès qu’il est joué : +5 pour le défi relevé, plus la victoire ou la participation.')}
+        {prenom} {tv(adulte, 'a jusqu’à minuit pour le relever. Tes XP arrivent dès qu’il est joué : +2 pour le défi relevé, plus la victoire ou la participation.', 'a jusqu’à minuit pour le relever. Vos XP arrivent dès qu’il est joué : +2 pour le défi relevé, plus la victoire ou la participation.')}
       </p>
       <div className="duel-ressort" />
       <button className="btn" onClick={onRetour}>Revenir à Mes amis</button>
