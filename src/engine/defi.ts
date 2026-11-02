@@ -14,6 +14,12 @@ import type { Card, Progress } from '../domain/types';
  *   — 5/5 : +10 XP ; 4/5 : +5 XP ; en dessous, rien ;
  *   — un mot raté repasse « à revoir » ; un mot réussi garde sa date ;
  *   — les 5 mots comptent dans les 20 cartes du jour.
+ *
+ * CHANTIER 384 — PLUS DE MOTS QUI REVIENNENT.
+ * Un mot réussi gardant sa date, il restait parmi les « moins revus » et
+ * retombait dans le vivier tous les jours. Le tirage tient maintenant compte
+ * des mots déjà posés au défi : d'abord ceux jamais posés, puis, quand tout
+ * a été vu, ceux posés il y a le plus longtemps.
  */
 export const MOTS_DEFI = 5;
 
@@ -34,26 +40,49 @@ export function xpDefi(score: number): number {
   return score >= MOTS_DEFI ? 10 : score === MOTS_DEFI - 1 ? 5 : 0;
 }
 
+/** La clé d'un mot : le même mot anglais dans deux paquets compte une fois. */
+export function cleMot(m: MotDefi): string {
+  return m.card.en.trim().toLowerCase();
+}
+
+function melanger<T>(t: T[], hasard: () => number): T[] {
+  for (let i = t.length - 1; i > 0; i--) {
+    const j = Math.floor(hasard() * (i + 1));
+    [t[i], t[j]] = [t[j], t[i]];
+  }
+  return t;
+}
+
 /**
- * Le tirage : on écarte les doublons (même mot anglais dans deux paquets),
- * on garde les mots les moins revus récemment, puis on tire au hasard dans
- * ce vivier, pour que le défi change d'un jour à l'autre.
+ * Le tirage. `vus` : clé du mot → jour où il a été posé au défi (AAAA-MM-JJ).
+ *   1. on écarte les doublons ;
+ *   2. s'il reste au moins 5 mots jamais posés : on prend les moins revus
+ *      récemment parmi eux, et on tire au hasard ;
+ *   3. sinon : tous les jamais posés, complétés par les mots posés il y a
+ *      le plus longtemps.
  */
-export function tirerMots(candidats: MotDefi[], n = MOTS_DEFI, hasard: () => number = Math.random): MotDefi[] {
-  const vus = new Set<string>();
+export function tirerMots(
+  candidats: MotDefi[],
+  n = MOTS_DEFI,
+  hasard: () => number = Math.random,
+  vus: Record<string, string> = {},
+): MotDefi[] {
+  const deja = new Set<string>();
   const uniques = candidats.filter((m) => {
-    const cle = m.card.en.trim().toLowerCase();
-    if (vus.has(cle)) return false;
-    vus.add(cle);
+    const cle = cleMot(m);
+    if (deja.has(cle)) return false;
+    deja.add(cle);
     return true;
   });
   if (uniques.length < n) return [];
-  const vivier = [...uniques]
-    .sort((a, b) => (a.progress.lastReview ?? 0) - (b.progress.lastReview ?? 0))
-    .slice(0, Math.max(n * 4, 20));
-  for (let i = vivier.length - 1; i > 0; i--) {
-    const j = Math.floor(hasard() * (i + 1));
-    [vivier[i], vivier[j]] = [vivier[j], vivier[i]];
+  const jamais = uniques.filter((m) => !vus[cleMot(m)]);
+  if (jamais.length >= n) {
+    const vivier = [...jamais]
+      .sort((a, b) => (a.progress.lastReview ?? 0) - (b.progress.lastReview ?? 0))
+      .slice(0, Math.max(n * 4, 20));
+    return melanger(vivier, hasard).slice(0, n);
   }
-  return vivier.slice(0, n);
+  const anciens = melanger(uniques.filter((m) => vus[cleMot(m)]), hasard)
+    .sort((a, b) => vus[cleMot(a)].localeCompare(vus[cleMot(b)]));
+  return melanger([...jamais, ...anciens.slice(0, n - jamais.length)], hasard);
 }
