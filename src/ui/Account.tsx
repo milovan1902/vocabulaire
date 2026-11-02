@@ -408,8 +408,9 @@ export function Account({
         <Tiroir titre="Moi" retour="Réglages" onFermer={() => setFamille(null)}>
           <div className="reglist">
             {/* 385 — prénom ou pseudo. */}
+            {/* 389 — sa propre icône (badge « Hello ») ; la salle de classe reste à « Mon profil ». */}
             <Ligne
-              icone="/btn-classe.png"
+              icone="/ico-prenom.png"
               titre="Prénom ou pseudo"
               sous={tv(a, 'Comment l’application t’appelle.', 'Comment l’application vous appelle.')}
               valeur={prenom ?? 'À choisir'}
