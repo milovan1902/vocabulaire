@@ -341,6 +341,11 @@ export interface Settings {
    * Absent = pas encore donné.
    */
   prenom?: string | null;
+  /**
+   * CHANTIER 394 — les bulles « découverte » déjà fermées (Parler, Paquets…).
+   * Voyage avec le compte : une bulle vue ne revient pas sur un autre appareil.
+   */
+  vus?: string[];
 }
 
 /** 385 — un prénom ou un pseudo propre : espaces resserrés, 20 caractères au plus. */

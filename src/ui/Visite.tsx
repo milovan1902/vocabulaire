@@ -1,4 +1,10 @@
 /**
+ * CHANTIER 394 — LA VISITE COURTE (maquette 394, 1a). Cinq étapes : profil,
+ * prénom, classe (choisie dans la bulle), première révision, fin avec les
+ * crédits. Le reste se présente la première fois qu'on ouvre chaque partie
+ * (Decouverte.tsx). L'adulte passe encore par Réglages › Moi › Mon profil
+ * pour son test de niveau.
+ *
  * CHANTIER 293 — LA PREMIÈRE CONNEXION GUIDÉE, DANS LA VRAIE APPLICATION.
  *
  * Remplace les douze étapes du chantier 292 (Onboarding.tsx, qui n'est
@@ -53,7 +59,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import type { Classe, Grade } from '../domain/types';
-import { CLASSES, CLASSE_LABELS } from '../domain/types';
+import { CLASSES, CLASSES_PROPOSEES, CLASSE_LABELS, CLASSE_SHORT } from '../domain/types';
 import { mesure } from '../data/mesures';
 import { appliquerApercu, finApercu } from './theme';
 import { ajouterAchat } from '../data/apparencesStock';
@@ -98,6 +104,8 @@ type Etape = {
   saisie?: boolean;
   /** 325 — l'étape demande : élève ou adulte ? */
   profil?: boolean;
+  /** 394 — l'étape propose les classes, dans la bulle. */
+  classes?: boolean;
   /** 325 — étape réservée à un profil. */
   seulAdulte?: boolean;
   seulEleve?: boolean;
@@ -151,28 +159,30 @@ function saute(et: Etape, a: boolean): boolean {
 
 export const ETAPES: Etape[] = [
   { id: 'profil', n: 1, profil: true, texte: 'Bienvenue dans Neuro Anglais ! Pour commencer, qui apprend ?' },
-  { id: 'prenom', n: 1, saisie: true, continuer: 'Continuer', texte: T('Comment t’appelles-tu ?', 'Comment vous appelez-vous ?') },
+  { id: 'prenom', n: 2, saisie: true, continuer: 'Continuer', texte: T('Comment t’appelles-tu ?', 'Comment vous appelez-vous ?') },
+  /* 394 — l'élève choisit sa classe dans la bulle : plus de détour par les Réglages. */
   {
-    id: 'reglages', n: 1, cible: { sel: ONGLET, texte: 'Réglages' },
-    texte: (p, a) => (a
-      ? `Enchanté${virgule(p)} ! On commence par faire connaissance : touchez « Réglages ».`
-      : `Enchanté${virgule(p)} ! On commence par faire connaissance : touche « Réglages ».`),
+    id: 'classe', n: 3, seulEleve: true, classes: true, info: 'paquets',
+    texte: (p) => `Enchanté${virgule(p)} ! Tu es en quelle classe ? Un paquet de ton niveau est mis en jeu tout de suite.`,
   },
-  { id: 'ma-classe', n: 1, cible: { sel: '.reglig', texte: 'Mon profil' }, texte: T('Touche « Mon profil ».', 'Touchez « Mon profil ».') },
-  { id: 'classe', n: 2, seulEleve: true, cible: { sel: '.classrow', tous: true }, texte: 'Choisis ta classe : un paquet de ton niveau sera mis en jeu.', info: 'paquets' },
-  { id: 'niveau', n: 2, seulAdulte: true, attente: true, texte: '' },
-  { id: 'aujourdhui', n: 3, cible: { sel: ONGLET, texte: 'Aujourd’hui' }, texte: T('Ton premier paquet t’attend. Va dans « Aujourd’hui ».', 'Votre premier paquet vous attend. Allez dans « Aujourd’hui ».') },
+  /* 325 — l'adulte passe son test de niveau dans Réglages › Moi › Mon profil. */
+  {
+    id: 'reglages', n: 3, seulAdulte: true, cible: { sel: ONGLET, texte: 'Réglages' },
+    texte: (p) => `Enchanté${virgule(p)} ! D’abord votre niveau : touchez « Réglages ».`,
+  },
+  { id: 'moi', n: 3, seulAdulte: true, ecran: 'account', cible: { sel: '.regtuile', texte: 'Moi' }, texte: 'Touchez « Moi ».' },
+  { id: 'ma-classe', n: 3, seulAdulte: true, ecran: 'account', cible: { sel: '.reglig', texte: 'Mon profil' }, texte: 'Touchez « Mon profil » : un court test fixe votre niveau.' },
+  { id: 'niveau', n: 3, seulAdulte: true, attente: true, texte: '' },
+  { id: 'aujourdhui', n: 4, seulAdulte: true, cible: { sel: ONGLET, texte: 'Aujourd’hui' }, texte: 'Votre premier paquet vous attend. Allez dans « Aujourd’hui ».' },
   /*
    * 293 bis — le bouton de révision change de forme et de libellé selon
-   * l'apparence (« Réviser 12 cartes », « C’est parti · 12 cartes »,
-   * l'horloger…). On le cherche par sa classe. Sur l'écran ordinaire, tant
-   * qu'aucun paquet n'est choisi, il n'existe pas : on entoure d'abord la
-   * liste des paquets.
+   * l'apparence. On le cherche par sa classe ; tant qu'aucun paquet n'est
+   * choisi, on entoure d'abord la liste des paquets.
    * 297 — le clic est retenu : la bulle « Comment réviser » passe avant.
    */
   {
-    id: 'reviser', n: 3, info: 'methode', ecran: 'today', retient: true,
-    texte: T('Le paquet de ta classe. Touche « Réviser » pour essayer tes premiers mots.', 'Le paquet de votre niveau. Touchez « Réviser » pour essayer vos premiers mots.'),
+    id: 'reviser', n: 4, info: 'methode', ecran: 'today', retient: true,
+    texte: T('Tes premiers mots t’attendent. Touche « Réviser ».', 'Vos premiers mots vous attendent. Touchez « Réviser ».'),
     cible: CIBLES_REVISER,
   },
   {
@@ -182,40 +192,12 @@ export const ETAPES: Etape[] = [
       : `À toi${virgule(p)} ! Réponds honnêtement : c’est ta note qui décide quand le mot reviendra.`),
   },
   { id: 'etude', n: 4, pause: true, texte: '' },
-  { id: 'echeances', n: 5, exemple: 'rdv', continuer: 'Continuer', texte: T('Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', 'Chaque mot revient au bon moment, selon votre réponse : plus il a été difficile, plus il revient tôt.'), info: 'frise' },
-  { id: 'methode', n: 6, continuer: 'Continuer', texte: 'C’est tout : quelques minutes par jour, l’application tient le calendrier.', info: 'progres' },
-  { id: 'parler', n: 7, cible: { sel: ONGLET, texte: 'Parler' }, texte: T('Maintenant, l’oral. Touche « Parler ».', 'Maintenant, l’oral. Touchez « Parler ».') },
+  { id: 'echeances', n: 4, exemple: 'rdv', continuer: 'Continuer', texte: T('Chaque mot revient au bon moment, selon ta réponse : plus il a été difficile, plus il revient tôt.', 'Chaque mot revient au bon moment, selon votre réponse : plus il a été difficile, plus il revient tôt.'), info: 'frise' },
   {
-    id: 'sujet', n: 7, ecran: 'parler', cible: { sel: '.parler-themes button', texte: 'Me présenter' }, texte: T('Choisis un sujet : « Me présenter ».', 'Choisissez un sujet : « Me présenter ».'), info: 'minutes',
-    dejaFait: (el) => el.getAttribute('aria-pressed') === 'true',
-  },
-  { id: 'commencer', n: 7, ecran: 'parler', cible: { sel: '.parler-go' }, intercepte: true, texte: T('Touche « Commencer à parler » : cette fois, regarde l’exemple. Tu peux parler à l’oral ou à l’écrit, comme tu préfères.', 'Touchez « Commencer à parler » : cette fois, regardez l’exemple. Vous pouvez parler à l’oral ou à l’écrit, comme vous préférez.'), info: 'minutes' },
-  { id: 'seance', n: 7, exemple: 'seance', continuer: 'Voir le bilan', texte: T('L’IA glisse tes mots dans la conversation. Si tu fais une faute, une voix en français te corrige.', 'L’IA glisse vos mots dans la conversation. Si vous faites une faute, une voix en français vous corrige.'), info: 'minutes' },
-  { id: 'bilan', n: 8, exemple: 'bilan', continuer: 'Continuer', texte: T('Le bilan : tes fautes corrigées, et les mots que tu choisis d’ajouter à tes paquets.', 'Le bilan : vos fautes corrigées, et les mots que vous choisissez d’ajouter à vos paquets.'), info: 'oral' },
-  { id: 'paquets', n: 9, cible: { sel: ONGLET, texte: 'Paquets' }, texte: T('Passons aux paquets. Touche « Paquets ».', 'Passons aux paquets. Touchez « Paquets ».') },
-  /* CHANTIER 364 — le catalogue est derrière « Ajouter un paquet ». */
-  { id: 'ajouter', n: 9, ecran: 'library', cible: { sel: '.lib-porte', texte: 'Ajouter un paquet' }, texte: T('Touche « Ajouter un paquet ».', 'Touchez « Ajouter un paquet ».'), info: 'gratuit' },
-  { id: 'catalogue', n: 9, ecran: 'library', cible: { sel: '.lib-choix', texte: 'Le catalogue' }, texte: T('Ouvre le catalogue.', 'Ouvrez le catalogue.'), info: 'gratuit' },
-  { id: 'defile', n: 9, ecran: 'library', continuer: 'Continuer', texte: T('Fais défiler pour tout voir : chaque classe a ses paquets, rangés par sujet.', 'Faites défiler pour tout voir : chaque niveau a ses paquets, rangés par thème.'), info: 'gratuit' },
-  { id: 'collection', n: 10, ecran: 'library', cible: { sel: '.lib-retour' }, texte: T('Reviens en arrière avec la flèche ‹.', 'Revenez en arrière avec la flèche ‹.') },
-  { id: 'creer', n: 10, ecran: 'library', cible: { sel: '.lib-porte', texte: 'Photographier une liste' }, intercepte: true, texte: T('Un contrôle approche ? Touche « Photographier une liste ».', 'Un examen, un entretien ou un voyage approche ? Touchez « Photographier une liste ».'), info: 'abonnes' },
-  { id: 'creer-ex', n: 11, exemple: 'creer', continuer: 'Continuer', texte: T('Ton paquet se prépare en trois étapes. L’application cale ensuite tes passages jusqu’au jour J.', 'Votre paquet se prépare en trois étapes. L’application cale ensuite vos passages jusqu’au jour J.'), info: 'photos' },
-  { id: 'reglages-2', n: 12, cible: { sel: ONGLET, texte: 'Réglages' }, texte: T('Dernière chose : ne perds rien de tes progrès. Touche « Réglages ».', 'Dernière chose : ne perdez rien de vos progrès. Touchez « Réglages ».') },
-  { id: 'connexion', n: 12, ecran: 'account', cible: { sel: '.reglig', texte: 'Connexion' }, texte: T('Touche « Connexion ».', 'Touchez « Connexion ».') },
-  { id: 'google', n: 12, ecran: 'account', continuer: 'Continuer', texte: T('Un compte Google suffit : tout est sauvegardé et te suit sur tes appareils. Tu pourras te connecter quand tu veux.', 'Un compte Google suffit : tout est sauvegardé et vous suit sur vos appareils. Vous pourrez vous connecter quand vous voulez.') },
-  {
-    id: 'credits', n: 13, cadeau: true, exemple: 'credits', continuer: 'Merci !',
+    id: 'fin', n: 5, cadeau: true, exemple: 'credits', continuer: 'C’est parti',
     texte: (p, a) => (a
-      ? `Visite terminée${virgule(p)} ! Nous vous offrons ${CADEAU} crédits pour débloquer l’apparence de votre choix.`
-      : `Tuto terminé${virgule(p)} ! Nous t’offrons ${CADEAU} crédits pour débloquer l’apparence de ton choix.`),
-  },
-  { id: 'retour', n: 14, cible: { sel: ONGLET, texte: 'Réglages' }, fermeTiroir: true, texte: T('Pour les dépenser, touche « Réglages ».', 'Pour les dépenser, touchez « Réglages ».') },
-  { id: 'apparence', n: 14, ecran: 'account', cible: { sel: '.reglig', texte: 'Apparence' }, texte: T(`Tes ${CADEAU} crédits t’attendent : touche « Apparence ».`, `Vos ${CADEAU} crédits vous attendent : touchez « Apparence ».`), info: 'apparences' },
-  {
-    id: 'fin', n: 14, ecran: 'account', continuer: 'Terminer', info: 'apparences',
-    texte: (p, a) => (a
-      ? `Bravo${virgule(p)}, vous connaissez l’application ! Choisissez une apparence maintenant, ou plus tard : vos crédits restent là, et ceux gagnés en révisant s’y ajoutent.`
-      : `Bravo${virgule(p)}, tu connais l’application ! Choisis une apparence maintenant, ou plus tard : tes crédits restent là, et ceux gagnés en révisant s’y ajoutent.`),
+      ? `Bravo${virgule(p)} ! Nous vous offrons ${CADEAU} crédits pour une apparence. Le reste, vous le découvrez en chemin : chaque onglet se présentera la première fois que vous l’ouvrirez.`
+      : `Bravo${virgule(p)} ! Nous t’offrons ${CADEAU} crédits pour une apparence. Le reste, tu le découvres en chemin : chaque onglet se présentera la première fois que tu l’ouvriras.`),
   },
 ];
 const TOTAL = ETAPES[ETAPES.length - 1].n;
@@ -581,6 +563,15 @@ export function Visite({
             </button>
           </div>
         )}
+        {e.classes && (
+          <div className="visite-classes" role="group" aria-label="Ta classe">
+            {CLASSES_PROPOSEES.map((c) => (
+              <button key={c} className="visite-classe" onClick={() => { onClasse(c); suivante(); }}>
+                {CLASSE_SHORT[c]}
+              </button>
+            ))}
+          </div>
+        )}
         {e.saisie && (
           <input
             className="visite-champ"
@@ -726,7 +717,7 @@ function ExempleReviser({ a }: { a: boolean }) {
       <span className="visite-petit">Comment réviser</span>
       <ol className="visite-trois visite-sans-fond">
         <li><b>{a ? 'Lisez la carte' : 'Lis la carte'}</b> Un mot, une phrase ou une expression en français.</li>
-        <li><b>{a ? 'Traduisez de tête' : 'Traduis dans ta tête'}</b> {a ? 'Cherchez l’anglais, sans rien écrire.' : 'Cherche l’anglais, sans rien écrire.'}</li>
+        <li><b>{a ? 'Traduisez de tête' : 'Traduis dans ta tête'}</b> {a ? 'Cherchez l’anglais, puis retournez la carte (vous pouvez aussi vous tester à l’écrit).' : 'Cherche l’anglais, puis retourne la carte (tu peux aussi te tester à l’écrit).'}</li>
         <li><b>{a ? 'Affichez la réponse' : 'Affiche la réponse'}</b> {a ? 'Puis dites si vous l’aviez :' : 'Puis dis si tu l’avais :'}</li>
       </ol>
       <ul className="visite-notes">
@@ -738,7 +729,7 @@ function ExempleReviser({ a }: { a: boolean }) {
   );
 }
 
-function ExempleSeance({ prenom, a }: { prenom: string; a: boolean }) {
+export function ExempleSeance({ prenom, a }: { prenom: string; a: boolean }) {
   if (a) {
     return (
       <div className="visite-exemple">
@@ -763,7 +754,7 @@ function ExempleSeance({ prenom, a }: { prenom: string; a: boolean }) {
   );
 }
 
-function ExempleBilan({ a }: { a: boolean }) {
+export function ExempleBilan({ a }: { a: boolean }) {
   if (a) {
     return (
       <div className="visite-exemple">

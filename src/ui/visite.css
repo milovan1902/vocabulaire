@@ -178,3 +178,12 @@
 .visite-rdv .hard { color: #8a5a00; }
 .visite-rdv .good { color: #16233f; }
 .visite-rdv .easy { color: #2f7d5b; }
+
+/* CHANTIER 394 — la classe choisie dans la bulle. */
+.visite-classes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.visite-classe {
+  min-height: 48px; border-radius: 12px; border: 1.5px solid #c9d1e0; background: #fff; color: #16233f;
+  font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.visite-classe:active { background: #16233f; color: #fff; }
+.visite-classe:focus-visible { outline: 2px solid #ffc21a; outline-offset: 2px; }

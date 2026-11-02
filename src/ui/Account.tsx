@@ -121,6 +121,9 @@ import { Abonnement } from './Abonnement';
 import { Pourquoi } from './Pourquoi';
 /* CHANTIER 379 — les tuiles des familles. */
 import './reglages-familles.css';
+/* CHANTIER 394 — la bulle « première fois », et « Revoir les premiers pas » pour tous. */
+import { Decouverte } from './Decouverte';
+import { oublierVues } from '../data/decouvertes';
 
 type Famille = null | 'moi' | 'revisions' | 'apparence';
 
@@ -396,6 +399,11 @@ export function Account({
           <b>Apparence et son</b>
           <small>Thème, texte, voix</small>
         </button>
+        {/* 394 — se connecter, et dépenser ses crédits. */}
+        <Decouverte
+          id="reglages" vus={settings.vus} adulte={a}
+          actions={auth.email ? { libelle: 'Mes crédits', onClick: () => { setFamille('apparence'); } } : { libelle: 'Me connecter', onClick: () => { setFamille('moi'); setTiroir('connexion'); } }}
+        />
         <button className="regtuile aide" onClick={() => { setFamille(null); setTiroir('aide'); }}>
           <span className="regtuile-icone" aria-hidden="true">{ICONES.aide}</span>
           <b>Aide et info</b>
@@ -498,11 +506,10 @@ export function Account({
             Pourquoi ça marche
           </button>
           {/* CHANTIER 293 — réservé au compte administrateur (data/createur.ts). */}
-          {estCreateur() && (
-            <button className="btn ghost" onClick={() => { setTiroir(null); onGuide(); }}>
-              Revoir la première connexion
-            </button>
-          )}
+          {/* 394 — pour tous : la visite courte, puis chaque bulle à la prochaine ouverture. */}
+          <button className="btn ghost" onClick={() => { oublierVues(); setTiroir(null); onGuide(); }}>
+            Revoir les premiers pas
+          </button>
           <button className="btn ghost" onClick={() => { setTiroir(null); onHome(); }}>
             Revoir la page d’accueil
           </button>

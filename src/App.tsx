@@ -35,6 +35,8 @@ import { Defi } from './ui/Defi';
 import { useDefi } from './ui/useDefi';
 /* CHANTIER 391 — la pastille des défis reçus. */
 import { useDefisRecus } from './ui/useDefisRecus';
+/* CHANTIER 394 — les bulles « première fois ». */
+import { Decouverte } from './ui/Decouverte';
 import { MOTS_DEFI, type MotDefi } from './engine/defi';
 import { lisTaille } from './data/tailleTexte';
 import type { Streak } from './engine/streak';
@@ -1013,6 +1015,14 @@ export default function App() {
         </nav>
       )}
 
+      {/* CHANTIER 394 — une bulle la première fois qu'on ouvre une partie (Mes amis et Réglages ont la leur). */}
+      {visite === null && surOnglet && view.name === 'library' && <Decouverte id="paquets" vus={store.common.vus} adulte={estAdulte(store.common)} />}
+      {visite === null && surOnglet && view.name === 'parler' && <Decouverte id="parler" vus={store.common.vus} adulte={estAdulte(store.common)} />}
+      {visite === null && surOnglet && view.name === 'progress' && <Decouverte id="progres" vus={store.common.vus} adulte={estAdulte(store.common)} />}
+      {visite === null && surOnglet && view.name === 'today' && infoDefi(store.streak, motsDefi)?.etat === 'afaire' && (
+        <Decouverte id="defi-eclair" vus={store.common.vus} adulte={estAdulte(store.common)} />
+      )}
+
       {visite !== null && (
         <Visite
           etape={visite}
@@ -1021,7 +1031,11 @@ export default function App() {
           rdv={rdv}
           onEtape={poseEtape}
           onFin={finVisite}
-          onClasse={(c) => { void paquetDeClasse(c); }}
+          /* 394 — la classe est choisie dans la bulle : on l'enregistre ici, puis un paquet est mis en jeu. */
+          onClasse={(c) => {
+            if (c) void store.setCommon({ ...store.common, classe: c, adulte: null });
+            void paquetDeClasse(c);
+          }}
           /* CHANTIER 296 — la visite ramène sur « Aujourd'hui » pour montrer un onglet. */
           onAccueil={() => { setLoaded(null); setView({ name: 'today' }); }}
         />

@@ -38,6 +38,8 @@ import {
   type Coup, type Duel, type MotDuel,
 } from '../data/duels';
 import { DuelEnvoye, DuelJeu, DuelRecu, DuelResultat, Plein } from './Duel';
+/* CHANTIER 394 — les bulles « première fois ». */
+import { Decouverte } from './Decouverte';
 
 type Ecran = null
   | { t: 'recu'; d: Duel }
@@ -270,6 +272,7 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
   if (vue === 'intro') {
     return (
       <div className="amis">
+        <Decouverte id="amis" vus={settings.vus} adulte={a} />
         <p className="amis-intro">
           {tv(a,
             'Ajoute des camarades avec leur code ami, et comparez vos progrès chaque semaine.',
@@ -375,6 +378,8 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
   return (
     <div className="amis">
       {plein}
+      <Decouverte id="amis" vus={settings.vus} adulte={a} />
+      {aRelever.length > 0 && <Decouverte id="defi-recu" vus={settings.vus} adulte={a} />}
       <div className="amis-code">
         <span className="amis-kicker">{tv(a, 'Mon code ami', 'Mon code ami')}</span>
         <b>{moi?.code}</b>

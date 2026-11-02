@@ -44,6 +44,8 @@ import { EMPTY_STREAK, compterCarte, noterDefi, noterDuels, record as recordDay 
 import { EVT_DUELS } from '../data/duels';
 import { imageFor } from './deckImages';
 import { mesure } from '../data/mesures';
+/* CHANTIER 394 — les bulles « découverte » vues, rangées dans les réglages du compte. */
+import { EVT_VU, EVT_VUS_RESET } from '../data/decouvertes';
 
 export interface Store {
   ready: boolean;
@@ -298,6 +300,31 @@ export function useStore(): Store {
     };
     window.addEventListener(EVT_DUELS, ecoute);
     return () => window.removeEventListener(EVT_DUELS, ecoute);
+  }, []);
+
+  /* CHANTIER 394 — une bulle fermée rejoint les réglages ; « Revoir les premiers pas » les efface. */
+  useEffect(() => {
+    const vu = (e: Event) => {
+      const id = (e as CustomEvent<string>).detail;
+      if (typeof id !== 'string' || !id) return;
+      void repository.getSettings().then((s) => {
+        const deja = s.vus ?? [];
+        if (deja.includes(id)) return;
+        const stamped: Settings = { ...s, vus: [...deja, id], updatedAt: Date.now() };
+        setCommonState(stamped);
+        return repository.saveSettings(stamped);
+      });
+    };
+    const efface = () => {
+      void repository.getSettings().then((s) => {
+        const stamped: Settings = { ...s, vus: [], updatedAt: Date.now() };
+        setCommonState(stamped);
+        return repository.saveSettings(stamped);
+      });
+    };
+    window.addEventListener(EVT_VU, vu);
+    window.addEventListener(EVT_VUS_RESET, efface);
+    return () => { window.removeEventListener(EVT_VU, vu); window.removeEventListener(EVT_VUS_RESET, efface); };
   }, []);
 
   /* CHANTIER 285 — un paquet en mode contrôle n'est pas borné par les quotas du jour. */
