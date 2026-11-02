@@ -50,6 +50,10 @@ import { xpTotal } from '../engine/xp';
 /* CHANTIER 325 — « Pourquoi ça marche » : la boucle d'apprentissage. */
 import { Pourquoi } from './Pourquoi';
 import { estAdulte } from './ton';
+/* CHANTIER 386 — les amis. */
+import { Amis } from './Amis';
+import { publieAmis, resumeAmis } from '../data/amis';
+import { nettoiePrenom } from '../domain/types';
 
 const nb = (n: number) => n.toLocaleString('fr-FR');
 
@@ -89,6 +93,8 @@ export function Progress({
   /* CHANTIER 185 — « Mes XP », venu des Réglages. */
   const [xpOuvert, setXpOuvert] = useState(ouvrir === 'xp');
   const [pourquoi, setPourquoi] = useState(false);
+  /* 386 — « Mes amis ». */
+  const [amisOuvert, setAmisOuvert] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -98,6 +104,11 @@ export function Progress({
     })();
     return () => { alive = false; };
   }, [decks, active, settings]);
+
+  /* 386 — les amis voient les mêmes chiffres que cet écran : on les publie à chaque ouverture. */
+  useEffect(() => {
+    if (stats) void publieAmis(streak, nettoiePrenom(settings.prenom), stats.tout.acquis);
+  }, [stats, streak, settings.prenom]);
 
   if (!stats) return <p className="lead">Chargement…</p>;
 
@@ -132,7 +143,7 @@ export function Progress({
   return (
     <>
       {/* CHANTIER 186 — « Mes paquets » et « Mes XP » prennent la place de la liste. */}
-      {!xpOuvert && !tiroirOuvert && !pourquoi && (<>
+      {!xpOuvert && !tiroirOuvert && !pourquoi && !amisOuvert && (<>
       <h2 className="screen-title">Mes progrès</h2>
 
       <div className="reglist">
@@ -187,6 +198,14 @@ export function Progress({
           valeur={`${xpTotal(streak).toLocaleString('fr-FR')} XP`}
           onClick={() => setXpOuvert(true)}
         />
+        {/* CHANTIER 386 — les amis : code ami, demandes, classement de la semaine. */}
+        <Ligne
+          icone="/btn-classe.png"
+          titre="Mes amis"
+          sous="Code ami et classement de la semaine."
+          valeur={resumeAmis()}
+          onClick={() => setAmisOuvert(true)}
+        />
         {/* CHANTIER 325 — même icône que l'Aide des Réglages : c'est une explication. */}
         <Ligne
           icone="/ico-aide.png"
@@ -201,6 +220,12 @@ export function Progress({
       {pourquoi && (
         <Tiroir titre="Pourquoi ça marche" retour="Mes progrès" onFermer={() => setPourquoi(false)}>
           <Pourquoi adulte={estAdulte(settings)} />
+        </Tiroir>
+      )}
+
+      {amisOuvert && (
+        <Tiroir titre="Mes amis" retour="Mes progrès" onFermer={() => setAmisOuvert(false)}>
+          <Amis settings={settings} streak={streak} acquis={stats.tout.acquis} />
         </Tiroir>
       )}
 

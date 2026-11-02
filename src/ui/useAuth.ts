@@ -11,6 +11,8 @@ import { supabase, signInWithGoogle, signOut, type Session } from '../data/supab
 import { syncAll, type SyncReport } from '../data/sync';
 import { phraseErreur } from '../data/messageErreur';
 import { CHANGE_COMPTE, verifieCompte, visiteARefaire } from '../data/appareil';
+/* CHANTIER 386 — après chaque synchronisation, les amis voient la série et les XP à jour. */
+import { publieDepuisAppareil } from '../data/amis';
 
 /*
  * CHANTIER 327 — À QUI SONT LES DONNÉES DE CET APPAREIL ?
@@ -110,6 +112,7 @@ export function useAuth(onDataChanged: () => void): Auth {
       }
       setSync({ status: 'done', at: Date.now(), report });
       changed.current();
+      void publieDepuisAppareil().catch(() => undefined);
     } finally {
       busy.current = false;
     }
