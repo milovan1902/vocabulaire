@@ -334,6 +334,21 @@ export interface Settings {
    * (NIVEAU_ADULTE_CLASSE). Choisir une classe le remet à null.
    */
   adulte?: NiveauAdulte | null;
+  /**
+   * CHANTIER 385 — prénom ou pseudo, au choix de la personne (20 caractères
+   * au plus). Voyage dans le JSON de `user_settings` : on le retrouve sur
+   * tous ses appareils, et l'exploitant le lit dans la vue `comptes_prenoms`.
+   * Absent = pas encore donné.
+   */
+  prenom?: string | null;
+}
+
+/** 385 — un prénom ou un pseudo propre : espaces resserrés, 20 caractères au plus. */
+export const PRENOM_MAX = 20;
+export function nettoiePrenom(v: unknown): string | null {
+  if (typeof v !== 'string') return null;
+  const p = v.replace(/\s+/g, ' ').trim().slice(0, PRENOM_MAX).trim();
+  return p || null;
 }
 
 export type ModeReponse = 'tete' | 'ecrit' | 'oral';

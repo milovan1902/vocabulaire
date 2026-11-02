@@ -89,3 +89,18 @@
 /* CHANTIER 381 — un peu d'air sous le titre « Réglages » et sous celui de chaque sous-réglage. */
 .regprofil { margin-top: 16px; }
 .page-tiroir > .screen-title { margin-bottom: 16px; }
+
+/* CHANTIER 385 — le champ « Prénom ou pseudo ». */
+.prenom-champ {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--rule-strong, var(--rule));
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.05rem;
+}
+.prenom-champ:focus-visible { outline: 2px solid #f2b705; outline-offset: 2px; }

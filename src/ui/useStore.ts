@@ -26,7 +26,7 @@ import type {
   Progress,
   Settings,
 } from '../domain/types';
-import { DEFAULT_SETTINGS, effectiveSettings } from '../domain/types';
+import { DEFAULT_SETTINGS, effectiveSettings, nettoiePrenom } from '../domain/types';
 import {
   journalDepuisListes, listes, noter,
   type DeckJournal,
@@ -220,7 +220,18 @@ export function useStore(): Store {
       setInstalled(inst);
       setActiveState(act);
       setCategories(cats);
-      setCommonState(s);
+      /*
+       * CHANTIER 385 — le prénom tapé pendant la visite vivait seul sur
+       * l'appareil (clé « vocab:prenom »). Il rejoint les réglages, SANS
+       * changer leur date : une fusion avec un autre appareil plus récent
+       * garde ce champ (le serveur n'en a pas), et ne perd rien d'autre.
+       */
+      let reglages = s;
+      if (!nettoiePrenom(s.prenom)) {
+        const p = nettoiePrenom(localStorage.getItem('vocab:prenom'));
+        if (p) { reglages = { ...s, prenom: p }; await repository.saveSettings(reglages); }
+      }
+      setCommonState(reglages);
       setOverridesState(o);
       setCounters(rollAll(c));
       setStreak(st);
@@ -255,6 +266,22 @@ export function useStore(): Store {
     },
     [],
   );
+
+  /* CHANTIER 385 — la visite guidée annonce le prénom qu'on vient de taper. */
+  useEffect(() => {
+    const ecoute = (e: Event) => {
+      const p = nettoiePrenom((e as CustomEvent<string>).detail);
+      if (!p) return;
+      void repository.getSettings().then((s) => {
+        if (s.prenom === p) return;
+        const stamped: Settings = { ...s, prenom: p, updatedAt: Date.now() };
+        setCommonState(stamped);
+        return repository.saveSettings(stamped);
+      });
+    };
+    window.addEventListener('vocab:prenom', ecoute);
+    return () => window.removeEventListener('vocab:prenom', ecoute);
+  }, []);
 
   /* CHANTIER 285 — un paquet en mode contrôle n'est pas borné par les quotas du jour. */
   const settingsFor = useCallback(

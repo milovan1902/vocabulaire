@@ -86,7 +86,7 @@ const MODES: Array<{ k: ModeReponse; l: string }> = [
   { k: 'ecrit', l: 'À l’écrit' },
   { k: 'oral', l: 'À l’oral' },
 ];
-import { CLASSES_PROPOSEES, CLASSE_LABELS, NIVEAU_ADULTE_CLASSE, niveauDit, type NiveauAdulte } from '../domain/types';
+import { CLASSES_PROPOSEES, CLASSE_LABELS, NIVEAU_ADULTE_CLASSE, PRENOM_MAX, nettoiePrenom, niveauDit, type NiveauAdulte } from '../domain/types';
 /* CHANTIER 317 — le mode adulte. */
 import { ChoixAdulte } from './ChoixAdulte';
 import { repository } from '../data/repository';
@@ -195,7 +195,7 @@ function tempsDit(s: Settings): string {
 }
 
 /** Quel tiroir est ouvert. Un seul à la fois, et aucun au départ. */
-type Tiroirs = null | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide' | 'voix';
+type Tiroirs = null | 'prenom' | 'connexion' | 'classe' | 'abonnement' | 'apparence' | 'rappel' | 'charge' | 'revision' | 'aide' | 'voix';
 
 
 export function Account({
@@ -264,6 +264,17 @@ export function Account({
   const [vueProfil, setVueProfil] = useState<'eleve' | 'adulte'>(() => (estAdulte(settings) ? 'adulte' : 'eleve'));
   /* 325 — adulte : vouvoiement. */
   const a = estAdulte(settings);
+  /* 385 — le prénom ou pseudo, et sa saisie en cours dans le tiroir. */
+  const prenom = nettoiePrenom(settings.prenom);
+  const [saisiePrenom, setSaisiePrenom] = useState(prenom ?? '');
+  function enregistrerPrenom() {
+    const p = nettoiePrenom(saisiePrenom);
+    if (p !== prenom) {
+      onSettings({ ...settings, prenom: p });
+      try { if (p) localStorage.setItem('vocab:prenom', p); else localStorage.removeItem('vocab:prenom'); } catch { /* rien */ }
+    }
+    setTiroir(null);
+  }
 
   /* Le tiroir se ferme dès qu'on a choisi : un réglage à choix unique
      n'a rien à confirmer. Les tiroirs à plusieurs réglages, eux, restent
@@ -355,10 +366,11 @@ export function Account({
       <h2 className="screen-title">Réglages</h2>
 
       <button className="regprofil" onClick={() => setFamille('moi')}>
-        <span className="regprofil-rond" aria-hidden="true">{(auth.email ?? '?').slice(0, 1).toUpperCase()}</span>
+        <span className="regprofil-rond" aria-hidden="true">{(prenom ?? auth.email ?? '?').slice(0, 1).toUpperCase()}</span>
         <span className="regprofil-txt">
-          <b>{classeDite}</b>
-          <small>{valeurs.connexion} · {a ? 'Votre compte' : 'Ton compte'}</small>
+          {/* 385 — le prénom en tête quand il est connu ; la classe passe dessous. */}
+          <b>{prenom ?? classeDite}</b>
+          <small>{prenom ? `${classeDite} · ` : ''}{valeurs.connexion}{prenom ? '' : ` · ${a ? 'Votre compte' : 'Ton compte'}`}</small>
         </span>
         <i aria-hidden="true">›</i>
       </button>
@@ -390,6 +402,14 @@ export function Account({
       {!tiroir && famille === 'moi' && (
         <Tiroir titre="Moi" retour="Réglages" onFermer={() => setFamille(null)}>
           <div className="reglist">
+            {/* 385 — prénom ou pseudo. */}
+            <Ligne
+              icone="/btn-classe.png"
+              titre="Prénom ou pseudo"
+              sous={tv(a, 'Comment l’application t’appelle.', 'Comment l’application vous appelle.')}
+              valeur={prenom ?? 'À choisir'}
+              onClick={() => { setSaisiePrenom(prenom ?? ''); setTiroir('prenom'); }}
+            />
             <Ligne
               icone="/btn-classe.png"
               titre="Mon profil"
@@ -495,6 +515,32 @@ export function Account({
               « Aujourd’hui ». Rien n’est mesuré pendant la relecture.
             </p>
           )}
+        </Tiroir>
+      )}
+
+      {/* CHANTIER 385 — prénom ou pseudo. */}
+      {tiroir === 'prenom' && (
+        <Tiroir titre="Prénom ou pseudo" retour={retourTiroir} onFermer={() => setTiroir(null)}>
+          <div className="setting">
+            <input
+              className="prenom-champ"
+              type="text"
+              value={saisiePrenom}
+              maxLength={PRENOM_MAX}
+              onChange={(e) => setSaisiePrenom(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') enregistrerPrenom(); }}
+              placeholder={tv(a, 'Ton prénom ou un pseudo', 'Votre prénom ou un pseudo')}
+              aria-label="Prénom ou pseudo"
+              autoComplete="nickname"
+              enterKeyHint="done"
+            />
+            <p className="hint">
+              {tv(a,
+                'Un prénom ou un pseudo, comme tu préfères. Pas de nom de famille. Il suit ton compte sur tous tes appareils.',
+                'Un prénom ou un pseudo, comme vous préférez. Pas de nom de famille. Il suit votre compte sur tous vos appareils.')}
+            </p>
+          </div>
+          <button className="btn" onClick={enregistrerPrenom}>Enregistrer</button>
         </Tiroir>
       )}
 

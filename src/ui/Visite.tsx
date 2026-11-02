@@ -349,6 +349,8 @@ export function Visite({
     if (!p) return;
     localStorage.setItem(PRENOM, p);
     setPrenom(p);
+    /* 385 — il rejoint aussi les réglages (useStore), qui voyagent avec le compte. */
+    window.dispatchEvent(new CustomEvent('vocab:prenom', { detail: p }));
     suivante();
   }, [prenom, suivante]);
 
