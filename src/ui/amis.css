@@ -66,9 +66,15 @@
   letter-spacing: 0.12em;
   font-variant-numeric: tabular-nums;
 }
-.amis-ajout { display: flex; gap: 10px; }
-.amis-ajout .amis-champ { flex: 1; min-width: 0; letter-spacing: 0.08em; }
-.amis-ajout .btn { flex: none; min-height: 46px; }
+/* 388 — le bouton global .btn est en pleine largeur : en ligne, il écrasait
+   le champ (le « carré » à gauche) et débordait à droite. Une grille fixe
+   les deux places. */
+.amis-ajout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: stretch; }
+.amis-ajout .amis-champ { width: 100%; min-width: 0; margin: 0; letter-spacing: 0.08em; }
+.amis-ajout .btn { width: auto; margin: 0; min-height: 46px; padding-left: 18px; padding-right: 18px; }
+/* 388 — Copier et Partager côte à côte. */
+.amis-code-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; margin-top: 4px; }
+.amis-code-actions .btn { width: 100%; margin: 0; min-height: 46px; }
 .amis-message { margin: -4px 0 0; font-size: 0.9rem; color: var(--bad, #c0392b); }
 .amis-message.bon { color: var(--good); }
 .amis-bloc { display: flex; flex-direction: column; gap: 10px; }

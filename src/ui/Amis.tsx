@@ -9,6 +9,9 @@
  * Avant 15 ans, un parent donne son accord sur le téléphone (son nom, une
  * case cochée) : il est enregistré avec sa date. Un adulte n'a rien à faire.
  *
+ * CHANTIER 388 — un bouton « Copier » à côté de « Partager », et le champ
+ * du code ami ne s'écrase plus contre le bouton « Ajouter ».
+ *
  * Classement : les XP gagnés depuis lundi. Il repart à zéro chaque semaine,
  * pour qu'un nouveau venu puisse y figurer.
  */
@@ -40,6 +43,8 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
   const [message, setMessage] = useState<{ t: string; bon: boolean } | null>(null);
   const [gerer, setGerer] = useState(false);
   const [occupe, setOccupe] = useState(false);
+  /* 388 — « Copié » s'affiche deux secondes sur le bouton. */
+  const [copie, setCopie] = useState(false);
 
   const relire = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
@@ -137,6 +142,16 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
       await navigator.clipboard.writeText(c);
       setMessage({ t: 'Code copié.', bon: true });
     } catch { /* partage annulé */ }
+  }
+
+  async function copier(c: string) {
+    try {
+      await navigator.clipboard.writeText(c);
+      setCopie(true);
+      window.setTimeout(() => setCopie(false), 2000);
+    } catch {
+      setMessage({ t: 'Copie impossible sur cet appareil. Le code est affiché au-dessus.', bon: false });
+    }
   }
 
   if (vue === 'charge') return <p className="hint">Chargement…</p>;
@@ -240,7 +255,10 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
       <div className="amis-code">
         <span className="amis-kicker">{tv(a, 'Mon code ami', 'Mon code ami')}</span>
         <b>{moi?.code}</b>
-        <button className="btn ghost" onClick={() => moi?.code && void partager(moi.code)}>Partager</button>
+        <div className="amis-code-actions">
+          <button className="btn ghost" onClick={() => moi?.code && void copier(moi.code)} aria-live="polite">{copie ? 'Copié ✓' : 'Copier'}</button>
+          <button className="btn ghost" onClick={() => moi?.code && void partager(moi.code)}>Partager</button>
+        </div>
       </div>
 
       <div className="amis-ajout">
