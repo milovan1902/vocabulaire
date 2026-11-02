@@ -69,3 +69,26 @@
 @media (max-width: 330px) {
   .progchips { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* CHANTIER 392 — la pastille des défis reçus sur la tuile « Mes amis » (même dessin que l'onglet). */
+.progtuiles .regtuile.amis { position: relative; }
+.tuile-pastille {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--bad, #c0392b);
+  color: #fff;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--panel, #fff);
+  pointer-events: none;
+}

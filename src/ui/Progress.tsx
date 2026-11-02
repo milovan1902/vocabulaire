@@ -57,6 +57,8 @@ import { xpTotal } from '../engine/xp';
 /* CHANTIER 387 — le bandeau et les tuiles. */
 import './reglages-familles.css';
 import './progres-bandeau.css';
+/* CHANTIER 392 — la pastille des défis reçus, aussi sur la tuile « Mes amis ». */
+import { useNbDefisRecus } from './useDefisRecus';
 /* CHANTIER 386 — les amis. */
 import { Amis } from './Amis';
 import { publieAmis, resumeAmis } from '../data/amis';
@@ -112,6 +114,7 @@ export function Progress({
   const [xpOuvert, setXpOuvert] = useState(ouvrir === 'xp');
   /* 386 — « Mes amis ». */
   const [amisOuvert, setAmisOuvert] = useState(false);
+  const defisRecus = useNbDefisRecus();
 
   useEffect(() => {
     let alive = true;
@@ -205,6 +208,9 @@ export function Progress({
         {/* 387 — deux personnes : « Mes amis » ne partage plus l'icône de « Moi ». */}
         <button className="regtuile amis" onClick={() => setAmisOuvert(true)}>
           <span className="regtuile-icone" aria-hidden="true">{ICONES.amis}</span>
+          {defisRecus > 0 && (
+            <em className="tuile-pastille" aria-label={`${defisRecus} défi${defisRecus > 1 ? 's' : ''} à relever`}>{defisRecus}</em>
+          )}
           <b>Mes amis</b>
           <small>{resumeAmis() || 'Code ami, classement'}</small>
         </button>

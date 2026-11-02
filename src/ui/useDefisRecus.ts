@@ -12,10 +12,25 @@ import './pastille.css';
  * chaque lecture faite par « Mes amis ». Sans compte ou sans amis : 0,
  * et aucun appel réseau.
  */
+/** CHANTIER 392 — le dernier nombre connu, pour qu'un écran ouvert ensuite l'affiche tout de suite. */
+let dernier = 0;
+window.addEventListener(EVT_RECUS, (e) => { dernier = Number((e as CustomEvent<number>).detail) || 0; });
+
+/** CHANTIER 392 — le même nombre, sans appel réseau (la tuile « Mes amis »). */
+export function useNbDefisRecus(): number {
+  const [n, setN] = useState(dernier);
+  useEffect(() => {
+    const ecoute = (e: Event) => setN(Number((e as CustomEvent<number>).detail) || 0);
+    window.addEventListener(EVT_RECUS, ecoute);
+    return () => window.removeEventListener(EVT_RECUS, ecoute);
+  }, []);
+  return n;
+}
+
 export function useDefisRecus(connecte: boolean): number {
   const [n, setN] = useState(0);
   useEffect(() => {
-    if (!connecte) { setN(0); return undefined; }
+    if (!connecte) { setN(0); dernier = 0; return undefined; }
     let vivant = true;
     const lire = () => {
       if (!amisActifs() || document.hidden) return;
