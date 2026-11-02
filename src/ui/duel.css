@@ -1,0 +1,79 @@
+/* CHANTIER 390 — le défi entre amis (Duel.tsx). Couleurs de l'apparence. */
+.duel-plein {
+  position: fixed; inset: 0; z-index: 300; overflow-y: auto;
+  background: var(--paper, var(--bg, #f3eee2)); color: var(--ink);
+  padding: max(16px, env(safe-area-inset-top)) 18px max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.duel { position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 100%; max-width: 520px; margin: 0 auto; }
+.duel-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.duel-compte { font-size: 13px; color: var(--ink-soft); min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+.duel-titre { margin: 4px 0 0; text-align: center; font-family: var(--titre, var(--serif)); font-weight: 400; font-size: 2.2rem; line-height: 1.05; text-wrap: balance; }
+.duel-titre.grand { margin-top: 18px; font-size: 2.4rem; }
+.duel-vs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 18px 10px; background: var(--panel); border: 1px solid var(--rule); border-radius: 22px; }
+.duel-joueur { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.duel-joueur b { font-size: 15px; overflow-wrap: anywhere; text-align: center; }
+.duel-joueur small { font-size: 12px; color: var(--ink-soft); min-height: 1em; }
+.duel-rond { width: 64px; height: 64px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 26px; font-weight: 700; color: #fff; }
+.duel-rond.moi { background: var(--chalk); }
+.duel-rond.lui { background: var(--good); }
+.duel-tampon { width: 52px; height: 52px; border-radius: 999px; border: 3px solid var(--bad); color: var(--bad); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; transform: rotate(-10deg); }
+.duel-abattre { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px; border: 2px dashed var(--bad); border-radius: 18px; }
+.duel-abattre small { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bad); }
+.duel-abattre b { font-size: 2rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.duel-abattre b span { font-size: 1.15rem; font-weight: 400; color: var(--ink-soft); }
+.duel-bonus { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, #d9a520 18%, transparent); }
+.duel-bonus > b { font-size: 22px; color: color-mix(in oklch, #d9a520 70%, var(--ink)); }
+.duel-bonus span { font-size: 13.5px; line-height: 1.4; }
+.duel-regles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center; font-size: 12.5px; line-height: 1.35; color: var(--ink-soft); }
+.duel-ressort { flex: 1; min-height: 8px; }
+.duel .btn { margin: 0; min-height: 54px; }
+.duel-lien { align-self: center; min-height: 44px; padding: 8px 12px; border: 0; background: none; color: var(--ink-soft); font: inherit; font-size: 13.5px; cursor: pointer; }
+
+.duel-pistes { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--rule); border-radius: 18px; }
+.duel-piste { display: grid; grid-template-columns: minmax(0, 64px) minmax(0, 1fr) 54px; align-items: center; gap: 8px; font-size: 13px; }
+.duel-piste > :first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-piste.lui { color: var(--ink-soft); }
+.duel-piste.lui .duel-barre i.ok, .duel-piste.lui .duel-barre i.ko { opacity: 0.6; }
+.duel-temps { text-align: right; font-variant-numeric: tabular-nums; }
+.duel-barre { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.duel-barre i { height: 10px; border-radius: 5px; background: var(--rule); }
+.duel-barre i.en-cours { background: var(--chalk); box-shadow: 0 0 0 2px color-mix(in srgb, var(--chalk) 30%, transparent); }
+.duel-barre i.ok { background: var(--good); }
+.duel-barre i.ko { background: var(--bad); }
+.duel-ecart { font-size: 12px; text-align: center; color: var(--ink-soft); }
+.duel-ecart.bon { color: var(--good); }
+.duel-mot { flex: 1; min-height: 150px; }
+
+.duel-podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-top: 8px; }
+.duel-marche { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px; }
+.duel-marche em { font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; color: color-mix(in oklch, #d9a520 70%, var(--ink)); }
+.duel-marche small { font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.duel-marche small b { color: var(--ink); }
+.duel-marche > span { width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 12px 12px 0 0; font-weight: 700; }
+.duel-marche.deux .duel-rond { width: 52px; height: 52px; font-size: 22px; }
+.duel-marche.deux > span { height: 80px; background: var(--rule); color: var(--ink-soft); font-size: 30px; }
+.duel-marche.un .duel-rond { width: 60px; height: 60px; border: 3px solid #d9a520; }
+.duel-marche.un > span { height: 116px; background: #d9a520; color: #fff; font-size: 36px; }
+.duel-podium.nul .duel-marche.deux > span { height: 116px; background: #d9a520; color: #fff; font-size: 36px; }
+.duel-gain { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; background: var(--panel); border: 2px solid #d9a520; border-radius: 20px; }
+.duel-gain b { font-size: 2rem; color: color-mix(in oklch, #d9a520 60%, var(--ink)); font-variant-numeric: tabular-nums; }
+.duel-gain small { font-size: 12.5px; line-height: 1.35; color: var(--ink-soft); max-width: 160px; }
+
+/* Les défis dans « Mes amis ». */
+.amis-defi { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--rule); border-radius: 14px; background: var(--panel); color: var(--ink); font: inherit; text-align: left; width: 100%; }
+.amis-defi.recu { border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+.amis-defi > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.amis-defi small { font-size: 0.8rem; color: var(--ink-soft); }
+.amis-defi .btn { flex: none; width: auto; margin: 0; min-height: 40px; padding: 0 14px; }
+.amis-defi em { flex: none; font-style: normal; font-size: 0.85rem; font-weight: 650; }
+.amis-defi em.gagne { color: var(--good); }
+.amis-defi em.perdu { color: var(--ink-soft); }
+button.amis-defi { cursor: pointer; }
+.amis-defier { flex: none; min-height: 36px; padding: 0 12px; border: 1px solid var(--chalk); border-radius: 10px; background: none; color: var(--chalk); font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.amis-defier:disabled { opacity: 0.45; }
+
+@media (max-width: 340px) {
+  .duel-rond { width: 52px; height: 52px; font-size: 22px; }
+  .duel-marche { width: 104px; }
+}

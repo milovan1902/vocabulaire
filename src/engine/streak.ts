@@ -33,6 +33,11 @@ export interface Streak {
    * défi fait ce jour-là. Fusion entre appareils : le plus grand des deux.
    */
   defis?: Record<string, number>;
+  /**
+   * CHANTIER 390 — les XP des défis entre amis : AAAA-MM-JJ → XP du jour.
+   * Calculés par le serveur, recopiés ici. Fusion : le plus grand des deux.
+   */
+  duels?: Record<string, number>;
   updatedAt: number;
 }
 
@@ -100,8 +105,20 @@ export function record(s: Streak, today = todayKey()): Streak {
     ...(s.counts ? { counts: s.counts } : {}),
     /* 357 — et les défis éclair des jours passés. */
     ...(s.defis ? { defis: s.defis } : {}),
+    /* 390 — et les défis entre amis. */
+    ...(s.duels ? { duels: s.duels } : {}),
     updatedAt: Date.now(),
   };
+}
+
+/** CHANTIER 390 — les XP de défis entre amis relus sur le serveur. Même objet si rien ne change. */
+export function noterDuels(s: Streak, parJour: Record<string, number>): Streak {
+  let change = false;
+  const duels = { ...(s.duels ?? {}) };
+  for (const [d, xp] of Object.entries(parJour)) {
+    if (xp > (duels[d] ?? 0)) { duels[d] = xp; change = true; }
+  }
+  return change ? { ...s, duels, updatedAt: Date.now() } : s;
 }
 
 /** CHANTIER 357 — le résultat du défi éclair du jour. */
@@ -210,6 +227,15 @@ export function mergeStreak(local: Streak, remote: Streak | null): Streak {
     }
   }
 
+  /* CHANTIER 390 — les défis entre amis : le plus grand des deux, jour par jour. */
+  let duels: Record<string, number> | undefined;
+  if (local.duels || remote.duels) {
+    duels = {};
+    for (const src of [local.duels ?? {}, remote.duels ?? {}]) {
+      for (const [k, v] of Object.entries(src)) duels[k] = Math.max(duels[k] ?? 0, v);
+    }
+  }
+
   return {
     lastDay: last,
     current,
@@ -217,6 +243,7 @@ export function mergeStreak(local: Streak, remote: Streak | null): Streak {
     days,
     ...(counts ? { counts } : {}),
     ...(defis ? { defis } : {}),
+    ...(duels ? { duels } : {}),
     updatedAt: Math.max(local.updatedAt, remote.updatedAt),
   };
 }

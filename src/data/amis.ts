@@ -56,7 +56,7 @@ export function xpSemaine(streak: Streak, today = todayKey()): number {
   const lundi = lundiDe(today);
   let xp = 0;
   for (const [d, j] of Object.entries(bilan(streak, today).jours)) {
-    if (d >= lundi && d <= today) xp += j.base + j.bonus + (j.defi ?? 0);
+    if (d >= lundi && d <= today) xp += j.base + j.bonus + (j.defi ?? 0) + (j.duel ?? 0); // 390 — défis entre amis
   }
   return xp;
 }

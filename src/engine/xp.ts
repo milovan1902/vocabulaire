@@ -102,6 +102,8 @@ export interface JourCalc {
   cartes: number;
   /** CHANTIER 358 — les XP du défi éclair de ce jour-là (absent = aucun). */
   defi?: number;
+  /** CHANTIER 390 — les XP des défis entre amis de ce jour-là (absent = aucun). */
+  duel?: number;
 }
 
 export interface Bilan {
@@ -189,6 +191,12 @@ export function bilan(s: Streak, today = todayKey()): Bilan {
     xp += g;
     if (jours[d]) jours[d] = { ...jours[d], defi: g };
   }
+  /* 390 — les défis entre amis (XP calculés par le serveur). */
+  for (const [d, g] of Object.entries(s.duels ?? {})) {
+    if (d > today || !(g > 0)) continue;
+    xp += g;
+    if (jours[d]) jours[d] = { ...jours[d], duel: g };
+  }
   return { jours, xp, gels, semaines };
 }
 
@@ -266,12 +274,12 @@ export function gainDuJour(s: Streak, today = todayKey()): { valide: boolean; xp
   const valide = jourValide(s, today) && s.counts?.[today] !== undefined;
   if (valide) {
     const j = bilan(s, today).jours[today];
-    return { valide, xp: (j?.base ?? 0) + (j?.bonus ?? 0) + (j?.defi ?? 0), gel: !!j?.gelGagne };
+    return { valide, xp: (j?.base ?? 0) + (j?.bonus ?? 0) + (j?.defi ?? 0) + (j?.duel ?? 0), gel: !!j?.gelGagne };
   }
   /* Pas encore validée : ce qu'elle rapporterait. */
   const simule: Streak = { ...s, days: [...new Set([...s.days, today])].sort(), counts: { ...(s.counts ?? {}), [today]: CARTES_PAR_JOUR } };
   const j = bilan(simule, today).jours[today];
-  return { valide: false, xp: (j?.base ?? 0) + (j?.bonus ?? 0) + (j?.defi ?? 0), gel: !!j?.gelGagne };
+  return { valide: false, xp: (j?.base ?? 0) + (j?.bonus ?? 0) + (j?.defi ?? 0) + (j?.duel ?? 0), gel: !!j?.gelGagne };
 }
 
 /**

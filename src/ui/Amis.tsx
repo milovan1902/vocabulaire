@@ -12,12 +12,16 @@
  * CHANTIER 388 — un bouton « Copier » à côté de « Partager », et le champ
  * du code ami ne s'écrase plus contre le bouton « Ajouter ».
  *
+ * CHANTIER 390 — les défis entre amis (maquette 390) : « Défier » sur la
+ * ligne d'un ami, les défis du jour en tête de liste, le jeu en plein
+ * écran (Duel.tsx). Règles et XP : supabase/390-duels.sql.
+ *
  * Classement : les XP gagnés depuis lundi. Il repart à zéro chaque semaine,
  * pour qu'un nouveau venu puisse y figurer.
  */
 import { useCallback, useEffect, useState } from 'react';
 import type { Settings } from '../domain/types';
-import { PRENOM_MAX, nettoiePrenom } from '../domain/types';
+import { PRENOM_MAX, classeRank, nettoiePrenom } from '../domain/types';
 import type { Streak } from '../engine/streak';
 import { supabase } from '../data/supabase';
 import {
@@ -27,6 +31,20 @@ import {
 import { demande } from './Dialogue';
 import { estAdulte, tv } from './ton';
 import './amis.css';
+/* CHANTIER 390 — les défis entre amis. */
+import { todayKey } from '../engine/session';
+import {
+  DUELS_PAR_JOUR, MOTS_DUEL, SECONDES_DUEL, issue, jouerDuel, lancerDuel, listeDuels, tempsDit, tirerMotsDuel,
+  type Coup, type Duel, type MotDuel,
+} from '../data/duels';
+import { DuelEnvoye, DuelJeu, DuelRecu, DuelResultat, Plein } from './Duel';
+
+type Ecran = null
+  | { t: 'recu'; d: Duel }
+  | { t: 'relever'; d: Duel }
+  | { t: 'lancer'; ami: { id: string; prenom: string }; mots: MotDuel[] }
+  | { t: 'envoye'; prenom: string; coups: Coup[] }
+  | { t: 'resultat'; d: Duel };
 
 type Vue = 'charge' | 'sanscompte' | 'panne' | 'intro' | 'age' | 'parent' | 'actif';
 
@@ -45,6 +63,10 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
   const [occupe, setOccupe] = useState(false);
   /* 388 — « Copié » s'affiche deux secondes sur le bouton. */
   const [copie, setCopie] = useState(false);
+  /* 390 — les défis. */
+  const [duels, setDuels] = useState<Duel[]>([]);
+  const [ecran, setEcran] = useState<Ecran>(null);
+  const maClasse = classeRank(settings.classe);
 
   const relire = useCallback(async () => {
     const { data } = await supabase.auth.getSession();
@@ -53,6 +75,8 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
       await publieAmis(streak, nettoiePrenom(settings.prenom), acquis);
       const l = await listeAmis();
       setListe(l);
+      /* 390 — sans le SQL 390, la liste des défis échoue : les amis marchent quand même. */
+      try { setDuels(await listeDuels()); } catch { /* rien */ }
       setVue(l.find((x) => x.relation === 'moi')?.actif ? 'actif' : (v) => (v === 'charge' || v === 'actif' ? 'intro' : v));
     } catch {
       setVue('panne');
@@ -154,6 +178,74 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
     }
   }
 
+  /* ---------------- 390 · les défis ---------------- */
+  const auj = todayKey();
+  const envoyes = duels.filter((d) => d.deMoi && d.jour === auj).length;
+  const peutDefier = envoyes < DUELS_PAR_JOUR;
+  const payesRestants = DUELS_PAR_JOUR - duels.filter((d) => !d.deMoi && d.joue && d.jour === auj && d.payeA).length;
+  const completer = (c: Coup[]) => [...c, ...Array.from({ length: Math.max(0, MOTS_DUEL - c.length) }, () => ({ ok: false, ms: SECONDES_DUEL * 1000 }))];
+
+  async function defier(x: { userId: string; prenom: string }) {
+    if (!peutDefier) return;
+    setOccupe(true);
+    setMessage(null);
+    try {
+      const poses = duels.filter((d) => d.deMoi && d.jour === auj).flatMap((d) => d.mots);
+      const mots = await tirerMotsDuel(poses);
+      if (!mots.length) {
+        setMessage({ t: tv(a, 'Il te faut au moins 5 mots déjà révisés pour lancer un défi.', 'Il vous faut au moins 5 mots déjà révisés pour lancer un défi.'), bon: false });
+        return;
+      }
+      setEcran({ t: 'lancer', ami: { id: x.userId, prenom: x.prenom }, mots });
+    } finally {
+      setOccupe(false);
+    }
+  }
+
+  async function finLancer(ami: { id: string; prenom: string }, mots: MotDuel[], coups: Coup[]) {
+    try {
+      const r = await lancerDuel(ami.id, mots, coups, maClasse);
+      if (r !== 'ok') {
+        setEcran(null);
+        setMessage({ t: r === 'trop' ? '3 défis déjà envoyés aujourd’hui. Nouveaux défis demain.' : 'Ce défi n’a pas pu partir.', bon: false });
+        return;
+      }
+      setEcran({ t: 'envoye', prenom: ami.prenom, coups });
+      try { setDuels(await listeDuels()); } catch { /* rien */ }
+    } catch {
+      setEcran(null);
+      setMessage({ t: 'Pas de réseau : le défi n’est pas parti.', bon: false });
+    }
+  }
+
+  async function finRelever(d: Duel, coups: Coup[]) {
+    try {
+      const r = await jouerDuel(d.id, completer(coups), maClasse);
+      const l = await listeDuels();
+      setDuels(l);
+      const maj = l.find((x) => x.id === d.id);
+      if (maj?.joue) { setEcran({ t: 'resultat', d: maj }); return; }
+      setEcran(null);
+      setMessage({ t: r === 'expire' ? 'Ce défi a expiré à minuit.' : 'Ce défi n’a pas pu être enregistré.', bon: false });
+    } catch {
+      setEcran(null);
+      setMessage({ t: 'Pas de réseau : le défi n’est pas enregistré.', bon: false });
+    }
+  }
+
+  async function quitterJeu(e: Ecran, coups: Coup[]) {
+    if (!e || (e.t !== 'lancer' && e.t !== 'relever')) return;
+    if (!coups.length) { setEcran(e.t === 'relever' ? { t: 'recu', d: e.d } : null); return; }
+    const oui = await demande({
+      titre: 'Abandonner le défi ?',
+      texte: e.t === 'lancer' ? 'Il ne sera pas envoyé.' : 'Les mots restants comptent ratés, et le défi est terminé.',
+      agir: 'Abandonner', garder: 'Continuer le défi', ton: 'prudent',
+    });
+    if (!oui) return;
+    if (e.t === 'lancer') setEcran(null);
+    else void finRelever(e.d, coups);
+  }
+
   if (vue === 'charge') return <p className="hint">Chargement…</p>;
 
   if (vue === 'sanscompte') {
@@ -249,9 +341,40 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
     .filter((x) => x.relation === 'moi' || x.relation === 'ami')
     .sort((x, y) => y.xpSemaine - x.xpSemaine || y.mots - x.mots);
   const seul = classement.length <= 1;
+  const moiNom = moi?.prenom ?? nettoiePrenom(settings.prenom) ?? 'Moi';
+  const aRelever = duels.filter((d) => !d.deMoi && !d.joue && d.jour === auj);
+  const enAttente = duels.filter((d) => d.deMoi && !d.joue && d.jour === auj);
+  const finis = duels.filter((d) => d.joue && d.jour === auj);
+  const estAmi = (id: string) => liste.some((x) => x.userId === id && x.relation === 'ami');
+
+  const plein = ecran && (
+    <Plein>
+      {ecran.t === 'recu' && (
+        <DuelRecu duel={ecran.d} moi={moiNom} maClasse={maClasse} adulte={a} restants={payesRestants}
+          onJouer={() => setEcran({ t: 'relever', d: ecran.d })} onPlusTard={() => setEcran(null)} />
+      )}
+      {ecran.t === 'relever' && (
+        <DuelJeu key={ecran.d.id} mots={ecran.d.mots} moi={moiNom} adulte={a}
+          adversaire={{ prenom: ecran.d.prenom, coups: ecran.d.coupsDe }}
+          onFin={(c) => void finRelever(ecran.d, c)} onQuitter={(c) => void quitterJeu(ecran, c)} />
+      )}
+      {ecran.t === 'lancer' && (
+        <DuelJeu key={ecran.mots.map((m) => m.en).join('|')} mots={ecran.mots} moi={moiNom} adulte={a} adversaire={null}
+          onFin={(c) => void finLancer(ecran.ami, ecran.mots, c)} onQuitter={(c) => void quitterJeu(ecran, c)} />
+      )}
+      {ecran.t === 'envoye' && <DuelEnvoye prenom={ecran.prenom} coups={ecran.coups} adulte={a} onRetour={() => setEcran(null)} />}
+      {ecran.t === 'resultat' && (
+        <DuelResultat duel={ecran.d} moi={moiNom} adulte={a}
+          peutRevanche={peutDefier && estAmi(ecran.d.autre)}
+          onRevanche={() => { const d = ecran.d; setEcran(null); void defier({ userId: d.autre, prenom: d.prenom }); }}
+          onRetour={() => setEcran(null)} />
+      )}
+    </Plein>
+  );
 
   return (
     <div className="amis">
+      {plein}
       <div className="amis-code">
         <span className="amis-kicker">{tv(a, 'Mon code ami', 'Mon code ami')}</span>
         <b>{moi?.code}</b>
@@ -272,6 +395,36 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
         <button className="btn" disabled={!code.trim() || occupe} onClick={() => void ajouter()}>Ajouter</button>
       </div>
       {message && <p className={`amis-message${message.bon ? ' bon' : ''}`} aria-live="polite">{message.t}</p>}
+
+      {/* CHANTIER 390 — les défis du jour. */}
+      {(aRelever.length > 0 || enAttente.length > 0 || finis.length > 0) && (
+        <section className="amis-bloc">
+          <div className="amis-bloc-tete">
+            <p className="amis-kicker">Défis du jour</p>
+            <small className="hint" style={{ margin: 0 }}>{envoyes}/{DUELS_PAR_JOUR} envoyés</small>
+          </div>
+          {aRelever.map((d) => (
+            <div key={d.id} className="amis-defi recu">
+              <span><b>{d.prenom} {tv(a, 'te', 'vous')} défie</b><small>{d.scoreDe}/{MOTS_DUEL} en {tempsDit(d.tempsDe)} · expire à minuit</small></span>
+              <button className="btn" onClick={() => setEcran({ t: 'recu', d })}>Relever</button>
+            </div>
+          ))}
+          {enAttente.map((d) => (
+            <div key={d.id} className="amis-defi">
+              <span><b>Défi envoyé à {d.prenom}</b><small>{d.scoreDe}/{MOTS_DUEL} en {tempsDit(d.tempsDe)} · en attente</small></span>
+            </div>
+          ))}
+          {finis.map((d) => {
+            const r = issue(d);
+            return (
+              <button key={d.id} className="amis-defi" onClick={() => setEcran({ t: 'resultat', d })}>
+                <span><b>Contre {d.prenom}</b><small>{d.deMoi ? 'Défi lancé' : 'Défi relevé'}</small></span>
+                <em className={r ?? ''}>{r === 'gagne' ? 'Gagné' : r === 'nul' ? 'Nul' : 'Perdu'} · +{d.xpMoi} XP</em>
+              </button>
+            );
+          })}
+        </section>
+      )}
 
       {recues.length > 0 && (
         <section className="amis-bloc">
@@ -303,6 +456,11 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
                   {x.serie ? `${x.serie} j de série` : 'pas de série'} · {nb(x.mots)} mots acquis · {x.defi === null ? 'défi à faire' : `défi ${x.defi}/5`}
                 </small>
               </span>
+              {/* 390 — défier un ami : 3 défis envoyés par jour. */}
+              {!gerer && x.relation === 'ami' && (
+                <button className="amis-defier" disabled={!peutDefier || occupe} onClick={() => void defier(x)}
+                  aria-label={`Défier ${x.prenom}`}>Défier</button>
+              )}
               {gerer && x.relation !== 'moi'
                 ? <button className="amis-retirer" disabled={occupe} onClick={() => void retirer(x)}>Retirer</button>
                 : <span className="amis-xp"><b>{nb(x.xpSemaine)}</b><small>XP</small></span>}
@@ -317,6 +475,13 @@ export function Amis({ settings, streak, acquis }: { settings: Settings; streak:
           </p>
         )}
         <p className="hint">XP gagnés depuis lundi. Le classement repart à zéro chaque semaine.</p>
+        {!seul && (
+          <p className="hint">
+            {tv(a,
+              'Défier : 5 mots que tu connais, 20 s par mot. Gagner rapporte 20 XP (40 contre une classe au-dessus), un nul 10, perdre 5. 3 défis par jour. Tes révisions ne changent pas.',
+              'Défier : 5 mots que vous connaissez, 20 s par mot. Gagner rapporte 20 XP (40 contre une classe au-dessus), un nul 10, perdre 5. 3 défis par jour. Vos révisions ne changent pas.')}
+          </p>
+        )}
       </section>
 
       {envoyees.length > 0 && (

@@ -39,7 +39,9 @@ import { avecControle, controleActif, plafonner } from '../engine/controle';
 /* CHANTIER 367 — les plafonds valent pour la journée entière. */
 import { CARTES_PAR_PASSAGE, avecQuotaJour, consommeJour } from '../engine/quota';
 import type { Streak } from '../engine/streak';
-import { EMPTY_STREAK, compterCarte, noterDefi, record as recordDay } from '../engine/streak';
+import { EMPTY_STREAK, compterCarte, noterDefi, noterDuels, record as recordDay } from '../engine/streak';
+/* CHANTIER 390 — les XP des défis entre amis arrivent par un événement. */
+import { EVT_DUELS } from '../data/duels';
 import { imageFor } from './deckImages';
 import { mesure } from '../data/mesures';
 
@@ -281,6 +283,21 @@ export function useStore(): Store {
     };
     window.addEventListener('vocab:prenom', ecoute);
     return () => window.removeEventListener('vocab:prenom', ecoute);
+  }, []);
+
+  /* CHANTIER 390 — Mes amis relit les défis sur le serveur et annonce mes XP par jour. */
+  useEffect(() => {
+    const ecoute = (e: Event) => {
+      const parJour = (e as CustomEvent<Record<string, number>>).detail;
+      if (!parJour || typeof parJour !== 'object') return;
+      setStreak((prev) => {
+        const suivant = noterDuels(prev, parJour);
+        if (suivant !== prev) void repository.saveStreak(suivant);
+        return suivant;
+      });
+    };
+    window.addEventListener(EVT_DUELS, ecoute);
+    return () => window.removeEventListener(EVT_DUELS, ecoute);
   }, []);
 
   /* CHANTIER 285 — un paquet en mode contrôle n'est pas borné par les quotas du jour. */
