@@ -53,8 +53,10 @@ async function preparer(store: Store): Promise<MotDefi[]> {
       for (const card of d.cards) {
         const p = d.progress[card.id];
         if (!card.fr || !estMot(card.en) || !p) continue;
+        /* `estAcquis` est un garde de type : on lit `reps` avant lui. */
+        const revise = p.reps >= 1;
         if (estAcquis(p, fin)) tous.push({ deckId: id, card, progress: p });
-        else if (p.reps >= 1) secours.push({ deckId: id, card, progress: p });
+        else if (revise) secours.push({ deckId: id, card, progress: p });
       }
     } catch { /* paquet illisible : on passe */ }
   }
