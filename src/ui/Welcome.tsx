@@ -165,6 +165,11 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
 /**
  * Fond dessiné plutôt qu'image : quelques kilo-octets, net à toutes les
  * tailles, et le contraste du texte reste sous contrôle.
+ *
+ * CHANTIER 397 — le fond suit l'apparence. Le dégradé crème écrit en dur
+ * passait sous un texte clair (apparences sombres) : le haut de l'accueil
+ * devenait illisible. Plus d'aplat : seuls les cercles et les cartes, au
+ * trait de la couleur du texte (currentColor), restent en filigrane.
  */
 function Backdrop() {
   return (
@@ -175,10 +180,6 @@ function Backdrop() {
       viewBox="0 0 400 560"
     >
       <defs>
-        <linearGradient id="wsky" x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0%" stopColor="#f4efe1" />
-          <stop offset="100%" stopColor="#fbfaf6" />
-        </linearGradient>
         <filter id="wgrain">
           <feTurbulence
             type="fractalNoise"
@@ -189,9 +190,8 @@ function Backdrop() {
         </filter>
       </defs>
 
-      <rect width="400" height="560" fill="url(#wsky)" />
 
-      <g fill="none" stroke="#16233f" strokeOpacity="0.07" strokeWidth="1">
+      <g fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="1">
         <circle cx="330" cy="70" r="150" />
         <circle cx="330" cy="70" r="110" />
         <circle cx="330" cy="70" r="70" />
@@ -215,7 +215,7 @@ function Backdrop() {
           width="52"
           height="70"
           rx="6"
-          fill="#16233f"
+          fill="currentColor"
           fillOpacity="0.05"
           transform="rotate(6 334 69)"
         />
@@ -229,7 +229,7 @@ function Backdrop() {
 /** Marque : la même géométrie que les dos de cartes, pour l'unité visuelle. */
 function Mark() {
   return (
-    <svg className="welcome-mark" viewBox="0 0 620 874" aria-hidden="true">
+    <svg className="welcome-mark" viewBox="0 0 62 84" aria-hidden="true">
       <rect
         x="1"
         y="1"
