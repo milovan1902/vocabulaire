@@ -158,6 +158,21 @@ export function Welcome({ auth, onSkip }: { auth: Auth; onSkip: () => void }) {
         Aucune publicité, aucun traceur. La connexion ne sert qu’à retrouver
         ta progression.
       </p>
+
+      {/*
+        * CHANTIER 398 — liens légaux visibles dès l'accueil, sans être
+        * connecté. Google les exige sur la page d'accueil pour valider
+        * l'écran de connexion (politique de confidentialité).
+        */}
+      <p className="welcome-legal welcome-liens">
+        <a href="/confidentialite.html" style={{ color: 'inherit', textDecoration: 'underline' }}>
+          Politique de confidentialité
+        </a>
+        {' · '}
+        <a href="/mentions-legales.html" style={{ color: 'inherit', textDecoration: 'underline' }}>
+          Mentions légales
+        </a>
+      </p>
     </div>
   );
 }
