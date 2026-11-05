@@ -56,7 +56,12 @@ html[data-style='station'] .topbar h1, html[data-style='station'] .topbar button
 html[data-style='station'] body:has(.studystage, .studybg) .topbar h1,
 html[data-style='station'] body:has(.studystage, .studybg) .topbar button { color: #fffdf5; }
 html[data-style='rugby'] .topbar h1, html[data-style='rugby'] .topbar button { color: #fffdf5; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); }
-html[data-style='tableau'] .topbar h1, html[data-style='tableau'] .topbar button { color: #3b2a1a; }
+/* CHANTIER 399 — Tableau : le brun n'est lisible que sur la révision (mur crème derrière).
+   Ailleurs (accueil d'un paquet, bibliothèque, recherche…), le fond est l'ardoise sombre
+   (verte ou noire) : titre et flèche en craie claire. */
+html[data-style='tableau'] .topbar h1, html[data-style='tableau'] .topbar button { color: var(--ink); }
+html[data-style='tableau'] body:has(.studybg) .topbar h1,
+html[data-style='tableau'] body:has(.studybg) .topbar button { color: #3b2a1a; }
 
 /* 4. Le compteur et la croix. */
 html[data-style='voyage'] .studytop .pos,
