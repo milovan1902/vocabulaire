@@ -1,5 +1,5 @@
 /* CHANTIER 364 — Paquets : l'accueil à portes et ses sous-écrans (maquette 364, A1 · A2 · A4). Couleurs de l'apparence. */
-.lib-charge { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 6px; font-size: 14px; color: var(--ink-soft); }
+.lib-charge { display: flex; align-items: baseline; gap: 8px; margin: 8px 0 14px; font-size: 14px; color: var(--ink-soft); }
 .lib-charge b { font-size: 24px; font-weight: 600; color: var(--ink); }
 .lib-info {
   margin-left: auto; align-self: center; flex: none; width: 30px; height: 30px; border-radius: 999px;
@@ -90,3 +90,14 @@
    dont la grille à 2 colonnes décalait l'icône et le texte vers le centre. On rétablit la grille de la carte. */
 .lib-carte.lib-porte { grid-template-columns: 50px minmax(0, 1fr) auto; row-gap: 0; align-items: center; margin: 0; padding: 18px; }
 .lib-carte.lib-porte > span:not(.lib-x), .lib-carte.lib-porte > b:not(.lib-x) { grid-column: auto; grid-row: auto; }
+
+/* CHANTIER 399 — « Mes paquets en jeu » : on aère. Les lignes se touchaient
+   (titre, rang « En jeu », paquet, bouton) ; plus d'espace entre chaque, et le
+   bouton « Réviser » ne colle plus au dernier paquet. Réservé à cet écran grâce
+   au compteur `.lib-charge` qui ouvre la liste. */
+.lib-charge ~ .rayon-label { margin: 18px 0 14px; padding-bottom: 10px; }
+.lib-charge ~ .worklist { gap: 22px; margin-top: 4px; }
+.lib-charge ~ .worklist .workrow { gap: 14px; padding: 4px 0; }
+.lib-charge ~ .worklist .workrow-txt { gap: 8px; }
+.lib-charge ~ .worklist .workrow-txt small { line-height: 1.5; }
+.lib-charge ~ .worklist + .btn { margin-top: 28px; }

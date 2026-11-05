@@ -289,7 +289,9 @@ export function Visite({
   /** 297 — le bouton « Réviser » touché, rejoué après la bulle « Comment réviser ». */
   const retenu = useRef<HTMLElement | null>(null);
   const debut = useRef(Date.now());
-  const defile = useRef(false);
+  /* 399 — nombre de défilements déjà faits pour cette étape, et l'instant du dernier. */
+  const defile = useRef(0);
+  const dernierDefil = useRef(0);
   const vuEtude = useRef(false);
 
   /* 295 — l'apparence Clair le temps de la visite. */
@@ -354,7 +356,8 @@ export function Visite({
 
   useEffect(() => {
     debut.current = Date.now();
-    defile.current = false;
+    defile.current = 0;
+    dernierDefil.current = 0;
     vuEtude.current = false;
     elements.current = [];
     setCadre(null);
@@ -406,11 +409,25 @@ export function Visite({
         const b = boite(choisis);
         setPerdu(false);
         setCadre((p) => (p && pareil(p, b) ? p : b));
-        if (!defile.current) {
-          defile.current = true;
+        /*
+         * CHANTIER 399 — le défilement vers la cible ne se joue plus « une seule
+         * fois » : cette fois-là était consommée par la première cible trouvée
+         * (la liste des paquets), et le vrai bouton « Réviser », apparu ensuite,
+         * restait sous la barre d'onglets. On regarde donc à chaque tour si la
+         * cible est dans la zone visible (au-dessus de la barre d'onglets) et on
+         * défile au besoin, quelques fois au plus.
+         */
+        if (!c.tous && !choisis[0].closest('.tabbar')) {
           const h = window.innerHeight;
-          if (!c.tous && (b.top < 70 || b.top + b.height > h - 110)) {
-            window.scrollBy({ top: b.top + b.height / 2 - h / 2, behavior: 'smooth' });
+          const tab = document.querySelector<HTMLElement>('.tabbar');
+          const rt = tab ? tab.getBoundingClientRect() : null;
+          const bas = rt && rt.height > 0 ? Math.min(h, rt.top) : h;
+          const limite = bas - 24;
+          const maintenant = Date.now();
+          if ((b.top < 70 || b.top + b.height > limite) && defile.current < 6 && maintenant - dernierDefil.current > 600) {
+            defile.current += 1;
+            dernierDefil.current = maintenant;
+            window.scrollBy({ top: b.top + b.height / 2 - limite / 2, behavior: 'smooth' });
           }
         }
       }
@@ -875,7 +892,7 @@ function ContenuFiche({ f, a }: { f: Fiche; a: boolean }) {
               ))}
             </svg>
           </div>
-          <p>L’écart s’allonge à chaque réussite et se referme au moindre oubli. L’application le calcule carte par carte (algorithme FSRS). {a ? 'Vous, répondez honnêtement.' : 'Toi, tu réponds honnêtement.'}</p>
+          <p>L’écart s’allonge à chaque réussite et se referme au moindre oubli. L’application le calcule carte par carte (algorithme FSRS). {a ? 'Vous, répondez honnêtement.' : 'Toi, tu réponds honnêtement.'} {a ? 'Vous pouvez aussi répondre à l’écrit, si vous le souhaitez.' : 'Tu peux aussi répondre à l’écrit, si tu le souhaites.'}</p>
         </>
       );
     case 'progres':
