@@ -793,7 +793,17 @@ export default function App() {
               void store.addDeck(id);
             }}
             onRemove={(id) => void store.removeDeck(id)}
-            onSetActive={(id, on) => void store.setActive(id, on)}
+            onSetActive={(id, on) => {
+              /* 401 — l'interrupteur du catalogue : un paquet pas encore à soi est obtenu d'abord, puis mis en jeu. */
+              void (async () => {
+                if (on && !store.installed.includes(id)) {
+                  const d = store.decks.find((x) => x.id === id);
+                  if (!d || reserveAbonnes(d) || d.priceCents) return;
+                  await store.addDeck(id);
+                }
+                await store.setActive(id, on);
+              })();
+            }}
           />
         )}
 
@@ -901,9 +911,18 @@ export default function App() {
               startSession(loaded, ignoreGoal);
             }}
             onAddCards={() => setView({ name: 'editor', mode: 'append' })}
-            /* 391 — en jeu ou en pause, depuis Détails et paramètres (paquets de la collection). */
+            /* 391/401 — en jeu ou en pause, depuis Détails et paramètres (aussi pour un paquet offert pas encore allumé). */
             enJeu={store.active.includes(loaded.deck.id)}
-            onSetActive={store.installed.includes(loaded.deck.id) ? (on) => { void store.setActive(loaded.deck.id, on); } : undefined}
+            onSetActive={
+              store.installed.includes(loaded.deck.id) || (!loaded.deck.priceCents && !reserveAbonnes(loaded.deck))
+                ? (on) => {
+                    void (async () => {
+                      if (on && !store.installed.includes(loaded.deck.id)) await store.addDeck(loaded.deck.id);
+                      await store.setActive(loaded.deck.id, on);
+                    })();
+                  }
+                : undefined
+            }
             onReload={() => void reload()}
             onBackToLibrary={() => void backToLibrary()}
           />

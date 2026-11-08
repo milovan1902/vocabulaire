@@ -101,3 +101,52 @@
 .lib-charge ~ .worklist .workrow-txt { gap: 8px; }
 .lib-charge ~ .worklist .workrow-txt small { line-height: 1.5; }
 .lib-charge ~ .worklist + .btn { margin-top: 28px; }
+
+/* ---------- CHANTIER 401 — le catalogue à interrupteurs, et « Créer un paquet » assumé ---------- */
+.lib-carte-icone.or { color: var(--chalk); background: color-mix(in srgb, var(--chalk) 16%, transparent); }
+.lib-carte.lib-creer {
+  display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  margin: 0; padding: 18px; text-align: left;
+  border: 1.5px solid var(--chalk);
+}
+.lib-creer-titre { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.lib-creer-titre b { font-size: 23px; }
+.lib-creer-titre em {
+  font-style: normal; font-size: 11.5px; font-weight: 650;
+  color: var(--on-chalk); background: var(--chalk); border-radius: 999px; padding: 2px 9px;
+}
+
+.lib-intro { margin: 4px 0 12px; }
+.lib-intro b { color: var(--chalk); font-weight: 650; white-space: nowrap; }
+
+.catrow .switch { position: relative; margin: 0 6px; width: 48px; height: 28px; border: 1.5px solid var(--rule-strong); box-sizing: border-box; }
+.catrow .switch::after { content: ''; position: absolute; inset: -10px -8px; }
+.catrow .switch.on { border-color: var(--chalk); }
+.catrow.off .vign { filter: grayscale(1); }
+.catrow.off { opacity: 0.8; }
+.tag-offert {
+  display: inline-block; font-size: 11.5px; font-weight: 600; line-height: 1.5;
+  color: var(--good); background: color-mix(in srgb, var(--good) 18%, transparent);
+  border-radius: 6px; padding: 0 7px; margin-right: 2px;
+}
+.catrow-verrou {
+  flex: none; min-width: 56px; min-height: 44px; padding: 0 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: none; border: none; color: var(--grey); font-family: inherit; cursor: pointer;
+}
+.catrow-verrou span { font-size: 11px; }
+.catrow-verrou:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; border-radius: 10px; }
+.lib-abo {
+  position: relative; margin: 10px 0; padding: 10px 48px 10px 14px;
+  background: var(--panel); border: 1px solid color-mix(in srgb, var(--chalk) 60%, transparent); border-radius: 14px;
+}
+.lib-abo-x {
+  position: absolute; top: 0; right: 0; width: 44px; height: 44px;
+  background: none; border: none; color: var(--ink-soft); font-size: 24px; line-height: 1; cursor: pointer;
+}
+
+/* Le même bloc « Paquet en jeu » que le catalogue, dans Détails et paramètres d'un paquet. */
+.deck-pause {
+  padding: 12px 14px; margin: 16px 0 0;
+  background: var(--panel); border: 1px solid color-mix(in srgb, var(--chalk) 60%, transparent); border-radius: 16px;
+}

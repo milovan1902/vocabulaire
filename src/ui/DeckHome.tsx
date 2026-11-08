@@ -421,13 +421,13 @@ export function DeckHome({
             <button className="deck-retour" aria-label="Retour au paquet" onClick={() => { setDetails(false); window.scrollTo(0, 0); }}>‹</button>
             <span><b>{deck.name}</b><small>Détails et paramètres</small></span>
           </div>
-          {/* CHANTIER 391 — mettre le paquet en pause sans repasser par Paquets. */}
+          {/* CHANTIER 391/401 — le même interrupteur « En jeu » que dans le catalogue : il met le paquet en jeu, ou en pause (progression gardée). */}
           {onSetActive && (
             <div className="setting deck-pause">
               <Toggle label="Paquet en jeu" checked={enJeu} onChange={(on) => onSetActive(on)} />
               <p className="hint" style={{ margin: '7px 0 0' }}>
                 {enJeu
-                  ? tvp('Ses cartes comptent dans ta journée. En pause, il ne propose plus rien et ta progression est gardée.', 'Ses cartes comptent dans votre journée. En pause, il ne propose plus rien et votre progression est gardée.')
+                  ? tvp('Ses cartes comptent dans ta journée. Éteins-le pour le mettre en pause : ta progression est gardée.', 'Ses cartes comptent dans votre journée. Éteignez-le pour le mettre en pause : votre progression est gardée.')
                   : tvp('En pause : il ne propose plus de cartes. Ta progression est gardée, tu le remets en jeu quand tu veux.', 'En pause : il ne propose plus de cartes. Votre progression est gardée, vous le remettez en jeu quand vous voulez.')}
               </p>
             </div>

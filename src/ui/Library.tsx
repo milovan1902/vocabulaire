@@ -1,4 +1,5 @@
-/** Onglet « Paquets » : mon travail, ma collection, mon catalogue. */
+/** Onglet « Paquets » : mes paquets en jeu, UN catalogue à interrupteurs, et « Créer un paquet ». */
+/* CHANTIER 401 — plus d'« Obtenir » ni de « Ma collection » : un interrupteur « En jeu » par paquet, partout. */
 /* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
 import { tvp } from './ton';
 import { useEffect, useMemo, useState } from 'react';
@@ -425,7 +426,8 @@ export function Library({
    * change d'onglet et on se croit dépossédé de la moitié de ses paquets.
    */
   const [fCatalogue, setFCatalogue] = useState<Filtres>(FILTRES_VIDES);
-  const [fCollection, setFCollection] = useState<Filtres>(FILTRES_VIDES);
+  /* 401 — le rappel « Réservé aux abonnés », ouvert au toucher du cadenas. */
+  const [aviAbo, setAviAbo] = useState(false);
 
   /*
    * Deux façons de regarder le catalogue, à ne jamais confondre :
@@ -644,9 +646,9 @@ export function Library({
         <>
           {!auth.session && <RappelSauvegarde />}
           <p className="lead">
-            {tvp('Aucun paquet en jeu. Mets-en un depuis ta collection pour commencer à travailler.', 'Aucun paquet en jeu. Mettez-en un depuis votre collection pour commencer à travailler.')}
+            {tvp('Aucun paquet en jeu. Allume-en un dans le catalogue pour commencer à travailler.', 'Aucun paquet en jeu. Allumez-en un dans le catalogue pour commencer à travailler.')}
           </p>
-          <button className="btn" onClick={() => setTab('collection')}>Ouvrir ma collection</button>
+          <button className="btn" onClick={() => setTab('catalogue')}>Ouvrir le catalogue</button>
         </>
       );
     }
@@ -698,7 +700,7 @@ export function Library({
                 </span>
               </button>
               {avancement(s)}
-              {/* 364 — la pause passe dans Ma collection (l'interrupteur) : l'accueil ne garde que le travail. */}
+              {/* 401 — la pause se règle dans le catalogue, ou dans « Détails et paramètres » du paquet. */}
             </div>
           ))}
         </div>
@@ -748,24 +750,29 @@ export function Library({
             </span>
           )}
         </button>
-        <button className="lib-carte lib-porte" onClick={() => setTab('ajouter')}>
-          {/* 366 — des paquets empilés, avec un « + ». */}
+        {/* 401 — le catalogue : une seule porte, tous les paquets, un interrupteur chacun. */}
+        <button className="lib-carte lib-porte" onClick={() => setTab('catalogue')}>
           <span className="lib-carte-icone vert" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 3 3 8l9 5 9-5" /><path d="m3 13 9 5 4-2.2" /><path d="M19 13v6" /><path d="M16 16h6" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14" /><path d="M12 6v14" /><path d="M8 8v12" /><path d="M4 4v16" /></svg>
           </span>
           <span className="lib-carte-corps">
-            <b>Ajouter un paquet</b>
-            <span className="lib-carte-txt">Photo d’une liste, catalogue, ou à la main</span>
+            <b>Le catalogue</b>
+            <span className="lib-carte-txt">
+              {total > 0
+                ? `${total} paquet${total > 1 ? 's' : ''} ${tvp('à toi', 'à vous')}${enPause > 0 ? ` · ${enPause} en pause` : ''} · par classe et par thème`
+                : 'Des paquets par classe et par thème'}
+            </span>
           </span>
           <span className="chev" aria-hidden="true">›</span>
         </button>
-        <button className="lib-carte" onClick={() => setTab('collection')}>
-          <span className="lib-carte-icone gris" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h18v13H3z" /><path d="M8 7V4h8v3" /><path d="M10 12h4" /></svg>
+        {/* 401 — « Créer un paquet » : une porte assumée, pas un lien discret. */}
+        <button className="lib-carte lib-creer" onClick={() => setTab('ajouter')}>
+          <span className="lib-carte-icone or" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
           </span>
           <span className="lib-carte-corps">
-            <b>Ma collection</b>
-            <span className="lib-carte-txt">{total === 0 ? 'Vide pour l’instant' : `${total} paquet${total > 1 ? 's' : ''}${enPause > 0 ? ` · ${enPause} en pause` : ''}`}</span>
+            <span className="lib-creer-titre"><b>Créer un paquet</b>{!sansLimite() && !persoPris && <em>1 offert</em>}</span>
+            <span className="lib-carte-txt">{tvp('Une liste en photo, ou tes mots saisis à la main', 'Une liste en photo, ou vos mots saisis à la main')}</span>
           </span>
           <span className="chev" aria-hidden="true">›</span>
         </button>
@@ -796,13 +803,6 @@ export function Library({
             {badge && <em>{badge}</em>}
           </button>
         )}
-        <button className="lib-choix" onClick={() => setTab('catalogue')}>
-          <span className="lib-choix-icone vert" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 6 4 14" /><path d="M12 6v14" /><path d="M8 8v12" /><path d="M4 4v16" /></svg>
-          </span>
-          <span className="lib-choix-txt"><b>Le catalogue</b><small>Des paquets par classe et par thème</small></span>
-          <span className="chev" aria-hidden="true">›</span>
-        </button>
         {onCreer && (
           <button className="lib-choix" onClick={() => creer(false)}>
             <span className="lib-choix-icone" aria-hidden="true">
@@ -822,159 +822,37 @@ export function Library({
     );
   }
 
-  function ligneInterrupteur(s: DeckSummary) {
-    const on = active.includes(s.deck.id);
-    return (
-      <div key={s.deck.id} className={`switchrow${on ? '' : ' off'}`}>
-        <button className="switchrow-main" onClick={(e) => ouvrir(e, s)}>
-          {/*
-            * La vignette gagne une enveloppe positionnée : sans elle, la
-            * pastille se placerait par rapport à la ligne entière et
-            * atterrirait n'importe où.
-            */}
-          <span className="vign-wrap">
-            {vignette(s, 44, 62)}
-            {pastille(s.deck) && (
-              <span className="classdot">{pastille(s.deck)}</span>
-            )}
-          </span>
-          <span className="switchrow-txt">
-            <b>{s.deck.name}</b>
-            <small>
-              {etiquettePeriode(s.deck)}
-              {etiquetteControle(s.deck) && <>{etiquetteControle(s.deck)}{' · '}</>}
-              {s.resting > 0
-                ? `${s.resting} mots en mémoire`
-                : 'jamais commencé'}
-              {on && s.due > 0 ? ` · ${s.due} dues` : ''}
-              {s.mastery.percent > 0 && (
-                <b className="small-pct">{masteryLabel(s.mastery.percent)}</b>
-              )}
-            </small>
-          </span>
-        </button>
-        <button
-          className={`switch${on ? ' on' : ''}`}
-          role="switch"
-          aria-checked={on}
-          aria-label={on ? 'Mettre en pause' : 'Mettre en jeu'}
-          onClick={() => onSetActive(s.deck.id, !on)}
-        >
-          <i />
-        </button>
-      </div>
-    );
-  }
-
-  function vueCollection() {
-    const mine = installed
-      .map((id) => parId.get(id))
-      .filter((s): s is DeckSummary => !!s);
-
-    if (mine.length === 0) {
-      return (
-        <div className="empty">
-          <p>{tvp('Ta collection est vide.', 'Votre collection est vide.')}</p>
-          <button className="btn ghost" onClick={() => setTab('ajouter')}>
-            Ajouter un paquet
-          </button>
-        </div>
-      );
-    }
-
-    /*
-     * Le même panneau que le catalogue, moins le prix.
-     *
-     * Ici tout est déjà payé : le filtre ne trierait plus que par ce que
-     * chaque paquet a coûté, ce qui n'aide personne à travailler. Et l'état
-     * en jeu / en pause ne prend pas cette place — il est déjà la structure
-     * de la liste, deux sections qu'on lit d'un coup d'œil. Un filtre qui
-     * redit ce que la page montre encombre le panneau sans rien trancher.
-     */
-    const retenus = appliquer(socleDe(mine, fCollection), fCollection);
-    const jeu = retenus.filter((s) => active.includes(s.deck.id));
-    const pause = retenus.filter((s) => !active.includes(s.deck.id));
-
-    return (
-      <>
-        {/* 364 — l'interrupteur de chaque ligne met en jeu ou en pause. */}
-
-        {mine.length > 4 && (
-          <button className="searchcue" onClick={onSearch}>
-            <span className="loupe" aria-hidden="true" />
-            Chercher un mot, un thème…
-          </button>
-        )}
-
-        <PanneauFiltres
-          lot={mine}
-          categories={categories}
-          filtres={fCollection}
-          avecPrix={false}
-          onChange={setFCollection}
-        />
-
-        {retenus.length === 0 && (
-          <p className="hint">
-            {tvp('Aucun paquet de ta collection ne correspond à ce filtre.', 'Aucun paquet de votre collection ne correspond à ce filtre.')}
-          </p>
-        )}
-
-        {/*
-          * « En jeu » et « En pause » restent les deux sections de la liste,
-          * filtre ou pas. C'est la structure de l'écran, pas un tri : la
-          * faire disparaître dès qu'un filtre s'applique ferait perdre le
-          * seul repère de la page.
-          */}
-        {jeu.length > 0 && (
-          <>
-            <p className="rayon-label on">
-              En jeu <b className="rayon-n">{jeu.length}</b>
-            </p>
-            <div className="switchlist">{jeu.map(ligneInterrupteur)}</div>
-          </>
-        )}
-
-        {pause.length > 0 && (
-          <>
-            <p className="rayon-label">
-              En pause <b className="rayon-n">{pause.length}</b>
-            </p>
-            <div className="switchlist">{pause.map(ligneInterrupteur)}</div>
-          </>
-        )}
-
-        <p className="hint">
-          Un paquet en pause ne compte pas dans la charge du jour et ne
-          rappelle rien : le remettre en jeu reprend là où {tvp('tu l’as laissé', 'vous l’avez laissé')}.
-        </p>
-      </>
-    );
-  }
-
   /* ---------------- Mon catalogue ---------------- */
 
-  /** Une ligne du catalogue. `plusTard` grise la ligne sans la rendre illisible. */
+  /**
+   * Une ligne du catalogue — CHANTIER 401.
+   *
+   * Plus d'« Obtenir » ni de « À moi » : un seul geste, l'interrupteur
+   * « En jeu ». Allumé, le paquet rejoint la journée ; éteint, il est en
+   * pause et sa progression est gardée. Aucune barrière de niveau : on peut
+   * allumer un paquet d'une autre classe.
+   *
+   * Trois cas seulement :
+   *  - un paquet payant pas encore acheté garde son bouton de prix ;
+   *  - un paquet réservé aux abonnés (hors offerts) montre un cadenas ;
+   *  - tout le reste a son interrupteur.
+   * `plusTard` grise la ligne sans la rendre illisible.
+   */
   function ligneCatalogue(s: DeckSummary, plusTard = false, avecPeriode = true) {
     const aMoi = installed.includes(s.deck.id);
-    const gratuit = !s.deck.priceCents;
+    const on = active.includes(s.deck.id);
     const n = niveau(s.deck.level);
     /*
      * Les cartes d'un paquet payant non acheté ne sont pas lisibles :
-     * s.total vaut 0. Le nombre annoncé par la vitrine prend le relais —
-     * il est fait pour être vu avant l'achat, c'est lui qui donne envie.
+     * s.total vaut 0. Le nombre annoncé par la vitrine prend le relais.
      */
     const mots = s.total || s.deck.cardCount || 0;
+    const offert = PAQUETS_OFFERTS.has(s.deck.id) && !sansLimite();
+    const verrou = !aMoi && reserveAbonnes(s.deck);
+    const aPayer = !aMoi && !verrou && !!s.deck.priceCents;
     return (
-      <div key={s.deck.id} className={`catrow${plusTard ? ' later' : ''}`}>
+      <div key={s.deck.id} className={`catrow${plusTard ? ' later' : ''}${aMoi && !on ? ' off' : ''}`}>
         <button className="catrow-main" onClick={(e) => ouvrir(e, s)}>
-          {/*
-            * La classe descend sur le dos de carte, où elle se lit comme une
-            * étiquette. Ce qui restait sous le nom disait la classe trois
-            * fois — « collège », « dès la 6ème » — et le sujet du paquet se
-            * perdait dedans. Ne reste que ce qui ne se déduit de nulle part :
-            * le volume et le niveau.
-            */}
           <span className="vign-wrap">
             {vignette(s, 54, 76)}
             {pastille(s.deck) && (
@@ -985,36 +863,42 @@ export function Library({
             <b>{s.deck.name}</b>
             <small>
               {avecPeriode && etiquettePeriode(s.deck)}
+              {offert && <><span className="tag-offert">Offert</span>{' '}</>}
               {mots} mots
               {n ? ` · ${n}` : ''}
+              {aMoi && on && s.due > 0 ? ` · ${s.due} à voir` : ''}
+              {aMoi && !on ? ' · en pause' : ''}
             </small>
           </span>
         </button>
-        {aMoi ? (
-          gratuit && !s.deck.builtin ? (
-            <button className="minibtn done" onClick={() => onRemove(s.deck.id)}>
-              Retirer
-            </button>
-          ) : (
-            <span className="ownedtag">À moi</span>
-          )
-        ) : reserveAbonnes(s.deck) ? (
-          /* 318 — inclus dans l'abonnement : visible par tous, obtenu par les abonnés.
-             336 — vaut pour tout le catalogue, sauf un paquet offert par classe.
-             337 — pas le vert de « À moi » : un cadenas, au trait. */
-          <span
-            aria-label="Réservé aux abonnés"
-            style={{ flex: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, border: '1px solid currentColor', opacity: 0.75, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}
+        {aMoi && !s.deck.builtin && !on && (
+          <button className="minibtn done" onClick={() => onRemove(s.deck.id)}>
+            Retirer
+          </button>
+        )}
+        {verrou ? (
+          /* 337 — pas de bascule : un cadenas, au trait. 401 — il explique au toucher. */
+          <button
+            className="catrow-verrou"
+            aria-label={`Réservé aux abonnés : ${s.deck.name}`}
+            onClick={() => setAviAbo(true)}
           >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-            Abonnés
-          </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+            <span>Abonnés</span>
+          </button>
+        ) : aPayer ? (
+          <button className="minibtn" onClick={() => onAdd(s.deck.id)}>
+            {priceLabel(s.deck.priceCents)}
+          </button>
         ) : (
           <button
-            className={`minibtn${plusTard ? ' outline' : ''}`}
-            onClick={() => onAdd(s.deck.id)}
+            className={`switch${on ? ' on' : ''}`}
+            role="switch"
+            aria-checked={on}
+            aria-label={`${on ? 'Mettre en pause' : 'Mettre en jeu'} : ${s.deck.name}`}
+            onClick={() => onSetActive(s.deck.id, !on)}
           >
-            {PAQUETS_OFFERTS.has(s.deck.id) && !sansLimite() ? 'Offert' : s.deck.pourAdultes ? 'Obtenir' : gratuit ? 'Obtenir' : priceLabel(s.deck.priceCents)}
+            <i />
           </button>
         )}
       </div>
@@ -1084,6 +968,16 @@ export function Library({
 
     return (
       <>
+        <button className="searchcue" onClick={onSearch}>
+          <span className="loupe" aria-hidden="true" />
+          Chercher un mot, un thème…
+        </button>
+
+        <p className="hint lib-intro">
+          {tvp('Allume un paquet pour le mettre en jeu. Éteins-le pour le mettre en pause : ta progression est gardée.', 'Allumez un paquet pour le mettre en jeu. Éteignez-le pour le mettre en pause : votre progression est gardée.')}
+          {' '}<b>{enJeu.length} en jeu</b>
+        </p>
+
         <button
           className="classbar"
           onClick={() => setChoixClasse((v) => !v)}
@@ -1153,6 +1047,13 @@ export function Library({
           onChange={setFCatalogue}
         />
 
+        {aviAbo && (
+          <p className="hint lib-abo" role="status">
+            Réservé aux abonnés : l’abonnement ouvre tous les paquets, sans limite.
+            <button className="lib-abo-x" aria-label="Fermer" onClick={() => setAviAbo(false)}>×</button>
+          </p>
+        )}
+
         {/*
           * La pastille dit « 6e » quand la ligne disait « dès la 6ème ». Le
           * mot « dès » portait l'idée de plancher — qu'un paquet 6ème
@@ -1210,14 +1111,14 @@ export function Library({
         {plusTard.length > 0 && (
           <section className="rayon later-sec">
             <div className="later-head">
-              <h2 className="later-h">Pour plus tard</h2>
+              <h2 className="later-h">Autres classes</h2>
               <span className="later-n">
                 {plusTard.length} paquet{plusTard.length > 1 ? 's' : ''}
               </span>
             </div>
             <p className="hint">
               Après {maClasse ? CLASSE_LABELS[maClasse] : 'ta classe'}. Rien
-              n’empêche de les prendre maintenant.
+              n’empêche de les mettre en jeu maintenant.
             </p>
             <div className="catlist">{plusTard.map((s) => ligneCatalogue(s, true))}</div>
           </section>
@@ -1238,9 +1139,6 @@ export function Library({
           </section>
         )}
 
-        <p className="hint">
-          {tvp('Un paquet obtenu arrive en pause : c’est toi qui le mets en jeu.', 'Un paquet obtenu arrive en pause : c’est vous qui le mettez en jeu.')}
-        </p>
       </>
     );
   }
@@ -1248,12 +1146,12 @@ export function Library({
   const titres: Record<Tab, string> = {
     travail: 'Paquets',
     jeu: 'Mes paquets en jeu',
-    ajouter: 'Ajouter un paquet',
-    collection: 'Ma collection',
+    ajouter: 'Créer un paquet',
+    collection: 'Le catalogue',
     catalogue: 'Le catalogue',
   };
   /* 364 — d'où revient le « ‹ » de chaque sous-écran. */
-  const retourDe: Record<Tab, Tab> = { travail: 'travail', jeu: 'travail', ajouter: 'travail', collection: 'travail', catalogue: 'ajouter' };
+  const retourDe: Record<Tab, Tab> = { travail: 'travail', jeu: 'travail', ajouter: 'travail', collection: 'travail', catalogue: 'travail' };
 
   return (
     <>
@@ -1274,8 +1172,6 @@ export function Library({
         vueTravail()
       ) : tab === 'ajouter' ? (
         vueAjouter()
-      ) : tab === 'collection' ? (
-        vueCollection()
       ) : (
         vueCatalogue()
       )}
