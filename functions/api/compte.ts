@@ -40,6 +40,8 @@ import { json, utilisateur, type Contexte } from './_parler-commun';
 const TABLES = [
   'progress', 'user_settings', 'parler_usage', 'parler_seance', 'parler_signalement',
   'photo_usage', 'parler_idees', 'entitlements',
+  /* 402 — le profil de conversation (accord parental daté) et le journal de modération. */
+  'parler_profil', 'parler_moderation',
   /* 333 — `parler_mois` retiré : c'est une VUE calculée sur parler_usage
      (« cannot delete from view », 55000). Elle se vide avec parler_usage. */
 ];

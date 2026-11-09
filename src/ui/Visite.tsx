@@ -908,7 +908,7 @@ function ContenuFiche({ f, a }: { f: Fiche; a: boolean }) {
           <Lignes l={[['10 min', 'offertes une fois, pour essayer.'], ['10 min', 'par jour, avec l’abonnement.']]} />
           <p>{a
             ? 'Votre niveau fixe les temps employés et la longueur des phrases. Les mots de vos paquets reviennent dans la conversation.'
-            : 'Ta classe fixe les temps employés et la longueur des phrases. Les mots de tes paquets reviennent dans la conversation. La conversation s’ouvre à partir de la 4e.'}</p>
+            : 'Ta classe fixe les temps employés et la longueur des phrases. Les mots de tes paquets reviennent dans la conversation.'}</p>
         </>
       );
     case 'oral':

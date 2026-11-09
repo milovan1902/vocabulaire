@@ -247,8 +247,8 @@ export function Onboarding({
   }, [etape, montre, juger]);
 
   const classeDite = classe ? CLASSE_LABELS[classe] : null;
-  /* CHANTIER 148 — Parler s'ouvre en 4e : les plus jeunes voient les écrans, avec cette mention. */
-  const avantQuatrieme = !!classe && !['4e', '3e', '2de', '1re', 'Tle'].includes(classe);
+  /* CHANTIER 148 / 402 — Parler s'ouvre dès la 6e : seul un reste de CM2 voit encore cette mention. */
+  const avantQuatrieme = !!classe && !['6e', '5e', '4e', '3e', '2de', '1re', 'Tle'].includes(classe);
   const lignes = STATUTS.filter((s) => s.cle !== 'decouvrir');
 
   return (
@@ -651,7 +651,7 @@ export function Onboarding({
           <p className="guide-kicker">Et maintenant, à l’oral</p>
           {avantQuatrieme && (
             <p className="guide-regle">
-              Parler s’ouvrira quand tu seras en 4e. D’ici là, chaque carte révisée
+              Parler s’ouvrira quand tu seras en 6e. D’ici là, chaque carte révisée
               te prépare à cette conversation.
             </p>
           )}

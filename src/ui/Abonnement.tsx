@@ -27,7 +27,7 @@ function gratuit(adulte: boolean): string[] {
     : [
         '1 paquet offert par classe',
         'Ton premier paquet personnalisé, photo comprise',
-        '10 min de conversation avec l’IA, en une ou plusieurs fois (dès la 4e)',
+        '10 min de conversation avec l’IA, en une ou plusieurs fois',
         'Les mises en situation, offertes une fois',
         '3 apparences, jusqu’à 12 avec tes crédits',
       ];

@@ -66,6 +66,8 @@ import { detailExploitant } from '../data/messageErreur';
 import './parler-onglets.css';
 /* CHANTIER 359 — le tu et le vous. */
 import { tvp } from './ton';
+import { AccordParler } from './AccordParler';
+import { declareProfil, type ProfilParler } from '../data/profilParler';
 
 /**
  * Les thèmes proposés. Au plus dix retenus.
@@ -141,8 +143,10 @@ function themesRetenus(): string[] {
   }
 }
 
-/** CHANTIER 139 — les classes où la conversation est ouverte (13 ans et plus). */
-const CLASSES_VOIX: readonly string[] = ['4e', '3e', '2de', '1re', 'Tle'];
+/** CHANTIER 139 / 402 — les classes où la conversation est ouverte (dès la 6e, avec l'accord d'un parent avant 15 ans). */
+const CLASSES_VOIX: readonly string[] = ['6e', '5e', '4e', '3e', '2de', '1re', 'Tle'];
+/** 402 — la 6e à la 3e : moins de 15 ans, l'accord d'un parent est enregistré avant Parler. */
+const CLASSES_MOINS_15: readonly string[] = ['6e', '5e', '4e', '3e'];
 
 type Etat = 'charge' | 'pret' | 'anonyme' | 'panne';
 /** CHANTIER 312 — les sous-onglets. Toujours « S'exercer » à l'ouverture (la visite guidée y compte). */
@@ -206,9 +210,27 @@ export function Parler({
     setModeEtat('libre');
   }, [directDiscuter]);
   useEffect(() => { window.scrollTo(0, 0); }, [onglet]);
+  /*
+   * CHANTIER 402 — le profil de conversation, tel que le SERVEUR l'enregistre.
+   * `undefined` : pas encore lu ; `null` : sans compte ou panne (l'écran
+   * « compte requis » prend alors le relais, plus bas).
+   */
+  const [profil, setProfil] = useState<ProfilParler | null | undefined>(undefined);
   useEffect(() => {
+    let vivant = true;
+    void declareProfil({
+      classe: settings.classe ?? null,
+      adulte: readNiveauAdulte(settings.adulte),
+    }).then((p) => { if (vivant) setProfil(p); });
+    return () => { vivant = false; };
+  }, [settings.classe, settings.adulte]);
+
+  /* 402 — les scènes du jour se lisent une fois le profil connu du serveur (sinon : refus, et rien ne s'affiche). */
+  const profilPret = !!profil;
+  useEffect(() => {
+    if (!profilPret) return;
     void ideesDuJour(settings.classe ?? null).then((r) => { if (r) { setIdees(r.scenes); setIdeesEncore(r.encore); } });
-  }, [settings.classe]);
+  }, [settings.classe, profilPret]);
   const inspire = async () => {
     setIdeesEtat('charge');
     setIdeesPanne(null);
@@ -320,11 +342,11 @@ export function Parler({
   }), [classe, mots, choisis, deja, cran, titreScene, situation, adulte, seanceComprendre]);
 
   /*
-   * CHANTIER 139 — LA VOIX S'OUVRE EN 4e
+   * CHANTIER 139 / 402 — LA VOIX S'OUVRE EN 6e, AVEC UN ACCORD
    *
-   * Avant la 4e, l'abonnement donne les cartes seulement. L'écran se
-   * verrouille ici, après tous les hooks (l'ordre des hooks ne doit pas
-   * changer d'un rendu à l'autre). Le serveur refuse aussi, de son côté.
+   * L'écran se verrouille ici, après tous les hooks (l'ordre des hooks ne
+   * doit pas changer d'un rendu à l'autre). Le serveur refuse aussi, de son
+   * côté, d'après SON profil et non d'après ce qu'affiche le téléphone.
    */
   if (!voixOuverte) {
     return (
@@ -333,9 +355,9 @@ export function Parler({
         <div className="parler-carte">
           {classe ? (
             <>
-              <p className="parler-kicker">À partir de la 4e</p>
+              <p className="parler-kicker">À partir de la 6e</p>
               <p className="hint">
-                La conversation en anglais s’ouvre à partir de la 4e. En
+                La conversation en anglais s’ouvre à partir de la 6e. En
                 attendant, tes cartes t’attendent dans la bibliothèque :
                 c’est là que se construit le vocabulaire dont tu te serviras
                 pour parler.
@@ -345,8 +367,8 @@ export function Parler({
             <>
               <p className="parler-kicker">Ta classe d’abord</p>
               <p className="hint">
-                La conversation s’adapte à ta classe, et s’ouvre à partir de
-                la 4e. Choisis ta classe dans les Réglages.
+                La conversation s’adapte à ta classe, de la 6e à la Terminale.
+                Choisis ta classe dans les Réglages.
               </p>
               <button className="btn ghost" onClick={() => { sessionStorage.setItem('vocab:ouvrir-tiroir', 'classe'); onReglages(); }}>Choisir ma classe</button>
             </>
@@ -354,6 +376,38 @@ export function Parler({
         </div>
       </section>
     );
+  }
+
+  /*
+   * 402 — LE DEUXIÈME ACCORD. Sans compte (`etat === 'anonyme'`), l'écran
+   * « compte requis » existe déjà plus bas : on ne le masque pas.
+   * Le profil lu : un adulte déclare avoir 18 ans ou plus ; un élève de moins
+   * de 15 ans, l'accord d'un parent. Tant que le serveur n'a pas la date, il
+   * refuse de parler : cet écran n'est donc pas décoratif.
+   */
+  if (etat !== 'anonyme') {
+    if (profil === undefined) {
+      return (
+        <section className="parler" aria-label="Parler anglais">
+          <h2 className="screen-title">Parler anglais</h2>
+          <p className="hint">Un instant…</p>
+        </section>
+      );
+    }
+    const besoinMajeur = !!adulte && !profil?.majeurDeclareLe;
+    const besoinAccord = !adulte && !!classe && CLASSES_MOINS_15.includes(classe) && !profil?.accordParentalLe;
+    if (profil && (besoinMajeur || besoinAccord)) {
+      return (
+        <AccordParler
+          adulte={!!adulte}
+          onDonne={async () => {
+            const p = await declareProfil(adulte ? { majeur: true, adulte, classe: classe ?? null } : { accord: true });
+            if (p) setProfil(p);
+            return !!p && (adulte ? !!p.majeurDeclareLe : !!p.accordParentalLe);
+          }}
+        />
+      );
+    }
   }
 
   if (enSeance && budget) {

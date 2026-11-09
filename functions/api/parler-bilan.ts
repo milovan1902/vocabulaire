@@ -30,7 +30,8 @@ import {
   noteConsommation, noteSeance, promptSysteme, quotaDe, utilisateurEtEmail,
   budgetDe, type Contexte, type Fiche,
 } from './_parler-commun';
-import { voixOuverte, sceneDeFiche } from './_parler-commun';
+import { sceneDeFiche } from './_parler-commun';
+import { ficheVerifiee, profilDe, verdictProfil } from './_protection';
 
 interface Requete {
   fiche: Fiche;
@@ -103,10 +104,19 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     return json({ erreur: 'corps illisible' }, 400);
   }
 
-  /* CHANTIER 139 — pas de conversation avant la 4e, même par appel direct. */
-  if (!voixOuverte(corps.fiche?.classe, corps.fiche?.adulte)) {
-    return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
+  /* CHANTIER 139 / 402 — qui peut parler se décide sur le profil du SERVEUR (voir `_protection.ts`). */
+  let profil;
+  try {
+    profil = await profilDe(userId, env);
+  } catch (e) {
+    console.error('profil illisible', String(e));
+    return json({ erreur: 'le profil n’a pas pu être vérifié' }, 503);
   }
+  const v = verdictProfil(profil);
+  if (!v.ok || !profil) {
+    return json({ erreur: v.ok ? 'profil à déclarer' : v.erreur, code: v.ok ? 'profil' : v.code }, 403);
+  }
+  const fiche = ficheVerifiee(corps.fiche, profil);
 
   const messages = (corps.messages ?? []).slice(-40);
   if (messages.length < 4) {
@@ -145,7 +155,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
        * mots travaillés, sans quoi le bilan corrigerait des tournures que
        * l'élève n'a pas encore vues.
        */
-      `${promptSysteme(corps.fiche, await sceneDeFiche(userId, corps.fiche, env))}\n\n---\n\n${CONSIGNE}`,
+      `${promptSysteme(fiche, await sceneDeFiche(userId, fiche, env))}\n\n---\n\n${CONSIGNE}`,
       [{ role: 'user', content: transcription }],
       900,
       false,
@@ -170,8 +180,8 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   await noteSeance(userId, {
     secondes: corps.totalSecondes ?? corps.secondes ?? 0,
     repliques: messages.length,
-    themes: corps.fiche?.themes ?? [],
-    classe: corps.fiche?.classe ?? null,
+    themes: fiche.themes ?? [],
+    classe: fiche.classe ?? null,
     transcription: messages,
     corrections: bilan.corrections,
     mots: bilan.mots,

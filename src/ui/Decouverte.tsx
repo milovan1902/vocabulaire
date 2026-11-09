@@ -39,7 +39,7 @@ function contenu(id: IdDecouverte, a: boolean): Contenu {
               <i aria-hidden="true" />
               <span><b>Comprendre mes phrases</b><small>{tv(a, 'Les phrases et expressions sur lesquelles tu as buté en révision : l’IA te les explique, pas à pas.', 'Les phrases et expressions sur lesquelles vous avez buté en révision : l’IA vous les explique, pas à pas.')}</small></span>
             </span>
-            <small className="decouverte-note">10 min offertes pour essayer · 10 min par jour avec l’abonnement{a ? '' : ' · dès la 4e'}</small>
+            <small className="decouverte-note">10 min offertes pour essayer · 10 min par jour avec l’abonnement</small>
           </>
         ),
         detail: (

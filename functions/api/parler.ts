@@ -28,7 +28,10 @@ import {
   noteConsommation, promptSysteme, quotaDe, utilisateurEtEmail,
   budgetDe, type Budget, type Contexte, type Fiche,
 } from './_parler-commun';
-import { voixOuverte, sceneDeFiche } from './_parler-commun';
+import { sceneDeFiche } from './_parler-commun';
+import {
+  ficheVerifiee, journalise, modere, profilDe, reponseDeRepli, verdictProfil,
+} from './_protection';
 
 /** Corps attendu d'un tour de parole. */
 interface Requete {
@@ -71,10 +74,25 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     return json({ erreur: 'corps illisible' }, 400);
   }
 
-  /* CHANTIER 139 — pas de conversation avant la 4e, même par appel direct. */
-  if (!voixOuverte(corps.fiche?.classe, corps.fiche?.adulte)) {
-    return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
+  /*
+   * CHANTIER 139 / 402 — qui peut parler se décide sur le PROFIL DU SERVEUR
+   * (classe, majorité déclarée, accord parental daté), jamais sur la fiche
+   * envoyée par le téléphone. Profil illisible = refus.
+   */
+  let profil;
+  try {
+    profil = await profilDe(userId, env);
+  } catch (e) {
+    console.error('profil illisible', String(e));
+    return json({ erreur: 'le profil n’a pas pu être vérifié' }, 503);
   }
+  const v = verdictProfil(profil);
+  if (!v.ok || !profil) {
+    return json({ erreur: v.ok ? 'profil à déclarer' : v.erreur, code: v.ok ? 'profil' : v.code }, 403);
+  }
+  const fiche = ficheVerifiee(corps.fiche, profil);
+  /* 402 — tout non-adulte passe par la modération. */
+  const filtre = !profil.adulte;
 
   if (!Array.isArray(corps.messages) || corps.messages.length === 0) {
     return json({ erreur: 'aucun message' }, 400);
@@ -122,6 +140,27 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     return json({ erreur: budgetAvant.pause ? 'Parler en pause' : 'quota épuisé', budget: budgetAvant }, 429);
   }
 
+  /*
+   * 402 — LE MESSAGE DE L'ÉLÈVE, AVANT LE GRAND MODÈLE. Écarté, il n'est pas
+   * envoyé : l'élève reçoit une phrase fixe, et ne perd pas de temps de parole
+   * (aucune consommation n'est écrite). Filtre en panne = refus.
+   */
+  if (filtre) {
+    const dernier = [...messages].reverse().find((m) => m.role === 'user');
+    if (dernier) {
+      try {
+        const c = await modere(dernier.content, env);
+        if (c !== 'OK') {
+          await journalise(userId, 'message', c, profil.classe, env);
+          return json({ texte: reponseDeRepli(c), budget: budgetAvant, filtre: c });
+        }
+      } catch (e) {
+        console.error('modération (message)', String(e));
+        return json({ erreur: 'le filtre de sécurité n’a pas répondu' }, 503);
+      }
+    }
+  }
+
   const modele = modeleParler(env);
 
   let resultat;
@@ -129,7 +168,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
     resultat = await appelleClaude(
       env,
       modele,
-      promptSysteme(corps.fiche, await sceneDeFiche(userId, corps.fiche, env)),
+      promptSysteme(fiche, await sceneDeFiche(userId, fiche, env)),
       messages,
       /*
        * 160 jetons : deux phrases et vingt-cinq mots tiennent dedans. Le
@@ -138,7 +177,7 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
        * sortie en moins.
        */
       /* 371 — une explication demande plus de place qu'une réplique. */
-      corps.fiche?.phrases?.length ? 420 : 160,
+      fiche.phrases?.length ? 420 : 160,
     );
   } catch (e) {
     /*
@@ -152,14 +191,33 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   await noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env);
 
   /*
+   * 402 — LA RÉPONSE, AVANT L'ÉLÈVE. Si le filtre la refuse, elle est
+   * remplacée par une phrase fixe (le temps, lui, est bien compté : l'appel
+   * a eu lieu). Filtre en panne = on ne montre rien.
+   */
+  let texte = resultat.texte;
+  if (filtre) {
+    try {
+      const c = await modere(texte, env);
+      if (c !== 'OK') {
+        await journalise(userId, 'reponse', c, profil.classe, env);
+        texte = reponseDeRepli(c === 'DETRESSE' ? 'AUTRE' : c);
+      }
+    } catch (e) {
+      console.error('modération (réponse)', String(e));
+      return json({ erreur: 'le filtre de sécurité n’a pas répondu' }, 503);
+    }
+  }
+
+  /*
    * La relecture du quota peut échouer après un appel réussi. Le tour de
    * parole, lui, a bien eu lieu : on le rend avec le budget d'avant
    * plutôt que de transformer une réponse en panne.
    */
   try {
     const apres = await consommationDepuis(userId, q.depuis, env);
-    return json({ texte: resultat.texte, budget: budgetDe(apres, q) });
+    return json({ texte, budget: budgetDe(apres, q) });
   } catch {
-    return json({ texte: resultat.texte, budget: budgetAvant });
+    return json({ texte, budget: budgetAvant });
   }
 };

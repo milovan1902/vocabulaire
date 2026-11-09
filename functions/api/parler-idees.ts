@@ -25,8 +25,9 @@
  */
 import {
   appelleClaude, json, jourUtc, modeleParler, niveauAdulte, noteConsommation, quotaDe, utilisateurEtEmail,
-  voixOuverte, type Contexte, type Env,
+  type Contexte, type Env,
 } from './_parler-commun';
+import { profilDe, verdictProfil } from './_protection';
 import { sceneValide, TITRES_BANQUE, type Scene } from './_situations';
 
 /** En dur : la génération ne doit jamais partir sur un modèle plus cher. */
@@ -220,10 +221,19 @@ export const onRequestPost = async ({ request, env }: Contexte): Promise<Respons
   } catch {
     return json({ erreur: 'corps illisible' }, 400);
   }
-  if (!voixOuverte(corps.classe, corps.adulte)) {
-    return json({ erreur: 'la conversation s’ouvre à partir de la 4e' }, 403);
+  /* CHANTIER 402 — le profil du SERVEUR décide ; la classe envoyée n'est plus crue. */
+  let profil;
+  try {
+    profil = await profilDe(qui.id, env);
+  } catch (e) {
+    console.error('profil illisible', String(e));
+    return json({ erreur: 'le profil n’a pas pu être vérifié' }, 503);
   }
-  const niv = niveauDe(corps);
+  const v = verdictProfil(profil);
+  if (!v.ok || !profil) {
+    return json({ erreur: v.ok ? 'profil à déclarer' : v.erreur, code: v.ok ? 'profil' : v.code }, 403);
+  }
+  const niv = niveauDe({ ...corps, classe: profil.classe, adulte: profil.adulte });
 
   /* Une fois par jour : si elles existent (et que la classe n'a pas changé), on les rend. */
   let existantes: Scene[] | null;

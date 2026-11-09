@@ -349,6 +349,11 @@ export function ParlerSeance({
         </button>
       </div>
 
+      {/* 402 — l'élève sait toujours à qui il parle (Google Play et Anthropic l'exigent). */}
+      <p className="hint seance-ia">
+        {tvp('Tu parles avec une intelligence artificielle, pas avec une personne.', 'Vous parlez avec une intelligence artificielle, pas avec une personne.')}
+      </p>
+
       {exploitant && (
         <p className="seance-exploitant">
           Vue exploitant · {euros(b.coutJour)} {quandDit(b)}, {b.appels} appels.
