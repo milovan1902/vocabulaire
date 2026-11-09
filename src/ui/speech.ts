@@ -465,8 +465,19 @@ function nettementAnglais(passage: string): boolean {
 export function passages(texte: string): Passage[] {
   const out: Passage[] = [];
   const pousse = ({ texte: t, langue }: Passage) => {
-    if (!prononcable(t)) return;
     const dernier = out[out.length - 1];
+    if (!prononcable(t)) {
+      /*
+       * CHANTIER 403 — LE POINT ENTRE DEUX CITATIONS. « pas "Spain". "Spain" est
+       * le pays » : le passage « . » n'est pas prononcé, et les deux citations
+       * anglaises, voisines, étaient recollées sans lui — la voix disait
+       * « Spain Spain » d'une traite. La ponctuation qui finit une phrase est
+       * donc gardée au bout du passage précédent : la voix marque la pause.
+       */
+      const fin = t.match(/[.!?…]/)?.[0];
+      if (fin && dernier && !/[.!?…]$/.test(dernier.texte)) dernier.texte = `${dernier.texte}${fin}`;
+      return;
+    }
     if (dernier && dernier.langue === langue) dernier.texte = `${dernier.texte} ${t}`.replace(/\s+([,.!?;:])/g, '$1');
     else out.push({ texte: t, langue });
   };
@@ -489,6 +500,9 @@ export function passages(texte: string): Passage[] {
       pousse({ texte: langue === 'fr-FR' ? pourLaVoix(x.t) : x.t.replace(/["“”«»]/g, ''), langue });
       continue;
     }
+    /* 403 — la ponctuation qui suit une citation (« "Spain". ») ouvre ce morceau : `phrases` la perdrait. */
+    const tete = x.t.match(/^\s*([.!?…]+)/)?.[1];
+    if (tete) pousse({ texte: tete, langue: 'fr-FR' });
     for (const p of phrases(x.t)) {
       const langue = estFrancais(p) ? 'fr-FR' : enFrancais && !nettementAnglais(p) ? 'fr-FR' : 'en-US';
       pousse({ texte: langue === 'fr-FR' ? pourLaVoix(p) : p.replace(/["“”«»]/g, ''), langue });
