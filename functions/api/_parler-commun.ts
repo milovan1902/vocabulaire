@@ -72,6 +72,8 @@ export interface Env {
 export interface Contexte {
   request: Request;
   env: Env;
+  /** 406 — garde la fonction en vie pour une écriture lancée après la réponse (fourni par Cloudflare). */
+  waitUntil?: (p: Promise<unknown>) => void;
 }
 
 const PARLER_DEFAUT = 'claude-sonnet-4-5';
