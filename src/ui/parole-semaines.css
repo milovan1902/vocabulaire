@@ -3,9 +3,22 @@
 .parole-ecart.plus { color: var(--good); }
 .parole-semaines {
   position: relative; height: 150px; margin-top: 6px;
-  display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px;
+  /* 404 — 14 jours, 12 semaines ou 12 mois : le nombre de colonnes vient de --n. */
+  display: grid; grid-template-columns: repeat(var(--n, 8), minmax(0, 1fr)); gap: 4px;
   border-bottom: 1px solid var(--rule-strong);
 }
+/* 404 — le choix de l'échelle de temps, en haut de l'écran Oral. */
+.parole-echelle { display: flex; gap: 6px; margin: 0 0 14px; }
+.parole-echelle button {
+  flex: 1; min-height: 40px; padding: 8px 6px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--rule-strong); background: transparent; color: var(--ink-soft);
+  font: inherit; font-size: 13.5px;
+}
+.parole-echelle button[aria-pressed='true'] {
+  border-color: var(--chalk); color: var(--ink); font-weight: 700;
+  background: color-mix(in srgb, var(--chalk) 22%, transparent);
+}
+.parole-echelle button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
 .parole-semaines > span:not(.parole-moy) { position: relative; height: 100%; }
 .parole-semaines i { position: absolute; left: 0; right: 0; bottom: 0; height: var(--h); border-radius: 5px 5px 0 0; background: color-mix(in srgb, var(--ink-soft) 35%, transparent); }
 .parole-semaines small { position: absolute; left: 0; right: 0; bottom: calc(var(--h) + 3px); text-align: center; font-size: 10.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }

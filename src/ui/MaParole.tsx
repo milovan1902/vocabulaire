@@ -1,17 +1,21 @@
 /**
  * L'écran « Oral » — les statistiques de parole.
  *
- * CHANTIER 121 — QUATRE CHIFFRES, TIRÉS DE CE QUI EST DÉJÀ GARDÉ.
+ * CHANTIER 121 — TROIS CHIFFRES, TIRÉS DE CE QUI EST DÉJÀ GARDÉ.
+ * CHANTIER 404 — UNE ÉCHELLE AU CHOIX, TROIS COURBES.
  *
- *   1. Temps de parole, mois par mois (six mois).
- *   2. Fautes par 10 minutes, semaine par semaine (huit semaines).
- *   3. Les fautes qui reviennent, sur les 30 derniers jours.
- *   4. L'aisance : répliques par minute, début contre maintenant.
+ *   1. Temps de parole (barres).
+ *   2. Fautes par 10 minutes (courbe).
+ *   3. L'aisance : répliques par minute (courbe).
+ *
+ *   Tout en haut, l'élève choisit l'échelle : 14 jours, 12 semaines ou 12 mois.
+ *   Elle s'applique aux trois cartes. (« Tes fautes qui reviennent » a été
+ *   retiré : peu parlant.)
  *
  * Tout vient de `parler_seance` : durée, répliques, corrections. Jamais de
  * la transcription, qui est effacée à 90 jours (chantier 118) — les
- * chiffres restent donc justes après le ménage. On ne lit que ces
- * colonnes, pas la transcription : plus léger, et on peut remonter loin.
+ * chiffres restent donc justes après le ménage. Le calcul vit dans
+ * `engine/parole.ts`.
  *
  * Moins de trois conversations : seul le temps de parole s'affiche, avec
  * une phrase d'attente. Une courbe à deux points ne dit rien.
@@ -19,43 +23,86 @@
 /* CHANTIER 359 — le tu et le vous. */
 import { tvp } from './ton';
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-/* CHANTIER 359 — le temps de parole semaine par semaine, à l'échelle. */
+/* CHANTIER 359 — le temps de parole à l'échelle. */
 import './parole-semaines.css';
 import { supabase } from '../data/supabase';
 import { duree } from '../data/parler';
+import {
+  NB, plusAncienJour, pointsAisance, pointsFautes, tranches,
+  type Echelle, type JourParle, type LigneParole, type Point,
+} from '../engine/parole';
 
-type Correction = { dit: string; juste: string; pourquoi: string };
-interface Ligne {
-  finie_le: string;
-  secondes: number | null;
-  repliques: number | null;
-  /** 383 — pour écarter « Comprendre mes phrases » de l'aisance. */
-  themes?: string[] | null;
-  corrections: Correction[] | null;
-}
-
-const J = 86_400_000;
 const virgule = (n: number) => n.toFixed(1).replace('.', ',');
 
-/** Le lundi de la semaine d'une date, à minuit. */
-function lundi(d: Date): number {
-  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
-  return x.getTime();
+const CLE_ECHELLE = 'vocab:oral-echelle';
+const ECHELLES: Echelle[] = ['jours', 'semaines', 'mois'];
+
+function echelleChoisie(): Echelle {
+  try {
+    const v = localStorage.getItem(CLE_ECHELLE);
+    if (v === 'jours' || v === 'semaines' || v === 'mois') return v;
+  } catch { /* rien */ }
+  return 'semaines';
 }
 
-/** « I am agree. » et « i am agree » sont la même faute. */
-function cle(t: string): string {
-  return t.toLowerCase().replace(/[.,!?;:«»"“”]/g, '').replace(/\s+/g, ' ').trim();
+/** Les mots de chaque échelle. */
+const MOTS: Record<Echelle, {
+  bouton: string; courant: string; gauche: (n: number) => string; droite: string;
+  ilYa: (k: number) => string; note: string;
+}> = {
+  jours: {
+    bouton: '14 jours', courant: 'aujourd’hui', droite: 'aujourd’hui',
+    gauche: (n) => `il y a ${n - 1} j.`,
+    ilYa: (k) => `il y a ${k} jour${k > 1 ? 's' : ''}`,
+    note: 'jour par jour',
+  },
+  semaines: {
+    bouton: '12 semaines', courant: 'cette semaine', droite: 'cette sem.',
+    gauche: (n) => `il y a ${n - 1} sem.`,
+    ilYa: (k) => `il y a ${k} semaine${k > 1 ? 's' : ''}`,
+    note: 'semaine par semaine',
+  },
+  mois: {
+    bouton: '12 mois', courant: 'ce mois-ci', droite: 'ce mois',
+    gauche: (n) => `il y a ${n - 1} mois`,
+    ilYa: (k) => `il y a ${k} mois`,
+    note: 'mois par mois',
+  },
+};
+
+/**
+ * Une courbe 320 × 90. L'échelle part de zéro pour ne pas exagérer.
+ * Seules les tranches qui ont un point sont reliées.
+ */
+function Courbe({ points, n, dernier }: { points: Point[]; n: number; dernier: Point }) {
+  const vMax = Math.max(...points.map((p) => p.v), 1);
+  const x = (i: number) => 8 + (i * 304) / Math.max(n - 1, 1);
+  const y = (v: number) => 84 - (v / vMax) * 72;
+  const trace = points.map((p) => `${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  return (
+    <svg className="parole-courbe" viewBox="0 0 320 90" aria-hidden="true">
+      <line x1="0" y1="89" x2="320" y2="89" />
+      {points.length > 1 && <polyline points={trace} />}
+      {points.map((p) => (
+        <circle key={p.i} cx={x(p.i)} cy={y(p.v)} r={p === dernier ? 4 : 2.5}
+          className={p === dernier ? 'now' : ''} />
+      ))}
+    </svg>
+  );
 }
 
 export function MaParole({ onRetour }: { onRetour: () => void }) {
-  const [lignes, setLignes] = useState<Ligne[] | null>(null);
+  const [lignes, setLignes] = useState<LigneParole[] | null>(null);
   const [panne, setPanne] = useState(false);
-  const [ouverte, setOuverte] = useState<string | null>(null);
+  const [echelle, setEchelle] = useState<Echelle>(echelleChoisie);
   /* CHANTIER 360 — le temps parlé jour par jour, lu dans le compteur du temps de parole
      (vue parler_jour). Il remonte plus loin que les conversations gardées. null = indisponible. */
-  const [parJour, setParJour] = useState<Array<{ jour: string; secondes: number }> | null>(null);
+  const [parJour, setParJour] = useState<JourParle[] | null>(null);
+
+  const choisit = (e: Echelle) => {
+    setEchelle(e);
+    try { localStorage.setItem(CLE_ECHELLE, e); } catch { /* rien */ }
+  };
 
   useEffect(() => {
     let vivant = true;
@@ -69,102 +116,37 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
         .limit(1000);
       if (!vivant) return;
       if (error) { setPanne(true); setLignes([]); return; }
-      setLignes((data ?? []) as Ligne[]);
-      const d = new Date(lundi(new Date()) - 49 * J);
-      const depuis = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      setLignes((data ?? []) as LigneParole[]);
+      /* 404 — on lit assez loin pour l'échelle « 12 mois » ; les autres en prennent une part. */
+      const depuis = plusAncienJour(new Date());
       /* 362 — la vue d'abord ; si elle n'est pas lisible, le compteur lui-même (une ligne par échange). */
-      let jours: Array<{ jour: string; secondes: number }> | null = null;
+      let jours: JourParle[] | null = null;
       const v = await supabase.from('parler_jour').select('jour,secondes').gte('jour', depuis);
-      if (!v.error && v.data?.length) jours = v.data as Array<{ jour: string; secondes: number }>;
+      if (!v.error && v.data?.length) jours = v.data as JourParle[];
       else {
         if (v.error) console.warn('[oral] vue parler_jour illisible :', v.error.message);
         const t = await supabase.from('parler_usage').select('jour,secondes').gte('jour', depuis).limit(10000);
         if (t.error) console.warn('[oral] parler_usage illisible :', t.error.message);
-        else if (t.data?.length) jours = t.data as Array<{ jour: string; secondes: number }>;
+        else if (t.data?.length) jours = t.data as JourParle[];
       }
       if (vivant && jours) setParJour(jours);
     })();
     return () => { vivant = false; };
   }, []);
 
+  const n = NB[echelle];
+  const mots = MOTS[echelle];
+
   const st = useMemo(() => {
     const L = (lignes ?? []).filter((l) => (l.secondes ?? 0) > 0);
-    const maintenant = new Date();
-
-    /* 1. Six mois, le mois courant à droite. */
-    const mois = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(maintenant.getFullYear(), maintenant.getMonth() - 5 + i, 1);
-      return { a: d.getFullYear(), m: d.getMonth(), sec: 0 };
-    });
-    for (const l of L) {
-      const d = new Date(l.finie_le);
-      const b = mois.find((x) => x.a === d.getFullYear() && x.m === d.getMonth());
-      if (b) b.sec += l.secondes ?? 0;
-    }
-    const moisMax = Math.sqrt(Math.max(...mois.map((x) => x.sec), 60));
-
-    /* 2. Huit semaines. Une semaine sans au moins une minute parlée ne compte pas. */
-    /*
-     * 363 — chaque lundi est recalculé sur le calendrier, et non en retirant 7 × 24 h :
-     * le passage à l'heure d'hiver (25 octobre) décalait d'une heure tous les lundis
-     * d'avant, si bien qu'aucune semaine passée ne trouvait ses minutes.
-     */
-    const lundiCourant = new Date(lundi(maintenant));
-    const semaines = Array.from({ length: 8 }, (_, i) => ({
-      debut: lundi(new Date(lundiCourant.getFullYear(), lundiCourant.getMonth(), lundiCourant.getDate() - (7 - i) * 7)),
-      sec: 0, fautes: 0, parle: 0,
-    }));
-    for (const l of L) {
-      const w = lundi(new Date(l.finie_le));
-      const b = semaines.find((x) => x.debut === w);
-      if (b) { b.sec += l.secondes ?? 0; b.fautes += (l.corrections ?? []).length; }
-    }
-    /* 360 — le temps parlé : le compteur du jour s'il est lisible, sinon les conversations gardées. */
-    if (parJour && parJour.length) {
-      for (const j of parJour) {
-        const b = semaines.find((x) => x.debut === lundi(new Date(`${j.jour}T12:00:00`)));
-        if (b) b.parle += j.secondes ?? 0;
-      }
-    } else {
-      for (const s of semaines) s.parle = s.sec;
-    }
-    const points = semaines
-      .map((s, i) => ({ i, v: s.sec >= 60 ? (s.fautes * 600) / s.sec : null }))
-      .filter((p): p is { i: number; v: number } => p.v !== null);
-
-    /* 3. Trente jours. Deux fois au moins, sinon ce n'est pas une habitude. */
-    const depuis = Date.now() - 30 * J;
-    const tas = new Map<string, Correction & { fois: number }>();
-    for (const l of L) {
-      if (new Date(l.finie_le).getTime() < depuis) continue;
-      for (const c of l.corrections ?? []) {
-        const k = cle(c.dit);
-        if (!k) continue;
-        const t = tas.get(k);
-        if (t) t.fois += 1; else tas.set(k, { ...c, fois: 1 });
-      }
-    }
-    const recurrentes = [...tas.values()].filter((c) => c.fois >= 2)
-      .sort((a, b) => b.fois - a.fois).slice(0, 3);
-
-    /* 4. Moyenne des trois premières séances contre les trois dernières. */
-    const rythme = (xs: Ligne[]) => {
-      const sec = xs.reduce((s, l) => s + (l.secondes ?? 0), 0);
-      const rep = xs.reduce((s, l) => s + (l.repliques ?? 0), 0);
-      return sec > 0 ? (rep * 60) / sec : 0;
+    const T = tranches(L, parJour, echelle);
+    return {
+      n: L.length,
+      T,
+      fautes: pointsFautes(T),
+      aisance: pointsAisance(T),
     };
-    /*
-     * CHANTIER 383 — l'aisance ne compte que Discuter et les mises en scène.
-     * Dans « Comprendre mes phrases », on écoute surtout l'IA expliquer :
-     * peu de répliques par minute, et la moyenne s'effondrait sans raison.
-     */
-    const AL = L.filter((l) => !(l.themes ?? []).includes('Comprendre mes phrases'));
-    const aisanceDebut = rythme(AL.slice(0, 3));
-    const aisance = rythme(AL.slice(-3));
-    const nAisance = AL.length;
-
-    return { n: L.length, mois, moisMax, semaines, points, recurrentes, aisanceDebut, aisance, nAisance };
-  }, [lignes, parJour]);
+  }, [lignes, parJour, echelle]);
 
   const entete = (
     <>
@@ -180,25 +162,19 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
     return <section className="sousecran" aria-label="Oral">{entete}<p className="lead">Chargement…</p></section>;
   }
 
-  /* 359 — la semaine en cours contre la moyenne des 7 précédentes (semaines vides comprises). */
-  const cetteSemaine = st.semaines[7];
-  const moyenne = Math.round(st.semaines.slice(0, 7).reduce((s, w) => s + w.parle, 0) / 7 / 60);
-  const ecart = Math.round(cetteSemaine.parle / 60) - moyenne;
-  const maxSem = Math.max(...st.semaines.map((w) => w.parle), 60);
-  const aParle = st.semaines.some((w) => w.parle > 0);
-  const haut = (sec: number) => (85 * sec) / maxSem;
+  /* 404 — la tranche en cours contre la moyenne des précédentes (tranches vides comprises). */
+  const courante = st.T[n - 1];
+  const moyenne = Math.round(st.T.slice(0, n - 1).reduce((s, w) => s + w.parle, 0) / (n - 1) / 60);
+  const ecart = Math.round(courante.parle / 60) - moyenne;
+  const maxT = Math.max(...st.T.map((w) => w.parle), 60);
+  const aParle = st.T.some((w) => w.parle > 0);
+  const haut = (sec: number) => (85 * sec) / maxT;
   const assez = st.n >= 3;
 
-  /* La courbe : 320 × 90, l'échelle part de zéro pour ne pas exagérer. */
-  const vMax = Math.max(...st.points.map((p) => p.v), 1);
-  const x = (i: number) => 8 + (i * 304) / 7;
-  const y = (v: number) => 84 - (v / vMax) * 72;
-  const trace = st.points.map((p) => `${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
-  const premier = st.points[0];
-  const dernier = st.points[st.points.length - 1];
-
-  /* Le curseur d'aisance : 0 à 6 répliques par minute. */
-  const pos = (v: number) => `${Math.min(100, (v / 6) * 100)}%`;
+  const fDernier = st.fautes[st.fautes.length - 1];
+  const fPremier = st.fautes[0];
+  const aDernier = st.aisance[st.aisance.length - 1];
+  const aPremier = st.aisance[0];
 
   return (
     <section className="sousecran" aria-label="Oral">
@@ -211,110 +187,94 @@ export function MaParole({ onRetour }: { onRetour: () => void }) {
             : `${st.n} conversation${st.n > 1 ? 's' : ''} depuis le début.`}
       </p>
 
+      {/* 404 — l'échelle de temps, valable pour toutes les cartes. */}
+      <div className="parole-echelle" role="group" aria-label="Échelle de temps">
+        {ECHELLES.map((e) => (
+          <button key={e} type="button" aria-pressed={e === echelle} onClick={() => choisit(e)}>
+            {MOTS[e].bouton}
+          </button>
+        ))}
+      </div>
+
       {(st.n > 0 || aParle) && (
         <div className="parole-carte">
           <p className="parole-kicker">1 · Temps de parole</p>
           <p className="parole-chiffre">
-            <b>{duree(cetteSemaine.parle)}</b>
-            <span>cette semaine</span>
+            <b>{duree(courante.parle)}</b>
+            <span>{mots.courant}</span>
           </p>
           {moyenne > 0 && (
             <p className={`parole-ecart${ecart >= 0 ? ' plus' : ''}`}>
               {ecart >= 0 ? '+' : '−'} {Math.abs(ecart)} min par rapport à la moyenne ({moyenne} min)
             </p>
           )}
-          <div className="parole-semaines" role="img" aria-label={`Minutes parlées, 8 dernières semaines : ${st.semaines.map((w) => Math.round(w.parle / 60)).join(', ')}`}>
+          <div className="parole-semaines" style={{ '--n': n } as CSSProperties}
+            role="img" aria-label={`Minutes parlées, ${mots.note} : ${st.T.map((w) => Math.round(w.parle / 60)).join(', ')}`}>
             {moyenne > 0 && <span className="parole-moy" style={{ bottom: `${haut(moyenne * 60)}%` }} aria-hidden="true"><small>moy.</small></span>}
-            {st.semaines.map((w, i) => (
-              <span key={w.debut} className={i === 7 ? 'now' : ''} style={{ '--h': `${w.parle > 0 ? Math.max(2, haut(w.parle)) : 0.8}%` } as CSSProperties}>
-                <small>{Math.round(w.parle / 60)}</small>
+            {st.T.map((w, i) => (
+              <span key={w.cle} className={i === n - 1 ? 'now' : ''} style={{ '--h': `${w.parle > 0 ? Math.max(2, haut(w.parle)) : 0.8}%` } as CSSProperties}>
+                {w.parle > 0 && <small>{Math.round(w.parle / 60)}</small>}
                 <i />
               </span>
             ))}
           </div>
-          <div className="parole-axe"><span>il y a 7 sem.</span><span>cette sem.</span></div>
-          <p className="parole-note">En minutes, semaine par semaine. Une barre deux fois plus haute = deux fois plus de minutes.</p>
+          <div className="parole-axe"><span>{mots.gauche(n)}</span><span>{mots.droite}</span></div>
+          <p className="parole-note">En minutes, {mots.note}. Une barre deux fois plus haute = deux fois plus de minutes.</p>
         </div>
       )}
 
       {st.n > 0 && !assez && (
         <p className="hint">
-          Les fautes, les habitudes et l’aisance s’afficheront à partir de trois conversations.
+          Les fautes et l’aisance s’afficheront à partir de trois conversations.
         </p>
       )}
 
       {assez && (
         <div className="parole-carte">
           <p className="parole-kicker">2 · Fautes par 10 minutes</p>
-          {dernier ? (
+          {fDernier ? (
             <>
               <p className="parole-chiffre">
-                <b>{virgule(dernier.v)}</b>
-                {premier && premier !== dernier && (
-                  <span className={dernier.v <= premier.v ? 'mieux' : ''}>
-                    contre {virgule(premier.v)} il y a {8 - premier.i} semaine{8 - premier.i > 1 ? 's' : ''}
+                <b>{virgule(fDernier.v)}</b>
+                {fPremier && fPremier !== fDernier && (
+                  <span className={fDernier.v <= fPremier.v ? 'mieux' : ''}>
+                    contre {virgule(fPremier.v)} {mots.ilYa(n - 1 - fPremier.i)}
                   </span>
                 )}
               </p>
-              <svg className="parole-courbe" viewBox="0 0 320 90" aria-hidden="true">
-                <line x1="0" y1="89" x2="320" y2="89" />
-                {st.points.length > 1 && <polyline points={trace} />}
-                {st.points.map((p) => (
-                  <circle key={p.i} cx={x(p.i)} cy={y(p.v)} r={p === dernier ? 4 : 2.5}
-                    className={p === dernier ? 'now' : ''} />
-                ))}
-              </svg>
-              <div className="parole-axe"><span>il y a 8 sem.</span><span>semaine par semaine</span><span>cette sem.</span></div>
+              <Courbe points={st.fautes} n={n} dernier={fDernier} />
+              <div className="parole-axe"><span>{mots.gauche(n)}</span><span>{mots.note}</span><span>{mots.droite}</span></div>
               <p className="parole-note">Le nombre de corrections ramené à 10 min. Plus la courbe descend, mieux c’est.</p>
             </>
           ) : (
-            <p className="parole-note">Pas de conversation ces huit dernières semaines.</p>
+            <p className="parole-note">Pas assez de parole sur cette période.</p>
           )}
         </div>
       )}
 
       {assez && (
         <div className="parole-carte">
-          <p className="parole-kicker">3 · {tvp('Tes fautes qui reviennent', 'Vos fautes qui reviennent')}</p>
-          {st.recurrentes.length === 0 ? (
-            <p className="parole-note">Aucune faute répétée ces 30 derniers jours. Bravo.</p>
-          ) : (
+          <p className="parole-kicker">3 · Aisance</p>
+          {aDernier ? (
             <>
-              <div className="parole-fautes">
-                {st.recurrentes.map((c) => {
-                  const k = cle(c.dit);
-                  return (
-                    <button key={k} onClick={() => setOuverte(ouverte === k ? null : k)}>
-                      <span className="parole-faute">
-                        <s>{c.dit}</s> → <i>{c.juste}</i>
-                      </span>
-                      <b>×{c.fois}</b>
-                      {ouverte === k && c.pourquoi && <small>{c.pourquoi}</small>}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="parole-note">Les corrections les plus fréquentes sur le dernier mois. Un appui ouvre l’explication.</p>
+              <p className="parole-chiffre">
+                <b>{virgule(aDernier.v)}</b>
+                <span>répliques par minute</span>
+                {aPremier && aPremier !== aDernier && (
+                  <span className={aDernier.v >= aPremier.v ? 'mieux' : ''}>
+                    contre {virgule(aPremier.v)} {mots.ilYa(n - 1 - aPremier.i)}
+                  </span>
+                )}
+              </p>
+              <Courbe points={st.aisance} n={n} dernier={aDernier} />
+              <div className="parole-axe"><span>{mots.gauche(n)}</span><span>{mots.note}</span><span>{mots.droite}</span></div>
+              <p className="parole-note">
+                {tvp('Plus tu réponds vite', 'Plus vous répondez vite')}, plus l’échange ressemble à une vraie conversation. Plus la courbe monte, mieux c’est. Compté sur Discuter et les mises en scène.
+              </p>
             </>
+          ) : (
+            <p className="parole-note">Pas assez de parole sur cette période.</p>
           )}
-        </div>
-      )}
-
-      {assez && st.nAisance >= 3 && (
-        <div className="parole-carte">
-          <p className="parole-kicker">4 · Aisance</p>
-          <p className="parole-chiffre">
-            <b>{virgule(st.aisance)}</b>
-            <span>répliques par minute</span>
-          </p>
-          <div className="parole-jauge" aria-hidden="true">
-            <i className="rempli" style={{ width: pos(st.aisance) }} />
-            <i className="depart" style={{ left: pos(st.aisanceDebut) }} />
-            <i className="now" style={{ left: pos(st.aisance) }} />
-          </div>
-          <p className="parole-note">
-            Au début : {virgule(st.aisanceDebut)}. {tvp('Plus tu réponds vite', 'Plus vous répondez vite')}, plus l’échange ressemble à une vraie conversation. Compté sur Discuter et les mises en scène.
-          </p>
         </div>
       )}
     </section>
