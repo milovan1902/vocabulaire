@@ -36,6 +36,7 @@
  */
 /* CHANTIER 359 — le tu et le vous. */
 import { tvp } from './ton';
+import { PointsAttente } from './PointsAttente';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { parle, nettoie } from './speech';
 import { ReprendreMots } from './ReprendreMots';
@@ -383,7 +384,7 @@ export function ParlerSeance({
             {entendu || '…'}
           </p>
         )}
-        {enVol && <p className="seance-bulle lui attente">…</p>}
+        {enVol && <p className="seance-bulle lui attente" role="status" aria-label="L’IA répond"><PointsAttente /></p>}
       </div>
 
       {erreur && <p className="seance-erreur">{erreur}</p>}

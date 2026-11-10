@@ -1,0 +1,15 @@
+/* CHANTIER 405 — trois points qui s'allument un à un, en boucle. */
+.points-attente { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; vertical-align: middle; }
+.points-attente i {
+  width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.25;
+  animation: points-attente 1.2s infinite ease-in-out;
+}
+.points-attente i:nth-child(2) { animation-delay: 0.2s; }
+.points-attente i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes points-attente {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .points-attente i { animation: none; opacity: 0.6; }
+}

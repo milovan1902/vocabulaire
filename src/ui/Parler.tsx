@@ -67,6 +67,7 @@ import './parler-onglets.css';
 /* CHANTIER 359 — le tu et le vous. */
 import { tvp } from './ton';
 import { AccordParler } from './AccordParler';
+import { PointsAttente } from './PointsAttente';
 import { declareProfil, type ProfilParler } from '../data/profilParler';
 
 /**
@@ -586,14 +587,16 @@ export function Parler({
             </button>
           ))}
         </div>
-        <button className="parler-inspi-carte" disabled={!ideesEncore || ideesEtat === 'charge'} onClick={() => void inspire()}>
+        <button className="parler-inspi-carte" aria-busy={ideesEtat === 'charge'} disabled={!ideesEncore || ideesEtat === 'charge'} onClick={() => void inspire()}>
           <span className="parler-inspi-icone" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" /></svg>
           </span>
           <span className="parler-inspi-txt">
-            <b>{ideesEtat === 'charge' ? 'L’IA invente…' : classeChangee && ideesEncore ? 'Trois scènes à mon nouveau niveau' : idees ? 'Pas d’inspiration ? Trois autres' : 'Pas d’inspiration ?'}</b>
+            <b>{ideesEtat === 'charge' ? <>L’IA invente<PointsAttente /></> : classeChangee && ideesEncore ? 'Trois scènes à mon nouveau niveau' : idees ? 'Pas d’inspiration ? Trois autres' : 'Pas d’inspiration ?'}</b>
             <small>
-              {ideesEtat === 'erreur'
+              {ideesEtat === 'charge'
+                ? 'Quelques secondes, l’IA écrit trois scènes.'
+                : ideesEtat === 'erreur'
                 ? tvp('L’IA n’a pas répondu. Réessaie dans un instant.', 'L’IA n’a pas répondu. Réessayez dans un instant.')
                 : classeChangee && ideesEncore
                   ? tvp('Ta classe a changé : ces scènes ont été inventées pour l’ancienne.', 'Votre niveau a changé : ces scènes ont été inventées pour l’ancien.')
