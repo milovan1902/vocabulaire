@@ -81,7 +81,20 @@ export const onRequestPost = async ({ request, env, waitUntil }: Contexte): Prom
   const t0 = Date.now();
   const T: Record<string, number> = {};
   const marque = (k: string) => { T[k] = Date.now() - t0; };
-  const trace = (issue: string) => console.log('[parler]', JSON.stringify({ issue, ...T }));
+  /* 407 — la durée PROPRE de chaque appel, pour estimer ce qu'aurait pris l'ancien déroulement, un à un. */
+  const D: Record<string, number> = {};
+  const chrono = <A,>(k: string, p: Promise<A>): Promise<A> => {
+    const t = Date.now();
+    return p.finally(() => { D[k] = Date.now() - t; });
+  };
+  const trace = (issue: string) => {
+    const reel = T.fin ?? Date.now() - t0;
+    /* Avant le 406, tout s'attendait à la suite : le total était la SOMME des étapes. */
+    const seq = (T.auth ?? 0)
+      + (D.profil ?? 0) + (D.budget ?? 0) + (D.scene ?? 0)
+      + (D.f_entree ?? 0) + (D.modele ?? 0) + (D.note ?? 0) + (D.quota ?? 0) + (D.f_sortie ?? 0);
+    console.log('[parler]', JSON.stringify({ issue, total: reel, seq_estime: seq, gain_estime: seq - reel, ...T, appels: D }));
+  };
 
   const qui = await utilisateurEtEmail(request, env);
   marque('auth');
@@ -107,9 +120,9 @@ export const onRequestPost = async ({ request, env, waitUntil }: Contexte): Prom
    * épuisé (429).
    */
   const [rProfil, rBudget, rScene] = await Promise.allSettled([
-    profilDe(userId, env),
-    Promise.all([consommationDepuis(userId, q.depuis, env), enPause(q, env)]),
-    sceneDeFiche(userId, corps.fiche, env),
+    chrono('profil', profilDe(userId, env)),
+    chrono('budget', Promise.all([consommationDepuis(userId, q.depuis, env), enPause(q, env)])),
+    chrono('scene', sceneDeFiche(userId, corps.fiche, env)),
   ]);
   marque('lectures');
 
@@ -183,10 +196,10 @@ export const onRequestPost = async ({ request, env, waitUntil }: Contexte): Prom
   const dernier = [...messages].reverse().find((m) => m.role === 'user');
   /* Le prompt est construit AVANT de lancer quoi que ce soit : s'il échoue, aucun appel n'est parti. */
   const systeme = promptSysteme(fiche, scene);
-  const entree = filtre && dernier ? modere(dernier.content, env) : null;
+  const entree = filtre && dernier ? chrono('f_entree', modere(dernier.content, env)) : null;
   /* Une promesse qu'on n'attend pas ne doit pas faire tomber la fonction. */
   entree?.catch(() => undefined);
-  const appel = appelleClaude(
+  const appel = chrono('modele', appelleClaude(
     env,
     modele,
     systeme,
@@ -199,7 +212,7 @@ export const onRequestPost = async ({ request, env, waitUntil }: Contexte): Prom
      */
     /* 371 — une explication demande plus de place qu'une réplique. */
     fiche.phrases?.length ? 420 : 160,
-  );
+  ));
   appel.catch(() => undefined);
 
   /*
@@ -245,13 +258,13 @@ export const onRequestPost = async ({ request, env, waitUntil }: Contexte): Prom
    * budget (après la note), et faire relire la réponse par le filtre. Le
    * temps, lui, est bien compté : l'appel a eu lieu.
    */
-  const note = noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env);
+  const note = chrono('note', noteConsommation(userId, modele, resultat.usage, corps.secondes ?? 0, env));
   note.catch(() => undefined);
   /* La relecture du quota peut échouer après un appel réussi : alors on rend le budget d'avant. */
   const apres = note
-    .then(() => consommationDepuis(userId, q.depuis, env))
+    .then(() => chrono('quota', consommationDepuis(userId, q.depuis, env)))
     .then((c) => budgetDe(c, q), () => null);
-  const sortie = filtre ? modere(resultat.texte, env) : null;
+  const sortie = filtre ? chrono('f_sortie', modere(resultat.texte, env)) : null;
   sortie?.catch(() => undefined);
 
   /*

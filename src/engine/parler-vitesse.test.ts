@@ -134,6 +134,24 @@ describe('406 — le filtre d\'entrée tourne pendant le grand modèle', () => {
   });
 });
 
+describe('407 — le chronométrage mesure le gain', () => {
+  it('le journal donne le total réel, la somme des étapes et le gain estimé', async () => {
+    const journal = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    simule({});
+    const { p } = appelle();
+    await p;
+    const ligne = journal.mock.calls.find((c) => c[0] === '[parler]');
+    expect(ligne).toBeTruthy();
+    const m = JSON.parse(String(ligne?.[1])) as Record<string, number | string | Record<string, number>>;
+    expect(m.issue).toBe('ok');
+    for (const k of ['total', 'seq_estime', 'gain_estime']) expect(typeof m[k]).toBe('number');
+    /* Le simulateur fait des étapes parallèles : la somme dépasse le total. */
+    expect(Number(m.gain_estime)).toBeGreaterThan(50);
+    const a = m.appels as Record<string, number>;
+    for (const k of ['profil', 'budget', 'modele', 'f_entree', 'f_sortie', 'note', 'quota']) expect(a[k]).toBeGreaterThanOrEqual(0);
+  });
+});
+
 describe('406 — le filtre de sortie reste obligatoire', () => {
   it('réponse refusée : remplacée par une phrase fixe, temps bien compté', async () => {
     simule({ sonnet: 'BADREPLY', haikuOut: 'SEXE' });
