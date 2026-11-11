@@ -17,7 +17,8 @@ type Cadre = { x1: number; y1: number; x2: number; y2: number };
 type Coin = 'hg' | 'hd' | 'bg' | 'bd';
 const CADRE0: Cadre = { x1: 0.03, y1: 0.03, x2: 0.97, y2: 0.97 };
 const ECART = 0.12;
-const NOMBRES = [5, 10, 15, 20];
+const NB_MIN = 3;
+const NB_MAX = 30;
 const COINS: Coin[] = ['hg', 'hd', 'bg', 'bd'];
 
 export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
@@ -138,22 +139,29 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
     </>
   );
 
-  /* ---------------- Recadrage ---------------- */
-  if (url) {
-    return (
-      <div style={cadreBox}>
+  const reglage = (
+    <>
       <div className="tabs" role="tablist" aria-label="Type de photo">
         <button role="tab" aria-selected={mode === 'liste'} className={mode === 'liste' ? 'on' : ''} disabled={lecture} onClick={() => setMode('liste')}>Une liste</button>
         <button role="tab" aria-selected={mode === 'texte'} className={mode === 'texte' ? 'on' : ''} disabled={lecture} onClick={() => setMode('texte')}>Un texte</button>
       </div>
       {mode === 'texte' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span className="hint" style={{ margin: 0 }}>Combien de mots ?</span>
-          {NOMBRES.map((n) => (
-            <button key={n} className={nombre === n ? 'btn' : 'btn ghost'} style={{ margin: 0, padding: '6px 12px', minWidth: 0 }} aria-pressed={nombre === n} disabled={lecture} onClick={() => setNombre(n)}>{n}</button>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 48px', alignItems: 'center', gap: 8 }}>
+          <button className="btn ghost" style={{ margin: 0, padding: 0, minWidth: 0, minHeight: 44 }} aria-label="Un mot de moins" disabled={lecture || nombre <= NB_MIN} onClick={() => setNombre((n) => Math.max(NB_MIN, n - 1))}>−</button>
+          <span style={{ textAlign: 'center' }}>
+            <b style={{ fontSize: 20 }}>{nombre}</b> <span className="hint" style={{ margin: 0 }}>mots à extraire</span>
+          </span>
+          <button className="btn ghost" style={{ margin: 0, padding: 0, minWidth: 0, minHeight: 44 }} aria-label="Un mot de plus" disabled={lecture || nombre >= NB_MAX} onClick={() => setNombre((n) => Math.min(NB_MAX, n + 1))}>+</button>
         </div>
       )}
+    </>
+  );
+
+  /* ---------------- Recadrage ---------------- */
+  if (url) {
+    return (
+      <div style={cadreBox}>
+      {reglage}
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
           <b>{mode === 'texte' ? 'Recadre sur le texte' : 'Recadre sur la liste'}</b>
           <span className="hint" style={{ margin: 0, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Glisse les coins</span>
@@ -185,10 +193,10 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
             ))}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn ghost" style={{ flex: 'none', margin: 0 }} disabled={lecture} onClick={() => void pivote()} aria-label="Pivoter la photo d’un quart de tour">⟳ Pivoter</button>
-          <button className="btn ghost" style={{ flex: 1, margin: 0 }} disabled={lecture} onClick={() => setCadre(CADRE0)}>Reprendre</button>
-          <button className="btn" style={{ flex: 1, margin: 0 }} disabled={lecture} onClick={() => void envoie()}>{lecture ? 'Lecture…' : 'Envoyer'}</button>
+        <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr 1fr', gap: 8 }}>
+          <button className="btn ghost" style={{ margin: 0, padding: 0, minWidth: 0 }} disabled={lecture} onClick={() => void pivote()} aria-label="Pivoter la photo d’un quart de tour" title="Pivoter">⟳</button>
+          <button className="btn ghost" style={{ margin: 0, minWidth: 0 }} disabled={lecture} onClick={() => setCadre(CADRE0)}>Reprendre</button>
+          <button className="btn" style={{ margin: 0, minWidth: 0 }} disabled={lecture} onClick={() => void envoie()}>{lecture ? 'Lecture…' : 'Envoyer'}</button>
         </div>
         <button className="rowlink" disabled={lecture} onClick={() => setUrl(null)}><span>Annuler cette photo</span></button>
         <p className="hint" style={{ margin: 0, textAlign: 'center' }}>La photo n’est comptée qu’une fois la liste lue.</p>
@@ -201,18 +209,7 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
   /* ---------------- Prise de vue ---------------- */
   return (
     <div style={cadreBox}>
-      <div className="tabs" role="tablist" aria-label="Type de photo">
-        <button role="tab" aria-selected={mode === 'liste'} className={mode === 'liste' ? 'on' : ''} disabled={lecture} onClick={() => setMode('liste')}>Une liste</button>
-        <button role="tab" aria-selected={mode === 'texte'} className={mode === 'texte' ? 'on' : ''} disabled={lecture} onClick={() => setMode('texte')}>Un texte</button>
-      </div>
-      {mode === 'texte' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span className="hint" style={{ margin: 0 }}>Combien de mots ?</span>
-          {NOMBRES.map((n) => (
-            <button key={n} className={nombre === n ? 'btn' : 'btn ghost'} style={{ margin: 0, padding: '6px 12px', minWidth: 0 }} aria-pressed={nombre === n} disabled={lecture} onClick={() => setNombre(n)}>{n}</button>
-          ))}
-        </div>
-      )}
+      {reglage}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 150, padding: 16, borderRadius: 12, border: '1.5px dashed var(--rule-strong, var(--rule))', textAlign: 'center' }}>
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.7 }}>
           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
