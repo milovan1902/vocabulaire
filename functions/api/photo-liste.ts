@@ -125,7 +125,9 @@ async function note(userId: string, modele: string, u: Usage, mots: number, env:
 
 const CONSIGNE = `Tu lis la photo d'une liste de vocabulaire d'un élève français qui apprend l'anglais (cahier, fiche du professeur, page de manuel).
 
-Ta réponse a DEUX parties, dans cet ordre.
+Ta réponse commence par une ligne « SENS : n » où n vaut 0, 90, 180 ou 270 : c'est de combien de degrés, dans le sens INVERSE des aiguilles d'une montre, il faut tourner la photo pour que le texte se lise à l'endroit (0 si elle est déjà droite). Si n n'est pas 0, écris SEULEMENT cette ligne et arrête-toi.
+
+Puis ta réponse a DEUX parties, dans cet ordre.
 
 1. Une ligne « LU », puis la photo recopiée telle quelle, une ligne par ligne de la photo. Dans un tableau, sépare les cellules par « | », en commençant par la ligne d'en-tête si elle existe. N'ajoute, ne traduis et ne corrige rien dans cette partie.
 
@@ -144,7 +146,29 @@ Si la photo est un tableau qui associe deux informations différentes (un pays e
 Exemple : « Espagne | Spanish », « Algérie | Arabic », « Maroc | Arabic » donnent seulement : Spanish ; l'espagnol, Arabic ; l'arabe (et rien pour Espagne, Algérie, Maroc).
 Une cellule qui contient plusieurs mots anglais (« Dutch, French, German », « English (and Welsh) ») donne une ligne par mot. Un mot qui revient plusieurs fois n'est écrit qu'une fois.
 Ignore tout ce qui n'est pas du vocabulaire : consignes, exercices, phrases d'exemple, dates, noms de personnes, noms de villes et de rues.
-Si la photo ne contient aucune liste de vocabulaire anglais, réponds exactement : AUCUN`;
+Si la photo ne contient aucune liste de vocabulaire anglais (un texte suivi, un dessin, une page illisible ou floue), écris « SENS : 0 » puis, sur la ligne suivante, exactement : AUCUN
+N'INVENTE JAMAIS une copie : si tu n'arrives pas à lire le texte avec certitude, réponds AUCUN plutôt que de deviner.`;
+
+/** 408 — « Un texte » : l'IA choisit des mots utiles dans un texte et les traduit. */
+const CONSIGNE_TEXTE = `Tu lis la photo d'un texte en anglais (page de manuel, texte du cahier, fiche, écriture à la main) pour un élève français qui apprend l'anglais.
+
+Ta réponse commence par une ligne « SENS : n » où n vaut 0, 90, 180 ou 270 : c'est de combien de degrés, dans le sens INVERSE des aiguilles d'une montre, il faut tourner la photo pour que le texte se lise à l'endroit (0 si elle est déjà droite). Si n n'est pas 0, écris SEULEMENT cette ligne et arrête-toi.
+
+Puis ta réponse a DEUX parties, dans cet ordre.
+
+1. Une ligne « LU », puis le texte recopié tel quel, une ligne par ligne de la photo. N'ajoute, ne traduis et ne corrige rien dans cette partie.
+
+2. Une ligne « MOTS », puis les mots à apprendre, un par ligne, de cette forme :
+mot anglais ; traduction française ; mot tel qu'il est écrit dans le texte
+
+Règles :
+- Choisis les mots les plus utiles à apprendre pour un élève : noms, verbes, adjectifs, expressions courantes. Écarte les mots outils (the, a, is, and, of…), les prénoms, noms de lieux, nombres et dates.
+- Le mot anglais est donné sous sa forme de dictionnaire (singulier, verbe à l'infinitif sans "to", ex. children → child, played → play). La troisième colonne recopie la forme exacte lue dans le texte.
+- Chaque mot doit être écrit dans le texte. N'ajoute JAMAIS un mot qui n'y est pas.
+- La traduction est celle qui convient au sens du texte, courte.
+- Pas de doublon, pas de titre, pas de numéro, pas de commentaire.
+- Donne le nombre de mots demandé dans le message de l'utilisateur, ou moins si le texte n'en contient pas assez.
+- Si tu ne parviens pas à lire le texte avec certitude, ou s'il n'y a pas de texte en anglais, écris « SENS : 0 » puis, sur la ligne suivante, exactement : AUCUN. N'INVENTE JAMAIS un texte.`;
 
 /*
  * CHANTIER 326 — la consigne ne suffisait pas : le tableau « Pays (français) |
@@ -192,8 +216,46 @@ function lireReponse(texte: string): Array<{ en: string; fr: string }> {
   if (!lu) return tous;
   const cellules = cellulesAnglaises(lu);
   const gardes = tous.filter((m) => estEcrit(m.en, cellules));
-  /* Copie ratée (rien ne correspond) : on rend tout plutôt que rien. */
-  return gardes.length ? gardes : tous;
+  /* 408 — rien ne correspond à la copie : le modèle a inventé. On ne rend RIEN (avant : tout). */
+  return gardes;
+}
+
+/**
+ * 408 — la ligne « SENS : n » : n degrés dans le sens INVERSE des aiguilles (mesuré :
+ * c'est ce que le modèle répond, quelle que soit la formulation). On rend l'angle en
+ * sens HORAIRE, celui du téléphone, et le reste de la réponse.
+ */
+function lisSens(texte: string): { sens: number; reste: string } {
+  const m = texte.match(/^\s*SENS\s*:?\s*(\d{1,3})[^\n]*\n?/i);
+  if (!m) return { sens: 0, reste: texte };
+  const n = Number(m[1]);
+  return { sens: n === 90 || n === 180 || n === 270 ? 360 - n : 0, reste: texte.slice(m[0].length).trim() };
+}
+
+/** 408 — « Un texte » : mot ; traduction ; forme écrite. Seuls les mots lus dans la copie passent. */
+function lireTexte(texte: string, nombre: number): Array<{ en: string; fr: string }> {
+  if (/^\s*AUCUN\s*$/i.test(texte)) return [];
+  const { lu, mots } = separe(texte);
+  if (!lu) return [];
+  const cellules = [lu.flatMap((r) => r.flatMap(jetons))];
+  const vus = new Set<string>();
+  const sortie: Array<{ en: string; fr: string }> = [];
+  for (const brut of mots.split('\n')) {
+    const l = brut.replace(/^\s*(?:[-•*]|\d+[.)])\s*/, '').trim();
+    const p = l.split(';').map((x) => x.trim());
+    if (p.length < 2) continue;
+    const en = p[0].replace(/\s*,\s*/g, ' / ');
+    const fr = p[1];
+    const ecrit = p[2] || en;
+    if (!en || !fr || en.length > 80 || fr.length > 120) continue;
+    if (!estEcrit(ecrit, cellules) && !estEcrit(en, cellules)) continue;
+    const k = en.toLowerCase();
+    if (vus.has(k)) continue;
+    vus.add(k);
+    sortie.push({ en, fr });
+    if (sortie.length >= nombre) break;
+  }
+  return sortie;
 }
 
 /* CHANTIER 314 — un tableau « Pays (français) | Langue (anglais) » renvoyait AUCUN :
@@ -266,7 +328,7 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
   if (!qui) return json({ erreur: 'compte requis' }, 401);
   const offert = !abonne(qui.email, env);
 
-  let corps: { image?: string; type?: string };
+  let corps: { image?: string; type?: string; mode?: string; nombre?: number; angle?: number };
   try {
     corps = (await request.json()) as typeof corps;
   } catch {
@@ -288,6 +350,8 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
       return json({ erreur: causeDe(e) }, 503);
     }
   }
+  const texteMode = corps.mode === 'texte';
+  const nombre = Math.min(30, Math.max(3, Math.round(Number(corps.nombre) || 10)));
   const maxLues = offert ? PHOTOS_OFFERTES : PHOTOS_SEMAINE;
   const maxEssais = offert ? ESSAIS_OFFERTS : ESSAIS_SEMAINE;
   if (!admin && (avant.lues >= maxLues || avant.essais >= maxEssais)) {
@@ -312,12 +376,17 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
         model: modele,
         /* ~100 mots, et la copie de la photo (326) : 3 500 jetons bornent la facture. */
         max_tokens: 3500,
-        system: CONSIGNE,
+        system: texteMode ? CONSIGNE_TEXTE : CONSIGNE,
         messages: [{
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: type, data: corps.image } },
-            { type: 'text', text: 'Voici la liste.' },
+            {
+              type: 'text',
+              text: [
+                texteMode ? `Voici le texte. Donne-moi ${nombre} mots à apprendre au plus.` : 'Voici la liste.',
+              ].join(' '),
+            },
           ],
         }],
       }),
@@ -335,7 +404,11 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
     return json({ erreur: 'la lecture de la photo n’a pas répondu' }, 502);
   }
 
-  const mots = lireReponse(texte);
+  const { sens, reste } = lisSens(texte);
+  /* 408 — photo de travers : on ne note rien, le téléphone la redresse et la renvoie (deux fois au plus, côté téléphone). */
+  if (sens !== 0) return json({ erreur: 'photo de travers', angle: sens }, 409);
+
+  const mots = texteMode ? lireTexte(reste, nombre) : lireReponse(reste);
   await note(qui.id, modele, usage, mots.length, env);
 
   const etat = etatDe(avant.lues + (mots.length ? 1 : 0), admin, offert && !admin);

@@ -17,16 +17,22 @@ export interface EtatPhoto {
   offert?: boolean;
 }
 
-export type CodePhoto = 'compte' | 'ferme' | 'quota' | 'vide' | 'panne';
+export type CodePhoto = 'compte' | 'ferme' | 'quota' | 'vide' | 'panne' | 'sens';
+
+/** 408 — « Une liste » (deux colonnes) ou « Un texte » (l'IA choisit des mots). */
+export type ModePhoto = 'liste' | 'texte';
 
 export class ErreurPhoto extends Error {
   code: CodePhoto;
   etat?: EtatPhoto;
-  constructor(message: string, code: CodePhoto, etat?: EtatPhoto) {
+  /** 408 — code 'sens' : l'angle (sens horaire) dont il faut tourner la photo. */
+  angle?: number;
+  constructor(message: string, code: CodePhoto, etat?: EtatPhoto, angle?: number) {
     super(message);
     this.name = 'ErreurPhoto';
     this.code = code;
     this.etat = etat;
+    this.angle = angle;
   }
 }
 
@@ -40,10 +46,11 @@ async function appelle<T>(corps?: unknown): Promise<T> {
     headers: { authorization: `Bearer ${t}`, ...(corps ? { 'content-type': 'application/json' } : {}) },
     body: corps ? JSON.stringify(corps) : undefined,
   });
-  const d = (await r.json().catch(() => ({}))) as { erreur?: string; etat?: EtatPhoto };
+  const d = (await r.json().catch(() => ({}))) as { erreur?: string; etat?: EtatPhoto; angle?: number };
   if (r.status === 401) throw new ErreurPhoto('compte requis', 'compte');
   if (r.status === 403) throw new ErreurPhoto('réservé aux abonnés', 'ferme');
   if (r.status === 429) throw new ErreurPhoto('quota épuisé', 'quota', d.etat);
+  if (r.status === 409) throw new ErreurPhoto('photo de travers', 'sens', undefined, d.angle);
   if (r.status === 422) throw new ErreurPhoto('aucun mot lu', 'vide', d.etat);
   if (!r.ok) throw new ErreurPhoto(`${d.erreur ?? 'erreur'} · ${r.status}`, 'panne');
   /* 283 — une réponse sans JSON (route absente, page de l'appli renvoyée à la place) est une panne. */
@@ -55,8 +62,29 @@ export function etatPhoto(): Promise<EtatPhoto> {
   return appelle<EtatPhoto>();
 }
 
-export function lirePhoto(image: string, type: string): Promise<{ mots: Array<{ en: string; fr: string }>; etat: EtatPhoto }> {
-  return appelle({ image, type });
+export function lirePhoto(
+  image: string,
+  type: string,
+  options: { mode?: ModePhoto; nombre?: number; angle?: number } = {},
+): Promise<{ mots: Array<{ en: string; fr: string }>; etat: EtatPhoto }> {
+  return appelle({ image, type, ...options });
+}
+
+/** 408 — tourne une image (adresse ou data URL) de 90, 180 ou 270° dans le sens horaire. */
+export async function tourne(src: string, angle: number): Promise<string> {
+  const img = new Image();
+  await new Promise<void>((ok, ko) => { img.onload = () => ok(); img.onerror = () => ko(new Error('image illisible')); img.src = src; });
+  const a = ((angle % 360) + 360) % 360;
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const c = document.createElement('canvas');
+  c.width = a === 90 || a === 270 ? H : W;
+  c.height = a === 90 || a === 270 ? W : H;
+  const ctx = c.getContext('2d');
+  if (!ctx) throw new ErreurPhoto('canvas indisponible', 'panne');
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate((a * Math.PI) / 180);
+  ctx.drawImage(img, -W / 2, -H / 2);
+  return c.toDataURL('image/jpeg', 0.9);
 }
 
 /** « dimanche 18 octobre » */

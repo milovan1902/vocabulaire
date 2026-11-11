@@ -11,12 +11,13 @@
 /* CHANTIER 358 — le tu et le vous : élève = tu, adulte = vous. */
 import { tvp } from './ton';
 import { useEffect, useRef, useState, type PointerEvent as PE } from 'react';
-import { ErreurPhoto, lirePhoto, prepareImage, quotaDit, type EtatPhoto } from '../data/photoListe';
+import { ErreurPhoto, lirePhoto, prepareImage, quotaDit, tourne, type EtatPhoto, type ModePhoto } from '../data/photoListe';
 
 type Cadre = { x1: number; y1: number; x2: number; y2: number };
 type Coin = 'hg' | 'hd' | 'bg' | 'bd';
 const CADRE0: Cadre = { x1: 0.03, y1: 0.03, x2: 0.97, y2: 0.97 };
 const ECART = 0.12;
+const NOMBRES = [5, 10, 15, 20];
 const COINS: Coin[] = ['hg', 'hd', 'bg', 'bd'];
 
 export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
@@ -30,6 +31,8 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
   const [cadre, setCadre] = useState<Cadre>(CADRE0);
   const [lecture, setLecture] = useState(false);
   const [message, setMessage] = useState('');
+  const [mode, setMode] = useState<ModePhoto>('liste');
+  const [nombre, setNombre] = useState(10);
   const appareil = useRef<HTMLInputElement>(null);
   const galerie = useRef<HTMLInputElement>(null);
   const zone = useRef<HTMLDivElement>(null);
@@ -75,20 +78,49 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
     }));
   }
 
+  /** 408 — pivote la photo d'un quart de tour (sens horaire) ; le cadre repart de zéro. */
+  async function pivote() {
+    if (!url || lecture) return;
+    try {
+      const neuve = await tourne(url, 90);
+      setCadre(CADRE0);
+      setUrl(neuve);
+    } catch {
+      setMessage(tvp('La photo n’a pas pu être pivotée.', 'La photo n’a pas pu être pivotée.'));
+    }
+  }
+
   async function envoie() {
     if (!image.current || lecture) return;
     setLecture(true);
     setMessage('');
     try {
-      const { image: data, type } = await prepareImage(image.current, cadre);
-      const r = await lirePhoto(data, type);
+      const { image: data } = await prepareImage(image.current, cadre);
+      /* 408 — photo de travers : le serveur dit de combien la tourner ; on la redresse ici et on renvoie (deux fois au plus). */
+      let r;
+      let envoi = data;
+      let tenues = 0;
+      for (;;) {
+        try {
+          r = await lirePhoto(envoi, 'image/jpeg', { mode, nombre });
+          break;
+        } catch (e) {
+          if (!(e instanceof ErreurPhoto) || e.code !== 'sens' || !e.angle || tenues >= 2) throw e;
+          tenues += 1;
+          const droite = await tourne(`data:image/jpeg;base64,${envoi}`, e.angle);
+          envoi = droite.slice(droite.indexOf(',') + 1);
+        }
+      }
       onEtat(r.etat);
       setUrl(null);
       onMots(r.mots);
     } catch (e) {
       if (e instanceof ErreurPhoto) {
         if (e.etat) onEtat(e.etat);
-        if (e.code === 'vide') setMessage(tvp('Aucun mot lu sur cette photo. Recadre plus près de la liste, ou reprends-la avec plus de lumière. Elle n’est pas comptée.', 'Aucun mot lu sur cette photo. Recadrez plus près de la liste, ou reprenez-la avec plus de lumière. Elle n’est pas comptée.'));
+        if (e.code === 'vide') setMessage(mode === 'texte'
+          ? tvp('Aucun texte anglais lu avec certitude. Recadre sur le texte, tourne la photo si besoin, ou reprends-la avec plus de lumière. Elle n’est pas comptée.', 'Aucun texte anglais lu avec certitude. Recadrez sur le texte, tournez la photo si besoin, ou reprenez-la avec plus de lumière. Elle n’est pas comptée.')
+          : tvp('Aucun mot lu sur cette photo. Recadre plus près de la liste, tourne-la si besoin, ou reprends-la avec plus de lumière. Elle n’est pas comptée.', 'Aucun mot lu sur cette photo. Recadrez plus près de la liste, tournez-la si besoin, ou reprenez-la avec plus de lumière. Elle n’est pas comptée.'));
+        else if (e.code === 'sens') setMessage(tvp('La photo est restée de travers. Pivote-la avec le bouton, puis renvoie-la. Elle n’est pas comptée.', 'La photo est restée de travers. Pivotez-la avec le bouton, puis renvoyez-la. Elle n’est pas comptée.'));
         else if (e.code === 'quota') setUrl(null);
         else setMessage(`La lecture n’a pas abouti (${e.message}). La photo n’est pas comptée.`);
       } else {
@@ -110,8 +142,20 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
   if (url) {
     return (
       <div style={cadreBox}>
+      <div className="tabs" role="tablist" aria-label="Type de photo">
+        <button role="tab" aria-selected={mode === 'liste'} className={mode === 'liste' ? 'on' : ''} disabled={lecture} onClick={() => setMode('liste')}>Une liste</button>
+        <button role="tab" aria-selected={mode === 'texte'} className={mode === 'texte' ? 'on' : ''} disabled={lecture} onClick={() => setMode('texte')}>Un texte</button>
+      </div>
+      {mode === 'texte' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span className="hint" style={{ margin: 0 }}>Combien de mots ?</span>
+          {NOMBRES.map((n) => (
+            <button key={n} className={nombre === n ? 'btn' : 'btn ghost'} style={{ margin: 0, padding: '6px 12px', minWidth: 0 }} aria-pressed={nombre === n} disabled={lecture} onClick={() => setNombre(n)}>{n}</button>
+          ))}
+        </div>
+      )}
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
-          <b>Recadre sur la liste</b>
+          <b>{mode === 'texte' ? 'Recadre sur le texte' : 'Recadre sur la liste'}</b>
           <span className="hint" style={{ margin: 0, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Glisse les coins</span>
         </div>
         <div ref={zone} style={{ position: 'relative', overflow: 'hidden', borderRadius: 10, touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}>
@@ -142,6 +186,7 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn ghost" style={{ flex: 'none', margin: 0 }} disabled={lecture} onClick={() => void pivote()} aria-label="Pivoter la photo d’un quart de tour">⟳ Pivoter</button>
           <button className="btn ghost" style={{ flex: 1, margin: 0 }} disabled={lecture} onClick={() => setCadre(CADRE0)}>Reprendre</button>
           <button className="btn" style={{ flex: 1, margin: 0 }} disabled={lecture} onClick={() => void envoie()}>{lecture ? 'Lecture…' : 'Envoyer'}</button>
         </div>
@@ -156,13 +201,26 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
   /* ---------------- Prise de vue ---------------- */
   return (
     <div style={cadreBox}>
+      <div className="tabs" role="tablist" aria-label="Type de photo">
+        <button role="tab" aria-selected={mode === 'liste'} className={mode === 'liste' ? 'on' : ''} disabled={lecture} onClick={() => setMode('liste')}>Une liste</button>
+        <button role="tab" aria-selected={mode === 'texte'} className={mode === 'texte' ? 'on' : ''} disabled={lecture} onClick={() => setMode('texte')}>Un texte</button>
+      </div>
+      {mode === 'texte' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span className="hint" style={{ margin: 0 }}>Combien de mots ?</span>
+          {NOMBRES.map((n) => (
+            <button key={n} className={nombre === n ? 'btn' : 'btn ghost'} style={{ margin: 0, padding: '6px 12px', minWidth: 0 }} aria-pressed={nombre === n} disabled={lecture} onClick={() => setNombre(n)}>{n}</button>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 150, padding: 16, borderRadius: 12, border: '1.5px dashed var(--rule-strong, var(--rule))', textAlign: 'center' }}>
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ opacity: 0.7 }}>
           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
         </svg>
         <p className="hint" style={{ margin: 0, maxWidth: '30ch' }}>
-          {lecture ? 'L’IA lit la liste…'
+          {lecture ? (mode === 'texte' ? 'L’IA lit le texte…' : 'L’IA lit la liste…')
             : etat && etat.restantes <= 0 ? 'Plus de photo cette semaine. Les mots s’ajoutent toujours à la main.'
+            : mode === 'texte' ? 'Un texte en anglais (livre, cahier, fiche). L’IA choisit les mots utiles et les traduit ; tu relis avant de garder.'
             : 'La page du cahier ou la fiche du prof, bien à plat. L’IA lit chaque mot anglais et sa traduction.'}
         </p>
       </div>
