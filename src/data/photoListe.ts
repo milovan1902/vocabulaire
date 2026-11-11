@@ -66,7 +66,7 @@ export function lirePhoto(
   image: string,
   type: string,
   options: { mode?: ModePhoto; nombre?: number; angle?: number } = {},
-): Promise<{ mots: Array<{ en: string; fr: string }>; etat: EtatPhoto }> {
+): Promise<{ mots: Array<{ en: string; fr: string }>; etat: EtatPhoto; demandes?: number }> {
   return appelle({ image, type, ...options });
 }
 

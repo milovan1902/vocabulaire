@@ -167,7 +167,7 @@ Règles :
 - Chaque mot doit être écrit dans le texte. N'ajoute JAMAIS un mot qui n'y est pas.
 - La traduction est celle de CETTE forme, au sens du texte, courte (children ; enfants).
 - Pas de doublon, pas de titre, pas de numéro, pas de commentaire.
-- Donne le nombre de mots demandé dans le message de l'utilisateur, ou moins si le texte n'en contient pas assez.
+- Donne EXACTEMENT le nombre de mots demandé dans le message de l'utilisateur. Si les mots vraiment utiles ne suffisent pas, complète avec les mots suivants les plus utiles du texte, même simples (name, finally, maybe, got…). Tu ne donnes moins de mots que si le texte n'en contient pas assez de différents.
 - Si tu ne parviens pas à lire le texte avec certitude, ou s'il n'y a pas de texte en anglais, écris « SENS : 0 » puis, sur la ligne suivante, exactement : AUCUN. N'INVENTE JAMAIS un texte.`;
 
 /*
@@ -413,5 +413,5 @@ export const onRequestPost = async ({ request, env }: ContextePhoto): Promise<Re
 
   const etat = etatDe(avant.lues + (mots.length ? 1 : 0), admin, offert && !admin);
   if (!mots.length) return json({ erreur: 'aucun mot lu', etat }, 422);
-  return json({ mots, etat });
+  return json(texteMode ? { mots, etat, demandes: nombre } : { mots, etat });
 };

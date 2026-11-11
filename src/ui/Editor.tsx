@@ -76,6 +76,8 @@ export function Editor({
   const [mots, setMots] = useState<ParsedLine[]>([]);
   const [doublon, setDoublon] = useState('');
   const [lus, setLus] = useState(0);
+  /* 411 bis — « Un texte » : combien l'élève en voulait, combien l'IA en a tiré. */
+  const [court, setCourt] = useState<{ demandes: number; rendus: number } | null>(null);
   const [error, setError] = useState('');
   const [enCours, setEnCours] = useState(false);
 
@@ -109,7 +111,8 @@ export function Editor({
     refEn.current?.focus();
   }
 
-  function ajouteLus(lusPhoto: ParsedLine[]) {
+  function ajouteLus(lusPhoto: ParsedLine[], demandes?: number) {
+    setCourt(demandes && lusPhoto.length < demandes ? { demandes, rendus: lusPhoto.length } : null);
     const neufs = lusPhoto.filter((m) => !deja.has(cle(m.en)));
     setMots((m) => [...m, ...neufs]);
     setLus(neufs.length);
@@ -317,6 +320,7 @@ export function Editor({
               <p className="hint" style={{ flex: 1, margin: 0 }}>
                 {lus} mot{lus > 1 ? 's' : ''} lu{lus > 1 ? 's' : ''} sur la photo. Relis-les : l’IA peut se tromper,
                 surtout sur une écriture à la main. Touche un mot pour le corriger.
+                {court && ` Tu en avais demandé ${court.demandes}, mais le texte était trop court pour en tirer plus de ${court.rendus}.`}
               </p>
               <button className="iconbtn" aria-label="Fermer" onClick={() => setLus(0)}>×</button>
             </div>

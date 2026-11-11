@@ -26,7 +26,7 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
   onEtat: (e: EtatPhoto) => void;
   fermee: 'compte' | 'ferme' | null;
   panne: string;
-  onMots: (mots: Array<{ en: string; fr: string }>) => void;
+  onMots: (mots: Array<{ en: string; fr: string }>, demandes?: number) => void;
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [cadre, setCadre] = useState<Cadre>(CADRE0);
@@ -114,7 +114,7 @@ export function PhotoListe({ etat, onEtat, fermee, panne, onMots }: {
       }
       onEtat(r.etat);
       setUrl(null);
-      onMots(r.mots);
+      onMots(r.mots, r.demandes);
     } catch (e) {
       if (e instanceof ErreurPhoto) {
         if (e.etat) onEtat(e.etat);
