@@ -41,10 +41,10 @@ describe('408 — la photo', () => {
     expect((await envoie({ mode: 'liste' })).statut).toBe(422);
   });
 
-  it('texte : formes de dictionnaire acceptées si la forme écrite est dans le texte, inventions écartées, nombre respecté', async () => {
-    reseau('SENS : 0\nLU\nThe parents have got two children.\nMOTS\nparent ; parent ; parents\nchild ; enfant ; children\nuncle ; oncle ; uncle\nhave ; avoir ; have');
+  it('texte : mots rendus tels qu\'écrits dans le texte, inventions écartées, nombre respecté', async () => {
+    reseau('SENS : 0\nLU\nThe parents have got two children.\nMOTS\nparents ; parents\nchildren ; enfants\nuncle ; oncle\nhave ; avoir');
     const r = await envoie({ mode: 'texte', nombre: 3 });
-    expect((r.corps.mots as Array<{ en: string }>).map((m) => m.en)).toEqual(['parent', 'child', 'have']);
+    expect((r.corps.mots as Array<{ en: string }>).map((m) => m.en)).toEqual(['parents', 'children', 'have']);
   });
 
   it('texte illisible : AUCUN donne 422', async () => {

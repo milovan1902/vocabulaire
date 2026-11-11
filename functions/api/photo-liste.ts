@@ -159,13 +159,13 @@ Puis ta réponse a DEUX parties, dans cet ordre.
 1. Une ligne « LU », puis le texte recopié tel quel, une ligne par ligne de la photo. N'ajoute, ne traduis et ne corrige rien dans cette partie.
 
 2. Une ligne « MOTS », puis les mots à apprendre, un par ligne, de cette forme :
-mot anglais ; traduction française ; mot tel qu'il est écrit dans le texte
+mot anglais ; traduction française
 
 Règles :
 - Choisis les mots les plus utiles à apprendre pour un élève : noms, verbes, adjectifs, expressions courantes. Écarte les mots outils (the, a, is, and, of…), les prénoms, noms de lieux, nombres et dates.
-- Le mot anglais est donné sous sa forme de dictionnaire (singulier, verbe à l'infinitif sans "to", ex. children → child, played → play). La troisième colonne recopie la forme exacte lue dans le texte.
+- Le mot anglais est recopié EXACTEMENT comme il est écrit dans le texte (children reste children, played reste played), en minuscules sauf s'il en faut. Ne le ramène pas à sa forme de dictionnaire.
 - Chaque mot doit être écrit dans le texte. N'ajoute JAMAIS un mot qui n'y est pas.
-- La traduction est celle qui convient au sens du texte, courte.
+- La traduction est celle de CETTE forme, au sens du texte, courte (children ; enfants).
 - Pas de doublon, pas de titre, pas de numéro, pas de commentaire.
 - Donne le nombre de mots demandé dans le message de l'utilisateur, ou moins si le texte n'en contient pas assez.
 - Si tu ne parviens pas à lire le texte avec certitude, ou s'il n'y a pas de texte en anglais, écris « SENS : 0 » puis, sur la ligne suivante, exactement : AUCUN. N'INVENTE JAMAIS un texte.`;
